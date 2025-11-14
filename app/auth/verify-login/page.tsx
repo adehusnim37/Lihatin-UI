@@ -1,39 +1,13 @@
-import React from "react"
+import BlobDefault from "@/components/blob/blob-default"
+import { OTPForm } from "@/components/otp-form"
 
-import {
-    InputOTP,
-    InputOTPGroup,
-    InputOTPSeparator,
-    InputOTPSlot,
-} from "@/components/ui/input-otp"
-
-export default function VerifyLogin() {
+export default function OTPPage() {
     return (
-        <InputOTP maxLength={8}>
-            <InputOTPGroup>
-                <InputOTPSlot index={0} />
-                <InputOTPSlot index={1} />
-            </InputOTPGroup>
-            <InputOTPSeparator />
-            <InputOTPGroup>
-                <InputOTPSlot index={2} />
-                <InputOTPSlot index={3} />
-            </InputOTPGroup>
-            <InputOTPSeparator />
-            <InputOTPGroup>
-                <InputOTPSlot index={4} />
-                <InputOTPSlot index={5} />
-            </InputOTPGroup>
-            <InputOTPSeparator />
-            <InputOTPGroup>
-                <InputOTPSlot index={6} />
-                <InputOTPSlot index={7} />
-            </InputOTPGroup>
-            <div>
-                <p className="mt-4 text-sm text-center text-muted-foreground">
-                    Enter the 8-digit code sent to your email to verify your login.
-                </p>
+        <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+             <BlobDefault />
+            <div className="w-full max-w-sm">
+                <OTPForm />
             </div>
-        </InputOTP>
+        </div>
     )
 }

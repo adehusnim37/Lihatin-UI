@@ -39,3 +39,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local env files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# nextjs cache
+.next/cache
+
+# idea
+.idea/
+
+# bunlock
+.bun.lock

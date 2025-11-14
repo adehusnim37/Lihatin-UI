@@ -12,7 +12,7 @@ export default function AuthPage() {
                         Choose an authentication option below
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-4">
                     <Button asChild className="w-full">
                         <Link href="/auth/login">Login</Link>
                     </Button>
@@ -21,6 +21,9 @@ export default function AuthPage() {
                     </Button>
                     <Button asChild variant="outline" className="w-full">
                         <Link href="/auth/forgot-password">Forgot Password</Link>
+                    </Button>
+                    <Button asChild variant="outline" className="w-full">
+                        <Link href="/auth/verify-email">OTP Verification</Link>
                     </Button>
                 </CardContent>
             </Card>
