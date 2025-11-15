@@ -12,7 +12,7 @@ import { TermsDialog } from "@/components/auth/terms-dialog";
 
 export default function RegisterPage() {
     return (
-       <div className="md:flex md:min-h-screen bg-background md:p-6 py-6 gap-x-6">
+       <div className="md:flex md:min-h-full bg-background md:p-6 py-6 gap-x-6">
       {/* Left side: Sign-up form */}
       <div className="md:w-1/2 flex items-center justify-center">
         <div className="max-w-sm px-6 py-16 md:p-0 w-full">

@@ -3,6 +3,7 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MailIcon } from "lucide-react";
@@ -12,7 +13,7 @@ import BlobDefault from "@/components/blob/blob-default";
 
 export default function CheckEmailPage() {
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-background p-6 overflow-hidden">
+    <div className="relative flex min-h-full items-center justify-center bg-background p-6 overflow-hidden">
       {/* Decorative blobs */}
       <BlobDefault />
       {/* Card container */}
@@ -33,7 +34,9 @@ export default function CheckEmailPage() {
                 <MailIcon className="h-6 w-6 text-primary" />
               </div>
             </div>
-            <h1 className="text-2xl font-bold">Check your email</h1>
+            <CardTitle className="text-4xl font-bold">
+              <h1 className="text-2xl font-bold">Check your email</h1>
+            </CardTitle>
             <CardDescription className="text-base">
               We&apos;ve sent a verification link to your email address. Please
               check your inbox and click the link to verify your account.

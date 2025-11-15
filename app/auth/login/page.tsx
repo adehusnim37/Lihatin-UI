@@ -4,12 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function Login() {
+  const handleLogin = () => {
+    toast.error("Error", {
+      description: "Signed in was not successful. Please try again.",
+      duration: 3000,
+    });
+  };
   return (
-    <div className="md:flex md:min-h-screen bg-background md:p-6 py-6 gap-x-6">
+    <div className="md:flex md:min-h-full bg-background md:p-6 py-6 gap-x-6">
       {/* Left side: Sign-in form */}
       <div className="md:w-1/2 flex items-center justify-center">
         <div className="max-w-sm px-6 py-16 md:p-0 w-full ">
@@ -63,7 +71,12 @@ export default function Login() {
           </div>
           {/* Sign-in button and Sign-up link */}
           <div className="flex flex-col space-y-4">
-            <Button className="w-full">Sign in</Button>
+            <Button
+              className="w-full"
+              onClick={() => handleLogin()}
+            >
+              Sign in
+            </Button>
             <p className="text-sm text-center text-muted-foreground">
               Don`&apos;`t have an account?{" "}
               <Link className="underline text-foreground" href="/auth/register">
