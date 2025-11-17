@@ -5,8 +5,68 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import Link from "next/link";
+import { useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { forgotPassword } from "@/lib/api/auth";
+import { Loader2 } from "lucide-react";
 
 export default function ForgotPassword() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState("");
+
+  const handleForgotPassword = async (e: FormEvent) => {
+    e.preventDefault();
+
+    // Validate email
+    if (!email) {
+      toast.error("Validation Error", {
+        description: "Please enter your email address",
+        duration: 3000,
+      });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error("Validation Error", {
+        description: "Please enter a valid email address",
+        duration: 3000,
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await forgotPassword({ email });
+
+      if (response.success) {
+        // Success toast
+        toast.success("Reset Link Sent!", {
+          description: response.message || "If an account with that email exists, a password reset link has been sent",
+          duration: 5000,
+        });
+
+        // Redirect to check email page
+        setTimeout(() => {
+          router.push("/auth/check-email");
+        }, 1500);
+      }
+    } catch (error: any) {
+      console.error("Forgot password error:", error);
+      
+      // Show error toast
+      toast.error("Request Failed", {
+        description: error.message || "Unable to send reset link. Please try again.",
+        duration: 4000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="md:flex md:min-h-full bg-background md:p-6 py-6 gap-x-6">
       {/* Left side: Sign-in form */}
@@ -34,17 +94,39 @@ export default function ForgotPassword() {
               </p>
             </div>
           </div>
-          {/* Sign-in form */}
-          <div className="space-y-4 mb-6">
+          {/* Forgot password form */}
+          <form onSubmit={handleForgotPassword} className="space-y-4 mb-6">
             {/* Email input */}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" placeholder="Email" type="email" />
+              <Input 
+                id="email" 
+                placeholder="Email" 
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                required
+              />
             </div>
-          </div>
-          {/* Sign-in button and Sign-up link */}
+          </form>
+          {/* Send reset link button and Sign-up link */}
           <div className="flex flex-col space-y-4">
-            <Button className="w-full">Send Reset Link</Button>
+            <Button 
+              className="w-full"
+              onClick={handleForgotPassword}
+              disabled={isLoading}
+              type="submit"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                "Send Reset Link"
+              )}
+            </Button>
             <p className="text-sm text-center text-muted-foreground">
               Don&apos;t have an account?{" "}
               <Link className="underline text-foreground" href="/auth/register">

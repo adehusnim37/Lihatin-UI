@@ -4,18 +4,113 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useState, FormEvent, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { login, saveTokens, saveUserData } from "@/lib/api/auth";
 
 export default function Login() {
-  const handleLogin = () => {
-    toast.error("Error", {
-      description: "Signed in was not successful. Please try again.",
-      duration: 3000,
-    });
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email_or_username: "",
+    password: "",
+    keepSignedIn: false,
+  });
+
+  // Check for error query parameters from email verification
+  useEffect(() => {
+    const error = searchParams.get('error');
+    if (error === 'token_required') {
+      toast.error("Verification Failed", {
+        description: "Verification token is required",
+        duration: 4000,
+      });
+    } else if (error === 'verification_failed') {
+      toast.error("Verification Failed", {
+        description: "Email verification failed. The link may be expired or invalid.",
+        duration: 4000,
+      });
+    }
+  }, [searchParams]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
   };
+
+  const handleLogin = async (e: FormEvent) => {
+    e.preventDefault();
+    
+    // Basic validation
+    if (!formData.email_or_username || !formData.password) {
+      toast.error("Validation Error", {
+        description: "Please fill in all required fields",
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      toast.error("Validation Error", {
+        description: "Password must be at least 8 characters",
+        duration: 3000,
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await login({
+        email_or_username: formData.email_or_username,
+        password: formData.password,
+      });
+
+      if (response.success && response.data) {
+        // Save tokens and user data
+        saveTokens(response.data.token.access_token, response.data.token.refresh_token);
+        saveUserData(response.data.user);
+
+        // Check if TOTP is enabled
+        if (response.data.auth.is_totp_enabled) {
+          toast.success("Verification Required", {
+            description: "Please enter your 2FA code",
+            duration: 2000,
+          });
+          router.push("/auth/verify-login");
+          return;
+        }
+
+        // Success toast
+        toast.success("Login Successful!", {
+          description: `Welcome back, ${response.data.user.first_name}!`,
+          duration: 3000,
+        });
+
+        // Redirect to dashboard or home
+        router.push("/");
+      }
+    } catch (error: any) {
+      console.error("Login error:", error);
+      
+      // Show error toast
+      toast.error("Login Failed", {
+        description: error.message || "Invalid credentials. Please try again.",
+        duration: 4000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="md:flex md:min-h-full bg-background md:p-6 py-6 gap-x-6">
       {/* Left side: Sign-in form */}
@@ -42,22 +137,45 @@ export default function Login() {
             </div>
           </div>
           {/* Sign-in form */}
-          <div className="space-y-4 mb-6">
+          <form onSubmit={handleLogin} className="space-y-4 mb-6">
             {/* Email input */}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" placeholder="Email" type="email" />
+              <Label htmlFor="email_or_username">Email or Username</Label>
+              <Input 
+                id="email_or_username" 
+                placeholder="Email or Username" 
+                type="text"
+                value={formData.email_or_username}
+                onChange={handleInputChange}
+                disabled={isLoading}
+                required
+              />
             </div>
             {/* Password input */}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" placeholder="Password" type="password" />
+              <Input 
+                id="password" 
+                placeholder="Password" 
+                type="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                disabled={isLoading}
+                required
+              />
             </div>
             {/* Remember me checkbox and Forgot password link */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Checkbox id="keep-signed-in" />
-                <Label htmlFor="keep-signed-in" className="text-sm font-medium">
+                <Checkbox 
+                  id="keepSignedIn"
+                  checked={formData.keepSignedIn}
+                  onCheckedChange={(checked) => 
+                    setFormData((prev) => ({ ...prev, keepSignedIn: checked as boolean }))
+                  }
+                  disabled={isLoading}
+                />
+                <Label htmlFor="keepSignedIn" className="text-sm font-medium">
                   Keep me signed in
                 </Label>
               </div>
@@ -68,14 +186,23 @@ export default function Login() {
                 Forgot password?
               </Link>
             </div>
-          </div>
+          </form>
           {/* Sign-in button and Sign-up link */}
           <div className="flex flex-col space-y-4">
             <Button
               className="w-full"
-              onClick={() => handleLogin()}
+              onClick={handleLogin}
+              disabled={isLoading}
+              type="submit"
             >
-              Sign in
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                "Sign in"
+              )}
             </Button>
             <p className="text-sm text-center text-muted-foreground">
               Don`&apos;`t have an account?{" "}
