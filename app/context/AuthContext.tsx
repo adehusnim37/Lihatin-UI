@@ -1,42 +1,69 @@
-"use client";
+'use client'
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 
-// Define the shape of your context
 interface AuthContextType {
-  user: { name: string; email: string } | null;
-  login: (name: string, email: string) => void;
-  logout: () => void;
+  isAuthenticated: boolean
+  isLoading: boolean
+  login: (token: string) => void
+  logout: () => void
 }
 
-// Create context
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Provider component
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+  const pathname = usePathname()
 
-  const login = (name: string, email: string) => {
-    setUser({ name, email });
-  };
+  useEffect(() => {
+    // Check if user has valid token
+    const token = localStorage.getItem('accessToken')
+    setIsAuthenticated(!!token)
+    setIsLoading(false)
+
+    // Protected routes
+    const protectedRoutes = ['/main', '/dashboard', '/profile']
+    const isProtected = protectedRoutes.some(route => pathname?.startsWith(route))
+
+    // Redirect to login if accessing protected route without token
+    if (!token && isProtected) {
+      router.push(`/auth/login?redirect=${pathname}`)
+    }
+
+    // Redirect to main if accessing auth pages with token
+    const authRoutes = ['/auth/login', '/auth/register']
+    const isAuthRoute = authRoutes.some(route => pathname === route)
+    if (token && isAuthRoute) {
+      router.push('/main')
+    }
+  }, [pathname, router])
+
+  const login = (token: string) => {
+    localStorage.setItem('accessToken', token)
+    setIsAuthenticated(true)
+  }
 
   const logout = () => {
-    setUser(null);
-  };
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
+    setIsAuthenticated(false)
+    router.push('/auth/login')
+  }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
-  );
+  )
 }
 
-// Custom hook to use the context
 export function useAuth() {
-  const context = useContext(AuthContext);
+  const context = useContext(AuthContext)
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider')
   }
-  return context;
+  return context
 }
-

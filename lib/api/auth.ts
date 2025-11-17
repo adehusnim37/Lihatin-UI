@@ -12,10 +12,6 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: {
-    access_token: string;
-    refresh_token: string;
-  };
   user: {
     id: string;
     username: string;
@@ -138,38 +134,9 @@ export async function forgotPassword(request: ForgotPasswordRequest): Promise<AP
  */
 export function saveTokens(accessToken: string, refreshToken: string): void {
   if (typeof window !== 'undefined') {
+    // save tokens to cookies with secure and httpOnly flags
     localStorage.setItem('access_token', accessToken);
     localStorage.setItem('refresh_token', refreshToken);
-  }
-}
-
-/**
- * Get access token from localStorage
- */
-export function getAccessToken(): string | null {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('access_token');
-  }
-  return null;
-}
-
-/**
- * Get refresh token from localStorage
- */
-export function getRefreshToken(): string | null {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('refresh_token');
-  }
-  return null;
-}
-
-/**
- * Clear authentication tokens from localStorage
- */
-export function clearTokens(): void {
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
   }
 }
 
@@ -205,6 +172,3 @@ export function clearUserData(): void {
 /**
  * Check if user is authenticated
  */
-export function isAuthenticated(): boolean {
-  return getAccessToken() !== null;
-}

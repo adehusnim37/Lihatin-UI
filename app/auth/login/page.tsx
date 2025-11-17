@@ -76,7 +76,6 @@ export default function Login() {
 
       if (response.success && response.data) {
         // Save tokens and user data
-        saveTokens(response.data.token.access_token, response.data.token.refresh_token);
         saveUserData(response.data.user);
 
         // Check if TOTP is enabled
