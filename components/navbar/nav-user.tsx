@@ -28,6 +28,10 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { useAuth } from "@/app/context/AuthContext"
 
 export function NavUser({
   user,
@@ -39,6 +43,29 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const [isLoading, setIsLoading] = useState(false)
+
+  const router = useRouter()
+  const auth = useAuth()
+
+  const handleLogout = async () => {
+    setIsLoading(true)
+    try {
+      await auth.logout()
+      // Toast will show before page reload
+      toast.success('Logged out', { description: 'You have been logged out.' })
+      // AuthContext.logout will force reload to /auth/login
+    } catch (err) {
+      console.error('Logout error:', err)
+      toast.error('Logout failed', { description: 'Please try again.' })
+      // AuthContext.logout handles fallback reload
+    }
+    // No finally block needed - page will reload
+  }
+
+  const handleProfilePage = () => {
+    router.push('/profile/me')
+  }
 
   return (
     <SidebarMenu>
@@ -84,7 +111,7 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleProfilePage}>
                 <IconUserCircle />
                 Account
               </DropdownMenuItem>
@@ -98,7 +125,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout} disabled={isLoading}>
               <IconLogout />
               Log out
             </DropdownMenuItem>

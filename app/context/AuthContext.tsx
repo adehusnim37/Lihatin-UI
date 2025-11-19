@@ -2,12 +2,13 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { checkAuth, logout as apiLogout, clearUserData } from '@/lib/api/auth'
 
 interface AuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
-  login: (token: string) => void
-  logout: () => void
+  login: () => Promise<void>
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -18,39 +19,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
 
+  // Check authentication on mount and path change
   useEffect(() => {
-    // Check if user has valid token
-    const token = localStorage.getItem('accessToken')
-    setIsAuthenticated(!!token)
-    setIsLoading(false)
+    checkAuthentication()
+  }, [pathname])
 
-    // Protected routes
-    const protectedRoutes = ['/main', '/dashboard', '/profile']
-    const isProtected = protectedRoutes.some(route => pathname?.startsWith(route))
+  const checkAuthentication = async () => {
+    setIsLoading(true)
+    
+    try {
+      // Call backend to check if access_token cookie is valid
+      const isAuth = await checkAuth()
+      setIsAuthenticated(isAuth)
 
-    // Redirect to login if accessing protected route without token
-    if (!token && isProtected) {
-      router.push(`/auth/login?redirect=${pathname}`)
+      // Protected routes
+      const protectedRoutes = ['/main', '/dashboard', '/profile']
+      const isProtected = protectedRoutes.some(route => pathname?.startsWith(route))
+
+      // Redirect to login if accessing protected route without valid auth
+      if (!isAuth && isProtected) {
+        router.push(`/auth/login?redirect=${pathname}`)
+      }
+
+      // Redirect to main if accessing auth pages with valid auth
+      const authRoutes = ['/auth/login', '/auth/register']
+      const isAuthRoute = authRoutes.some(route => pathname === route)
+      if (isAuth && isAuthRoute) {
+        router.push('/main')
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error)
+      setIsAuthenticated(false)
+    } finally {
+      setIsLoading(false)
     }
-
-    // Redirect to main if accessing auth pages with token
-    const authRoutes = ['/auth/login', '/auth/register']
-    const isAuthRoute = authRoutes.some(route => pathname === route)
-    if (token && isAuthRoute) {
-      router.push('/main')
-    }
-  }, [pathname, router])
-
-  const login = (token: string) => {
-    localStorage.setItem('accessToken', token)
-    setIsAuthenticated(true)
   }
 
-  const logout = () => {
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
-    setIsAuthenticated(false)
-    router.push('/auth/login')
+  const login = async () => {
+    // After successful login, recheck authentication
+    await checkAuthentication()
+  }
+
+  const logout = async () => {
+    try {
+      // Call backend logout to clear HTTP-Only cookies
+      await apiLogout()
+      
+      // Clear user data from localStorage
+      clearUserData()
+      
+      setIsAuthenticated(false)
+      
+      // Force page reload to ensure cookies are cleared and state is reset
+      window.location.href = '/auth/login'
+    } catch (error) {
+      console.error('Logout failed:', error)
+      
+      // Clear local state even if API call fails
+      clearUserData()
+      setIsAuthenticated(false)
+      
+      // Force page reload as fallback
+      window.location.href = '/auth/login'
+    }
   }
 
   return (

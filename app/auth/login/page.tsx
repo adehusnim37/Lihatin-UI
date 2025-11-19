@@ -10,11 +10,13 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { useState, FormEvent, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { login, saveTokens, saveUserData } from "@/lib/api/auth";
+import { login, saveUserData } from "@/lib/api/auth";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function Login() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const auth = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email_or_username: "",
@@ -33,6 +35,11 @@ export default function Login() {
     } else if (error === 'verification_failed') {
       toast.error("Verification Failed", {
         description: "Email verification failed. The link may be expired or invalid.",
+        duration: 4000,
+      });
+    } else if (error === 'session_expired') {
+      toast.error("Session Expired", {
+        description: "Your session has expired. Please login again.",
         duration: 4000,
       });
     }
@@ -75,7 +82,7 @@ export default function Login() {
       });
 
       if (response.success && response.data) {
-        // Save tokens and user data
+        // Save user profile to localStorage (NOT tokens - they're in HTTP-Only cookies)
         saveUserData(response.data.user);
 
         // Check if TOTP is enabled
@@ -94,8 +101,12 @@ export default function Login() {
           duration: 3000,
         });
 
-        // Redirect to dashboard or home
-        router.push("/");
+        // Update auth context (triggers recheck of authentication)
+        await auth.login();
+
+        // Redirect to main or redirect URL from query params
+        const redirectTo = searchParams.get('redirect') || '/main';
+        router.push(redirectTo);
       }
     } catch (error: any) {
       console.error("Login error:", error);
