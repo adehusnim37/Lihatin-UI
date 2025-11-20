@@ -36,9 +36,12 @@ import {
   type LoginResponse,
 } from "@/lib/api/auth";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { BadgeCheckIcon, Loader2 } from "lucide-react";
 import { DialogTrigger } from "@/components/ui/dialog";
 import ChangePasswordDialog from "@/components/profile/changePassword";
+import { ProfileGeneralTab } from "@/components/profile/tab/general";
+import ProfileSecurityTab from "@/components/profile/tab/security";
+import { Item, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
 
 /**
  * Profile Page
@@ -52,6 +55,7 @@ export default function ProfilePage() {
   const [editedUser, setEditedUser] = useState<
     Partial<AuthProfileData["user"]>
   >({});
+  const [activeTab, setActiveTab] = useState("general");
 
   const loadUserData = async () => {
     try {
@@ -196,30 +200,32 @@ export default function ProfilePage() {
                       Manage your account settings and preferences
                     </p>
                   </div>
-                  {!isEditing ? (
-                    <Button onClick={handleEdit}>
-                      <IconEdit className="mr-2 h-6 w-6" />
-                      Edit Profile
-                    </Button>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Button variant="outline" onClick={handleCancel}>
-                        <IconX className="mr-2 h-4 w-4" />
-                        Cancel
+                  {activeTab === "general" ? (
+                    !isEditing ? (
+                      <Button onClick={handleEdit}>
+                        <IconEdit className="mr-2 h-6 w-6" />
+                        Edit Profile
                       </Button>
-                      <Button onClick={handleSave}>
-                        <IconCheck className="mr-2 h-4 w-4" />
-                        Save Changes
-                      </Button>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="flex gap-2">
+                        <Button variant="outline" onClick={handleCancel}>
+                          <IconX className="mr-2 h-4 w-4" />
+                          Cancel
+                        </Button>
+                        <Button onClick={handleSave}>
+                          <IconCheck className="mr-2 h-4 w-4" />
+                          Save Changes
+                        </Button>
+                      </div>
+                    )
+                  ) : null}
                 </div>
               </div>
 
               {/* Profile Content */}
               <div className="grid gap-6 md:grid-cols-1">
                 {/* Left Column - Profile Card */}
-                <Card className="md:col-span-1 mx-auto w-full max-w-sm">
+                <Card className="md:col-span-1 mx-auto w-full max-w-xl">
                   <CardHeader className="text-center">
                     <div className="flex justify-center mb-4">
                       <Avatar className="h-32 w-32">
@@ -239,12 +245,24 @@ export default function ProfilePage() {
                       @{user.username}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-3">
                     <Separator />
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
-                        Status
-                      </span>
+                    <Item variant={"outline"} size={"sm"}>
+                      <ItemContent>
+                        <ItemTitle className="text-sm text-muted-foreground">
+                          Your Profile is Verified
+                        </ItemTitle>
+                      </ItemContent>
+                      <ItemMedia>
+                        <BadgeCheckIcon className="size-5" />
+                      </ItemMedia>
+                    </Item>
+                    <Item variant={"outline"} size={"sm"}>
+                      <ItemContent>
+                        <ItemTitle className="text-sm text-muted-foreground">
+                          Account Status
+                        </ItemTitle>
+                      </ItemContent>
                       {user.is_premium ? (
                         <Badge variant="default" className="gap-1">
                           <IconCrown className="h-3 w-3" />
@@ -253,21 +271,27 @@ export default function ProfilePage() {
                       ) : (
                         <Badge variant="secondary">Free</Badge>
                       )}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
-                        Member Since
-                      </span>
+                    </Item>
+                    <Item variant={"outline"} size={"sm"}>
+                      <ItemContent>
+                        <ItemTitle className="text-sm text-muted-foreground">
+                          Member Since
+                        </ItemTitle>
+                      </ItemContent>
                       <span className="text-sm font-medium">
                         {formatDate(user.created_at)}
                       </span>
-                    </div>
+                    </Item>
                   </CardContent>
                 </Card>
 
                 {/* Right Column - Details & Settings */}
                 <div className="md:col-span-2">
-                  <Tabs defaultValue="general" className="space-y-4">
+                  <Tabs
+                    defaultValue={activeTab}
+                    onValueChange={(value) => setActiveTab(value)}
+                    className="space-y-4"
+                  >
                     <TabsList>
                       <TabsTrigger value="general">General</TabsTrigger>
                       <TabsTrigger value="security">Security</TabsTrigger>
@@ -277,172 +301,16 @@ export default function ProfilePage() {
                     </TabsList>
 
                     {/* General Tab */}
-                    <TabsContent value="general" className="space-y-4">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Personal Information</CardTitle>
-                          <CardDescription>
-                            Update your personal details and contact information
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="grid gap-4 md:grid-cols-2">
-                            <div className="space-y-2">
-                              <Label htmlFor="first_name">First Name</Label>
-                              <div className="flex items-center gap-2">
-                                <IconUser className="h-4 w-4 text-muted-foreground" />
-                                <Input
-                                  id="first_name"
-                                  value={editedUser.first_name || ""}
-                                  onChange={(e) =>
-                                    setEditedUser({
-                                      ...editedUser,
-                                      first_name: e.target.value,
-                                    })
-                                  }
-                                  disabled={!isEditing}
-                                />
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="last_name">Last Name</Label>
-                              <div className="flex items-center gap-2">
-                                <IconUser className="h-4 w-4 text-muted-foreground" />
-                                <Input
-                                  id="last_name"
-                                  value={editedUser.last_name || ""}
-                                  onChange={(e) =>
-                                    setEditedUser({
-                                      ...editedUser,
-                                      last_name: e.target.value,
-                                    })
-                                  }
-                                  disabled={!isEditing}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="username">Username</Label>
-                            <div className="flex items-center gap-2">
-                              <IconUser className="h-4 w-4 text-muted-foreground" />
-                              <Input
-                                id="username"
-                                value={editedUser.username || ""}
-                                onChange={(e) =>
-                                  setEditedUser({
-                                    ...editedUser,
-                                    username: e.target.value,
-                                  })
-                                }
-                                disabled={!isEditing}
-                              />
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="email">Email Address</Label>
-                            <div className="flex items-center gap-2">
-                              <IconMail className="h-4 w-4 text-muted-foreground" />
-                              <Input
-                                id="email"
-                                type="email"
-                                value={editedUser.email || ""}
-                                onChange={(e) =>
-                                  setEditedUser({
-                                    ...editedUser,
-                                    email: e.target.value,
-                                  })
-                                }
-                                disabled={!isEditing}
-                              />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Account Information</CardTitle>
-                          <CardDescription>
-                            View your account status and details
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="grid gap-4 md:grid-cols-2">
-                            <div className="flex items-center gap-3 p-3 rounded-lg border">
-                              <IconCalendar className="h-5 w-5 text-muted-foreground" />
-                              <div>
-                                <p className="text-sm font-medium">Joined</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {formatDate(user.created_at)}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3 p-3 rounded-lg border">
-                              <IconShield className="h-5 w-5 text-muted-foreground" />
-                              <div>
-                                <p className="text-sm font-medium">
-                                  Account ID
-                                </p>
-                                <p className="text-xs text-muted-foreground font-mono">
-                                  {user.id}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </TabsContent>
+                    <ProfileGeneralTab
+                      user={user}
+                      editedUser={editedUser}
+                      setEditedUser={setEditedUser}
+                      isEditing={isEditing}
+                      formatDate={formatDate}
+                    />
 
                     {/* Security Tab */}
-                    <TabsContent value="security" className="space-y-4">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Security Settings</CardTitle>
-                          <CardDescription>
-                            Manage your password and security preferences
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="space-y-2">
-                            <Label>Password</Label>
-                            <div className="flex items-center justify-between p-3 rounded-lg border">
-                              <div className="flex items-center gap-3">
-                                <IconKey className="h-5 w-5 text-muted-foreground" />
-                                <div>
-                                  <p className="text-sm font-medium">
-                                    Change Password
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    Last changed 30 days ago
-                                  </p>
-                                </div>
-                              </div>
-                              <ChangePasswordDialog />
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Two-Factor Authentication</Label>
-                            <div className="flex items-center justify-between p-3 rounded-lg border">
-                              <div className="flex items-center gap-3">
-                                <IconShield className="h-5 w-5 text-muted-foreground" />
-                                <div>
-                                  <p className="text-sm font-medium">
-                                    2FA Status
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    Not enabled
-                                  </p>
-                                </div>
-                              </div>
-                              <Button variant="outline" size="sm">
-                                Enable
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </TabsContent>
+                    <ProfileSecurityTab />
 
                     {/* Notifications Tab */}
                     <TabsContent value="notifications" className="space-y-4">
