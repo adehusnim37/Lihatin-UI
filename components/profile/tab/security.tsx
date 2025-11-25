@@ -7,19 +7,59 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { TabsContent } from "@radix-ui/react-tabs";
-import { IconChevronDown, IconKey, IconShield } from "@tabler/icons-react";
+import {
+  IconBoxMultiple,
+  IconChevronDown,
+  IconDeviceDesktopCode,
+  IconKey,
+  IconLock,
+  IconMail,
+  IconMailOff,
+  IconShield,
+} from "@tabler/icons-react";
 import { Label } from "recharts";
 import ChangePasswordDialog from "../changePassword";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { getProfile, AuthProfileData } from "@/lib/api/auth";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProfileSecurityTab() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSessionOpen, setIsSessionOpen] = useState(false);
+  const [profileData, setProfileData] = useState<AuthProfileData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchProfile = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getProfile();
+      if (response.success && response.data) {
+        setProfileData(response.data);
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch profile"
+      );
+      console.error("Failed to fetch profile:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const handlePasswordChanged = () => {
+    // Refresh profile data to update password_changed_at timestamp
+    fetchProfile();
+  };
 
   const formatDateTime = (dateString?: string) => {
     if (!dateString) return "N/A";
@@ -33,12 +73,58 @@ export default function ProfileSecurityTab() {
     }).format(date);
   };
 
-  const ProfileAuth = {
-    last_ip: "212/58.246.79",
-    last_login_at: "2024-06-10T14:23:45Z",
-    last_logout_at: "2024-06-10T16:45:30Z",
+  const formatRelativeTime = (dateString?: string) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInDays = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (diffInDays === 0) return "Today";
+    if (diffInDays === 1) return "Yesterday";
+    if (diffInDays < 30) return `${diffInDays} days ago`;
+    if (diffInDays < 365) return `${Math.floor(diffInDays / 30)} months ago`;
+    return `${Math.floor(diffInDays / 365)} years ago`;
+  };
+
+  if (isLoading) {
+    return (
+      <TabsContent value="security" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Security Settings</CardTitle>
+            <CardDescription>
+              Manage your password and security preferences
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+          </CardContent>
+        </Card>
+      </TabsContent>
+    );
   }
- 
+
+  if (error) {
+    return (
+      <TabsContent value="security" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Security Settings</CardTitle>
+            <CardDescription>Failed to load security settings</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-destructive">{error}</p>
+          </CardContent>
+        </Card>
+      </TabsContent>
+    );
+  }
+
   return (
     <TabsContent value="security" className="space-y-4">
       <Card>
@@ -50,6 +136,32 @@ export default function ProfileSecurityTab() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
+            <Label>Email Verification</Label>
+            <div className="flex items-center justify-between p-3 rounded-lg border">
+              <div className="flex items-center gap-3">
+                {profileData?.auth.is_email_verified ? (
+                  <IconMail className="h-5 w-5 text-green-600" />
+                ) : (
+                  <IconMailOff className="h-5 w-5 text-orange-600" />
+                )}
+                <div>
+                  <p className="text-sm font-medium">Email Status</p>
+                  <p className="text-xs text-muted-foreground">
+                    {profileData?.auth.is_email_verified
+                      ? "Verified"
+                      : "Not verified"}
+                  </p>
+                </div>
+              </div>
+              {!profileData?.auth.is_email_verified && (
+                <Button variant="outline" size="sm">
+                  Verify Email
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-2">
             <Label>Password</Label>
             <div className="flex items-center justify-between p-3 rounded-lg border">
               <div className="flex items-center gap-3">
@@ -57,13 +169,15 @@ export default function ProfileSecurityTab() {
                 <div>
                   <p className="text-sm font-medium">Change Password</p>
                   <p className="text-xs text-muted-foreground">
-                    Last changed 30 days ago
+                    Last changed{" "}
+                    {formatRelativeTime(profileData?.auth.password_changed_at)}
                   </p>
                 </div>
               </div>
-              <ChangePasswordDialog />
+              <ChangePasswordDialog onPasswordChanged={handlePasswordChanged} />
             </div>
           </div>
+
           {/* Collapsible Last Login Session */}
           <div className="space-y-2">
             <Label>Last Login Session</Label>
@@ -74,12 +188,14 @@ export default function ProfileSecurityTab() {
             >
               <div className="flex items-center justify-between p-3 rounded-lg border">
                 <div className="flex items-center gap-3 flex-1">
-                  <IconShield className="h-5 w-5 text-muted-foreground" />
+                  <IconBoxMultiple className="h-5 w-5 text-muted-foreground" />
                   <div className="flex-1">
                     <p className="text-sm font-medium">Session Information</p>
-                    <p className="text-xs text-muted-foreground">
-                      Click to view details
-                    </p>
+                    {!isSessionOpen && (
+                      <p className="text-xs text-muted-foreground">
+                        Click to view details
+                      </p>
+                    )}
                   </div>
                 </div>
                 <CollapsibleTrigger asChild>
@@ -100,7 +216,7 @@ export default function ProfileSecurityTab() {
                       Last IP Address
                     </span>
                     <span className="text-sm font-medium font-mono">
-                      {ProfileAuth.last_ip}
+                      {profileData?.auth.last_ip || "N/A"}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -108,21 +224,57 @@ export default function ProfileSecurityTab() {
                       Last Login
                     </span>
                     <span className="text-sm font-medium">
-                      {formatDateTime(ProfileAuth.last_login_at)}
+                      {formatDateTime(profileData?.auth.last_login_at)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">
-                      Last Logout
+                      Account Status
                     </span>
                     <span className="text-sm font-medium">
-                      {formatDateTime(ProfileAuth.last_logout_at)}
+                      {profileData?.auth.is_active ? (
+                        <span className="text-green-600">Active</span>
+                      ) : (
+                        <span className="text-red-600">Inactive</span>
+                      )}
                     </span>
                   </div>
                 </div>
               </CollapsibleContent>
             </Collapsible>
           </div>
+
+          <div className="space-y-2">
+            <Label>Device ID</Label>
+            <div className="flex items-center justify-between p-3 rounded-lg border">
+              <div className="flex items-center gap-3">
+                <IconDeviceDesktopCode className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">Device Identifier</p>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground font-mono font-medium">
+                {profileData?.auth.device_id || "N/A"}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Failed Login Attempts</Label>
+            <div className="flex items-center justify-between p-3 rounded-lg border">
+              <div className="flex items-center gap-3">
+                <IconLock className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">Account Security</p>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground font-medium">
+                {profileData?.auth.failed_login_attempts || 0} unsuccessful
+                attempts
+              </p>
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label>Two-Factor Authentication</Label>
             <div className="flex items-center justify-between p-3 rounded-lg border">
@@ -130,11 +282,15 @@ export default function ProfileSecurityTab() {
                 <IconShield className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">2FA Status</p>
-                  <p className="text-xs text-muted-foreground">Not enabled</p>
+                  <p className="text-xs text-muted-foreground">
+                    {profileData?.auth.is_totp_enabled
+                      ? "Enabled"
+                      : "Not enabled"}
+                  </p>
                 </div>
               </div>
               <Button variant="outline" size="sm">
-                Enable
+                {profileData?.auth.is_totp_enabled ? "Disable" : "Enable"}
               </Button>
             </div>
           </div>

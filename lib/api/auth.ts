@@ -21,7 +21,14 @@ export interface AuthData {
   user_id: string; // Foreign key to the user profile
   is_email_verified: boolean;
   is_totp_enabled: boolean;
+  device_id: string;
+  last_ip: string;
   last_login_at: string; // ISO 8601 or similar timestamp string
+  failed_login_attempts: number;
+  password_changed_at: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 // 2. Interface for the 'user' object (Profile details)
@@ -231,6 +238,57 @@ export function clearUserData(): void {
   if (typeof window !== "undefined") {
     localStorage.removeItem("user");
   }
+}
+
+/**
+ * Change password - requires current password
+ */
+export interface ChangePasswordRequest {
+  current_password: string;
+  new_password: string;
+}
+
+export async function changePassword(
+  data: ChangePasswordRequest
+): Promise<APIResponse<null>> {
+  const response = await fetch(`${API_URL}/auth/change-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include", // ✅ Send access_token cookie
+    body: JSON.stringify(data),
+  });
+
+  const result: APIResponse<null> = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to change password");
+  }
+
+  return result;
+}
+
+/**
+ * Get user profile with auth details
+ * 🔐 Fetches complete user profile and authentication data
+ */
+export async function getProfile(): Promise<APIResponse<AuthProfileData>> {
+  const response = await fetch(`${API_URL}/auth/profile`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include", // ✅ Send access_token cookie
+  });
+
+  const data: APIResponse<AuthProfileData> = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to fetch profile");
+  }
+
+  return data;
 }
 
 /**

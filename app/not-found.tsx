@@ -8,8 +8,8 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <section
-      className="bg-background py-35 lg:py-70 flex flex-col items-center relative overflow-hidden"
+    <div
+      className="bg-background flex flex-col items-center justify-center min-h-screen"
       aria-labelledby="error-title"
     >
       <div className="container px-6 flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
@@ -58,6 +58,6 @@ export default function NotFound() {
           </AspectRatio>
         </div>
       </div>
-    </section>
+    </div>
   );
 }

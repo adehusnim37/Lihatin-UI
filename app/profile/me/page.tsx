@@ -12,33 +12,21 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  IconUser,
-  IconMail,
-  IconCalendar,
-  IconShield,
-  IconKey,
   IconBell,
   IconEdit,
   IconCheck,
   IconX,
   IconCrown,
+  IconUserQuestion,
 } from "@tabler/icons-react";
 import { useState, useEffect } from "react";
-import {
-  AuthProfileData,
-  getUserData,
-  type LoginResponse,
-} from "@/lib/api/auth";
+import { AuthProfileData, getUserData } from "@/lib/api/auth";
 import { toast } from "sonner";
 import { BadgeCheckIcon, Loader2 } from "lucide-react";
-import { DialogTrigger } from "@/components/ui/dialog";
-import ChangePasswordDialog from "@/components/profile/changePassword";
 import { ProfileGeneralTab } from "@/components/profile/tab/general";
 import ProfileSecurityTab from "@/components/profile/tab/security";
 import { Item, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
@@ -50,6 +38,7 @@ import { Item, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
  */
 export default function ProfilePage() {
   const [user, setUser] = useState<AuthProfileData["user"]>();
+  const [userAuth, setUserAuth] = useState<AuthProfileData["auth"]>();
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState<
@@ -62,6 +51,7 @@ export default function ProfilePage() {
       const userData = await getUserData();
       if (userData) {
         setUser(userData.data?.user);
+        setUserAuth(userData.data?.auth)
         setEditedUser({
           first_name: userData.data?.user.first_name,
           last_name: userData.data?.user.last_name,
@@ -224,8 +214,8 @@ export default function ProfilePage() {
 
               {/* Profile Content */}
               <div className="grid gap-6 md:grid-cols-1">
-                {/* Left Column - Profile Card */}
-                <Card className="md:col-span-1 mx-auto w-full max-w-xl">
+                {/* Center Column - Profile Card */}
+                <Card className="md:col-span-1 mx-auto w-full max-w-md">
                   <CardHeader className="text-center">
                     <div className="flex justify-center mb-4">
                       <Avatar className="h-32 w-32">
@@ -248,15 +238,30 @@ export default function ProfilePage() {
                   <CardContent className="space-y-3">
                     <Separator />
                     <Item variant={"outline"} size={"sm"}>
-                      <ItemContent>
-                        <ItemTitle className="text-sm text-muted-foreground">
-                          Your Profile is Verified
-                        </ItemTitle>
-                      </ItemContent>
-                      <ItemMedia>
-                        <BadgeCheckIcon className="size-5" />
-                      </ItemMedia>
+                      {userAuth?.is_email_verified ? (
+                        <ItemContent>
+                          <ItemTitle className="text-sm text-muted-foreground">
+                            Your Profile is Verified
+                          </ItemTitle>
+                        </ItemContent>
+                      ) : (
+                        <ItemContent>
+                          <ItemTitle className="text-sm text-muted-foreground">
+                            Your Profile is Not Verified
+                          </ItemTitle>
+                        </ItemContent>
+                      )}
+                      {userAuth?.is_email_verified ?(
+                        <ItemMedia>
+                          <BadgeCheckIcon className="size-5" />
+                        </ItemMedia>
+                      ) : (
+                        <ItemMedia>
+                          <IconUserQuestion className="size-5" />
+                        </ItemMedia>
+                      ) }
                     </Item>
+                    
                     <Item variant={"outline"} size={"sm"}>
                       <ItemContent>
                         <ItemTitle className="text-sm text-muted-foreground">
