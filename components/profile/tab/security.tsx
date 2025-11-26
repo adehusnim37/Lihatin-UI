@@ -18,7 +18,8 @@ import {
   IconShield,
 } from "@tabler/icons-react";
 import { Label } from "recharts";
-import ChangePasswordDialog from "../changePassword";
+import ChangePasswordDialog from "../modal/changePassword";
+import VerifyEmailModal from "../modal/verifyEmail";
 import { useState, useEffect } from "react";
 import {
   Collapsible,
@@ -50,6 +51,11 @@ export default function ProfileSecurityTab() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // ✅ Callback when email is verified
+  const handleEmailVerified = () => {
+    fetchProfile();
   };
 
   useEffect(() => {
@@ -154,9 +160,10 @@ export default function ProfileSecurityTab() {
                 </div>
               </div>
               {!profileData?.auth.is_email_verified && (
-                <Button variant="outline" size="sm">
-                  Verify Email
-                </Button>
+                <VerifyEmailModal 
+                  email={profileData?.user.email}
+                  onVerified={handleEmailVerified}
+                />
               )}
             </div>
           </div>

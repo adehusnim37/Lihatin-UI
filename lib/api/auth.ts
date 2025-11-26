@@ -16,6 +16,7 @@ export interface LoginRequest {
   password: string;
 }
 
+// 1. Interface for the 'auth' object (Authentication details)
 export interface AuthData {
   id: string; // ID of the authentication session or record
   user_id: string; // Foreign key to the user profile
@@ -267,6 +268,53 @@ export async function changePassword(
   }
 
   return result;
+}
+
+/**
+ * Send verification email to current user
+ * 🔐 Requires authentication
+ */
+export async function sendVerificationEmail(): Promise<APIResponse<null>> {
+  const response = await fetch(`${API_URL}/auth/send-verification-email`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include", // ✅ Send access_token cookie
+  });
+
+  const result: APIResponse<null> = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to send verification email");
+  }
+
+  return result;
+}
+
+/**
+ * Check email verification status
+ * 🔐 Requires authentication
+ */
+export async function checkEmailVerificationStatus(): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_URL}/auth/check-verification-email`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include", // ✅ Send access_token cookie
+    });
+
+    const result: APIResponse<string> = await response.json();
+
+    // Backend returns 200 with data="VERIFIED" and message="EMAIL_VERIFIED" when verified
+    // Returns 400 with code "EMAIL_NOT_VERIFIED" when not verified
+    return response.ok && result.data === "VERIFIED";
+  } catch (error) {
+    console.error("Failed to check verification status:", error);
+    return false;
+  }
 }
 
 /**
