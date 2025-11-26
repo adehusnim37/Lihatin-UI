@@ -360,3 +360,86 @@ export async function checkAuth(): Promise<boolean> {
     return false;
   }
 }
+
+// ==================== TOTP (2FA) FUNCTIONS ====================
+
+export interface TOTPSetupResponse {
+  secret: string;
+  qr_code_url: string;
+  recovery_codes: string[];
+  backup_codes: string[];
+}
+
+/**
+ * Setup TOTP (Two-Factor Authentication)
+ * 🔐 Generates QR code and recovery codes
+ */
+export async function setupTOTP(): Promise<APIResponse<TOTPSetupResponse>> {
+  const response = await fetch(`${API_URL}/auth/totp/setup`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
+
+  const result: APIResponse<TOTPSetupResponse> = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to setup TOTP");
+  }
+
+  return result;
+}
+
+/**
+ * Verify TOTP code during setup
+ * 🔐 Enables 2FA after successful verification
+ */
+export async function verifyTOTP(totp_code: string): Promise<APIResponse<null>> {
+  const response = await fetch(`${API_URL}/auth/totp/verify`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ totp_code }),
+  });
+
+  const result: APIResponse<null> = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to verify TOTP code");
+  }
+
+  return result;
+}
+
+/**
+ * Disable TOTP (Two-Factor Authentication)
+ * 🔐 Requires password or TOTP code
+ */
+export async function disableTOTP(
+  password?: string,
+  totpCode?: string
+): Promise<APIResponse<{ message: string }>> {
+  const response = await fetch(`${API_URL}/auth/totp/disable`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      password,
+      totp_code: totpCode,
+    }),
+  });
+
+  const result: APIResponse<{ message: string }> = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to disable TOTP");
+  }
+
+  return result;
+}

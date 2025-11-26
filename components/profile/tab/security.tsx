@@ -20,6 +20,8 @@ import {
 import { Label } from "recharts";
 import ChangePasswordDialog from "../modal/changePassword";
 import VerifyEmailModal from "../modal/verifyEmail";
+import SetupTOTPModal from "../modal/setupTOTP";
+import DisableTOTPModal from "../modal/disableTOTP";
 import { useState, useEffect } from "react";
 import {
   Collapsible,
@@ -29,7 +31,7 @@ import {
 import { getProfile, AuthProfileData } from "@/lib/api/auth";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function ProfileSecurityTab(onVerified: { onVerified: () => void }) {
+export default function ProfileSecurityTab() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSessionOpen, setIsSessionOpen] = useState(false);
   const [profileData, setProfileData] = useState<AuthProfileData | null>(null);
@@ -44,9 +46,7 @@ export default function ProfileSecurityTab(onVerified: { onVerified: () => void 
         setProfileData(response.data);
       }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch profile"
-      );
+      setError(err instanceof Error ? err.message : "Failed to fetch profile");
       console.error("Failed to fetch profile:", err);
     } finally {
       setIsLoading(false);
@@ -160,7 +160,7 @@ export default function ProfileSecurityTab(onVerified: { onVerified: () => void 
                 </div>
               </div>
               {!profileData?.auth.is_email_verified && (
-                <VerifyEmailModal 
+                <VerifyEmailModal
                   email={profileData?.user.email}
                   onVerified={handleEmailVerified}
                 />
@@ -286,19 +286,21 @@ export default function ProfileSecurityTab(onVerified: { onVerified: () => void 
             <Label>Two-Factor Authentication</Label>
             <div className="flex items-center justify-between p-3 rounded-lg border">
               <div className="flex items-center gap-3">
-                <IconShield className="h-5 w-5 text-muted-foreground" />
+                <IconShield className={`h-5 w-5 ${profileData?.auth.is_totp_enabled ? 'text-green-600' : 'text-muted-foreground'}`} />
                 <div>
                   <p className="text-sm font-medium">2FA Status</p>
                   <p className="text-xs text-muted-foreground">
                     {profileData?.auth.is_totp_enabled
-                      ? "Enabled"
-                      : "Not enabled"}
+                      ? "Enabled - Your account is protected"
+                      : "Not enabled - Add extra security"}
                   </p>
                 </div>
               </div>
-              <Button variant="outline" size="sm">
-                {profileData?.auth.is_totp_enabled ? "Disable" : "Enable"}
-              </Button>
+              {profileData?.auth.is_totp_enabled ? (
+                <DisableTOTPModal onDisableComplete={fetchProfile} />
+              ) : (
+                <SetupTOTPModal onSetupComplete={fetchProfile} />
+              )}
             </div>
           </div>
         </CardContent>

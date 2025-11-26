@@ -395,7 +395,7 @@ export default function ProfilePage() {
                     />
 
                     {/* Security Tab */}
-                    <ProfileSecurityTab onVerified={handleEmailVerified} />
+                    <ProfileSecurityTab />
 
                     {/* Notifications Tab */}
                     <TabsContent value="notifications" className="space-y-4">

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Index() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
 
   return (
     <div className="container mx-auto p-10 max-w-2xl">
@@ -20,23 +20,6 @@ export default function Index() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {user ? (
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Welcome back,</p>
-                <p className="text-2xl font-semibold">{user.name}</p>
-                <p className="text-sm text-muted-foreground">{user.email}</p>
-              </div>
-              <div className="flex gap-2">
-                <Button onClick={logout} variant="destructive">
-                  Logout
-                </Button>
-                <Button asChild variant="outline">
-                  <Link href="/auth">Auth Pages</Link>
-                </Button>
-              </div>
-            </div>
-          ) : (
             <div className="space-y-4">
               <p className="text-muted-foreground">You are not logged in.</p>
               <div className="flex gap-2">
@@ -48,7 +31,6 @@ export default function Index() {
                 </Button>
               </div>
             </div>
-          )}
         </CardContent>
       </Card>
 
