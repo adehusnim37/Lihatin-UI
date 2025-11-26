@@ -29,7 +29,7 @@ import {
 import { getProfile, AuthProfileData } from "@/lib/api/auth";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function ProfileSecurityTab() {
+export default function ProfileSecurityTab(onVerified: { onVerified: () => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSessionOpen, setIsSessionOpen] = useState(false);
   const [profileData, setProfileData] = useState<AuthProfileData | null>(null);

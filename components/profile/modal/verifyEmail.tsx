@@ -18,10 +18,13 @@ import {
   IconCheck,
   IconRefresh,
   IconSparkles,
+  IconArrowForwardUp,
+  IconX,
 } from "@tabler/icons-react";
-import { sendVerificationEmail, checkEmailVerificationStatus } from "@/lib/api/auth";
-import { set } from "zod";
-import { is } from "zod/v4/locales";
+import {
+  sendVerificationEmail,
+  checkEmailVerificationStatus,
+} from "@/lib/api/auth";
 import { useState, useEffect, useCallback, useRef } from "react";
 
 interface VerifyEmailModalProps {
@@ -37,7 +40,9 @@ export default function VerifyEmailModal({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
-  const [status, setStatus] = useState<"idle" | "success" | "error" | "verified">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "success" | "error" | "verified"
+  >("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isWaitingVerification, setIsWaitingVerification] = useState(false);
@@ -79,7 +84,7 @@ export default function VerifyEmailModal({
       const timer = setTimeout(() => {
         onVerified();
       }, 3500); // 3500ms delay to show success animation
-      
+
       return () => clearTimeout(timer);
     }
   }, [status, onVerified]);
@@ -208,7 +213,8 @@ export default function VerifyEmailModal({
             }
           }
           @keyframes bounce {
-            0%, 100% {
+            0%,
+            100% {
               transform: translateY(0);
             }
             50% {
@@ -286,11 +292,26 @@ export default function VerifyEmailModal({
                     <div className="absolute inset-0 rounded-full border-4 border-emerald-500 animate-ping opacity-75" />
                   </div>
                   {/* Confetti effect */}
-                  <div className="confetti-piece bg-emerald-500 top-0 left-0" style={{ animationDelay: "0s" }} />
-                  <div className="confetti-piece bg-green-500 top-0 right-0" style={{ animationDelay: "0.1s" }} />
-                  <div className="confetti-piece bg-teal-500 bottom-0 left-0" style={{ animationDelay: "0.2s" }} />
-                  <div className="confetti-piece bg-emerald-400 bottom-0 right-0" style={{ animationDelay: "0.3s" }} />
-                  <div className="confetti-piece bg-green-400 top-1/2 left-1/2" style={{ animationDelay: "0.15s" }} />
+                  <div
+                    className="confetti-piece bg-emerald-500 top-0 left-0"
+                    style={{ animationDelay: "0s" }}
+                  />
+                  <div
+                    className="confetti-piece bg-green-500 top-0 right-0"
+                    style={{ animationDelay: "0.1s" }}
+                  />
+                  <div
+                    className="confetti-piece bg-teal-500 bottom-0 left-0"
+                    style={{ animationDelay: "0.2s" }}
+                  />
+                  <div
+                    className="confetti-piece bg-emerald-400 bottom-0 right-0"
+                    style={{ animationDelay: "0.3s" }}
+                  />
+                  <div
+                    className="confetti-piece bg-green-400 top-1/2 left-1/2"
+                    style={{ animationDelay: "0.15s" }}
+                  />
                 </div>
               )}
 
@@ -345,9 +366,12 @@ export default function VerifyEmailModal({
                 <div className="flex items-start gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-sm">
                   <IconCheck className="h-5 w-5 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-medium">✨ Email Verified Successfully!</p>
+                    <p className="font-medium">
+                      ✨ Email Verified Successfully!
+                    </p>
                     <p className="text-emerald-700 mt-1">
-                      Your email has been verified. You can now close this dialog.
+                      Your email has been verified. You can now close this
+                      dialog.
                     </p>
                   </div>
                 </div>
@@ -425,28 +449,35 @@ export default function VerifyEmailModal({
               Close
             </Button>
           ) : (
-            <Button
-              onClick={handleSendVerification}
-              disabled={isLoading || countdown > 0 || isWaitingVerification}
-              className="gap-2"
-            >
-              {isLoading ? (
-                <>
-                  <IconRefresh className="h-4 w-4 animate-rotate" />
-                  Sending...
-                </>
-              ) : countdown > 0 || isWaitingVerification ? (
-                <>
-                  <IconClock className="h-4 w-4" />
-                  {isWaitingVerification ? "Waiting..." : `Wait ${countdown}s`}
-                </>
-              ) : (
-                <>
-                  <IconMail className="h-4 w-4" />
-                  Send Verification Email
-                </>
-              )}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleSendVerification}
+                disabled={isLoading || countdown > 0}
+                className="gap-2"
+              >
+                {isLoading ? (
+                  <>
+                    <IconRefresh className="h-4 w-4 animate-rotate" />
+                    Sending...
+                  </>
+                ) : countdown > 0 ? (
+                  <>
+                    <IconClock className="h-4 w-4" />
+                     {`Wait ${countdown}s`}
+                  </>
+                ) : isWaitingVerification ? (
+                  <>
+                    <IconArrowForwardUp className="h-4 w-4" />
+                    Resend Verification Email
+                  </>
+                ) : (
+                  <>
+                    <IconMail className="h-4 w-4" />
+                    Send Verification Email
+                  </>
+                )}
+              </Button>
+            </div>
           )}
         </DialogFooter>
       </DialogContent>

@@ -30,6 +30,9 @@ import { BadgeCheckIcon, Loader2 } from "lucide-react";
 import { ProfileGeneralTab } from "@/components/profile/tab/general";
 import ProfileSecurityTab from "@/components/profile/tab/security";
 import { Item, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
+import { TooltipTrigger } from "@radix-ui/react-tooltip";
 
 /**
  * Profile Page
@@ -51,7 +54,7 @@ export default function ProfilePage() {
       const userData = await getUserData();
       if (userData) {
         setUser(userData.data?.user);
-        setUserAuth(userData.data?.auth)
+        setUserAuth(userData.data?.auth);
         setEditedUser({
           first_name: userData.data?.user.first_name,
           last_name: userData.data?.user.last_name,
@@ -72,6 +75,14 @@ export default function ProfilePage() {
 
   const handleEdit = () => {
     setIsEditing(true);
+  };
+
+  const handleEmailVerified = () => {
+    // Update userAuth state to reflect email verification
+    setUserAuth((prev) => (prev ? { ...prev, is_email_verified: true } : prev));
+    toast.success("Email Verified", {
+      description: "Your email has been verified successfully.",
+    });
   };
 
   const handleCancel = () => {
@@ -128,8 +139,59 @@ export default function ProfilePage() {
         <AppSidebar />
         <SidebarInset>
           <SiteHeader />
-          <div className="flex h-full items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="flex flex-1 flex-col">
+            <div className="@container/main flex flex-1 flex-col gap-2">
+              <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
+                {/* Header Skeleton */}
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-2">
+                      <Skeleton className="h-9 w-32" />
+                      <Skeleton className="h-5 w-64" />
+                    </div>
+                    <Skeleton className="h-10 w-32" />
+                  </div>
+                </div>
+
+                {/* Profile Card Skeleton */}
+                <div className="grid gap-6 md:grid-cols-1">
+                  <Card className="md:col-span-1 mx-auto w-full max-w-md">
+                    <CardHeader className="text-center">
+                      <div className="flex justify-center mb-4">
+                        <Skeleton className="h-32 w-32 rounded-full" />
+                      </div>
+                      <Skeleton className="h-8 w-48 mx-auto mb-2" />
+                      <Skeleton className="h-5 w-32 mx-auto" />
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <Separator />
+                      <Skeleton className="h-12 w-full" />
+                      <Skeleton className="h-12 w-full" />
+                      <Skeleton className="h-12 w-full" />
+                    </CardContent>
+                  </Card>
+
+                  {/* Tabs Skeleton */}
+                  <div className="md:col-span-2">
+                    <div className="space-y-4">
+                      <Skeleton className="h-10 w-full max-w-md" />
+                      <Card>
+                        <CardHeader>
+                          <Skeleton className="h-7 w-40" />
+                          <Skeleton className="h-5 w-64" />
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <Skeleton className="h-20 w-full" />
+                          <Skeleton className="h-20 w-full" />
+                          <Skeleton className="h-20 w-full" />
+                          <Skeleton className="h-20 w-full" />
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -251,21 +313,39 @@ export default function ProfilePage() {
                           </ItemTitle>
                         </ItemContent>
                       )}
-                      {userAuth?.is_email_verified ?(
+                      {userAuth?.is_email_verified ? (
                         <ItemMedia>
-                          <BadgeCheckIcon className="size-5" />
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex">
+                                <BadgeCheckIcon className="h-5 w-5 text-green-600" />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              Verified Email Address. Enjoy access to all features.
+                            </TooltipContent>
+                          </Tooltip>
                         </ItemMedia>
                       ) : (
                         <ItemMedia>
-                          <IconUserQuestion className="size-5" />
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex">
+                                <IconUserQuestion className="h-5 w-5" />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              Unverified Email Address
+                            </TooltipContent>
+                          </Tooltip>
                         </ItemMedia>
-                      ) }
+                      )}
                     </Item>
-                    
+
                     <Item variant={"outline"} size={"sm"}>
                       <ItemContent>
                         <ItemTitle className="text-sm text-muted-foreground">
-                          Account Status
+                          Account Tier
                         </ItemTitle>
                       </ItemContent>
                       {user.is_premium ? (
@@ -315,7 +395,7 @@ export default function ProfilePage() {
                     />
 
                     {/* Security Tab */}
-                    <ProfileSecurityTab />
+                    <ProfileSecurityTab onVerified={handleEmailVerified} />
 
                     {/* Notifications Tab */}
                     <TabsContent value="notifications" className="space-y-4">
