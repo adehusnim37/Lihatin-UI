@@ -10,42 +10,69 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { forgotPassword } from "@/lib/api/auth";
 import { Loader2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 export default function ForgotPassword() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
+  const [switchOn, setSwitchOn] = useState(false);
+  const [username, setUsername] = useState("");
 
   const handleForgotPassword = async (e: FormEvent) => {
     e.preventDefault();
 
-    // Validate email
-    if (!email) {
-      toast.error("Validation Error", {
-        description: "Please enter your email address",
-        duration: 3000,
-      });
-      return;
-    }
+    // Validate based on mode: email (default) or username (switchOn === true)
+    if (!switchOn) {
+      // Email mode
+      if (!email) {
+        toast.error("Validation Error", {
+          description: "Please enter your email address",
+          duration: 3000,
+        });
+        return;
+      }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      toast.error("Validation Error", {
-        description: "Please enter a valid email address",
-        duration: 3000,
-      });
-      return;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        toast.error("Validation Error", {
+          description: "Please enter a valid email address",
+          duration: 3000,
+        });
+        return;
+      }
+    } else {
+      // Username mode
+      if (!username) {
+        toast.error("Validation Error", {
+          description: "Please enter your username",
+          duration: 3000,
+        });
+        return;
+      }
+      // optional: basic username rules
+      if (username.length < 3) {
+        toast.error("Validation Error", {
+          description: "Username must be at least 3 characters",
+          duration: 3000,
+        });
+        return;
+      }
     }
-
     setIsLoading(true);
 
     try {
-      const response = await forgotPassword({ email });
+      const response = await forgotPassword({
+        email: !switchOn ? email : undefined,
+        username: switchOn ? username : undefined,
+      });
 
       if (response.success) {
         // Success toast
         toast.success("Reset Link Sent!", {
-          description: response.message || "If an account with that email exists, a password reset link has been sent",
+          description:
+            response.message ||
+            "If an account with that email exists, a password reset link has been sent",
           duration: 5000,
         });
 
@@ -56,10 +83,11 @@ export default function ForgotPassword() {
       }
     } catch (error: any) {
       console.error("Forgot password error:", error);
-      
+
       // Show error toast
       toast.error("Request Failed", {
-        description: error.message || "Unable to send reset link. Please try again.",
+        description:
+          error.message || "Unable to send reset link. Please try again.",
         duration: 4000,
       });
     } finally {
@@ -89,8 +117,8 @@ export default function ForgotPassword() {
                 Forgot Password ?
               </h1>
               <p className="text-muted-foreground text-sm">
-                Enter your email address below and wel&apos;l send you a link to
-                reset your password.
+                Enter your email address or username below and we&apos;ll send
+                you a link to reset your password.
               </p>
             </div>
           </div>
@@ -98,21 +126,42 @@ export default function ForgotPassword() {
           <form onSubmit={handleForgotPassword} className="space-y-4 mb-6">
             {/* Email input */}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                placeholder="Email" 
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
-                required
-              />
+              <div className="flex items-center justify-between">
+                {!switchOn && <Label htmlFor="email">Email</Label>}
+                {switchOn && <Label htmlFor="username">Username</Label>}
+                <Switch
+                  id="airplane-mode"
+                  checked={switchOn}
+                  onCheckedChange={setSwitchOn}
+                />
+              </div>
+              {!switchOn && (
+                <Input
+                  id="email"
+                  placeholder="Email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
+                  required
+                />
+              )}
+              {switchOn && (
+                <Input
+                  id="username"
+                  placeholder="Username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  disabled={isLoading}
+                  required
+                />
+              )}
             </div>
           </form>
           {/* Send reset link button and Sign-up link */}
           <div className="flex flex-col space-y-4">
-            <Button 
+            <Button
               className="w-full"
               onClick={handleForgotPassword}
               disabled={isLoading}

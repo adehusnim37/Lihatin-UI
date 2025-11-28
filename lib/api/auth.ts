@@ -6,8 +6,6 @@
  * - No token storage in localStorage (prevents XSS token theft)
  */
 
-import { tr } from "zod/v4/locales";
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
 
 // Type definitions matching backend DTOs
@@ -153,6 +151,62 @@ export async function forgotPassword(
   // Note: Backend always returns 200 to prevent email enumeration
   if (!response.ok) {
     throw new Error(data.message || "Failed to send reset email");
+  }
+
+  return data;
+}
+
+/**
+ * Validate password reset token
+ */
+export async function validateResetToken(
+  token: string
+): Promise<APIResponse<null>> {
+  const response = await fetch(
+    `${API_URL}/auth/validate-reset?token=${encodeURIComponent(token)}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    }
+  );
+
+  const data: APIResponse<null> = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Invalid or expired reset token");
+  }
+
+  return data;
+}
+
+/**
+ * Reset password with token
+ */
+export interface ResetPasswordRequest {
+  token: string;
+  new_password: string;
+  confirm_password: string;
+}
+
+export async function resetPassword(
+  request: ResetPasswordRequest
+): Promise<APIResponse<null>> {
+  const response = await fetch(`${API_URL}/auth/reset-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(request),
+  });
+
+  const data: APIResponse<null> = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to reset password");
   }
 
   return data;
