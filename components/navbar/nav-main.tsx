@@ -1,25 +1,31 @@
-"use client"
+"use client";
 
-import { IconCirclePlusFilled, IconMail, type Icon } from "@tabler/icons-react"
+import { useState } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { IconCirclePlusFilled, type Icon } from "@tabler/icons-react";
 
-import { Button } from "@/components/ui/button"
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
+import QuickCreateLinkDialog from "./modal/quick-create-link-dialog";
 
 export function NavMain({
   items,
 }: {
   items: {
-    title: string
-    url: string
-    icon?: Icon
-  }[]
+    title: string;
+    url: string;
+    icon?: Icon;
+  }[];
 }) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const pathname = usePathname();
+
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
@@ -28,31 +34,39 @@ export function NavMain({
             <SidebarMenuButton
               tooltip="Quick Create"
               className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
+              onClick={() => setIsDialogOpen(true)}
             >
               <IconCirclePlusFilled />
               <span>Quick Create</span>
             </SidebarMenuButton>
-            <Button
-              size="icon"
-              className="size-8 group-data-[collapsible=icon]:opacity-0"
-              variant="outline"
-            >
-              <IconMail />
-              <span className="sr-only">Inbox</span>
-            </Button>
+            <QuickCreateLinkDialog 
+              open={isDialogOpen} 
+              onOpenChange={setIsDialogOpen} 
+            />
           </SidebarMenuItem>
         </SidebarMenu>
         <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton tooltip={item.title}>
-                {item.icon && <item.icon />}
-                <span>{item.title}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {items.map((item) => {
+            const isActive = pathname === item.url || 
+              (item.url !== "/main" && pathname?.startsWith(item.url));
+            
+            return (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton 
+                  asChild 
+                  tooltip={item.title}
+                  isActive={isActive}
+                >
+                  <Link href={item.url}>
+                    {item.icon && <item.icon />}
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
-  )
+  );
 }

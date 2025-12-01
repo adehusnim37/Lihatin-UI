@@ -1,14 +1,15 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import {
-  IconCreditCard,
   IconDotsVertical,
   IconLogout,
-  IconNotification,
   IconSettings,
   IconShield,
   IconUserCircle,
 } from "@tabler/icons-react"
+import { toast } from "sonner"
 
 import {
   Avatar,
@@ -30,25 +31,42 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
 import { useAuth } from "@/app/context/AuthContext"
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
-}) {
+interface UserData {
+  id: string
+  username: string
+  first_name: string
+  last_name: string
+  email: string
+  avatar: string
+}
+
+export function NavUser() {
   const { isMobile } = useSidebar()
   const [isLoading, setIsLoading] = useState(false)
+  const [user, setUser] = useState<UserData | null>(null)
 
   const router = useRouter()
   const auth = useAuth()
+
+  // Load user data from localStorage
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user")
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser))
+      } catch {
+        // ignore parse error
+      }
+    }
+  }, [])
+
+  // Get display name and initials
+  const displayName = user ? `${user.first_name} ${user.last_name}` : "User"
+  const initials = user 
+    ? `${user.first_name?.[0] || ""}${user.last_name?.[0] || ""}`.toUpperCase() 
+    : "U"
 
   const handleLogout = async () => {
     setIsLoading(true)
@@ -79,13 +97,13 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarImage src={user?.avatar} alt={displayName} />
+                <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
+                <span className="truncate font-medium">{displayName}</span>
                 <span className="text-muted-foreground truncate text-xs">
-                  {user.email}
+                  {user?.email || "Loading..."}
                 </span>
               </div>
               <IconDotsVertical className="ml-auto size-4" />
@@ -100,13 +118,13 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarImage src={user?.avatar} alt={displayName} />
+                  <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
+                  <span className="truncate font-medium">{displayName}</span>
                   <span className="text-muted-foreground truncate text-xs">
-                    {user.email}
+                    {user?.email || "Loading..."}
                   </span>
                 </div>
               </div>

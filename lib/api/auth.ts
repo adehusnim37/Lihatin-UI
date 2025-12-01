@@ -308,18 +308,6 @@ export async function getUserData(): Promise<APIResponse<AuthProfileData>> {
 export function clearUserData(): void {
   if (typeof window !== "undefined") {
     localStorage.removeItem("user");
-    // remove cookies if any non-HTTP-Only cookies were used (not recommended)
-    document.cookie
-      .split(";")
-      .forEach(
-        (c) =>
-          (document.cookie = c
-            .replace(/^ +/, "")
-            .replace(
-              /=.*/,
-              `=;expires=${new Date().toUTCString()};path=/`
-            ))
-      );
   }
 }
 
