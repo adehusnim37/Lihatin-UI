@@ -47,6 +47,21 @@ export interface LoginResponse {
   auth: AuthData;
 }
 
+// Response when TOTP is required (NO tokens issued yet!)
+export interface PendingTOTPResponse {
+  requires_totp: boolean;
+  pending_auth_token: string;
+  user: UserProfile;
+}
+
+// Union type for login response - can be either full login or pending TOTP
+export type LoginResult = LoginResponse | PendingTOTPResponse;
+
+// Type guard to check if response requires TOTP
+export function requiresTOTP(response: LoginResult): response is PendingTOTPResponse {
+  return 'requires_totp' in response && response.requires_totp === true;
+}
+
 export interface AuthProfileData {
   user: UserProfile;
   auth: AuthData;
@@ -83,11 +98,12 @@ export interface APIResponse<T = any> {
 
 /**
  * Login user with email/username and password
- * 🔐 Tokens are automatically set as HTTP-Only cookies by backend
+ * 🔐 If TOTP is enabled, returns pending_auth_token (NO JWT cookies yet!)
+ * 🔐 If TOTP is disabled, tokens are set as HTTP-Only cookies
  */
 export async function login(
   credentials: LoginRequest
-): Promise<APIResponse<LoginResponse>> {
+): Promise<APIResponse<LoginResult>> {
   const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: {
@@ -97,7 +113,7 @@ export async function login(
     body: JSON.stringify(credentials),
   });
 
-  const data: APIResponse<LoginResponse> = await response.json();
+  const data: APIResponse<LoginResult> = await response.json();
 
   if (!response.ok) {
     throw new Error(data.message || "Login failed");
@@ -292,6 +308,18 @@ export async function getUserData(): Promise<APIResponse<AuthProfileData>> {
 export function clearUserData(): void {
   if (typeof window !== "undefined") {
     localStorage.removeItem("user");
+    // remove cookies if any non-HTTP-Only cookies were used (not recommended)
+    document.cookie
+      .split(";")
+      .forEach(
+        (c) =>
+          (document.cookie = c
+            .replace(/^ +/, "")
+            .replace(
+              /=.*/,
+              `=;expires=${new Date().toUTCString()};path=/`
+            ))
+      );
   }
 }
 
@@ -422,6 +450,37 @@ export interface TOTPSetupResponse {
   qr_code_url: string;
   recovery_codes: string[];
   backup_codes: string[];
+}
+
+/**
+ * Verify TOTP code during LOGIN flow
+ * 🔐 This is the ONLY way to get JWT tokens when TOTP is enabled
+ * 🔐 Tokens are set as HTTP-Only cookies ONLY after successful verification
+ */
+export interface VerifyTOTPLoginRequest {
+  pending_auth_token: string;
+  totp_code: string;
+}
+
+export async function verifyTOTPLogin(
+  request: VerifyTOTPLoginRequest
+): Promise<APIResponse<LoginResponse>> {
+  const response = await fetch(`${API_URL}/auth/verify-totp-login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include", // ✅ Receive cookies after successful TOTP
+    body: JSON.stringify(request),
+  });
+
+  const result: APIResponse<LoginResponse> = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "TOTP verification failed");
+  }
+
+  return result;
 }
 
 /**

@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function BlobDefault() {
   return (
-    <div>
+    <div className="pointer-events-none">
       <div className="absolute top-0 left-0 w-64 h-64 opacity-100 blur-2xl">
         <Image src="/blob/blob-1.svg" alt="" fill className="object-contain" />
       </div>

@@ -10,7 +10,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { useState, FormEvent, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { login, saveUserData } from "@/lib/api/auth";
+import { login, saveUserData, requiresTOTP, LoginResponse } from "@/lib/api/auth";
 import { useAuth } from "@/app/context/AuthContext";
 
 export default function Login() {
@@ -82,11 +82,12 @@ export default function Login() {
       });
 
       if (response.success && response.data) {
-        // Save user profile to localStorage (NOT tokens - they're in HTTP-Only cookies)
-        saveUserData(response.data.user);
-
-        // Check if TOTP is enabled
-        if (response.data.auth.is_totp_enabled) {
+        // Check if TOTP verification is required (NO tokens issued yet!)
+        if (requiresTOTP(response.data)) {
+          // Save pending auth token and user info for TOTP verification
+          sessionStorage.setItem("pending_auth_token", response.data.pending_auth_token);
+          sessionStorage.setItem("pending_user", JSON.stringify(response.data.user));
+          
           toast.success("Verification Required", {
             description: "Please enter your 2FA code",
             duration: 2000,
@@ -95,9 +96,13 @@ export default function Login() {
           return;
         }
 
+        // Normal login (no TOTP) - tokens are in cookies
+        const loginData = response.data as LoginResponse;
+        saveUserData(loginData.user);
+
         // Success toast
         toast.success("Login Successful!", {
-          description: `Welcome back, ${response.data.user.first_name}!`,
+          description: `Welcome back, ${loginData.user.first_name}!`,
           duration: 3000,
         });
 
