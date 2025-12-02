@@ -1,23 +1,11 @@
 "use client"
 
 import * as React from "react"
-import {
-  IconCamera,
-  IconChartBar,
-  IconDashboard,
-  IconDatabase,
-  IconFileAi,
-  IconFileDescription,
-  IconFileWord,
-  IconFolder,
-  IconHelp,
-  IconListDetails,
-  IconReport,
-  IconSearch,
-  IconSettings,
-  IconUsers,
-} from "@tabler/icons-react"
+import Link from "next/link"
+import Image from "next/image"
+
 import { NavMain } from "@/components/navbar/nav-main"
+import { NavSecondary } from "@/components/navbar/nav-secondary"
 import { NavUser } from "@/components/navbar/nav-user"
 import {
   Sidebar,
@@ -28,7 +16,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import Image from "next/image"
 import { SidebarData } from "@/components/sidebar.data"
 
 
@@ -42,7 +29,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
+              <Link href="/main">
                 <Image
                   src="/logo.svg"
                   alt="Lihatin Logo"
@@ -51,13 +38,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   className="inline-block mr-2 rounded"
                 />
                 <span className="text-base font-semibold">Lihatin</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={SidebarData.navMain} />
+        <NavSecondary items={SidebarData.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />
