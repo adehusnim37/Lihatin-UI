@@ -24,6 +24,7 @@ import { getShortLinks, type ShortLink } from "@/lib/api/shortlinks";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
+import CreateLink from "@/components/links/create";
 
 interface PaginationState {
   page: number;
@@ -121,10 +122,7 @@ export default function LinksPage() {
                   className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
                 />
               </Button>
-              <Button className="flex-1 sm:flex-none">
-                <Plus className="mr-2 h-4 w-4" />
-                Create New Link
-              </Button>
+              <CreateLink />
             </div>
           </div>
 
