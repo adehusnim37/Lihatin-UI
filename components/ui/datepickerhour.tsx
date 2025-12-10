@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IconCalendarClock } from "@tabler/icons-react";
-import { format } from "date-fns";
+import { format, isSameDay, isBefore, startOfDay } from "date-fns";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -32,10 +32,18 @@ const FormSchema = z.object({
   }),
 });
 
-export function DateTimePicker24hForm() {
+interface DateTimePicker24hFormProps {
+  disablePast?: boolean;
+}
+
+export function DateTimePicker24hForm({
+  disablePast = false,
+}: DateTimePicker24hFormProps) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
+
+  const now = new Date();
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     toast.success(`Selected date and time: ${format(data.time, "PPPP HH:mm")}`);
@@ -94,6 +102,9 @@ export function DateTimePicker24hForm() {
                       mode="single"
                       selected={field.value}
                       onSelect={handleDateSelect}
+                      disabled={
+                        disablePast ? { before: startOfDay(now) } : undefined
+                      }
                       initialFocus
                     />
                     <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
@@ -101,23 +112,31 @@ export function DateTimePicker24hForm() {
                         <div className="flex sm:flex-col p-2">
                           {Array.from({ length: 24 }, (_, i) => i)
                             .reverse()
-                            .map((hour) => (
-                              <Button
-                                key={hour}
-                                size="icon"
-                                variant={
-                                  field.value && field.value.getHours() === hour
-                                    ? "default"
-                                    : "ghost"
-                                }
-                                className="sm:w-full shrink-0 aspect-square"
-                                onClick={() =>
-                                  handleTimeChange("hour", hour.toString())
-                                }
-                              >
-                                {hour}
-                              </Button>
-                            ))}
+                            .map((hour) => {
+                              const isToday =
+                                field.value && isSameDay(field.value, now);
+                              const isDisabled =
+                                disablePast && isToday && hour < now.getHours();
+                              return (
+                                <Button
+                                  key={hour}
+                                  size="icon"
+                                  variant={
+                                    field.value &&
+                                    field.value.getHours() === hour
+                                      ? "default"
+                                      : "ghost"
+                                  }
+                                  className="sm:w-full shrink-0 aspect-square"
+                                  onClick={() =>
+                                    handleTimeChange("hour", hour.toString())
+                                  }
+                                  disabled={isDisabled}
+                                >
+                                  {hour}
+                                </Button>
+                              );
+                            })}
                         </div>
                         <ScrollBar
                           orientation="horizontal"
@@ -127,24 +146,40 @@ export function DateTimePicker24hForm() {
                       <ScrollArea className="w-64 sm:w-auto">
                         <div className="flex sm:flex-col p-2">
                           {Array.from({ length: 12 }, (_, i) => i * 5).map(
-                            (minute) => (
-                              <Button
-                                key={minute}
-                                size="icon"
-                                variant={
-                                  field.value &&
-                                  field.value.getMinutes() === minute
-                                    ? "default"
-                                    : "ghost"
-                                }
-                                className="sm:w-full shrink-0 aspect-square"
-                                onClick={() =>
-                                  handleTimeChange("minute", minute.toString())
-                                }
-                              >
-                                {minute.toString().padStart(2, "0")}
-                              </Button>
-                            )
+                            (minute) => {
+                              const isToday =
+                                field.value && isSameDay(field.value, now);
+                              const isSameHour =
+                                field.value &&
+                                field.value.getHours() === now.getHours();
+                              const isDisabled =
+                                disablePast &&
+                                isToday &&
+                                isSameHour &&
+                                minute <= now.getMinutes();
+                              return (
+                                <Button
+                                  key={minute}
+                                  size="icon"
+                                  variant={
+                                    field.value &&
+                                    field.value.getMinutes() === minute
+                                      ? "default"
+                                      : "ghost"
+                                  }
+                                  className="sm:w-full shrink-0 aspect-square"
+                                  onClick={() =>
+                                    handleTimeChange(
+                                      "minute",
+                                      minute.toString()
+                                    )
+                                  }
+                                  disabled={isDisabled}
+                                >
+                                  {minute.toString().padStart(2, "0")}
+                                </Button>
+                              );
+                            }
                           )}
                         </div>
                         <ScrollBar

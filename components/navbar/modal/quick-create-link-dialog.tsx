@@ -24,7 +24,7 @@ export default function QuickCreateLinkDialog({
 }: QuickCreateLinkDialogProps) {
   const [linkName, setLinkName] = useState("");
   const [linkURL, setLinkURL] = useState("");
-  const [passcode, setPasscode] = useState("");
+  const [passcode, setPasscode] = useState<number | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [description, setDescription] = useState("");
 
@@ -33,7 +33,7 @@ export default function QuickCreateLinkDialog({
     if (!open) {
       setLinkName("");
       setLinkURL("");
-      setPasscode("");
+      setPasscode(undefined);
       setDescription("");
     }
   }, [open]);
@@ -92,10 +92,16 @@ export default function QuickCreateLinkDialog({
             <Label>Passcode (Optional)</Label>
             <Input
               id="link-passcode"
-              type="password"
-              placeholder="Set a passcode for this link"
-              value={passcode}
-              onChange={(e) => setPasscode(e.target.value)}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="123456"
+              value={passcode ?? ""}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, "").slice(0, 6);
+                setPasscode(value ? Number(value) : undefined);
+              }}
+              maxLength={6}
             />
           </div>
           <div className="flex flex-col space-y-1">

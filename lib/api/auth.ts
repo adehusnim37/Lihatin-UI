@@ -58,8 +58,10 @@ export interface PendingTOTPResponse {
 export type LoginResult = LoginResponse | PendingTOTPResponse;
 
 // Type guard to check if response requires TOTP
-export function requiresTOTP(response: LoginResult): response is PendingTOTPResponse {
-  return 'requires_totp' in response && response.requires_totp === true;
+export function requiresTOTP(
+  response: LoginResult
+): response is PendingTOTPResponse {
+  return "requires_totp" in response && response.requires_totp === true;
 }
 
 export interface AuthProfileData {
@@ -117,6 +119,12 @@ export async function login(
 
   if (!response.ok) {
     throw new Error(data.message || "Login failed");
+  }
+
+  // Refresh CSRF token after successful login (if not requiring TOTP)
+  if (data.data && !requiresTOTP(data.data)) {
+    const { refreshCSRFToken } = await import("./fetch-wrapper");
+    await refreshCSRFToken();
   }
 
   return data;
@@ -254,6 +262,9 @@ export async function refreshToken(): Promise<APIResponse<null>> {
  * Logout user - clears HTTP-Only cookies on backend
  */
 export async function logout(): Promise<APIResponse<LogoutResponse>> {
+  // Import here to avoid circular dependency
+  const { clearCSRFToken } = await import("./fetch-wrapper");
+
   const response = await fetch(`${API_URL}/auth/logout`, {
     method: "POST",
     headers: {
@@ -263,6 +274,9 @@ export async function logout(): Promise<APIResponse<LogoutResponse>> {
   });
 
   const data: APIResponse<LogoutResponse> = await response.json();
+
+  // Clear CSRF token regardless of response
+  clearCSRFToken();
 
   if (!response.ok) {
     throw new Error(data.message || "Logout failed");
@@ -468,6 +482,10 @@ export async function verifyTOTPLogin(
     throw new Error(result.message || "TOTP verification failed");
   }
 
+  // Refresh CSRF token after successful TOTP login
+  const { refreshCSRFToken } = await import("./fetch-wrapper");
+  await refreshCSRFToken();
+
   return result;
 }
 
@@ -497,7 +515,9 @@ export async function setupTOTP(): Promise<APIResponse<TOTPSetupResponse>> {
  * Verify TOTP code during setup
  * 🔐 Enables 2FA after successful verification
  */
-export async function verifyTOTP(totp_code: string): Promise<APIResponse<null>> {
+export async function verifyTOTP(
+  totp_code: string
+): Promise<APIResponse<null>> {
   const response = await fetch(`${API_URL}/auth/totp/verify`, {
     method: "POST",
     headers: {

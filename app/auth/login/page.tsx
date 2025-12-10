@@ -220,7 +220,7 @@ export default function Login() {
               )}
             </Button>
             <p className="text-sm text-center text-muted-foreground">
-              Don`&apos;`t have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link className="underline text-foreground" href="/auth/register">
                 Sign up
               </Link>
