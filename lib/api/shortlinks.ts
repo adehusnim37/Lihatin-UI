@@ -66,12 +66,20 @@ export interface ShortLinkResponse {
   error?: Record<string, string>;
 }
 
-export interface CreateShortLinkRequest {
+// Single link data structure
+export interface ShortLinkData {
   original_url: string;
   custom_code?: string;
   title?: string;
   description?: string;
   expires_at?: string;
+  passcode?: string;
+}
+
+// Request body for creating short links (single or bulk)
+export interface CreateShortLinkRequest {
+  is_bulky: boolean;
+  links: ShortLinkData[];
 }
 
 export interface UpdateShortLinkRequest {
@@ -110,11 +118,12 @@ export async function getShortLink(code: string): Promise<ShortLinkResponse> {
 }
 
 /**
- * Create a new short link
+ * Create a new short link (single or bulk)
  */
 export async function createShortLink(
   data: CreateShortLinkRequest
 ): Promise<ShortLinkResponse> {
+  // Send with format: { is_bulky: boolean, links: [...] }
   const response = await postWithAuth(`${API_URL}/users/me/shorts`, data);
   return response.json();
 }

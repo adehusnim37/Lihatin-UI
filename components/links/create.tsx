@@ -46,13 +46,23 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useEffect } from "react";
+import { useCreateLink } from "@/lib/hooks/queries/useLinksQuery";
+import { toast } from "sonner";
 
 const linkSchema = z.object({
   original_url: z.url({ message: "Please enter a valid URL" }),
-  title: z.string().min(5, { message: "Title must be at least 5 characters long" }).max(100, { message: "Title must be at most 100 characters long" }),
+  title: z
+    .string()
+    .min(5, { message: "Title must be at least 5 characters long" })
+    .max(100, { message: "Title must be at most 100 characters long" }),
   custom_code: z.string().optional(),
   description: z.string().optional(),
-  passcode: z.string().optional(),
+  passcode: z
+    .string()
+    .optional()
+    .refine((val) => !val || (val.length === 6 && /^\d{6}$/.test(val)), {
+      message: "Passcode must be exactly 6 digits",
+    }),
   expires_at: z.string().optional(), // Using string for datetime-local input
 });
 
@@ -70,6 +80,8 @@ export default function CreateLink() {
   const [open, setOpen] = React.useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
   const [pendingData, setPendingData] = React.useState<FormValues | null>(null);
+
+  const createLinkMutation = useCreateLink();
 
   const {
     register,
@@ -115,12 +127,41 @@ export default function CreateLink() {
   }
 
   function handleConfirmedSubmit(data: FormValues) {
-    console.log(JSON.stringify(data, null, 2));
-    // Here you would typically call your API
-    setOpen(false);
-    setShowConfirmDialog(false);
-    setPendingData(null);
-    reset();
+    // Build request in correct format: { is_bulky: boolean, links: [...] }
+    const requestData = {
+      is_bulky: data.is_bulky,
+      links: data.links.map((link) => ({
+        original_url: link.original_url,
+        title: link.title,
+        custom_code: link.custom_code || undefined,
+        description: link.description || undefined,
+        passcode: link.passcode || undefined,
+        expires_at: link.expires_at || undefined,
+      })),
+    };
+
+    createLinkMutation.mutate(requestData, {
+      onSuccess: () => {
+        toast.success("Link Created!", {
+          description: data.is_bulky
+            ? `${data.links.length} links have been created successfully.`
+            : "Your short link has been created successfully.",
+        });
+        setOpen(false);
+        setShowConfirmDialog(false);
+        setPendingData(null);
+        reset();
+      },
+      onError: (error) => {
+        toast.error("Failed to Create Link", {
+          description:
+            error.message || "An unexpected error occurred. Please try again.",
+        });
+        // Keep drawer open so user can fix the issue
+        setShowConfirmDialog(false);
+        setPendingData(null);
+      },
+    });
   }
 
   // Reset links array when toggling bulk mode to ensure clean state if needed,
@@ -265,7 +306,7 @@ export default function CreateLink() {
                             </Tooltip>
                             <Input
                               placeholder="123456"
-                              type="text"
+                              type="number"
                               inputMode="numeric"
                               pattern="[0-9]*"
                               maxLength={6}
@@ -339,8 +380,13 @@ export default function CreateLink() {
                   Cancel
                 </Button>
               </DrawerClose>
-              <Button type="submit" form="create-link-form">
-                Create Link{isBulky && "s"}
+              <Button
+                type="submit"
+                form="create-link-form"
+                disabled={createLinkMutation.isPending}
+              >
+                {createLinkMutation.isPending ? "Creating..." : "Create Link"}
+                {isBulky && "s"}
               </Button>
             </DrawerFooter>
           </div>

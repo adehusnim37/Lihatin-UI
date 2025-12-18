@@ -85,7 +85,7 @@ interface ShortLinkCardProps {
 
 export default function ShortLinkCard({
   data,
-  baseUrl = "https://lihat.in",
+  baseUrl = "http://localhost:3000",
   onEdit,
   onDelete,
   onAnalytics,
@@ -94,7 +94,7 @@ export default function ShortLinkCard({
   const [copied, setCopied] = useState(false);
   const [showPasscode, setShowPasscode] = useState(false);
 
-  const shortUrl = `${baseUrl}/${data.short_code}`;
+  const shortUrl = `${baseUrl}/${data.short_code}${data.detail?.passcode ? `/${data.detail?.passcode}` : ""}`;
   const hasPasscode =
     data.detail?.passcode !== undefined &&
     data.detail?.passcode !== null &&
@@ -131,7 +131,7 @@ export default function ShortLinkCard({
   };
 
   return (
-    <Card className="w-full shadow-none py-0 gap-0 overflow-hidden">
+    <Card className="w-full w-max-xs shadow-none py-0 gap-0 overflow-hidden">
       {/* Status line */}
       <div className={cn("h-1 w-full", getStatusColor())} />
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
 import {
   Plus,
   Search,
@@ -20,63 +19,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getShortLinks, type ShortLink } from "@/lib/api/shortlinks";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import CreateLink from "@/components/links/create";
 
-interface PaginationState {
-  page: number;
-  totalPages: number;
-  totalCount: number;
-}
+// TanStack Query & Zustand
+import { useLinks } from "@/lib/hooks/queries/useLinksQuery";
+import { useLinksUIStore } from "@/lib/stores/useLinksUIStore";
 
 export default function LinksPage() {
-  const [links, setLinks] = useState<ShortLink[]>([]);
-  const [pagination, setPagination] = useState<PaginationState | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Zustand store untuk UI state
+  const {
+    searchQuery,
+    sortBy,
+    orderBy,
+    page,
+    limit,
+    setSearchQuery,
+    setSortBy,
+    setOrderBy,
+    setPage,
+  } = useLinksUIStore();
 
-  // Filters
-  const [page, setPage] = useState(1);
-  const [limit] = useState(9);
-  const [sort, setSort] = useState("created_at");
-  const [orderBy, setOrderBy] = useState("desc");
-  const [searchQuery, setSearchQuery] = useState("");
+  // TanStack Query untuk server state
+  const { data, isLoading, error, refetch, isFetching } = useLinks(
+    page,
+    limit,
+    sortBy,
+    orderBy
+  );
 
-  const fetchLinks = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await getShortLinks(page, limit, sort, orderBy);
-      console.log("API Response:", response); // Debug
-
-      if (response.success && response.data) {
-        // Backend returns short_links array
-        setLinks(response.data.short_links || []);
-        setPagination({
-          page: response.data.page,
-          totalPages: response.data.total_pages,
-          totalCount: response.data.total_count,
-        });
-      } else {
-        setError(response.message || "Failed to fetch links");
-        setLinks([]);
-      }
-    } catch (err) {
-      console.error("Error fetching links:", err);
-      setError("Failed to connect to server");
-      setLinks([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, limit, sort, orderBy]);
-
-  useEffect(() => {
-    fetchLinks();
-  }, [fetchLinks]);
+  // Derived state
+  const links = data?.short_links ?? [];
+  const totalPages = data?.total_pages ?? 0;
+  const totalCount = data?.total_count ?? 0;
 
   // Filter links by search query (client-side)
   const filteredLinks = links.filter(
@@ -86,8 +63,8 @@ export default function LinksPage() {
       link.original_url?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const hasPrev = pagination ? pagination.page > 1 : false;
-  const hasNext = pagination ? pagination.page < pagination.totalPages : false;
+  const hasPrev = page > 1;
+  const hasNext = page < totalPages;
 
   return (
     <SidebarProvider
@@ -108,18 +85,18 @@ export default function LinksPage() {
               <h1 className="text-2xl font-bold tracking-tight">My Links</h1>
               <p className="text-muted-foreground">
                 Manage and track all your shortened links
-                {pagination && ` • ${pagination.totalCount} total`}
+                {totalCount > 0 && ` • ${totalCount} total`}
               </p>
             </div>
             <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="icon"
-                onClick={fetchLinks}
-                disabled={loading}
+                onClick={() => refetch()}
+                disabled={isFetching}
               >
                 <RefreshCw
-                  className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+                  className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
                 />
               </Button>
               <CreateLink />
@@ -138,7 +115,7 @@ export default function LinksPage() {
               />
             </div>
             <div className="flex gap-2">
-              <Select value={sort} onValueChange={setSort}>
+              <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-[140px]">
                   <Filter className="mr-2 h-4 w-4" />
                   <SelectValue placeholder="Sort by" />
@@ -161,14 +138,18 @@ export default function LinksPage() {
           </div>
 
           {/* Content */}
-          {loading ? (
+          {isLoading ? (
             <div className="flex flex-1 items-center justify-center py-20">
               <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
             </div>
           ) : error ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-4 py-20">
-              <p className="text-destructive text-center">{error}</p>
-              <Button variant="outline" onClick={fetchLinks}>
+              <p className="text-destructive text-center">
+                {error instanceof Error
+                  ? error.message
+                  : "Failed to load links"}
+              </p>
+              <Button variant="outline" onClick={() => refetch()}>
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Try Again
               </Button>
@@ -196,31 +177,31 @@ export default function LinksPage() {
           ) : (
             <>
               {/* Links Grid */}
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                 {filteredLinks.map((link) => (
                   <ShortLinkCard key={link.id} data={link} />
                 ))}
               </div>
 
               {/* Pagination */}
-              {pagination && pagination.totalPages > 1 && (
+              {totalPages >= 1 && (
                 <div className="flex items-center justify-center gap-2 pt-4">
                   <Button
                     variant="outline"
                     size="sm"
                     disabled={!hasPrev}
-                    onClick={() => setPage((p) => p - 1)}
+                    onClick={() => setPage(page - 1)}
                   >
                     Previous
                   </Button>
                   <span className="text-muted-foreground text-sm">
-                    Page {pagination.page} of {pagination.totalPages}
+                    Page {page} of {totalPages}
                   </span>
                   <Button
                     variant="outline"
                     size="sm"
                     disabled={!hasNext}
-                    onClick={() => setPage((p) => p + 1)}
+                    onClick={() => setPage(page + 1)}
                   >
                     Next
                   </Button>
