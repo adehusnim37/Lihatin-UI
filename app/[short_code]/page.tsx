@@ -1,81 +1,28 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Link from "next/link";
 
 export default function ShortCodePage() {
   const params = useParams<{ short_code: string }>();
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [countdown, setCountdown] = useState(5);
+  const router = useRouter();
+  const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
-    const redirectToShortUrl = async () => {
-      try {
-        const backendUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
-
-        // First check if the short link exists
-        const response = await fetch(
-          `${backendUrl}/short/${params.short_code}`,
-          {
-            method: "HEAD",
-            redirect: "manual", // Don't follow redirects automatically
-          }
-        );
-
-        if (response.status === 404 || response.status === 400) {
-          setError("Short link not found or has expired");
-          setIsLoading(false);
-          return;
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          // Redirect to server-side route handler
+          router.push(`/r/${params.short_code}`);
+          return 0;
         }
+        return prev - 1;
+      });
+    }, 1000);
 
-        if (response.status === 429) {
-          setError("Too many requests. Please try again later.");
-          setIsLoading(false);
-          return;
-        }   
-
-        // Wait 5 seconds before redirect with countdown
-        for (let i = 5; i > 0; i--) {
-          setCountdown(i);
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        }
-
-        // If valid, redirect
-        window.location.href = `${backendUrl}/short/${params.short_code}`;
-      } catch (err) {
-        // Network error - still try to redirect after delay
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        const backendUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
-        window.location.href = `${backendUrl}/short/${params.short_code}`;
-      }
-    };
-
-    redirectToShortUrl();
-  }, [params.short_code]);
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30">
-        <div className="text-center p-8">
-          <div className="text-6xl mb-4">😢</div>
-          <h1 className="text-2xl font-bold text-destructive mb-2">
-            Oops! Link Not Found
-          </h1>
-          <p className="text-muted-foreground mb-6">{error}</p>
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            Go to Homepage
-          </Link>
-        </div>
-      </div>
-    );
-  }
+    return () => clearInterval(interval);
+  }, [params.short_code, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30">
@@ -136,7 +83,7 @@ export default function ShortCodePage() {
         <div className="w-48 h-1 bg-muted rounded-full mx-auto mt-4 overflow-hidden">
           <div
             className="h-full bg-primary transition-all duration-1000 ease-linear"
-            style={{ width: `${((5 - countdown) / 5) * 100}%` }}
+            style={{ width: `${((3 - countdown) / 3) * 100}%` }}
           />
         </div>
       </div>

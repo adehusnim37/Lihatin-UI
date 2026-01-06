@@ -1,29 +1,28 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function ShortCodeWithPasscodePage() {
   const params = useParams<{ short_code: string; passcode: string }>();
+  const router = useRouter();
   const [countdown, setCountdown] = useState(2);
 
   useEffect(() => {
-    const redirectToShortUrl = async () => {
-      const backendUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          // Redirect to server-side route handler with passcode
+          router.push(`/r/${params.short_code}/${params.passcode}`);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-      // Countdown before redirect
-      for (let i = 2; i > 0; i--) {
-        setCountdown(i);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-
-      // Redirect with passcode - let backend handle all errors
-      window.location.href = `${backendUrl}/short/${params.short_code}?passcode=${params.passcode}`;
-    };
-
-    redirectToShortUrl();
-  }, [params.short_code, params.passcode]);
+    return () => clearInterval(interval);
+  }, [params.short_code, params.passcode, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30">
@@ -51,10 +50,10 @@ export default function ShortCodeWithPasscodePage() {
               {/* Body */}
               <path d="M12 7v6" />
               {/* Arms */}
-              <path d="M9 10l3 2 3-2" className="animate-swing-arms" />
+              <path d="M9 10l3 2 3-2" />
               {/* Legs */}
-              <path d="M12 13l-3 5" className="origin-top animate-swing-left" />
-              <path d="M12 13l3 5" className="origin-top animate-swing-right" />
+              <path d="M12 13l-3 5" />
+              <path d="M12 13l3 5" />
             </svg>
           </div>
 
@@ -66,12 +65,8 @@ export default function ShortCodeWithPasscodePage() {
           </div>
         </div>
 
-        <h1 className="text-xl font-semibold mb-2">
-          Verifying & Redirecting in a moment...
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          Checking your passcode 🔐
-        </p>
+        <h1 className="text-xl font-semibold mb-2">Verifying passcode...</h1>
+        <p className="text-muted-foreground text-sm">Checking your access 🔐</p>
         <p className="text-xs text-muted-foreground/60 mt-4">
           /{params.short_code}/****
         </p>

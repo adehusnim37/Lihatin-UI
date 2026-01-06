@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useCreateLink } from "@/lib/hooks/queries/useLinksQuery";
 
 interface QuickCreateLinkDialogProps {
   open: boolean;
@@ -24,40 +25,46 @@ export default function QuickCreateLinkDialog({
 }: QuickCreateLinkDialogProps) {
   const [linkName, setLinkName] = useState("");
   const [linkURL, setLinkURL] = useState("");
-  const [passcode, setPasscode] = useState<number | undefined>(undefined);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [description, setDescription] = useState("");
+  const [passcode, setPasscode] = useState<string>("");
+
+  const createLinkMutation = useCreateLink();
 
   // Reset form when dialog closes
   useEffect(() => {
     if (!open) {
       setLinkName("");
       setLinkURL("");
-      setPasscode(undefined);
-      setDescription("");
+      setPasscode("");
     }
   }, [open]);
 
   const handleCreateLink = async () => {
-    setIsSubmitting(true);
-    try {
-      // Call API to create link
-      await createQuickLink({ name: linkName, url: linkURL });
-      toast.success("Link Created", {
-        description: "Your quick link has been created successfully.",
-      });
-      onOpenChange(false);
-      // Optionally refresh links list or perform other actions
-    } catch (error) {
-      toast.error("Failed to Create Link", {
-        description:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred. Please try again.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Build request in correct format: { is_bulky: boolean, links: [...] }
+    const requestData = {
+      is_bulky: false,
+      links: [
+        {
+          original_url: linkURL,
+          title: linkName,
+          passcode: passcode || undefined,
+        },
+      ],
+    };
+
+    createLinkMutation.mutate(requestData, {
+      onSuccess: () => {
+        toast.success("Link Created", {
+          description: "Your quick link has been created successfully.",
+        });
+        onOpenChange(false);
+      },
+      onError: (error) => {
+        toast.error("Failed to Create Link", {
+          description:
+            error.message || "An unexpected error occurred. Please try again.",
+        });
+      },
+    });
   };
 
   return (
@@ -96,10 +103,10 @@ export default function QuickCreateLinkDialog({
               inputMode="numeric"
               pattern="[0-9]*"
               placeholder="123456"
-              value={passcode ?? ""}
+              value={passcode}
               onChange={(e) => {
                 const value = e.target.value.replace(/\D/g, "").slice(0, 6);
-                setPasscode(value ? Number(value) : undefined);
+                setPasscode(value);
               }}
               maxLength={6}
             />
@@ -114,17 +121,15 @@ export default function QuickCreateLinkDialog({
         <DialogFooter>
           <Button
             onClick={handleCreateLink}
-            disabled={isSubmitting || !linkName || !linkURL}
+            disabled={createLinkMutation.isPending || !linkName || !linkURL}
           >
-            {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : null}
+            {createLinkMutation.isPending ? (
+              <Loader2 className="animate-spin mr-2" />
+            ) : null}
             Create Link
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-}
-
-function createQuickLink(arg0: { name: string; url: string }) {
-  throw new Error("Function not implemented.");
 }
