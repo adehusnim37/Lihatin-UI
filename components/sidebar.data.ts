@@ -19,7 +19,7 @@ export const SidebarData = {
     },
     {
       title: "History & Activity",
-      url: "/main/history",
+      url: "/main/history-activity",
       icon: IconHistoryToggle,
     },
     {

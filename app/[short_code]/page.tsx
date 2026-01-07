@@ -2,18 +2,66 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+import NotFound from "@/app/not-found";
+
+type LinkStatus = "loading" | "valid" | "not_found" | "error";
 
 export default function ShortCodePage() {
   const params = useParams<{ short_code: string }>();
   const router = useRouter();
   const [countdown, setCountdown] = useState(3);
+  const [status, setStatus] = useState<LinkStatus>("loading");
 
+  // First, validate if the short code exists
   useEffect(() => {
+    const validateShortCode = async () => {
+      try {
+        const apiUrl =
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
+
+        const response = await fetch(
+          `${apiUrl}/short/check/${params.short_code}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.ok) {
+          // Short code exists - show countdown and redirect
+          setStatus("valid");
+        } else if (response.status === 404) {
+          // Short code doesn't exist - show 404 UI
+          setStatus("not_found");
+        } else if (response.status === 401) {
+          // Needs passcode - redirect to passcode page
+          router.replace(`/${params.short_code}/enter-passcode`);
+        } else {
+          // Other error - still try to redirect (let /r/ handle it)
+          setStatus("valid");
+        }
+      } catch (error) {
+        // API unreachable - fallback to letting /r/ handle validation
+        setStatus("valid");
+      }
+    };
+
+    if (params.short_code) {
+      validateShortCode();
+    }
+  }, [params.short_code, router]);
+
+  // Countdown timer - only starts when status is "valid"
+  useEffect(() => {
+    if (status !== "valid") return;
+
     const interval = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
-          // Redirect to server-side route handler
           router.push(`/r/${params.short_code}`);
           return 0;
         }
@@ -22,17 +70,31 @@ export default function ShortCodePage() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [params.short_code, router]);
+  }, [params.short_code, router, status]);
+
+  // Loading state
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground text-sm">Checking link...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Not found - show the NotFound component
+  if (status === "not_found") {
+    return <NotFound />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30">
       <div className="text-center">
         {/* Cycling Animation */}
         <div className="relative w-48 h-24 mx-auto mb-6 overflow-hidden">
-          {/* Road */}
           <div className="absolute bottom-2 left-0 right-0 h-1 bg-muted-foreground/30 rounded-full" />
-
-          {/* Cyclist Container - Moving */}
           <div className="absolute bottom-3 animate-ride">
             <svg
               width="64"
@@ -45,21 +107,17 @@ export default function ShortCodePage() {
               strokeLinejoin="round"
               className="text-primary"
             >
-              {/* Bicycle */}
               <circle cx="5" cy="17" r="3" />
               <circle cx="19" cy="17" r="3" />
               <circle cx="12" cy="17" r="0.5" fill="currentColor" />
               <path d="M12 17V5" />
               <path d="M5 17L12 5L19 17" />
               <path d="M12 5L8 9" />
-              {/* Person body */}
               <circle cx="14" cy="4" r="1.5" />
               <path d="M12 5L14 8" />
               <path d="M14 8L16 6" />
             </svg>
           </div>
-
-          {/* Dust particles */}
           <div className="absolute bottom-4 left-4 animate-dust">
             <div className="flex gap-1">
               <div className="w-1 h-1 bg-muted-foreground/40 rounded-full animate-pulse" />
@@ -79,7 +137,6 @@ export default function ShortCodePage() {
           /{params.short_code}
         </p>
 
-        {/* Progress bar */}
         <div className="w-48 h-1 bg-muted rounded-full mx-auto mt-4 overflow-hidden">
           <div
             className="h-full bg-primary transition-all duration-1000 ease-linear"
@@ -97,7 +154,6 @@ export default function ShortCodePage() {
             left: 100%;
           }
         }
-
         @keyframes dust {
           0%,
           100% {
@@ -107,11 +163,9 @@ export default function ShortCodePage() {
             opacity: 1;
           }
         }
-
         .animate-ride {
           animation: ride 2s linear infinite;
         }
-
         .animate-dust {
           animation: dust 0.5s ease-in-out infinite;
         }
