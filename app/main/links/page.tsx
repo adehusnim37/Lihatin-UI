@@ -25,7 +25,10 @@ import { SiteHeader } from "@/components/site-header";
 import CreateLink from "@/components/links/create";
 
 // TanStack Query & Zustand
-import { useLinks } from "@/lib/hooks/queries/useLinksQuery";
+import {
+  useLinks,
+  useToggleLinkStatus,
+} from "@/lib/hooks/queries/useLinksQuery";
 import { useLinksUIStore } from "@/lib/stores/useLinksUIStore";
 
 export default function LinksPage() {
@@ -49,6 +52,9 @@ export default function LinksPage() {
     sortBy,
     orderBy
   );
+
+  // Toggle mutation
+  const toggleMutation = useToggleLinkStatus();
 
   // Derived state
   const links = data?.short_links ?? [];
@@ -179,7 +185,13 @@ export default function LinksPage() {
               {/* Links Grid */}
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                 {filteredLinks.map((link) => (
-                  <ShortLinkCard key={link.id} data={link} />
+                  <ShortLinkCard
+                    key={link.id}
+                    data={link}
+                    onToggle={async (code) => {
+                      await toggleMutation.mutateAsync(code);
+                    }}
+                  />
                 ))}
               </div>
 

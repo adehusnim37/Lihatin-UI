@@ -21,6 +21,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   getShortLinks,
   getShortLink,
@@ -256,22 +257,20 @@ export function useDeleteLink() {
 /**
  * 🔄 useToggleLinkStatus - Toggle aktif/nonaktif link
  *
+ * API auto-toggles based on current DB state:
+ * - If active → becomes inactive
+ * - If inactive → becomes active
+ *
  * @example
  * const mutation = useToggleLinkStatus();
- * mutation.mutate({ code: "abc123", isActive: false });
+ * mutation.mutate("abc123");
  */
 export function useToggleLinkStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      code,
-      isActive,
-    }: {
-      code: string;
-      isActive: boolean;
-    }) => {
-      const response = await toggleShortLinkStatus(code, isActive);
+    mutationFn: async (code: string) => {
+      const response = await toggleShortLinkStatus(code);
 
       if (!response.success) {
         throw new Error(response.message || "Gagal toggle status");
@@ -279,10 +278,22 @@ export function useToggleLinkStatus() {
 
       return response.data;
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: (data, code) => {
+      // Invalidate queries to refresh the list
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
       queryClient.invalidateQueries({
-        queryKey: linksKeys.detail(variables.code),
+        queryKey: linksKeys.detail(code),
+      });
+
+      // Show success toast
+      toast.success("Status Updated", {
+        description: `Link is now ${data?.is_active ? "active" : "inactive"}`,
+      });
+    },
+    onError: (error: Error) => {
+      // Show error toast
+      toast.error("Failed to Change Status", {
+        description: error.message || "Something went wrong. Please try again.",
       });
     },
   });

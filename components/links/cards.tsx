@@ -58,7 +58,8 @@ import {
 
 import { cn } from "@/lib/utils";
 import { DetailLink } from "@/lib/api/shortlinks";
-
+import DeactivateLink from "./detail/deactivate";
+import ActivateLink from "./detail/activate";
 export interface ShortLinkData {
   id: string;
   user_id?: string;
@@ -80,7 +81,7 @@ interface ShortLinkCardProps {
   onEdit?: (data: ShortLinkData) => void;
   onDelete?: (id: string) => void;
   onAnalytics?: (id: string) => void;
-  onToggleStatus?: (id: string, isActive: boolean) => void;
+  onToggle?: (code: string) => Promise<void>;
 }
 
 export default function ShortLinkCard({
@@ -89,12 +90,16 @@ export default function ShortLinkCard({
   onEdit,
   onDelete,
   onAnalytics,
-  onToggleStatus,
+  onToggle,
 }: ShortLinkCardProps) {
   const [copied, setCopied] = useState(false);
   const [showPasscode, setShowPasscode] = useState(false);
+  const [showActivateDialog, setShowActivateDialog] = useState(false);
+  const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
 
-  const shortUrl = `${baseUrl}/${data.short_code}${data.detail?.passcode ? `/${data.detail?.passcode}` : ""}`;
+  const shortUrl = `${baseUrl}/${data.short_code}${
+    data.detail?.passcode ? `/${data.detail?.passcode}` : ""
+  }`;
   const hasPasscode =
     data.detail?.passcode !== undefined &&
     data.detail?.passcode !== null &&
@@ -179,7 +184,13 @@ export default function ShortLinkCard({
                   Edit
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => onToggleStatus?.(data.id, !data.is_active)}
+                  onClick={() => {
+                    if (data.is_active) {
+                      setShowDeactivateDialog(true);
+                    } else {
+                      setShowActivateDialog(true);
+                    }
+                  }}
                 >
                   <Power className="mr-2 h-4 w-4" />
                   {data.is_active ? "Deactivate" : "Activate"}
@@ -198,6 +209,23 @@ export default function ShortLinkCard({
         </Item>
       </CardHeader>
 
+      {/* Activate/Deactivate Dialogs */}
+      {onToggle && (
+        <>
+          <DeactivateLink
+            shortCode={data.short_code}
+            onDeactivate={onToggle}
+            open={showDeactivateDialog}
+            onOpenChange={setShowDeactivateDialog}
+          />
+          <ActivateLink
+            shortCode={data.short_code}
+            onActivate={onToggle}
+            open={showActivateDialog}
+            onOpenChange={setShowActivateDialog}
+          />
+        </>
+      )}
       <CardContent className="p-0">
         {/* Short URL Box */}
         <div className="bg-muted/50 border-y px-4 py-3 flex items-center gap-2">
@@ -353,13 +381,13 @@ export function ShortLinkCardGrid({
   onEdit,
   onDelete,
   onAnalytics,
-  onToggleStatus,
+  onToggle,
 }: {
   links: ShortLinkData[];
   onEdit?: (data: ShortLinkData) => void;
   onDelete?: (id: string) => void;
   onAnalytics?: (id: string) => void;
-  onToggleStatus?: (id: string, isActive: boolean) => void;
+  onToggle?: (code: string) => Promise<void>;
 }) {
   return (
     <div className="">
@@ -370,7 +398,7 @@ export function ShortLinkCardGrid({
           onEdit={onEdit}
           onDelete={onDelete}
           onAnalytics={onAnalytics}
-          onToggleStatus={onToggleStatus}
+          onToggle={onToggle}
         />
       ))}
     </div>

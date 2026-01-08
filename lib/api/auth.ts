@@ -91,11 +91,25 @@ export interface ForgotPasswordRequest {
   username?: string;
 }
 
+// API Response - unified format for all responses (including validation errors)
 export interface APIResponse<T = any> {
   success: boolean;
   data: T | null;
   message: string;
-  error: Record<string, string> | null;
+  error?: Record<string, string> | null; // All errors use this field now
+}
+
+/**
+ * Extract user-friendly error message from API response
+ */
+export function getErrorMessage(response: APIResponse): string {
+  // Check for error map
+  if (response.error && Object.keys(response.error).length > 0) {
+    return Object.values(response.error).join(", ");
+  }
+
+  // Fallback to message
+  return response.message || "An error occurred";
 }
 
 /**
@@ -118,7 +132,9 @@ export async function login(
   const data: APIResponse<LoginResult> = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || "Login failed");
+    // Handle validation errors (from validator.go) or standard errors
+    const errorMessage = getErrorMessage(data);
+    throw new Error(errorMessage);
   }
 
   // Refresh CSRF token after successful login (if not requiring TOTP)

@@ -154,12 +154,16 @@ export async function deleteShortLink(
 
 /**
  * Toggle short link active status
+ * Calls the toggle endpoint which auto-toggles based on current DB state
  */
 export async function toggleShortLinkStatus(
-  code: string,
-  isActive: boolean
+  code: string
 ): Promise<ShortLinkResponse> {
-  return updateShortLink(code, { is_active: isActive });
+  const response = await postWithAuth(
+    `${API_URL}/users/me/shorts/${code}/toggle-active-inactive`,
+    {}
+  );
+  return response.json();
 }
 
 /**

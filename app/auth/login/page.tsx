@@ -57,9 +57,17 @@ export default function Login() {
     e.preventDefault();
     
     // Basic validation
-    if (!formData.email_or_username || !formData.password) {
+    if (!formData.email_or_username ) {
       toast.error("Validation Error", {
-        description: "Please fill in all required fields",
+        description: "Please enter your email or username",
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (!formData.password) {
+      toast.error("Validation Error", {
+        description: "Please enter your password",
         duration: 3000,
       });
       return;
