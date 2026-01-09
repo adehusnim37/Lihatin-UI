@@ -61,13 +61,13 @@ export function proxy(request: NextRequest) {
   // let it through to the [short_code] route
   // Otherwise, if it's not a known route and has multiple segments, return 404
   if (!isKnownRoute) {
-    // Single segment like /abc123 - this is a short code
+    // Single segment like /abc123 or two segments like /abc123/passcode
     const segments = pathname.split("/").filter(Boolean);
-    if (segments.length === 1) {
+    if (segments.length <= 2) {
       // Valid short code pattern - let it through
       return NextResponse.next();
     }
-    // Multi-segment unknown route - redirect to 404
+    // Multi-segment unknown route (>2) - redirect to 404
     return NextResponse.rewrite(new URL("/not-found", request.url));
   }
 
