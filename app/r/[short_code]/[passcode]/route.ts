@@ -8,6 +8,7 @@ interface BackendErrorResponse {
   message: string;
   error?: { details: string };
 }
+export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
@@ -22,6 +23,7 @@ export async function GET(
       {
         method: "GET",
         redirect: "manual",
+        cache: "no-store",
         headers: {
           "User-Agent": request.headers.get("user-agent") || "NextJS-Server",
           "X-Forwarded-For":
@@ -29,15 +31,33 @@ export async function GET(
             request.headers.get("x-real-ip") ||
             "unknown",
           Referer: request.headers.get("referer") || "",
+          "X-Device-ID": request.headers.get("x-device-id") || "",
+          "X-Browser": request.headers.get("x-browser") || "",
+          "X-OS": request.headers.get("x-os") || "",
         },
       }
     );
 
-    // If backend returns redirect (301/302), forward it to user
-    if (response.status === 301 || response.status === 302) {
+    // If backend returns redirect (3xx), forward it to user
+    if (
+      response.status === 301 ||
+      response.status === 302 ||
+      response.status === 303 ||
+      response.status === 307 ||
+      response.status === 308
+    ) {
       const location = response.headers.get("location");
       if (location) {
-        return NextResponse.redirect(location, { status: response.status });
+        const res = NextResponse.redirect(location, {
+          status: response.status,
+        });
+        res.headers.set(
+          "Cache-Control",
+          "no-store, no-cache, must-revalidate, proxy-revalidate"
+        );
+        res.headers.set("Pragma", "no-cache");
+        res.headers.set("Expires", "0");
+        return res;
       }
     }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Loader2 } from "lucide-react";
 import NotFound from "@/app/not-found";
 
@@ -55,22 +55,30 @@ export default function ShortCodePage() {
   }, [params.short_code, router]);
 
   // Countdown timer - only starts when status is "valid"
+  // Countdown timer
   useEffect(() => {
     if (status !== "valid") return;
 
-    const interval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          router.push(`/r/${params.short_code}`);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown, status]);
 
-    return () => clearInterval(interval);
-  }, [params.short_code, router, status]);
+  const hasRedirected = useRef(false);
+
+  // Handle redirect when countdown hits 0
+  useEffect(() => {
+    if (status === "valid" && countdown === 0 && !hasRedirected.current) {
+      hasRedirected.current = true;
+      console.log(
+        "Countdown finished, redirecting to:",
+        `/r/${params.short_code}`
+      );
+      // Force hard navigation to ensure backend HIT and no RSC caching
+      window.location.href = `/r/${params.short_code}`;
+    }
+  }, [countdown, status, params.short_code]);
 
   // Loading state
   if (status === "loading") {
