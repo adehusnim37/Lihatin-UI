@@ -294,7 +294,7 @@ export default function ShortLinkCard({
                 onClick={() => onAnalytics?.(data.id)}
               >
                 <MousePointerClick className="h-2.5 w-2.5" />
-                <span>{data.click_count ?? 0}</span>
+                <span>{data.detail?.current_clicks ?? 0}</span>
               </Badge>
             </TooltipTrigger>
             <TooltipContent side="top">

@@ -31,6 +31,7 @@ export interface ShortLink {
 export interface DetailLink {
   id: string;
   passcode: number | null;
+  current_clicks: number;
   enable_stats: boolean;
 }
 
