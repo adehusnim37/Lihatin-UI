@@ -51,20 +51,8 @@ export default function QuickCreateLinkDialog({
       ],
     };
 
-    createLinkMutation.mutate(requestData, {
-      onSuccess: () => {
-        toast.success("Link Created", {
-          description: "Your quick link has been created successfully.",
-        });
-        onOpenChange(false);
-      },
-      onError: (error) => {
-        toast.error("Failed to Create Link", {
-          description:
-            error.message || "An unexpected error occurred. Please try again.",
-        });
-      },
-    });
+    createLinkMutation.mutate(requestData);
+    onOpenChange(false);
   };
 
   return (

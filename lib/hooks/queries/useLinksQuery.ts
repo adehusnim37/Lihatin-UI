@@ -29,6 +29,7 @@ import {
   updateShortLink,
   deleteShortLink,
   toggleShortLinkStatus,
+  removeShortLinkPasscode,
   getShortLinkStats,
   type ShortLink,
   type CreateShortLinkRequest,
@@ -62,6 +63,16 @@ export const linksKeys = {
 
   // Untuk statistik
   stats: (code: string) => [...linksKeys.all, "stats", code] as const,
+
+  // Untuk views/analytics history
+  views: (
+    code: string,
+    page: number,
+    limit: number,
+    sort: string,
+    orderBy: string
+  ) =>
+    [...linksKeys.all, "views", code, { page, limit, sort, orderBy }] as const,
 };
 
 // ============================================
@@ -94,7 +105,7 @@ export function useLinks(
       const response = await getShortLinks(page, limit, sort, orderBy);
 
       if (!response.success) {
-        throw new Error(response.message || "Gagal fetch links");
+        throw response;
       }
 
       return response.data;
@@ -117,7 +128,7 @@ export function useLink(code: string) {
       const response = await getShortLink(code);
 
       if (!response.success) {
-        throw new Error(response.message || "Link tidak ditemukan");
+        throw response;
       }
 
       return response.data;
@@ -147,9 +158,56 @@ export function useLinkStats(code: string) {
   });
 }
 
+/**
+ * 👁️ useShortLinkViews - Fetch history views dengan pagination
+ */
+export function useShortLinkViews(
+  code: string,
+  page: number = 1,
+  limit: number = 10,
+  sort: string = "created_at",
+  orderBy: string = "desc"
+) {
+  return useQuery({
+    queryKey: linksKeys.views(code, page, limit, sort, orderBy),
+    queryFn: async () => {
+      const { getShortLinkViews } = await import("@/lib/api/shortlinks");
+      const response = await getShortLinkViews(
+        code,
+        page,
+        limit,
+        sort,
+        orderBy
+      );
+
+      if (!response.success) {
+        throw new Error(response.message || "Gagal fetch views");
+      }
+
+      return response.data.views;
+    },
+    placeholderData: (previousData) => previousData, // keepPreviousData replacement logic or import it
+    enabled: !!code,
+  });
+}
+
 // ============================================
 // MUTATION HOOKS (Create, Update, Delete)
 // ============================================
+
+// Helper to format API error response
+const formatAPIError = (error: any): string => {
+  if (error?.error && typeof error.error === "object") {
+    // Collect all validation messages
+    const messages = Object.values(error.error).filter(
+      (msg) => typeof msg === "string"
+    );
+    if (messages.length > 0) {
+      return messages.join("\n");
+    }
+  }
+  return error?.message || "Something went wrong. Please try again.";
+};
 
 /**
  * ➕ useCreateLink - Buat link baru
@@ -176,7 +234,8 @@ export function useCreateLink() {
       const response = await createShortLink(data);
 
       if (!response.success) {
-        throw new Error(response.message || "Gagal create link");
+        // Throw the full response to access 'error' field in onError
+        throw response;
       }
 
       return response.data;
@@ -184,6 +243,12 @@ export function useCreateLink() {
     onSuccess: () => {
       // Refresh list setelah create berhasil
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
+      toast.success("Link successfully created");
+    },
+    onError: (error: any) => {
+      toast.error("Failed to create link", {
+        description: formatAPIError(error),
+      });
     },
   });
 }
@@ -213,7 +278,7 @@ export function useUpdateLink() {
       const response = await updateShortLink(code, data);
 
       if (!response.success) {
-        throw new Error(response.message || "Gagal update link");
+        throw response;
       }
 
       return response.data;
@@ -223,6 +288,12 @@ export function useUpdateLink() {
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
       queryClient.invalidateQueries({
         queryKey: linksKeys.detail(variables.code),
+      });
+      toast.success("Link successfully updated");
+    },
+    onError: (error: any) => {
+      toast.error("Failed to update link", {
+        description: formatAPIError(error),
       });
     },
   });
@@ -243,13 +314,48 @@ export function useDeleteLink() {
       const response = await deleteShortLink(code);
 
       if (!response.success) {
-        throw new Error(response.message || "Gagal hapus link");
+        throw response;
       }
 
       return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
+      toast.success("Link successfully deleted");
+    },
+    onError: (error: any) => {
+      toast.error("Failed to delete link", {
+        description: formatAPIError(error),
+      });
+    },
+  });
+}
+
+/**
+ * 🔓 useRemovePasscode - Hapus passcode dari link
+ */
+export function useRemovePasscode() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (code: string) => {
+      const response = await removeShortLinkPasscode(code);
+
+      if (!response.success) {
+        throw response;
+      }
+
+      return response;
+    },
+    onSuccess: (_data, code) => {
+      queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: linksKeys.detail(code) });
+      toast.success("Passcode removed successfully");
+    },
+    onError: (error: any) => {
+      toast.error("Failed to remove passcode", {
+        description: formatAPIError(error),
+      });
     },
   });
 }
@@ -273,27 +379,29 @@ export function useToggleLinkStatus() {
       const response = await toggleShortLinkStatus(code);
 
       if (!response.success) {
-        throw new Error(response.message || "Gagal toggle status");
+        throw response;
       }
 
-      return response.data;
+      return response;
     },
-    onSuccess: (data, code) => {
+    onSuccess: (response) => {
       // Invalidate queries to refresh the list
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
-      queryClient.invalidateQueries({
-        queryKey: linksKeys.detail(code),
-      });
+
+      // Also invalidate detail if we have the code (we don't easily have it here since first arg is response)
+      // Actually second arg is variables (code)
+      // queryClient.invalidateQueries({ queryKey: linksKeys.detail(code) });
+      // But let's stick to what's necessary first. The previous code had (data, code), now (response, code).
 
       // Show success toast
       toast.success("Status Updated", {
-        description: `Link is now ${data?.is_active ? "active" : "inactive"}`,
+        description: response.message,
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       // Show error toast
-      toast.error("Failed to Change Status", {
-        description: error.message || "Something went wrong. Please try again.",
+      toast.error("Failed to change status", {
+        description: formatAPIError(error),
       });
     },
   });

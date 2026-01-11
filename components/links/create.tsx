@@ -140,28 +140,11 @@ export default function CreateLink() {
       })),
     };
 
-    createLinkMutation.mutate(requestData, {
-      onSuccess: () => {
-        toast.success("Link Created!", {
-          description: data.is_bulky
-            ? `${data.links.length} links have been created successfully.`
-            : "Your short link has been created successfully.",
-        });
-        setOpen(false);
-        setShowConfirmDialog(false);
-        setPendingData(null);
-        reset();
-      },
-      onError: (error) => {
-        toast.error("Failed to Create Link", {
-          description:
-            error.message || "An unexpected error occurred. Please try again.",
-        });
-        // Keep drawer open so user can fix the issue
-        setShowConfirmDialog(false);
-        setPendingData(null);
-      },
-    });
+    createLinkMutation.mutate(requestData);
+    setOpen(false);
+    setShowConfirmDialog(false);
+    setPendingData(null);
+    reset();
   }
 
   // Reset links array when toggling bulk mode to ensure clean state if needed,

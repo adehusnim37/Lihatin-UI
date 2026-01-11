@@ -26,13 +26,33 @@ export interface ShortLink {
   updated_at: string;
   click_count?: number;
   detail?: DetailLink;
+  recent_views?: RecentView[];
 }
 
 export interface DetailLink {
   id: string;
   passcode: number | null;
+  click_limit: number | null;
   current_clicks: number;
   enable_stats: boolean;
+  is_banned?: boolean;
+  banned_reason?: string;
+  banned_by?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_content?: string;
+  custom_domain?: string;
+}
+
+export interface RecentView {
+  id: string;
+  ip_address: string;
+  user_agent: string;
+  referer: string;
+  country: string;
+  city: string;
+  clicked_at: string;
 }
 
 export interface PaginationMeta {
@@ -84,10 +104,21 @@ export interface CreateShortLinkRequest {
 }
 
 export interface UpdateShortLinkRequest {
+  short_code?: string;
+  original_url?: string;
   title?: string;
   description?: string;
   is_active?: boolean;
-  expires_at?: string;
+  expires_at?: string | null;
+  passcode?: string | null;
+  click_limit?: number | null;
+  utm_source?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
+  utm_content?: string | null;
+  utm_term?: string | null;
+  custom_domain?: string | null;
+  enable_stats?: boolean;
 }
 
 /**
@@ -144,6 +175,18 @@ export async function updateShortLink(
 }
 
 /**
+ * Remove passcode from a short link
+ */
+export async function removeShortLinkPasscode(
+  code: string
+): Promise<{ success: boolean; message: string }> {
+  const response = await deleteWithAuth(
+    `${API_URL}/users/me/shorts/${code}/passcode`
+  );
+  return response.json();
+}
+
+/**
  * Delete a short link
  */
 export async function deleteShortLink(
@@ -170,11 +213,83 @@ export async function toggleShortLinkStatus(
 /**
  * Get short link stats
  */
+export interface ClickHistoryItem {
+  date: string;
+  count: number;
+}
+
+export interface ShortLinkStats {
+  short: string;
+  total_clicks: number;
+  unique_visitors: number;
+  last_24h: number;
+  last_7d: number;
+  last_30d: number;
+  last_60d: number;
+  last_90d: number;
+  top_referrers: { host: string; count: number }[];
+  top_devices: { device: string; count: number }[];
+  top_countries: { country: string; count: number }[];
+  click_history: ClickHistoryItem[];
+  click_history_hourly: ClickHistoryItem[];
+}
+
+export interface ShortLinkStatsResponse {
+  success: boolean;
+  data: ShortLinkStats;
+  message: string;
+}
+
+/**
+ * Get short link stats
+ */
 export async function getShortLinkStats(
   code: string
-): Promise<{ success: boolean; data: any; message: string }> {
+): Promise<ShortLinkStatsResponse> {
   const response = await getWithAuth(
     `${API_URL}/users/me/shorts/${code}/stats`
+  );
+  return response.json();
+}
+
+// Views Interfaces
+export interface ViewsData {
+  recent_views: RecentView[];
+  total_count: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+  sort: string;
+  order_by: string;
+}
+
+export interface ShortLinkViewsResponse {
+  success: boolean;
+  data: {
+    views: ViewsData;
+  };
+  message: string;
+}
+
+/**
+ * Get paginated views for a short link
+ */
+export async function getShortLinkViews(
+  code: string,
+  page: number = 1,
+  limit: number = 10,
+  sort: string = "created_at",
+  orderBy: string = "desc"
+): Promise<ShortLinkViewsResponse> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+    sort,
+    order_by: orderBy,
+  });
+
+  const response = await getWithAuth(
+    `${API_URL}/users/me/shorts/${code}/views?${params}`
   );
   return response.json();
 }

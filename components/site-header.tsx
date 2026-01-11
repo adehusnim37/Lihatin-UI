@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { usePathname } from "next/navigation";
 import {
@@ -31,9 +31,10 @@ export function SiteHeader() {
 
     let currentPath = "";
     segments.forEach((segment, index) => {
-      if (segment === "main") return; // Skip main if it's the first segment to avoid duplication if we want "Main" as root
+      currentPath += `/${segment}`; // Always update path first
 
-      currentPath += `/${segment}`;
+      if (segment === "main") return; // Skip display for 'main' as it is hardcoded
+
       const isLast = index === segments.length - 1;
       const label =
         segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");

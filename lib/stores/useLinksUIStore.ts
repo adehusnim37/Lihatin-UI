@@ -45,7 +45,7 @@ export const useLinksUIStore = create<LinksUIState>()(
       sortBy: "created_at",
       orderBy: "desc",
       page: 1,
-      limit: 10,
+      limit: 8,
       isCreateModalOpen: false,
       isEditModalOpen: false,
       editingLinkId: null,
