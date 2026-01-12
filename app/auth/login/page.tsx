@@ -8,12 +8,17 @@ import { CheckCircle2, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
-import { useState, FormEvent, useEffect } from "react";
+import { useState, FormEvent, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { login, saveUserData, requiresTOTP, LoginResponse } from "@/lib/api/auth";
+import {
+  login,
+  saveUserData,
+  requiresTOTP,
+  LoginResponse,
+} from "@/lib/api/auth";
 import { useAuth } from "@/app/context/AuthContext";
 
-export default function Login() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const auth = useAuth();
@@ -26,18 +31,19 @@ export default function Login() {
 
   // Check for error query parameters from email verification
   useEffect(() => {
-    const error = searchParams.get('error');
-    if (error === 'token_required') {
+    const error = searchParams.get("error");
+    if (error === "token_required") {
       toast.error("Verification Failed", {
         description: "Verification token is required",
         duration: 4000,
       });
-    } else if (error === 'verification_failed') {
+    } else if (error === "verification_failed") {
       toast.error("Verification Failed", {
-        description: "Email verification failed. The link may be expired or invalid.",
+        description:
+          "Email verification failed. The link may be expired or invalid.",
         duration: 4000,
       });
-    } else if (error === 'session_expired') {
+    } else if (error === "session_expired") {
       toast.error("Session Expired", {
         description: "Your session has expired. Please login again.",
         duration: 4000,
@@ -55,9 +61,9 @@ export default function Login() {
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     // Basic validation
-    if (!formData.email_or_username ) {
+    if (!formData.email_or_username) {
       toast.error("Validation Error", {
         description: "Please enter your email or username",
         duration: 3000,
@@ -93,9 +99,15 @@ export default function Login() {
         // Check if TOTP verification is required (NO tokens issued yet!)
         if (requiresTOTP(response.data)) {
           // Save pending auth token and user info for TOTP verification
-          sessionStorage.setItem("pending_auth_token", response.data.pending_auth_token);
-          sessionStorage.setItem("pending_user", JSON.stringify(response.data.user));
-          
+          sessionStorage.setItem(
+            "pending_auth_token",
+            response.data.pending_auth_token
+          );
+          sessionStorage.setItem(
+            "pending_user",
+            JSON.stringify(response.data.user)
+          );
+
           toast.success("Verification Required", {
             description: "Please enter your 2FA code",
             duration: 2000,
@@ -118,12 +130,12 @@ export default function Login() {
         await auth.login();
 
         // Redirect to main or redirect URL from query params
-        const redirectTo = searchParams.get('redirect') || '/main';
+        const redirectTo = searchParams.get("redirect") || "/main";
         router.push(redirectTo);
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      
+
       // Show error toast
       toast.error("Login Failed", {
         description: error.message || "Invalid credentials. Please try again.",
@@ -164,9 +176,9 @@ export default function Login() {
             {/* Email input */}
             <div className="space-y-2">
               <Label htmlFor="email_or_username">Email or Username</Label>
-              <Input 
-                id="email_or_username" 
-                placeholder="Email or Username" 
+              <Input
+                id="email_or_username"
+                placeholder="Email or Username"
                 type="text"
                 value={formData.email_or_username}
                 onChange={handleInputChange}
@@ -177,9 +189,9 @@ export default function Login() {
             {/* Password input */}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input 
-                id="password" 
-                placeholder="Password" 
+              <Input
+                id="password"
+                placeholder="Password"
                 type="password"
                 value={formData.password}
                 onChange={handleInputChange}
@@ -190,11 +202,14 @@ export default function Login() {
             {/* Remember me checkbox and Forgot password link */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Checkbox 
+                <Checkbox
                   id="keepSignedIn"
                   checked={formData.keepSignedIn}
-                  onCheckedChange={(checked) => 
-                    setFormData((prev) => ({ ...prev, keepSignedIn: checked as boolean }))
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      keepSignedIn: checked as boolean,
+                    }))
                   }
                   disabled={isLoading}
                 />
@@ -246,5 +261,20 @@ export default function Login() {
         style={{ transform: "scale(0.70)" }} // ← Custom scale
       />
     </div>
+  );
+}
+
+// Wrapper component with Suspense boundary for useSearchParams
+export default function Login() {
+  return (
+    <Suspense
+      fallback={
+        <div className="md:flex md:min-h-full bg-background md:p-6 py-6 gap-x-6 items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }

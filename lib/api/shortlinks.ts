@@ -95,12 +95,22 @@ export interface ShortLinkData {
   description?: string;
   expires_at?: string;
   passcode?: string;
+  enable_stats?: boolean;
+  limit?: number;
+  tags?: {
+    utm_source?: string;
+    utm_medium?: string;
+    utm_campaign?: string;
+    utm_term?: string;
+    utm_content?: string;
+  };
 }
 
 // Request body for creating short links (single or bulk)
 export interface CreateShortLinkRequest {
   is_bulky: boolean;
-  links: ShortLinkData[];
+  link?: ShortLinkData; // For single creation
+  links?: ShortLinkData[]; // For bulk creation
 }
 
 export interface UpdateShortLinkRequest {

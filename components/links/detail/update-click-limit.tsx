@@ -28,7 +28,7 @@ import { Switch } from "@/components/ui/switch";
 import { CounterInput } from "@/components/ui/counter-input";
 
 const clickLimitSchema = z.object({
-  enabled: z.boolean().default(false),
+  enabled: z.boolean(),
   limit: z.number().min(1, "Limit must be at least 1").optional(),
 });
 

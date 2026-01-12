@@ -46,10 +46,11 @@ export default function AnalyticsPage() {
   // Utilize existing links query which includes click counts
   const { data, isLoading } = useLinks(page, limit);
 
-  const links = data?.links || [];
-  const meta = data?.meta;
+  const links = data?.short_links || [];
+  const totalLinks = data?.total_count || 0;
+  const totalPages = data?.total_pages || 0;
 
-  const totalLinks = meta?.total_items || 0;
+  // const meta = data?.meta; // Metadata is now flattened in root response
   // Calculate total clicks from visible page (approximate for MVP) or show 0
   // Ideally backend provides global aggregation.
   // For now we just show total links count as a key metric.
@@ -230,7 +231,7 @@ export default function AnalyticsPage() {
               </Table>
 
               {/* Pagination (Simple) */}
-              {meta && meta.total_pages > 1 && (
+              {totalPages > 1 && (
                 <div className="flex items-center justify-end space-x-2 py-4">
                   <Button
                     variant="outline"
@@ -241,13 +242,13 @@ export default function AnalyticsPage() {
                     Previous
                   </Button>
                   <div className="text-sm text-muted-foreground">
-                    Page {page} of {meta.total_pages}
+                    Page {page} of {totalPages}
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setPage((p) => p + 1)}
-                    disabled={page === meta.total_pages}
+                    disabled={page === totalPages}
                   >
                     Next
                   </Button>

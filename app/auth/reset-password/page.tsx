@@ -1,39 +1,79 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, FormEvent, useEffect, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
-import { validateResetToken, resetPassword } from "@/lib/api/auth";
-import { Loader2, Eye, EyeOff, CheckCircle2, XCircle } from "lucide-react";
-import PasswordIndicator, { calculatePasswordStrength } from "@/components/forms/input/PasswordIndicator";
 
-export default function ResetPassword() {
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription,
+} from "@/components/ui/form";
+import { Loader2, Eye, EyeOff, CheckCircle2, XCircle } from "lucide-react";
+import PasswordIndicator, {
+  calculatePasswordStrength,
+} from "@/components/forms/input/PasswordIndicator";
+import { validateResetToken, resetPassword } from "@/lib/api/auth";
+
+// Zod schema for form validation
+const resetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .refine(
+        (val) => calculatePasswordStrength(val, 8).score >= 3,
+        "Password is too weak. Add uppercase, numbers, or symbols."
+      ),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
+
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const [isLoading, setIsLoading] = useState(false);
   const [isValidating, setIsValidating] = useState(true);
   const [isValidToken, setIsValidToken] = useState(false);
   const [token, setToken] = useState<string | null>(null);
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Calculate password strength using existing component logic
-  const passwordStrength = useMemo(
-    () => calculatePasswordStrength(password, 8),
-    [password]
-  );
+  // React Hook Form setup with Zod resolver
+  const form = useForm<ResetPasswordFormValues>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+    mode: "onChange", // Validate on change for real-time feedback
+  });
+
+  const password = form.watch("password");
+  const confirmPassword = form.watch("confirmPassword");
+  const passwordStrength = calculatePasswordStrength(password, 8);
 
   // Validate token on mount
   useEffect(() => {
     const tokenParam = searchParams.get("token");
-    
+
     if (!tokenParam) {
       toast.error("Invalid Request", {
         description: "No reset token provided",
@@ -45,7 +85,6 @@ export default function ResetPassword() {
 
     setToken(tokenParam);
 
-    // Validate token with backend
     validateResetToken(tokenParam)
       .then(() => {
         setIsValidToken(true);
@@ -57,38 +96,10 @@ export default function ResetPassword() {
           duration: 4000,
         });
         setIsValidating(false);
-        setTimeout(() => router.push("/auth/forgot-password"), 3000);
       });
   }, [searchParams, router]);
 
-  const handleResetPassword = async (e: FormEvent) => {
-    e.preventDefault();
-
-    // Validation
-    if (!password) {
-      toast.error("Validation Error", {
-        description: "Please enter a new password",
-        duration: 3000,
-      });
-      return;
-    }
-
-    if (passwordStrength.score < 3) {
-      toast.error("Weak Password", {
-        description: "Please choose a stronger password",
-        duration: 3000,
-      });
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      toast.error("Validation Error", {
-        description: "Passwords do not match",
-        duration: 3000,
-      });
-      return;
-    }
-
+  const onSubmit = async (data: ResetPasswordFormValues) => {
     if (!token) {
       toast.error("Invalid Request", {
         description: "Reset token is missing",
@@ -102,8 +113,8 @@ export default function ResetPassword() {
     try {
       const response = await resetPassword({
         token,
-        new_password: password,
-        confirm_password: confirmPassword,
+        new_password: data.password,
+        confirm_password: data.confirmPassword,
       });
 
       if (response.success) {
@@ -118,7 +129,6 @@ export default function ResetPassword() {
       }
     } catch (error: any) {
       console.error("Reset password error:", error);
-
       toast.error("Reset Failed", {
         description:
           error.message || "Unable to reset password. Please try again.",
@@ -176,7 +186,6 @@ export default function ResetPassword() {
                 className="mx-auto mb-4 rounded"
               />
             </Link>
-            {/* Title and description */}
             <div className="flex flex-col gap-y-3">
               <h1 className="text-2xl md:text-3xl font-bold">
                 Reset Your Password
@@ -188,104 +197,120 @@ export default function ResetPassword() {
             </div>
           </div>
 
-          {/* Reset password form */}
-          <form onSubmit={handleResetPassword} className="space-y-4 mb-6">
-            {/* New Password input */}
-            <div className="space-y-2">
-              <Label htmlFor="password">New Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  placeholder="Enter new password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isLoading}
-                  required
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-
-              {/* Password Strength Indicator */}
-              <PasswordIndicator password={password} />
-            </div>
-
-            {/* Confirm Password input */}
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  placeholder="Confirm new password"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  disabled={isLoading}
-                  required
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              {confirmPassword && password !== confirmPassword && (
-                <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
-                  <XCircle className="h-3 w-3" />
-                  Passwords do not match
-                </p>
-              )}
-              {confirmPassword && password === confirmPassword && (
-                <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-                  <CheckCircle2 className="h-3 w-3" />
-                  Passwords match
-                </p>
-              )}
-            </div>
-          </form>
-
-          {/* Reset password button and back to login link */}
-          <div className="flex flex-col space-y-4">
-            <Button
-              className="w-full"
-              onClick={handleResetPassword}
-              disabled={isLoading || passwordStrength.score < 3 || password !== confirmPassword}
-              type="submit"
+          {/* Reset password form using React Hook Form + Shadcn */}
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4 mb-6"
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Resetting Password...
-                </>
-              ) : (
-                "Reset Password"
-              )}
-            </Button>
-            <p className="text-sm text-center text-muted-foreground">
-              Remember your password?{" "}
-              <Link className="underline text-foreground" href="/auth/login">
-                Sign in
-              </Link>
-            </p>
-          </div>
+              {/* New Password Field */}
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>New Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          {...field}
+                          placeholder="Enter new password"
+                          type={showPassword ? "text" : "password"}
+                          disabled={isLoading}
+                          className="pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </FormControl>
+                    <PasswordIndicator password={password} />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Confirm Password Field */}
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          {...field}
+                          placeholder="Confirm new password"
+                          type={showConfirmPassword ? "text" : "password"}
+                          disabled={isLoading}
+                          className="pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </FormControl>
+                    {/* Visual match indicator */}
+                    {confirmPassword && password !== confirmPassword && (
+                      <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                        <XCircle className="h-3 w-3" />
+                        Passwords do not match
+                      </p>
+                    )}
+                    {confirmPassword && password === confirmPassword && (
+                      <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3" />
+                        Passwords match
+                      </p>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Submit Button */}
+              <Button
+                className="w-full"
+                type="submit"
+                disabled={isLoading || !form.formState.isValid}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Resetting Password...
+                  </>
+                ) : (
+                  "Reset Password"
+                )}
+              </Button>
+            </form>
+          </Form>
+
+          <p className="text-sm text-center text-muted-foreground">
+            Remember your password?{" "}
+            <Link className="underline text-foreground" href="/auth/login">
+              Sign in
+            </Link>
+          </p>
         </div>
       </div>
 
@@ -299,5 +324,20 @@ export default function ResetPassword() {
         style={{ transform: "scale(0.75)" }}
       />
     </div>
+  );
+}
+
+// Wrapper component with Suspense boundary for useSearchParams
+export default function ResetPassword() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }
+    >
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
