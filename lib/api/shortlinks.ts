@@ -244,6 +244,56 @@ export interface ShortLinkStats {
   click_history_hourly: ClickHistoryItem[];
 }
 
+export interface DashboardSummary {
+  total_links: number;
+  active_links: number;
+  inactive_links: number;
+  total_clicks: number;
+  total_unique_visitors: number;
+  clicks_last_24h: number;
+  clicks_last_7d: number;
+  clicks_last_30d: number;
+  clicks_last_60d: number;
+  clicks_last_90d: number;
+  top_countries: { country: string; count: number }[];
+  top_devices: { device: string; count: number }[];
+  top_referrers: { host: string; count: number }[];
+  click_history: ClickHistoryItem[];
+}
+
+export interface DashboardStatsResponse {
+  success: boolean;
+  data: {
+    summary: DashboardSummary;
+  };
+  message: string;
+}
+
+export interface DashboardSummary {
+  total_links: number;
+  active_links: number;
+  inactive_links: number;
+  total_clicks: number;
+  total_unique_visitors: number;
+  clicks_last_24h: number;
+  clicks_last_7d: number;
+  clicks_last_30d: number;
+  clicks_last_60d: number;
+  clicks_last_90d: number;
+  top_countries: { country: string; count: number }[];
+  top_devices: { device: string; count: number }[];
+  top_referrers: { host: string; count: number }[];
+  click_history: ClickHistoryItem[];
+}
+
+export interface DashboardStatsResponse {
+  success: boolean;
+  data: {
+    summary: DashboardSummary;
+  };
+  message: string;
+}
+
 export interface ShortLinkStatsResponse {
   success: boolean;
   data: ShortLinkStats;
@@ -300,6 +350,23 @@ export async function getShortLinkViews(
 
   const response = await getWithAuth(
     `${API_URL}/users/me/shorts/${code}/views?${params}`
+  );
+  return response.json();
+}
+
+/**
+ * Get dashboard stats with optional date filtering
+ */
+export async function getDashboardStats(
+  startDate?: string,
+  endDate?: string
+): Promise<DashboardStatsResponse> {
+  const params = new URLSearchParams();
+  if (startDate) params.append("start_date", startDate);
+  if (endDate) params.append("end_date", endDate);
+
+  const response = await getWithAuth(
+    `${API_URL}/users/me/shorts/stats?${params}`
   );
   return response.json();
 }

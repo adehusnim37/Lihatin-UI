@@ -57,6 +57,14 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import {
+  Label as ReLabel,
+  PolarGrid,
+  PolarRadiusAxis,
+  RadialBar,
+  RadialBarChart,
+} from "recharts";
+import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -610,40 +618,100 @@ export default function LinkDetailPage() {
                       </Button>
                     </div>
                   </CardHeader>
-                  <CardContent className="flex-1 flex flex-col justify-end space-y-4 pt-6">
-                    <div>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-4xl font-bold text-foreground">
-                          {currentClicks.toLocaleString()}
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          clicks
-                        </span>
-                      </div>
-                    </div>
-
-                    {clickLimit > 0 ? (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>Limit: {clickLimit.toLocaleString()}</span>
-                          <span>{Math.round(progressPercent)}%</span>
-                        </div>
-                        <Progress
-                          value={progressPercent}
-                          className="h-2"
-                          indicatorClassName={
-                            progressPercent > 90
-                              ? "bg-destructive"
-                              : "bg-primary"
-                          }
+                  <CardContent className="flex-1 flex flex-col justify-end pt-6">
+                    <ChartContainer
+                      config={{
+                        clicks: {
+                          label: "Clicks",
+                          color: "hsl(var(--primary))",
+                        },
+                      }}
+                      className="mx-auto aspect-square max-h-[250px] w-full"
+                    >
+                      <RadialBarChart
+                        data={[
+                          {
+                            activity: "clicks",
+                            current: currentClicks,
+                            fill: "#70c5df",
+                          },
+                        ]}
+                        startAngle={90}
+                        endAngle={
+                          clickLimit > 0
+                            ? 90 +
+                              (360 * Math.min(currentClicks, clickLimit)) /
+                                clickLimit
+                            : 450
+                        }
+                        innerRadius={80}
+                        outerRadius={110}
+                      >
+                        <PolarGrid
+                          gridType="circle"
+                          radialLines={false}
+                          stroke="none"
+                          className="first:fill-muted last:fill-background"
                         />
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 text-muted-foreground text-sm bg-muted/30 p-2 rounded">
-                        <Infinity className="h-4 w-4" />
-                        <span>No click limit</span>
-                      </div>
-                    )}
+                        <RadialBar
+                          dataKey="current"
+                          background
+                          cornerRadius={10}
+                        />
+                        <PolarRadiusAxis
+                          tick={false}
+                          tickLine={false}
+                          axisLine={false}
+                        >
+                          <ReLabel
+                            content={({ viewBox }) => {
+                              if (
+                                viewBox &&
+                                "cx" in viewBox &&
+                                "cy" in viewBox
+                              ) {
+                                return (
+                                  <text
+                                    x={viewBox.cx}
+                                    y={viewBox.cy}
+                                    textAnchor="middle"
+                                    dominantBaseline="middle"
+                                  >
+                                    <tspan
+                                      x={viewBox.cx}
+                                      y={viewBox.cy}
+                                      className="fill-foreground text-4xl font-bold"
+                                    >
+                                      {currentClicks.toLocaleString()}
+                                    </tspan>
+                                    <tspan
+                                      x={viewBox.cx}
+                                      y={(viewBox.cy || 0) + 24}
+                                      className="fill-muted-foreground"
+                                    >
+                                      Clicks
+                                    </tspan>
+                                  </text>
+                                );
+                              }
+                            }}
+                          />
+                        </PolarRadiusAxis>
+                      </RadialBarChart>
+                    </ChartContainer>
+
+                    <div className="text-center text-sm text-muted-foreground mt-4">
+                      {clickLimit > 0 ? (
+                        <span>
+                          Limit: {clickLimit.toLocaleString()} (
+                          {Math.round(progressPercent)}%)
+                        </span>
+                      ) : (
+                        <span className="flex items-center justify-center gap-2">
+                          <Infinity className="h-4 w-4" /> No click limit
+                        </span>
+                      )}
+                    </div>
 
                     <UpdateClickLimitDialog
                       open={showLimitDialog}
