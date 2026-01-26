@@ -134,22 +134,18 @@ export default function ApiIntegrationsPage() {
                     <div>
                       <h2 className="font-semibold">API Reference</h2>
                       <p className="text-sm text-muted-foreground">
-                        Interactive API documentation powered by Scalar
+                        Interactive API documentation powered by Postman and
+                        Scalar
                       </p>
                     </div>
                   </div>
                   <Button variant="outline" asChild>
-                    <a href={docsUrl} target="_blank" rel="noopener noreferrer">
+                    <a href="/docs" target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4 mr-2" />
-                      Download Postman Collection
+                      Read Documentation
                     </a>
                   </Button>
                 </div>
-              </div>
-
-              {/* Scalar API Docs - Full Width */}
-              <div className="w-full px-4">
-                <ApiDocsPage />
               </div>
             </TabsContent>
           </Tabs>

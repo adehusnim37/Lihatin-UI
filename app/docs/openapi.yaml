@@ -1,0 +1,302 @@
+openapi: 3.0.0
+info:
+  title: Lihat.in API
+  version: 1.0.0
+  description: API Documentation for Lihat.in Shortener Service (API Key Access)
+servers:
+  - url: https://api.lihat.in/v1
+    description: Production Server
+  - url: http://localhost:8080/v1
+    description: Local Development
+components:
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+tags:
+  - name: Short-Links
+paths:
+  /api/short:
+    post:
+      tags:
+        - Short-Links
+      summary: Create Short Link
+      description: Create a new short link. Supports single or bulk creation.
+      security:
+        - apiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                original_url: https://example.com
+                title: Example Title
+                description: Description for example
+                custom_code: example123
+                passcode: "123456"
+                expires_at: "2025-12-31T23:59:59Z"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                success: true
+                data:
+                  original_url: https://example.com
+                  custom_code: example123
+                  short_link: https://lihat.in/example123
+                message: Short link created successfully
+    get:
+      tags:
+        - Short-Links
+      summary: List Short Links
+      description: Get a list of short links created by the API Key owner.
+      security:
+        - apiKeyAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: 10
+        - name: sort
+          in: query
+          schema:
+            type: string
+          example: created_at
+        - name: order_by
+          in: query
+          schema:
+            type: string
+          example: desc
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                success: true
+                data:
+                  short_links:
+                    - id: 8ab81ad5-0f4a-43bb-8079-5750e590bd06
+                      short_code: example123
+                      original_url: https://example.com
+                      is_active: true
+                      created_at: "2025-09-02T10:25:36.049+07:00"
+                      updated_at: "2025-09-02T10:25:36.049+07:00"
+                      click_count: 0
+                  total_count: 1
+                  page: 1
+                  limit: 10
+                  total_pages: 1
+                message: Short links retrieved successfully
+
+  /api/short/stats:
+    get:
+      tags:
+        - Short-Links
+      summary: Get All Stats
+      description: Get aggregated statistics for all short links.
+      security:
+        - apiKeyAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                success: true
+                data:
+                  summary:
+                    total_links: 13
+                    active_links: 13
+                    total_clicks: 61
+                    clicks_last_30d: 61
+                    top_countries:
+                      - country: "Local Machine"
+                        count: 61
+                    top_devices:
+                      - device: "Desktop"
+                        count: 12
+                message: All stats retrieved successfully
+
+  /api/short/{code}:
+    get:
+      tags:
+        - Short-Links
+      summary: Get Short Link
+      description: Get details of a specific short link.
+      security:
+        - apiKeyAuth: []
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The short code
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                success: true
+                data:
+                  id: 9c64fe90-b35b-4ce4-b3d8-d64fb6beb782
+                  short_code: example123
+                  original_url: https://example.com
+                  title: Example Title
+                  is_active: true
+                  created_at: "2026-01-06T11:34:21.683+07:00"
+                  detail:
+                    passcode: 123456
+                    current_clicks: 20
+                message: Short link retrieved successfully
+
+    put:
+      tags:
+        - Short-Links
+      summary: Update Short Link
+      description: Update a short link's details (title, description, etc).
+      security:
+        - apiKeyAuth: []
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                title: New Title
+                description: New Description
+                is_active: false
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                success: true
+                data:
+                  title: New Title
+                message: Short link updated successfully
+
+    delete:
+      tags:
+        - Short-Links
+      summary: Delete Short Link
+      security:
+        - apiKeyAuth: []
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              example:
+                success: true
+                message: Short link deleted successfully
+
+  /api/short/{code}/stats:
+    get:
+      tags:
+        - Short-Links
+      summary: Get Short Link Stats
+      description: Get statistics for a specific short link.
+      security:
+        - apiKeyAuth: []
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                success: true
+                data:
+                  recent_views:
+                    - id: 04c69be3-baf3-479c-be02-6dedfd1db7b6
+                      ip_address: "::1"
+                      clicked_at: "2025-09-02T13:03:46.401+07:00"
+                  total_clicks: 14
+                  unique_visitors: 1
+                message: Short link stats retrieved successfully
+
+  /api/short/{code}/views:
+    get:
+      tags:
+        - Short-Links
+      summary: Get Short Link Views (Paginated)
+      security:
+        - apiKeyAuth: []
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: 10
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                success: true
+                data:
+                  views:
+                    recent_views:
+                      - ip_address: "::1"
+                        browser: "Chrome"
+                        os: "MacOS"
+                        clicked_at: "2026-01-10T11:32:01.388+07:00"
+                    total_count: 20
+                    page: 1
+                message: Short link views with pagination retrieved successfully
