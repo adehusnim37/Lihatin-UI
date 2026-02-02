@@ -63,6 +63,7 @@ import {
   PolarRadiusAxis,
   RadialBar,
   RadialBarChart,
+  PolarAngleAxis,
 } from "recharts";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { toast } from "sonner";
@@ -164,7 +165,7 @@ export default function LinkDetailPage() {
     if (
       await handleUpdate(
         { description: descriptionInput },
-        "Description updated!"
+        "Description updated!",
       )
     ) {
       setIsEditingDescription(false);
@@ -180,7 +181,7 @@ export default function LinkDetailPage() {
           utm_campaign: tagsInput.utm_campaign,
           utm_content: tagsInput.utm_content,
         },
-        "Tags updated!"
+        "Tags updated!",
       )
     ) {
       setIsEditingTags(false);
@@ -198,7 +199,7 @@ export default function LinkDetailPage() {
 
   const handleUpdateExpiration = async (
     shortCode: string,
-    data: { expires_at: string | null }
+    data: { expires_at: string | null },
   ) => {
     await updateLink.mutateAsync({ code: shortCode, data });
     toast.success("Expiration updated successfully");
@@ -206,7 +207,7 @@ export default function LinkDetailPage() {
 
   const handleUpdateClickLimit = async (
     shortCode: string,
-    data: { click_limit: number | null }
+    data: { click_limit: number | null },
   ) => {
     await updateLink.mutateAsync({ code: shortCode, data });
     toast.success("Click limit updated successfully");
@@ -637,16 +638,18 @@ export default function LinkDetailPage() {
                           },
                         ]}
                         startAngle={90}
-                        endAngle={
-                          clickLimit > 0
-                            ? 90 +
-                              (360 * Math.min(currentClicks, clickLimit)) /
-                                clickLimit
-                            : 450
-                        }
+                        endAngle={450}
                         innerRadius={80}
                         outerRadius={110}
                       >
+                        <PolarAngleAxis
+                          type="number"
+                          domain={[
+                            0,
+                            clickLimit > 0 ? clickLimit : currentClicks || 1,
+                          ]}
+                          tick={false}
+                        />
                         <PolarGrid
                           gridType="circle"
                           radialLines={false}
@@ -1006,7 +1009,7 @@ export default function LinkDetailPage() {
                                   </span>
                                   {tag.v}
                                 </div>
-                              ) : null
+                              ) : null,
                             )}
                           </div>
                         ) : (

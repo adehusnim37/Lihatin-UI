@@ -17,7 +17,6 @@ import { APIKeyList } from "@/components/api-keys/api-key-list";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ApiDocsPage from "@/app/docs/page";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
@@ -134,15 +133,18 @@ export default function ApiIntegrationsPage() {
                     <div>
                       <h2 className="font-semibold">API Reference</h2>
                       <p className="text-sm text-muted-foreground">
-                        Interactive API documentation powered by Postman and
-                        Scalar
+                        Interactive API documentation
                       </p>
                     </div>
                   </div>
                   <Button variant="outline" asChild>
-                    <a href="/docs" target="_blank" rel="noopener noreferrer">
+                    <a
+                      href="https://www.postman.com/adehusnim/workspace/lihatin/collection/13183823-585cf118-ae9e-4e0d-af3c-f599d1caaf38?action=share&creator=13183823"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       <ExternalLink className="h-4 w-4 mr-2" />
-                      Read Documentation
+                      Open Postman Collection
                     </a>
                   </Button>
                 </div>
