@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { toast } from 'sonner'
 import { checkAuth, logout as apiLogout, clearUserData } from '@/lib/api/auth'
 
 interface AuthContextType {
@@ -29,7 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     try {
       // Call backend to check if access_token cookie is valid
-      const isAuth = await checkAuth()
+      const { isAuthenticated: isAuth, error } = await checkAuth()
       setIsAuthenticated(isAuth)
 
       // Protected routes
@@ -38,6 +39,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Redirect to login if accessing protected route without valid auth
       if (!isAuth && isProtected) {
+        // Show error toast if there's an error message
+        if (error) {
+          toast.error(error)
+        }
+        
+        // Clear user data when session is invalid
+        clearUserData()
+        
         router.push(`/auth/login?redirect=${pathname}`)
       }
 
@@ -50,6 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Auth check failed:', error)
       setIsAuthenticated(false)
+      toast.error('Authentication check failed')
     } finally {
       setIsLoading(false)
     }

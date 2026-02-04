@@ -29,15 +29,15 @@ export const SidebarData = {
     },
   ],
   navSecondary: [
-    {
-      title: "Settings",
-      url: "/main/settings",
-      icon: IconSettings,
-    },
-    {
-      title: "Get Help",
-      url: "/main/help",
-      icon: IconHelp,
-    },
+    // {
+    //   title: "Settings",
+    //   url: "/main/settings",
+    //   icon: IconSettings,
+    // },
+    // {
+    //   title: "Get Help",
+    //   url: "/main/help",
+    //   icon: IconHelp,
+    // },
   ],
 }

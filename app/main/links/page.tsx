@@ -177,6 +177,7 @@ export default function LinksPage() {
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
                   Create New Link
+                  <CreateLink />
                 </Button>
               )}
             </div>

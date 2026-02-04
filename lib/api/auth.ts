@@ -443,7 +443,7 @@ export async function getProfile(): Promise<APIResponse<AuthProfileData>> {
  * Check if user is authenticated by checking server-side
  * 🔐 Don't rely on localStorage - cookies are the source of truth
  */
-export async function checkAuth(): Promise<boolean> {
+export async function checkAuth(): Promise<{ isAuthenticated: boolean; error?: string }> {
   try {
     // Call a protected endpoint to verify cookie validity
     const response = await fetch(`${API_URL}/auth/me`, {
@@ -454,10 +454,23 @@ export async function checkAuth(): Promise<boolean> {
       credentials: "include", // ✅ Send access_token cookie
     });
 
-    return response.ok;
+    if (response.ok) {
+      return { isAuthenticated: true };
+    }
+
+    // Try to parse error message from response
+    try {
+      const data = await response.json();
+      return { 
+        isAuthenticated: false, 
+        error: data.message || data.error?.session || "Authentication failed" 
+      };
+    } catch {
+      return { isAuthenticated: false, error: "Authentication failed" };
+    }
   } catch (error) {
     console.error("Auth check failed:", error);
-    return false;
+    return { isAuthenticated: false, error: "Network error. Please check your connection." };
   }
 }
 

@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IconCalendarClock } from "@tabler/icons-react";
-import { format, isSameDay, startOfDay } from "date-fns";
+import { format, isSameDay, isBefore, startOfDay } from "date-fns";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -12,8 +12,10 @@ import { Calendar } from "@/components/ui/calendar";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import {
@@ -21,6 +23,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 
 const FormSchema = z.object({
@@ -31,18 +34,14 @@ const FormSchema = z.object({
 
 interface DateTimePicker24hFormProps {
   disablePast?: boolean;
-  disableBefore?: Date;
   value?: Date;
   onChange?: (date: Date | undefined) => void;
-  disabledPast2Dates?: boolean;
 }
 
 export function DateTimePicker24hForm({
   disablePast = false,
-  disableBefore,
   value,
   onChange,
-  disabledPast2Dates = false,
 }: DateTimePicker24hFormProps) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -100,9 +99,9 @@ export function DateTimePicker24hForm({
                       )}
                     >
                       {field.value ? (
-                        format(field.value, "dd/MM/yyyy HH:mm")
+                        format(field.value, "MM/dd/yyyy HH:mm")
                       ) : (
-                        <span>DD/MM/YYYY HH:mm</span>
+                        <span>MM/DD/YYYY HH:mm</span>
                       )}
                       <IconCalendarClock className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
@@ -115,20 +114,13 @@ export function DateTimePicker24hForm({
                       selected={field.value}
                       onSelect={handleDateSelect}
                       disabled={
-                        disablePast 
-                          ? { before: startOfDay(now) }
-                          : disableBefore
-                          ? { before: startOfDay(disableBefore) }
-                          : undefined
+                        disablePast ? { before: startOfDay(now) } : undefined
                       }
                       initialFocus
                     />
                     <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
-                      <div 
-                        tabIndex={0}
-                        className="w-64 h-[200px] sm:w-auto sm:h-[300px] overflow-y-auto overflow-x-auto sm:overflow-x-hidden [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-gray-700 hover:[&::-webkit-scrollbar-thumb]:bg-gray-400 dark:hover:[&::-webkit-scrollbar-thumb]:bg-gray-600 [&::-webkit-scrollbar-thumb]:rounded-full focus:outline-none"
-                      >
-                        <div className="flex sm:flex-col p-2">
+                      <ScrollArea className="w-64 h-[200px] sm:w-auto sm:h-[300px] overflow-y-auto">
+                        <div className="flex sm:flex-col p-2" style={{ minHeight: 'fit-content' }}>
                           {Array.from({ length: 24 }, (_, i) => i)
                             .reverse()
                             .map((hour) => {
@@ -136,16 +128,6 @@ export function DateTimePicker24hForm({
                                 field.value && isSameDay(field.value, now);
                               const isDisabled =
                                 disablePast && isToday && hour < now.getHours();
-                              
-                              // Disable hours before the disableBefore time on the same day
-                              const isSameAsDisableBefore = 
-                                disabledPast2Dates && 
-                                disableBefore && 
-                                field.value && 
-                                isSameDay(field.value, disableBefore);
-                              const isBeforeDisableHour = 
-                                isSameAsDisableBefore && hour < disableBefore.getHours();
-                              
                               return (
                                 <Button
                                   key={hour}
@@ -160,19 +142,24 @@ export function DateTimePicker24hForm({
                                   onClick={() =>
                                     handleTimeChange("hour", hour.toString())
                                   }
-                                  disabled={isDisabled || isBeforeDisableHour}
+                                  disabled={isDisabled}
                                 >
                                   {hour}
                                 </Button>
                               );
                             })}
                         </div>
-                      </div>
-                      <div 
-                        tabIndex={0}
-                        className="w-64 h-[200px] sm:w-auto sm:h-[300px] overflow-y-auto overflow-x-auto sm:overflow-x-hidden [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-gray-700 hover:[&::-webkit-scrollbar-thumb]:bg-gray-400 dark:hover:[&::-webkit-scrollbar-thumb]:bg-gray-600 [&::-webkit-scrollbar-thumb]:rounded-full focus:outline-none"
-                      >
-                        <div className="flex sm:flex-col p-2">
+                        <ScrollBar
+                          orientation="horizontal"
+                          className="sm:hidden"
+                        />
+                        <ScrollBar
+                          orientation="vertical"
+                          className="hidden sm:block"
+                        />
+                      </ScrollArea>
+                      <ScrollArea className="w-64 h-[200px] sm:w-auto sm:h-[300px] overflow-y-auto">
+                        <div className="flex sm:flex-col p-2" style={{ minHeight: 'fit-content' }}>
                           {Array.from({ length: 12 }, (_, i) => i * 5).map(
                             (minute) => {
                               const isToday =
@@ -185,19 +172,6 @@ export function DateTimePicker24hForm({
                                 isToday &&
                                 isSameHour &&
                                 minute <= now.getMinutes();
-                              
-                              // Disable minutes before the disableBefore time on the same day and hour
-                              const isSameAsDisableBefore = 
-                                disabledPast2Dates && 
-                                disableBefore && 
-                                field.value && 
-                                isSameDay(field.value, disableBefore);
-                              const isSameHourAsDisable = 
-                                isSameAsDisableBefore && 
-                                field.value.getHours() === disableBefore.getHours();
-                              const isBeforeDisableMinute = 
-                                isSameHourAsDisable && minute <= disableBefore.getMinutes();
-                              
                               return (
                                 <Button
                                   key={minute}
@@ -215,7 +189,7 @@ export function DateTimePicker24hForm({
                                       minute.toString()
                                     )
                                   }
-                                  disabled={isDisabled || isBeforeDisableMinute}
+                                  disabled={isDisabled}
                                 >
                                   {minute.toString().padStart(2, "0")}
                                 </Button>
@@ -223,7 +197,15 @@ export function DateTimePicker24hForm({
                             }
                           )}
                         </div>
-                      </div>
+                        <ScrollBar
+                          orientation="horizontal"
+                          className="sm:hidden"
+                        />
+                        <ScrollBar
+                          orientation="vertical"
+                          className="hidden sm:block"
+                        />
+                      </ScrollArea>
                     </div>
                   </div>
                 </PopoverContent>

@@ -88,6 +88,13 @@ function requiresCSRF(method: string): boolean {
 }
 
 /**
+ * Check if we're in production mode (where CSRF is enabled)
+ */
+function isProduction(): boolean {
+  return process.env.NODE_ENV === "production";
+}
+
+/**
  * Wrapper around fetch that handles 401 errors with automatic token refresh
  * and CSRF token attachment for mutating requests
  * @param input - URL or Request object
@@ -104,8 +111,8 @@ export async function fetchWithAuth(
   // Prepare headers
   const headers = new Headers(init?.headers);
 
-  // Attach CSRF token for mutating requests
-  if (requiresCSRF(method)) {
+  // Attach CSRF token for mutating requests (only in production)
+  if (isProduction() && requiresCSRF(method)) {
     const token = await getCSRFToken();
     if (token) {
       headers.set("X-CSRF-Token", token);
@@ -155,13 +162,15 @@ export async function fetchWithAuth(
       // Attempt to refresh token (uses refresh_token cookie)
       await refreshToken();
 
-      // Also refresh CSRF token after auth refresh
-      await refreshCSRFToken();
+      // Also refresh CSRF token after auth refresh (only in production)
+      if (isProduction()) {
+        await refreshCSRFToken();
+      }
 
       console.log("Token refreshed successfully, retrying request...");
 
-      // Get new CSRF token for retry
-      if (requiresCSRF(method)) {
+      // Get new CSRF token for retry (only in production)
+      if (isProduction() && requiresCSRF(method)) {
         const newToken = await getCSRFToken();
         if (newToken) {
           headers.set("X-CSRF-Token", newToken);

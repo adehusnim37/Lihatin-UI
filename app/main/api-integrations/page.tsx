@@ -2,11 +2,9 @@
 
 import {
   Key,
-  Code2,
   Plus,
   ExternalLink,
   BookOpen,
-  Loader2,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -59,11 +57,8 @@ export default function ApiIntegrationsPage() {
         <SiteHeader />
         <div className="flex flex-1 flex-col gap-6 p-6">
           {/* Header */}
-          <div className="space-y-2 max-w-5xl mx-auto w-full">
+          <div className="space-y-2">
             <h1 className="text-3xl font-bold flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Code2 className="h-6 w-6 text-primary" />
-              </div>
               API & Documentation
             </h1>
             <p className="text-muted-foreground">
@@ -89,7 +84,7 @@ export default function ApiIntegrationsPage() {
 
             {/* API Keys Tab */}
             <TabsContent value="api-keys" className="space-y-6">
-              <div className="max-w-5xl mx-auto w-full">
+              <div>
                 {/* API Key Section */}
                 <div className="rounded-xl border bg-card p-6 space-y-4">
                   <div className="flex items-center justify-between flex-wrap gap-4">
@@ -124,7 +119,7 @@ export default function ApiIntegrationsPage() {
             {/* Documentation Tab */}
             <TabsContent value="documentation" className="space-y-6">
               {/* Header with download button */}
-              <div className="max-w-5xl mx-auto w-full">
+              <div>
                 <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-blue-500/10">
