@@ -3,6 +3,7 @@
  * 🔑 Functions to manage API keys
  */
 
+import { number } from "zod";
 import {
   getWithAuth,
   postWithAuth,
@@ -61,14 +62,7 @@ export interface APIKeyResponse {
   is_active: boolean;
   permissions: string[];
   created_at: string;
-}
-
-export interface PaginatedAPIKeysResponse {
-  api_keys: APIKeyResponse[];
-  total_count: number;
-  page: number;
-  limit: number;
-  total_pages: number;
+  updated_at: string;
 }
 
 // API response wrapper
@@ -78,7 +72,6 @@ export interface APIResponse<T = unknown> {
   message: string;
   error?: Record<string, string> | null;
 }
-
 
 // Refresh response types
 export interface APIKeySecretInfo {
@@ -158,6 +151,28 @@ export interface APIKeyActivityLogsResponse {
   api_key_info: APIKeyBasicInfo;
 }
 
+// APIKeyStatsResponse represents statistics about API keys
+export interface APIKeyStatsResponse {
+  TotalKeys: number;
+  ActiveKeys: number;
+  ExpiredKeys: number;
+  TotalUsage: number;
+  MostUsedKey?: APIKeyUsage | null;
+  LastUsedKey?: APIKeyLastUsed | null;
+}
+
+// APIKeyUsage represents information about the most used key
+export interface APIKeyUsage {
+  Name: string;
+  UsageCount: number;
+}
+
+// APIKeyLastUsed represents information about the last used key
+export interface APIKeyLastUsed {
+  Name: string;
+  LastUsedAt?: Date;
+}
+
 /**
  * Create a new API key
  */
@@ -171,15 +186,8 @@ export async function createAPIKey(
 /**
  * Get all API keys for current user
  */
-export async function getAPIKeys(
-  page: number = 1,
-  limit: number = 10,
-): Promise<APIResponse<PaginatedAPIKeysResponse>> {
-  const params = new URLSearchParams({
-    page: page.toString(),
-    limit: limit.toString(),
-  });
-  const response = await getWithAuth(`${API_URL}/api-keys/?${params}`);
+export async function getAPIKeys(): Promise<APIResponse<APIKeyResponse[]>> {
+  const response = await getWithAuth(`${API_URL}/api-keys/`);
   return response.json();
 }
 
@@ -237,7 +245,6 @@ export async function deactivateAPIKey(
   return response.json();
 }
 
-
 /**
  * Refresh/regenerate an API key (generates new secret)
  */
@@ -263,5 +270,15 @@ export async function getAPIKeyUsage(
   const response = await getWithAuth(
     `${API_URL}/api-keys/${id}/usage?${params}`,
   );
+  return response.json();
+}
+
+/**
+ * Get API key usage statistics/summary
+ */
+export async function getAPIKeyUsageStats(): Promise<
+  APIResponse<APIKeyStatsResponse>
+> {
+  const response = await getWithAuth(`${API_URL}/api-keys/stats`);
   return response.json();
 }

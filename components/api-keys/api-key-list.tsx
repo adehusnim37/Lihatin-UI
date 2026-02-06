@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Key, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { APIKeyCard } from "./api-key-card";
@@ -8,13 +8,12 @@ import { EditAPIKeyDialog } from "../api-keys/edit-api-key-dialog";
 import { DeleteAPIKeyDialog } from "../api-keys/delete-api-key-dialog";
 import { RefreshAPIKeyDialog } from "../api-keys/refresh-api-key-dialog";
 import { APIKeyUsageDialog } from "../api-keys/api-key-usage-dialog";
+import { APIKeyResponse } from "@/lib/api/api-keys";
 import {
-  getAPIKeys,
-  activateAPIKey,
-  deactivateAPIKey,
-  APIKeyResponse,
-} from "@/lib/api/api-keys";
-import { toast } from "sonner";
+  useAPIKeys,
+  useToggleAPIKeyStatus,
+  apiKeysKeys,
+} from "@/lib/hooks/queries/useAPIKeysQuery";
 
 export function APIKeyList() {
   const queryClient = useQueryClient();
@@ -24,33 +23,8 @@ export function APIKeyList() {
   const [refreshDialogOpen, setRefreshDialogOpen] = useState(false);
   const [usageDialogOpen, setUsageDialogOpen] = useState(false);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["api-keys"],
-    queryFn: () => getAPIKeys(1, 50),
-  });
-
-  const toggleStatusMutation = useMutation({
-    mutationFn: async (apiKey: APIKeyResponse) => {
-      if (apiKey.is_active) {
-        return deactivateAPIKey(apiKey.id);
-      } else {
-        return activateAPIKey(apiKey.id);
-      }
-    },
-    onSuccess: (response, apiKey) => {
-      if (response.success) {
-        queryClient.invalidateQueries({ queryKey: ["api-keys"] });
-        toast.success(
-          apiKey.is_active ? "API key deactivated" : "API key activated",
-        );
-      } else {
-        toast.error(response.message || "Failed to update API key status");
-      }
-    },
-    onError: () => {
-      toast.error("Failed to update API key status");
-    },
-  });
+  const { data, isLoading, error } = useAPIKeys();
+  const toggleStatusMutation = useToggleAPIKeyStatus();
 
   const handleEdit = (apiKey: APIKeyResponse) => {
     setSelectedKey(apiKey);
@@ -92,9 +66,7 @@ export function APIKeyList() {
     );
   }
 
-  const apiKeys: APIKeyResponse[] = Array.isArray(data?.data)
-    ? data.data
-    : data?.data?.api_keys || [];
+  const apiKeys: APIKeyResponse[] = Array.isArray(data) ? data : [];
 
   if (apiKeys.length === 0) {
     return (
@@ -132,7 +104,7 @@ export function APIKeyList() {
             onOpenChange={setEditDialogOpen}
             apiKey={selectedKey}
             onSuccess={() => {
-              queryClient.invalidateQueries({ queryKey: ["api-keys"] });
+              queryClient.invalidateQueries({ queryKey: apiKeysKeys.lists() });
               setEditDialogOpen(false);
             }}
           />
@@ -141,7 +113,7 @@ export function APIKeyList() {
             onOpenChange={setDeleteDialogOpen}
             apiKey={selectedKey}
             onSuccess={() => {
-              queryClient.invalidateQueries({ queryKey: ["api-keys"] });
+              queryClient.invalidateQueries({ queryKey: apiKeysKeys.lists() });
               setDeleteDialogOpen(false);
             }}
           />
@@ -150,7 +122,7 @@ export function APIKeyList() {
             onOpenChange={setRefreshDialogOpen}
             apiKey={selectedKey}
             onSuccess={() => {
-              queryClient.invalidateQueries({ queryKey: ["api-keys"] });
+              queryClient.invalidateQueries({ queryKey: apiKeysKeys.lists() });
             }}
           />
           <APIKeyUsageDialog

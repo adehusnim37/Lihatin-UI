@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +19,8 @@ import {
   Clock,
   ArrowUpRight,
 } from "lucide-react";
-import { getAPIKeyUsage, APIKeyResponse } from "@/lib/api/api-keys";
+import { APIKeyResponse } from "@/lib/api/api-keys";
+import { useAPIKeyUsage } from "@/lib/hooks/queries/useAPIKeysQuery";
 import { formatDistanceToNow, format } from "date-fns";
 
 interface APIKeyUsageDialogProps {
@@ -51,13 +51,13 @@ export function APIKeyUsageDialog({
   const [page, setPage] = useState(1);
   const limit = 10;
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["api-key-usage", apiKey.id, page],
-    queryFn: () => getAPIKeyUsage(apiKey.id, page, limit),
-    enabled: open,
-  });
+  const { data: usageData, isLoading, error } = useAPIKeyUsage(
+    apiKey.id,
+    page,
+    limit,
+    open, // Only fetch when dialog is open
+  );
 
-  const usageData = data?.data;
   const activityLogs = usageData?.activity_logs || [];
 
   const formatDate = (dateString?: string) => {
