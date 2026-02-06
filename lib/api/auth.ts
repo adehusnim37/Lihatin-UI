@@ -38,6 +38,7 @@ export interface UserProfile {
   last_name: string;
   email: string;
   avatar: string; // Assuming an empty string if no avatar
+  role: string; // "user" | "admin" | "super_admin"
   is_premium: boolean;
   created_at: string; // ISO 8601 or similar timestamp string
 }

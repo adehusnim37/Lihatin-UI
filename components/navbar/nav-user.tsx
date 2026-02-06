@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import {
+  IconDeviceDesktop,
   IconDotsVertical,
   IconLogout,
   IconSettings,
@@ -40,6 +41,7 @@ interface UserData {
   last_name: string
   email: string
   avatar: string
+  role: string
 }
 
 export function NavUser() {
@@ -139,9 +141,9 @@ export function NavUser() {
                 <IconShield />
                 MFA/2FA
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <IconSettings />
-                Settings
+              <DropdownMenuItem onClick={() => router.push('/profile/me?tab=session')}>
+                <IconDeviceDesktop />
+                Session
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

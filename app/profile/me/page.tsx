@@ -24,6 +24,7 @@ import {
   IconUserQuestion,
 } from "@tabler/icons-react";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { AuthProfileData, getUserData } from "@/lib/api/auth";
 import { toast } from "sonner";
 import { BadgeCheckIcon, Loader2 } from "lucide-react";
@@ -33,6 +34,8 @@ import { Item, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
+import { Session } from "inspector/promises";
+import SessionTab from "@/components/profile/tab/session";
 
 /**
  * Profile Page
@@ -47,7 +50,8 @@ export default function ProfilePage() {
   const [editedUser, setEditedUser] = useState<
     Partial<AuthProfileData["user"]>
   >({});
-  const [activeTab, setActiveTab] = useState("general");
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "general");
 
   const loadUserData = async () => {
     try {
@@ -380,6 +384,7 @@ export default function ProfilePage() {
                     <TabsList>
                       <TabsTrigger value="general">General</TabsTrigger>
                       <TabsTrigger value="security">Security</TabsTrigger>
+                      <TabsTrigger value="session">Session</TabsTrigger>
                       <TabsTrigger value="notifications">
                         Notifications
                       </TabsTrigger>
@@ -396,6 +401,9 @@ export default function ProfilePage() {
 
                     {/* Security Tab */}
                     <ProfileSecurityTab />
+
+                    {/* Session Tab */}
+                    <SessionTab />
 
                     {/* Notifications Tab */}
                     <TabsContent value="notifications" className="space-y-4">
