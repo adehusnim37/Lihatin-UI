@@ -191,6 +191,33 @@ export function useShortLinkViews(
   });
 }
 
+/**
+ * 📊 useDashboardStats - Fetch dashboard summary statistics
+ *
+ * @param startDate - Optional start date for filtering (YYYY-MM-DD)
+ * @param endDate - Optional end date for filtering (YYYY-MM-DD)
+ *
+ * @example
+ * const { data: stats } = useDashboardStats();
+ * const totalLinks = stats?.total_links ?? 0;
+ */
+export function useDashboardStats(startDate?: string, endDate?: string) {
+  return useQuery({
+    queryKey: [...linksKeys.all, "dashboard-stats", { startDate, endDate }] as const,
+    queryFn: async () => {
+      const { getDashboardStats } = await import("@/lib/api/shortlinks");
+      const response = await getDashboardStats(startDate, endDate);
+
+      if (!response.success) {
+        throw new Error(response.message || "Failed to fetch dashboard stats");
+      }
+
+      return response.data.summary;
+    },
+    staleTime: 30000, // Cache for 30 seconds
+  });
+}
+
 // ============================================
 // MUTATION HOOKS (Create, Update, Delete)
 // ============================================
