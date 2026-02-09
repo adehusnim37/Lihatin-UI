@@ -1,0 +1,19 @@
+.git
+.gitignore
+.env*
+*.log
+*.tmp
+*.swp
+
+.next/
+out/
+node_modules/
+coverage/
+
+# Local docs/deploy assets
+docs/
+deploy/
+
+.DS_Store
+.vscode/
+.idea/

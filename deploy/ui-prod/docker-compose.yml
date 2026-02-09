@@ -1,0 +1,31 @@
+services:
+  web:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    image: lihatin-ui:prod
+    container_name: lihatin-web
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${WEB_BIND_IP:-127.0.0.1}:3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    mem_limit: 900m
+    cpus: 1.5
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
