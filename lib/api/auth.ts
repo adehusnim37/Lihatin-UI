@@ -88,13 +88,22 @@ export interface RegisterResponse {
   email: string;
 }
 
+export interface RedeemPremiumCodeRequest {
+  secret_code: string;
+}
+
+export interface RedeemPremiumCodeResponse {
+  user_id: string;
+  is_premium: boolean;
+}
+
 export interface ForgotPasswordRequest {
   email?: string;
   username?: string;
 }
 
 // API Response - unified format for all responses (including validation errors)
-export interface APIResponse<T = any> {
+export interface APIResponse<T = unknown> {
   success: boolean;
   data: T | null;
   message: string;
@@ -168,6 +177,29 @@ export async function register(
 
   if (!response.ok) {
     throw new Error(data.message || "Registration failed");
+  }
+
+  return data;
+}
+
+/**
+ * Redeem premium code for authenticated user
+ */
+export async function redeemPremiumCode(
+  payload: RedeemPremiumCodeRequest
+): Promise<APIResponse<RedeemPremiumCodeResponse>> {
+  const response = await fetch(`${API_URL}/auth/redeem-premium-code`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  const data: APIResponse<RedeemPremiumCodeResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(data));
   }
 
   return data;

@@ -25,7 +25,11 @@ import {
 } from "@tabler/icons-react";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { AuthProfileData, getUserData } from "@/lib/api/auth";
+import {
+  AuthProfileData,
+  getUserData,
+  redeemPremiumCode,
+} from "@/lib/api/auth";
 import { toast } from "sonner";
 import { BadgeCheckIcon, Loader2 } from "lucide-react";
 import { ProfileGeneralTab } from "@/components/profile/tab/general";
@@ -34,8 +38,16 @@ import { Item, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
-import { Session } from "inspector/promises";
 import SessionTab from "@/components/profile/tab/session";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 /**
  * Profile Page
@@ -51,7 +63,12 @@ export default function ProfilePage() {
     Partial<AuthProfileData["user"]>
   >({});
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "general");
+  const [activeTab, setActiveTab] = useState(
+    searchParams.get("tab") || "general",
+  );
+  const [isRedeemOpen, setIsRedeemOpen] = useState(false);
+  const [secretCode, setSecretCode] = useState("");
+  const [isRedeeming, setIsRedeeming] = useState(false);
 
   const loadUserData = async () => {
     try {
@@ -81,14 +98,6 @@ export default function ProfilePage() {
     setIsEditing(true);
   };
 
-  const handleEmailVerified = () => {
-    // Update userAuth state to reflect email verification
-    setUserAuth((prev) => (prev ? { ...prev, is_email_verified: true } : prev));
-    toast.success("Email Verified", {
-      description: "Your email has been verified successfully.",
-    });
-  };
-
   const handleCancel = () => {
     if (user) {
       setEditedUser({
@@ -114,6 +123,35 @@ export default function ProfilePage() {
         ...user,
         ...editedUser,
       });
+    }
+  };
+
+  const handleRedeemPremium = async () => {
+    if (!secretCode.trim()) {
+      toast.error("Secret code is required");
+      return;
+    }
+
+    setIsRedeeming(true);
+    try {
+      await redeemPremiumCode({ secret_code: secretCode.trim() });
+
+      setUser((prev) => (prev ? { ...prev, is_premium: true } : prev));
+      setIsRedeemOpen(false);
+      setSecretCode("");
+
+      toast.success("Premium activated", {
+        description: "Your account has been upgraded to premium.",
+      });
+    } catch (error) {
+      toast.error("Redeem failed", {
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to redeem premium code.",
+      });
+    } finally {
+      setIsRedeeming(false);
     }
   };
 
@@ -326,7 +364,8 @@ export default function ProfilePage() {
                               </span>
                             </TooltipTrigger>
                             <TooltipContent>
-                              Verified Email Address. Enjoy access to all features.
+                              Verified Email Address. Enjoy access to all
+                              features.
                             </TooltipContent>
                           </Tooltip>
                         </ItemMedia>
@@ -358,7 +397,58 @@ export default function ProfilePage() {
                           Premium
                         </Badge>
                       ) : (
-                        <Badge variant="secondary">Free</Badge>
+                        <Dialog open={isRedeemOpen} onOpenChange={setIsRedeemOpen}>
+                          <Badge
+                            variant="secondary"
+                            className="cursor-pointer transition-colors hover:bg-secondary/80"
+                            onClick={() => setIsRedeemOpen(true)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                setIsRedeemOpen(true);
+                              }
+                            }}
+                          >
+                            Free
+                          </Badge>
+                          <DialogContent className="sm:max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>Redeem Premium Code</DialogTitle>
+                              <DialogDescription>
+                                Enter your secret code to upgrade this account to premium.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-2">
+                              <Input
+                                placeholder="Enter secret code"
+                                value={secretCode}
+                                onChange={(e) => setSecretCode(e.target.value)}
+                                disabled={isRedeeming}
+                              />
+                            </div>
+                            <DialogFooter>
+                              <Button
+                                variant="outline"
+                                onClick={() => setIsRedeemOpen(false)}
+                                disabled={isRedeeming}
+                              >
+                                Cancel
+                              </Button>
+                              <Button onClick={handleRedeemPremium} disabled={isRedeeming}>
+                                {isRedeeming ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Redeeming...
+                                  </>
+                                ) : (
+                                  "Redeem"
+                                )}
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
                       )}
                     </Item>
                     <Item variant={"outline"} size={"sm"}>
