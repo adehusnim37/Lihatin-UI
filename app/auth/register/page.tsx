@@ -149,6 +149,7 @@ export default function RegisterPage() {
                 username: formData.username,
                 email: formData.email,
                 password: formData.password,
+                secret_code: formData.secret_code,
             });
 
             if (response.success && response.data) {

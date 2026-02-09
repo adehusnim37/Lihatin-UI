@@ -80,6 +80,7 @@ export interface RegisterRequest {
   username: string;
   email: string;
   password: string;
+  secret_code?: string;
 }
 
 export interface RegisterResponse {
