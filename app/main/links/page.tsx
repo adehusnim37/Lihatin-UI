@@ -173,13 +173,6 @@ export default function LinksPage() {
                     : "Create your first short link to get started"}
                 </p>
               </div>
-              {!searchQuery && (
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create New Link
-                  <CreateLink />
-                </Button>
-              )}
             </div>
           ) : (
             <>
