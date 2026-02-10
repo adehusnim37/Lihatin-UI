@@ -89,9 +89,11 @@ function requiresCSRF(method: string): boolean {
 
 /**
  * Check if we're in production mode (where CSRF is enabled)
+ * Uses API URL to determine environment since that's more reliable than NODE_ENV
  */
 function isProduction(): boolean {
-  return process.env.NODE_ENV === "production";
+  // Check if API URL is a production domain (https and not localhost)
+  return API_URL.startsWith("https://") && !API_URL.includes("localhost") || process.env.NODE_ENV === "production";
 }
 
 /**
@@ -116,6 +118,12 @@ export async function fetchWithAuth(
     const token = await getCSRFToken();
     if (token) {
       headers.set("X-CSRF-Token", token);
+      console.log(
+        `[CSRF] Attached token to ${method} request:`,
+        token.substring(0, 20) + "..."
+      );
+    } else {
+      console.warn(`[CSRF] No token available for ${method} request`);
     }
   }
 
