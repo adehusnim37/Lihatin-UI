@@ -4,8 +4,6 @@
  * 🛡️ Automatically attaches CSRF token to mutating requests
  */
 
-import { refreshToken } from "./auth";
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
 
 // CSRF token storage (in-memory for security)
@@ -160,6 +158,7 @@ export async function fetchWithAuth(
       console.log("Access token expired, refreshing...");
 
       // Attempt to refresh token (uses refresh_token cookie)
+      const { refreshToken } = await import("./auth");
       await refreshToken();
 
       // Also refresh CSRF token after auth refresh (only in production)
