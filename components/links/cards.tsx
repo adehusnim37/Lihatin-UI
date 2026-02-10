@@ -82,7 +82,7 @@ interface ShortLinkCardProps {
 
 export default function ShortLinkCard({
   data,
-  baseUrl = "http://localhost:3000",
+  baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL,
   onEdit,
   onDelete,
   onAnalytics,

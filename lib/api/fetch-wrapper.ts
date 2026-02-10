@@ -93,7 +93,7 @@ function requiresCSRF(method: string): boolean {
  */
 function isProduction(): boolean {
   // Check if API URL is a production domain (https and not localhost)
-  return API_URL.startsWith("https://") && !API_URL.includes("localhost") || process.env.NODE_ENV === "production";
+  return process.env.NODE_ENV === "production";
 }
 
 /**

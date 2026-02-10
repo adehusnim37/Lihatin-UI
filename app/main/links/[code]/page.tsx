@@ -235,7 +235,7 @@ export default function LinkDetailPage() {
     );
   }
 
-  const host = typeof window !== "undefined" ? window.location.host : "";
+  const host = process.env.NEXT_PUBLIC_FRONTEND_URL
   const shortUrl = `${host}/${link.short_code}`;
   const fullUrl = `https://${shortUrl}`;
 
