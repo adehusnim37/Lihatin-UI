@@ -48,10 +48,10 @@ export function ActivityLogTable({ code }: ActivityLogTableProps) {
   const { data, isLoading, error } = useShortLinkLogs(code, page, limit);
 
   const logs = data?.data?.logs || [];
-  const meta = data?.data?.meta;
+  const paginationData = data?.data;
 
   const handleNext = () => {
-    if (meta && page < meta.total_pages) setPage((p) => p + 1);
+    if (paginationData && page < paginationData.total_pages) setPage((p) => p + 1);
   };
 
   const handlePrev = () => {
@@ -181,10 +181,10 @@ export function ActivityLogTable({ code }: ActivityLogTableProps) {
       </div>
 
       {/* Pagination Controls */}
-      {meta && (
+      {paginationData && (
         <div className="flex items-center justify-between px-2">
           <p className="text-xs text-muted-foreground">
-            Page {meta.current_page} of {meta.total_pages} ({meta.total_items}{" "}
+            Page {paginationData.page} of {paginationData.total_pages} ({paginationData.total_count}{" "}
             entries)
           </p>
           <div className="flex gap-2">
@@ -201,7 +201,7 @@ export function ActivityLogTable({ code }: ActivityLogTableProps) {
               variant="outline"
               size="sm"
               onClick={handleNext}
-              disabled={page === meta.total_pages}
+              disabled={page === paginationData.total_pages}
               className="h-8 w-8 p-0"
             >
               <ChevronRight className="h-4 w-4" />

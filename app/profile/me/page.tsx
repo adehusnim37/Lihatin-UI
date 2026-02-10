@@ -23,7 +23,7 @@ import {
   IconCrown,
   IconUserQuestion,
 } from "@tabler/icons-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   AuthProfileData,
@@ -50,11 +50,10 @@ import {
 import { Input } from "@/components/ui/input";
 
 /**
- * Profile Page
- * 🔐 Protected by Next.js middleware (middleware.ts)
- * Shows user profile information and settings
+ * Profile Page Content Component
+ * Uses useSearchParams() so must be wrapped in Suspense
  */
-export default function ProfilePage() {
+function ProfilePageContent() {
   const [user, setUser] = useState<AuthProfileData["user"]>();
   const [userAuth, setUserAuth] = useState<AuthProfileData["auth"]>();
   const [isLoading, setIsLoading] = useState(true);
@@ -526,6 +525,65 @@ export default function ProfilePage() {
                     </TabsContent>
                   </Tabs>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
+  );
+}
+
+/**
+ * Profile Page
+ * 🔐 Protected by Next.js middleware (middleware.ts)
+ * Shows user profile information and settings
+ * Wrapped in Suspense to support useSearchParams()
+ */
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<ProfilePageSkeleton />}>
+      <ProfilePageContent />
+    </Suspense>
+  );
+}
+
+/**
+ * Loading skeleton for profile page
+ */
+function ProfilePageSkeleton() {
+  return (
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar />
+      <SidebarInset>
+        <SiteHeader />
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2">
+                    <Skeleton className="h-9 w-32" />
+                    <Skeleton className="h-5 w-64" />
+                  </div>
+                  <Skeleton className="h-10 w-32" />
+                </div>
+              </div>
+              <div className="grid gap-6 md:grid-cols-1">
+                <Card className="md:col-span-1 mx-auto w-full max-w-md">
+                  <CardHeader className="items-center text-center">
+                    <Skeleton className="h-24 w-24 rounded-full" />
+                    <Skeleton className="h-6 w-32 mt-4" />
+                    <Skeleton className="h-4 w-48" />
+                  </CardHeader>
+                </Card>
               </div>
             </div>
           </div>
