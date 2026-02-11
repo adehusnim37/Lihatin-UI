@@ -18,13 +18,14 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import { Loader2, Eye, EyeOff, CheckCircle2, XCircle } from "lucide-react";
 import PasswordIndicator, {
   calculatePasswordStrength,
 } from "@/components/forms/input/PasswordIndicator";
 import { validateResetToken, resetPassword } from "@/lib/api/auth";
+
+const BRAND_URL = process.env.NEXT_PUBLIC_BRAND_URL || "https://lihat.in";
 
 // Zod schema for form validation
 const resetPasswordSchema = z
@@ -68,7 +69,6 @@ function ResetPasswordContent() {
 
   const password = form.watch("password");
   const confirmPassword = form.watch("confirmPassword");
-  const passwordStrength = calculatePasswordStrength(password, 8);
 
   // Validate token on mount
   useEffect(() => {
@@ -127,11 +127,14 @@ function ResetPasswordContent() {
           router.push("/auth/login");
         }, 1500);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Reset password error:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Unable to reset password. Please try again.";
       toast.error("Reset Failed", {
-        description:
-          error.message || "Unable to reset password. Please try again.",
+        description: errorMessage,
         duration: 4000,
       });
     } finally {
@@ -177,7 +180,7 @@ function ResetPasswordContent() {
         <div className="max-w-sm px-6 py-16 md:p-0 w-full">
           {/* Header section with logo and title */}
           <div className="space-y-6 mb-6">
-            <Link href="https://www.shadcndesign.com/" target="_blank">
+            <Link href={BRAND_URL} target="_blank">
               <Image
                 src="/logo.svg"
                 alt="Logo"

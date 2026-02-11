@@ -88,15 +88,6 @@ function requiresCSRF(method: string): boolean {
 }
 
 /**
- * Check if we're in production mode (where CSRF is enabled)
- * Uses API URL to determine environment since that's more reliable than NODE_ENV
- */
-function isProduction(): boolean {
-  // Check if API URL is a production domain (https and not localhost)
-  return process.env.NODE_ENV === "production";
-}
-
-/**
  * Wrapper around fetch that handles 401 errors with automatic token refresh
  * and CSRF token attachment for mutating requests
  * @param input - URL or Request object
@@ -106,21 +97,22 @@ function isProduction(): boolean {
 export async function fetchWithAuth(
   input: RequestInfo | URL,
   init?: RequestInit,
-  retryOnRefresh: boolean = true
+  retryOnRefresh: boolean = true,
 ): Promise<Response> {
   const method = init?.method?.toUpperCase() || "GET";
 
   // Prepare headers
   const headers = new Headers(init?.headers);
 
-  // Attach CSRF token for mutating requests (only in production)
-  if (isProduction() && requiresCSRF(method)) {
+  // Attach CSRF token for mutating requests.
+  // This is safe even when backend CSRF middleware is disabled.
+  if (requiresCSRF(method)) {
     const token = await getCSRFToken();
     if (token) {
       headers.set("X-CSRF-Token", token);
       console.log(
         `[CSRF] Attached token to ${method} request:`,
-        token.substring(0, 20) + "..."
+        token.substring(0, 20) + "...",
       );
     } else {
       console.warn(`[CSRF] No token available for ${method} request`);
@@ -170,15 +162,13 @@ export async function fetchWithAuth(
       // Attempt to refresh token (uses refresh_token cookie)
       await refreshToken();
 
-      // Also refresh CSRF token after auth refresh (only in production)
-      if (isProduction()) {
-        await refreshCSRFToken();
-      }
+      // Also refresh CSRF token after auth refresh
+      await refreshCSRFToken();
 
       console.log("Token refreshed successfully, retrying request...");
 
-      // Get new CSRF token for retry (only in production)
-      if (isProduction() && requiresCSRF(method)) {
+      // Get new CSRF token for retry
+      if (requiresCSRF(method)) {
         const newToken = await getCSRFToken();
         if (newToken) {
           headers.set("X-CSRF-Token", newToken);
@@ -224,7 +214,7 @@ export async function getWithAuth(url: string): Promise<Response> {
  */
 export async function postWithAuth(
   url: string,
-  body?: unknown
+  body?: unknown,
 ): Promise<Response> {
   return fetchWithAuth(url, {
     method: "POST",
@@ -240,7 +230,7 @@ export async function postWithAuth(
  */
 export async function putWithAuth(
   url: string,
-  body?: unknown
+  body?: unknown,
 ): Promise<Response> {
   return fetchWithAuth(url, {
     method: "PUT",
@@ -256,7 +246,7 @@ export async function putWithAuth(
  */
 export async function patchWithAuth(
   url: string,
-  body?: unknown
+  body?: unknown,
 ): Promise<Response> {
   return fetchWithAuth(url, {
     method: "PATCH",

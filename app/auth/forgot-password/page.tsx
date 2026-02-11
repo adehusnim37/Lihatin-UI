@@ -12,6 +12,8 @@ import { forgotPassword } from "@/lib/api/auth";
 import { Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
+const BRAND_URL = process.env.NEXT_PUBLIC_BRAND_URL || "https://lihat.in";
+
 export default function ForgotPassword() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -81,13 +83,16 @@ export default function ForgotPassword() {
           router.push("/auth/check-email");
         }, 1500);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Forgot password error:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Unable to send reset link. Please try again.";
 
       // Show error toast
       toast.error("Request Failed", {
-        description:
-          error.message || "Unable to send reset link. Please try again.",
+        description: errorMessage,
         duration: 4000,
       });
     } finally {
@@ -102,7 +107,7 @@ export default function ForgotPassword() {
         <div className="max-w-sm px-6 py-16 md:p-0 w-full ">
           {/* Header section with logo and title */}
           <div className="space-y-6 mb-6">
-            <Link href="https://www.shadcndesign.com/" target="_blank">
+            <Link href={BRAND_URL} target="_blank">
               <Image
                 src="/logo.svg"
                 alt="Logo"

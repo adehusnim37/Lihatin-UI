@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Plus,
   Search,
   Filter,
   Loader2,
@@ -110,7 +109,10 @@ export default function LinksPage() {
           </div>
 
           {/* Filters */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <div
+            className="flex flex-col gap-4 sm:flex-row sm:items-center"
+            suppressHydrationWarning
+          >
             <div className="relative flex-1">
               <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
               <Input
@@ -118,11 +120,12 @@ export default function LinksPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
+                suppressHydrationWarning
               />
             </div>
             <div className="flex gap-2">
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-[140px]" suppressHydrationWarning>
                   <Filter className="mr-2 h-4 w-4" />
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
@@ -132,7 +135,7 @@ export default function LinksPage() {
                 </SelectContent>
               </Select>
               <Select value={orderBy} onValueChange={setOrderBy}>
-                <SelectTrigger className="w-[120px]">
+                <SelectTrigger className="w-[120px]" suppressHydrationWarning>
                   <SelectValue placeholder="Order" />
                 </SelectTrigger>
                 <SelectContent>

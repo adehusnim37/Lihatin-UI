@@ -21,7 +21,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { toast } from "sonner";
 
 const FormSchema = z.object({
   time: z.date({
@@ -51,10 +50,6 @@ export function DateTimePicker24hForm({
 
   const now = new Date();
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    toast.success(`Selected date and time: ${format(data.time, "PPPP HH:mm")}`);
-  }
-
   function handleDateSelect(date: Date | undefined) {
     if (date) {
       const currentTime = value || new Date();
@@ -83,7 +78,7 @@ export function DateTimePicker24hForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+      <div className="space-y-5">
         <FormField
           control={form.control}
           name="time"
@@ -93,6 +88,7 @@ export function DateTimePicker24hForm({
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
+                      type="button"
                       variant={"outline"}
                       className={cn(
                         "w-full pl-3 text-left font-normal",
@@ -149,6 +145,7 @@ export function DateTimePicker24hForm({
                               return (
                                 <Button
                                   key={hour}
+                                  type="button"
                                   size="icon"
                                   variant={
                                     field.value &&
@@ -201,6 +198,7 @@ export function DateTimePicker24hForm({
                               return (
                                 <Button
                                   key={minute}
+                                  type="button"
                                   size="icon"
                                   variant={
                                     field.value &&
@@ -232,7 +230,7 @@ export function DateTimePicker24hForm({
             </FormItem>
           )}
         />
-      </form>
+      </div>
     </Form>
   );
 }

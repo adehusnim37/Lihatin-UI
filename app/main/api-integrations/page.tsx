@@ -18,6 +18,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
+const API_DOCS_URL =
+  process.env.NEXT_PUBLIC_API_DOCS_URL || `${API_BASE_URL}/docs/postman`;
+const POSTMAN_COLLECTION_URL =
+  process.env.NEXT_PUBLIC_POSTMAN_COLLECTION_URL ||
+  "https://www.postman.com/adehusnim/workspace/lihatin/collection/13183823-585cf118-ae9e-4e0d-af3c-f599d1caaf38?action=share&creator=13183823";
 
 export default function ApiIntegrationsPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -25,7 +30,7 @@ export default function ApiIntegrationsPage() {
   const [docsLoading, setDocsLoading] = useState(true);
   const queryClient = useQueryClient();
 
-  const docsUrl = `${API_BASE_URL}/docs/postman`;
+  const docsUrl = API_DOCS_URL;
 
   useEffect(() => {
     // Check if the docs endpoint is available
@@ -134,7 +139,7 @@ export default function ApiIntegrationsPage() {
                   </div>
                   <Button variant="outline" asChild>
                     <a
-                      href="https://www.postman.com/adehusnim/workspace/lihatin/collection/13183823-585cf118-ae9e-4e0d-af3c-f599d1caaf38?action=share&creator=13183823"
+                      href={POSTMAN_COLLECTION_URL}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -143,6 +148,21 @@ export default function ApiIntegrationsPage() {
                     </a>
                   </Button>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  {docsLoading
+                    ? "Checking docs endpoint..."
+                    : docsAvailable
+                      ? "Docs endpoint is reachable."
+                      : "Docs endpoint is not reachable from this browser."}{" "}
+                  <a
+                    href={docsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline underline-offset-2"
+                  >
+                    Open docs endpoint
+                  </a>
+                </p>
               </div>
             </TabsContent>
           </Tabs>

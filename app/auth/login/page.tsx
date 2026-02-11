@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -17,6 +17,8 @@ import {
   LoginResponse,
 } from "@/lib/api/auth";
 import { useAuth } from "@/app/context/AuthContext";
+
+const BRAND_URL = process.env.NEXT_PUBLIC_BRAND_URL || "https://lihat.in";
 
 function LoginContent() {
   const router = useRouter();
@@ -133,12 +135,16 @@ function LoginContent() {
         const redirectTo = searchParams.get("redirect") || "/main";
         router.push(redirectTo);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Login error:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Invalid credentials. Please try again.";
 
       // Show error toast
       toast.error("Login Failed", {
-        description: error.message || "Invalid credentials. Please try again.",
+        description: errorMessage,
         duration: 4000,
       });
     } finally {
@@ -153,7 +159,7 @@ function LoginContent() {
         <div className="max-w-sm px-6 py-16 md:p-0 w-full ">
           {/* Header section with logo and title */}
           <div className="space-y-6 mb-6">
-            <Link href="https://www.shadcndesign.com/" target="_blank">
+            <Link href={BRAND_URL} target="_blank">
               <Image
                 src="/logo.svg"
                 alt="Logo"

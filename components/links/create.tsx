@@ -55,6 +55,9 @@ import { useEffect } from "react";
 import { useCreateLink } from "@/lib/hooks/queries/useLinksQuery";
 import { IconInfoCircle } from "@tabler/icons-react";
 
+const FRONTEND_BASE_URL =
+  process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
+
 const linkSchema = z.object({
   original_url: z.url({ message: "Please enter a valid URL" }),
   title: z
@@ -93,7 +96,7 @@ const linkSchema = z.object({
         .number()
         .min(1, { message: "Limit must be at least 1" })
         .max(1000000, { message: "Limit must be at most 1,000,000" })
-        .optional()
+        .optional(),
     ),
   enable_stats: z.boolean(),
   tags: z
@@ -301,6 +304,15 @@ export default function CreateLink() {
                         )}
 
                         <Field>
+                          <FieldLabel>Title</FieldLabel>
+                          <Input
+                            placeholder="My Awesome Link"
+                            {...register(`links.${index}.title`)}
+                          />
+                          <FieldError errors={[errors.links?.[index]?.title]} />
+                        </Field>
+
+                        <Field>
                           <FieldLabel>Original URL</FieldLabel>
                           <Input
                             placeholder="https://example.com"
@@ -309,15 +321,6 @@ export default function CreateLink() {
                           <FieldError
                             errors={[errors.links?.[index]?.original_url]}
                           />
-                        </Field>
-
-                        <Field>
-                          <FieldLabel>Title</FieldLabel>
-                          <Input
-                            placeholder="My Awesome Link"
-                            {...register(`links.${index}.title`)}
-                          />
-                          <FieldError errors={[errors.links?.[index]?.title]} />
                         </Field>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -329,7 +332,7 @@ export default function CreateLink() {
                               <TooltipContent sideOffset={4} align="start">
                                 <p>
                                   It is used to identify the specific link. Eg:{" "}
-                                  <code>https://lihat.in/my-link</code>
+                                  <code>{`${FRONTEND_BASE_URL}/my-link`}</code>
                                 </p>
                               </TooltipContent>
                             </Tooltip>
@@ -405,7 +408,7 @@ export default function CreateLink() {
                                   // Remove all non-digit characters
                                   const rawValue = e.target.value.replace(
                                     /\D/g,
-                                    ""
+                                    "",
                                   );
                                   // Convert to number or undefined if empty
                                   const numValue = rawValue
@@ -526,7 +529,7 @@ export default function CreateLink() {
                               <Input
                                 placeholder="e.g. summer_sale"
                                 {...register(
-                                  `links.${index}.tags.utm_campaign`
+                                  `links.${index}.tags.utm_campaign`,
                                 )}
                               />
                             </Field>

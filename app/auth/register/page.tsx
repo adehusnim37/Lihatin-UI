@@ -14,6 +14,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { register } from "@/lib/api/auth";
 
+const BRAND_URL = process.env.NEXT_PUBLIC_BRAND_URL || "https://lihat.in";
+
 export default function RegisterPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
@@ -162,12 +164,16 @@ export default function RegisterPage() {
                 // Redirect to check email page
                 router.push("/auth/check-email");
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Registration error:", error);
+            const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : "An error occurred. Please try again.";
             
             // Show error toast
             toast.error("Registration Failed", {
-                description: error.message || "An error occurred. Please try again.",
+                description: errorMessage,
                 duration: 4000,
             });
         } finally {
@@ -183,7 +189,7 @@ export default function RegisterPage() {
           {/* Header section with logo and title */}
           <div className="space-y-6 mb-6">
             {/* Logo */}
-            <Link href="https://www.shadcndesign.com/" target="_blank">
+            <Link href={BRAND_URL} target="_blank">
               <Image
                 src="/logo.svg"
                 alt="Logo"
