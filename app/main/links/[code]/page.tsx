@@ -235,9 +235,13 @@ export default function LinkDetailPage() {
     );
   }
 
-  const host = process.env.NEXT_PUBLIC_FRONTEND_URL
-  const shortUrl = `${host}/${link.short_code}`;
-  const fullUrl = `https://${shortUrl}`;
+  const host = (
+    process.env.NEXT_PUBLIC_FRONTEND_URL ||
+    (typeof window !== "undefined"
+      ? window.location.origin
+      : "http://localhost:3000")
+  ).replace(/\/+$/, "");
+  const fullUrl = `${host}/${link.short_code}`;
 
   // Calculate Progress if limit exists
   const clickLimit = link.detail?.click_limit || 0;

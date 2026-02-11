@@ -5,6 +5,10 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_FRONTEND_URL: ${NEXT_PUBLIC_FRONTEND_URL}
+        NEXT_PUBLIC_BRAND_URL: ${NEXT_PUBLIC_BRAND_URL}
+        NEXT_PUBLIC_API_DOCS_URL: ${NEXT_PUBLIC_API_DOCS_URL}
+        NEXT_PUBLIC_POSTMAN_COLLECTION_URL: ${NEXT_PUBLIC_POSTMAN_COLLECTION_URL}
     image: lihatin-ui:prod
     container_name: lihatin-web
     restart: unless-stopped

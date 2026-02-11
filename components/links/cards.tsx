@@ -82,7 +82,7 @@ interface ShortLinkCardProps {
 
 export default function ShortLinkCard({
   data,
-  baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL,
+  baseUrl,
   onEdit,
   onDelete,
   onAnalytics,
@@ -97,7 +97,15 @@ export default function ShortLinkCard({
 
   const updateMutation = useUpdateLink();
 
-  const shortUrl = `${baseUrl}/${data.short_code}${
+  const resolvedBaseUrl = (
+    baseUrl ||
+    process.env.NEXT_PUBLIC_FRONTEND_URL ||
+    (typeof window !== "undefined"
+      ? window.location.origin
+      : "http://localhost:3000")
+  ).replace(/\/+$/, "");
+
+  const shortUrl = `${resolvedBaseUrl}/${data.short_code}${
     data.detail?.passcode ? `/${data.detail?.passcode}` : ""
   }`;
 
