@@ -88,6 +88,25 @@ export interface RegisterResponse {
   email: string;
 }
 
+export interface UpdateProfileRequest {
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  avatar?: string;
+}
+
+export interface ChangeEmailRequest {
+  new_email: string;
+}
+
+export interface EmailChangeEligibilityResponse {
+  eligible: boolean;
+  days_remaining: number;
+  message: string;
+  reason?: string;
+  retry_after_days?: number;
+}
+
 export interface RedeemPremiumCodeRequest {
   secret_code: string;
 }
@@ -152,6 +171,32 @@ export async function login(
   if (data.data && !requiresTOTP(data.data)) {
     const { refreshCSRFToken } = await import("./fetch-wrapper");
     await refreshCSRFToken();
+  }
+
+  return data;
+}
+
+/**
+ * Update user profile
+ * @param userData 
+ * @returns 
+ */
+export async function updateProfile(
+  userData: UpdateProfileRequest
+): Promise<APIResponse<UserProfile>> {
+  const response = await fetch(`${API_URL}/auth/profile`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include", // ✅ Include for consistency
+    body: JSON.stringify(userData),
+  });
+
+  const data: APIResponse<UserProfile> = await response.json();
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(data) || "Update profile failed");
   }
 
   return data;
@@ -399,6 +444,54 @@ export async function changePassword(
 
   if (!response.ok) {
     throw new Error(result.message || "Failed to change password");
+  }
+
+  return result;
+}
+
+/**
+ * Check whether current user can change email right now.
+ */
+export async function checkEmailChangeEligibility(): Promise<
+  APIResponse<EmailChangeEligibilityResponse>
+> {
+  const response = await fetch(`${API_URL}/auth/check-email-change-eligibility`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
+
+  const result: APIResponse<EmailChangeEligibilityResponse> =
+    await response.json();
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to check eligibility");
+  }
+
+  return result;
+}
+
+/**
+ * Request email change for authenticated user.
+ */
+export async function changeEmail(
+  data: ChangeEmailRequest
+): Promise<APIResponse<string>> {
+  const response = await fetch(`${API_URL}/auth/change-email`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  const result: APIResponse<string> = await response.json();
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to change email");
   }
 
   return result;

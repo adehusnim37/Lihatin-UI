@@ -27,9 +27,14 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   AuthProfileData,
-  getUserData,
   redeemPremiumCode,
+  saveUserData,
+  type UpdateProfileRequest,
 } from "@/lib/api/auth";
+import {
+  useProfileQuery,
+  useUpdateProfileMutation,
+} from "@/lib/hooks/queries/useProfileQuery";
 import { toast } from "sonner";
 import { BadgeCheckIcon, Loader2 } from "lucide-react";
 import { ProfileGeneralTab } from "@/components/profile/tab/general";
@@ -56,8 +61,8 @@ import { Input } from "@/components/ui/input";
 function ProfilePageContent() {
   const [user, setUser] = useState<AuthProfileData["user"]>();
   const [userAuth, setUserAuth] = useState<AuthProfileData["auth"]>();
-  const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [editedUser, setEditedUser] = useState<
     Partial<AuthProfileData["user"]>
   >({});
@@ -68,30 +73,32 @@ function ProfilePageContent() {
   const [isRedeemOpen, setIsRedeemOpen] = useState(false);
   const [secretCode, setSecretCode] = useState("");
   const [isRedeeming, setIsRedeeming] = useState(false);
+  const { data: profileResponse, isLoading: isProfileLoading, refetch } =
+    useProfileQuery();
+  const updateProfileMutation = useUpdateProfileMutation();
 
   const loadUserData = async () => {
     try {
-      const userData = await getUserData();
-      if (userData) {
-        setUser(userData.data?.user);
-        setUserAuth(userData.data?.auth);
-        setEditedUser({
-          first_name: userData.data?.user.first_name,
-          last_name: userData.data?.user.last_name,
-          username: userData.data?.user.username,
-          email: userData.data?.user.email,
-        });
-      }
+      await refetch();
     } catch (err) {
-      console.error("Failed to load user data", err);
-    } finally {
-      setIsLoading(false);
+      console.error("Failed to refresh user data", err);
     }
   };
 
   useEffect(() => {
-    loadUserData();
-  }, []);
+    if (profileResponse?.success && profileResponse.data) {
+      const profile = profileResponse.data;
+      setUser(profile.user);
+      setUserAuth(profile.auth);
+      saveUserData(profile.user);
+      setEditedUser({
+        first_name: profile.user.first_name,
+        last_name: profile.user.last_name,
+        username: profile.user.username,
+        email: profile.user.email,
+      });
+    }
+  }, [profileResponse]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -110,18 +117,48 @@ function ProfilePageContent() {
   };
 
   const handleSave = async () => {
-    // TODO: Call API to update profile
-    toast.success("Profile Updated", {
-      description: "Your profile has been updated successfully.",
-    });
-    setIsEditing(false);
+    if (!user) return;
 
-    // Update user state with edited values
-    if (user) {
-      setUser({
-        ...user,
-        ...editedUser,
+    const payload: UpdateProfileRequest = {};
+    const firstName = editedUser.first_name?.trim();
+    const lastName = editedUser.last_name?.trim();
+    const username = editedUser.username?.trim();
+
+    if (firstName && firstName !== user.first_name) {
+      payload.first_name = firstName;
+    }
+    if (lastName && lastName !== user.last_name) {
+      payload.last_name = lastName;
+    }
+    if (username && username !== user.username) {
+      payload.username = username;
+    }
+
+    if (Object.keys(payload).length === 0) {
+      toast.info("No changes detected", {
+        description: "Edit your name or username before saving.",
       });
+      setIsEditing(false);
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await updateProfileMutation.mutateAsync(payload);
+      await refetch();
+      setIsEditing(false);
+      toast.success("Profile Updated", {
+        description: "Your profile has been updated successfully.",
+      });
+    } catch (error) {
+      toast.error("Update failed", {
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to update profile.",
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -167,7 +204,7 @@ function ProfilePageContent() {
     });
   };
 
-  if (isLoading) {
+  if (isProfileLoading && !user) {
     return (
       <SidebarProvider
         style={
@@ -305,9 +342,9 @@ function ProfilePageContent() {
                           <IconX className="mr-2 h-4 w-4" />
                           Cancel
                         </Button>
-                        <Button onClick={handleSave}>
+                        <Button onClick={handleSave} disabled={isSaving}>
                           <IconCheck className="mr-2 h-4 w-4" />
-                          Save Changes
+                          {isSaving ? "Saving..." : "Save Changes"}
                         </Button>
                       </div>
                     )
@@ -486,6 +523,7 @@ function ProfilePageContent() {
                       setEditedUser={setEditedUser}
                       isEditing={isEditing}
                       formatDate={formatDate}
+                      onEmailChanged={loadUserData}
                     />
 
                     {/* Security Tab */}

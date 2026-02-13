@@ -89,6 +89,9 @@ export default function VerifyLoginPage() {
         description: message,
         duration: 4000,
       });
+      if (message === "Authentication expired") {
+        router.push("/auth/login");
+      }
     } finally {
       setIsSubmitting(false);
     }

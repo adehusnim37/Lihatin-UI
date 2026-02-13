@@ -14,6 +14,9 @@ import {
   IconCalendar,
   IconShield,
 } from "@tabler/icons-react";
+import ChangeEmailModal from "../modal/changeEmail";
+import type { Dispatch, SetStateAction } from "react";
+import type { AuthProfileData } from "@/lib/api/auth";
 
 export function ProfileGeneralTab({
   user,
@@ -21,12 +24,14 @@ export function ProfileGeneralTab({
   setEditedUser,
   isEditing,
   formatDate,
+  onEmailChanged,
 }: {
-  user: any;
-  editedUser: any;
-  setEditedUser: (user: any) => void;
+  user: AuthProfileData["user"];
+  editedUser: Partial<AuthProfileData["user"]>;
+  setEditedUser: Dispatch<SetStateAction<Partial<AuthProfileData["user"]>>>;
   isEditing: boolean;
   formatDate: (dateString: string) => string;
+  onEmailChanged?: () => void;
 }) {
   return (
     <TabsContent value="general" className="space-y-4">
@@ -47,10 +52,10 @@ export function ProfileGeneralTab({
                   id="first_name"
                   value={editedUser.first_name || ""}
                   onChange={(e) =>
-                    setEditedUser({
-                      ...editedUser,
+                    setEditedUser((prev) => ({
+                      ...prev,
                       first_name: e.target.value,
-                    })
+                    }))
                   }
                   disabled={!isEditing}
                 />
@@ -64,10 +69,10 @@ export function ProfileGeneralTab({
                   id="last_name"
                   value={editedUser.last_name || ""}
                   onChange={(e) =>
-                    setEditedUser({
-                      ...editedUser,
+                    setEditedUser((prev) => ({
+                      ...prev,
                       last_name: e.target.value,
-                    })
+                    }))
                   }
                   disabled={!isEditing}
                 />
@@ -82,10 +87,10 @@ export function ProfileGeneralTab({
                 id="username"
                 value={editedUser.username || ""}
                 onChange={(e) =>
-                  setEditedUser({
-                    ...editedUser,
+                  setEditedUser((prev) => ({
+                    ...prev,
                     username: e.target.value,
-                  })
+                  }))
                 }
                 disabled={!isEditing}
               />
@@ -98,16 +103,18 @@ export function ProfileGeneralTab({
               <Input
                 id="email"
                 type="email"
-                value={editedUser.email || ""}
-                onChange={(e) =>
-                  setEditedUser({
-                    ...editedUser,
-                    email: e.target.value,
-                  })
-                }
-                disabled={!isEditing}
+                value={user.email || ""}
+                disabled
+                readOnly
+              />
+              <ChangeEmailModal
+                currentEmail={user.email}
+                onEmailChanged={onEmailChanged}
               />
             </div>
+            <p className="text-xs text-muted-foreground">
+              Email changes require verification and may be rate-limited.
+            </p>
           </div>
         </CardContent>
       </Card>
