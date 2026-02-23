@@ -6,9 +6,22 @@ const BACKEND_URL =
 interface BackendErrorResponse {
   success: boolean;
   message: string;
-  error?: { details: string };
+  error?: Record<string, string> | null;
 }
 export const dynamic = "force-dynamic";
+
+function isClickLimitError(errorData: BackendErrorResponse): boolean {
+  const message = (errorData.message || "").toLowerCase();
+  const errorKeys = Object.keys(errorData.error || {}).map((key) =>
+    key.toLowerCase()
+  );
+
+  return (
+    errorKeys.includes("click_limit") ||
+    message.includes("click limit") ||
+    message.includes("maximum number of clicks")
+  );
+}
 
 export async function GET(
   request: NextRequest,
@@ -83,7 +96,10 @@ export async function GET(
         break;
 
       case 403:
-        errorUrl.searchParams.set("type", "forbidden");
+        errorUrl.searchParams.set(
+          "type",
+          isClickLimitError(errorData) ? "click_limit" : "forbidden"
+        );
         break;
 
       case 410:
@@ -99,7 +115,7 @@ export async function GET(
     }
 
     return NextResponse.redirect(errorUrl.toString());
-  } catch (error) {
+  } catch {
     const errorUrl = new URL("/link-error", request.url);
     errorUrl.searchParams.set("code", short_code);
     errorUrl.searchParams.set("type", "network");

@@ -24,6 +24,11 @@ const errorConfig: Record<
     title: "Access Denied",
     description: "This link has been banned due to policy violations.",
   },
+  click_limit: {
+    emoji: "🪫",
+    title: "Click Limit Reached",
+    description: "You've reached the maximum number of clicks allowed for this link.",
+  },
   invalid_passcode: {
     emoji: "🔐",
     title: "Invalid Passcode",

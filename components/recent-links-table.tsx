@@ -12,14 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
 
 interface ShortLink {
@@ -42,11 +34,6 @@ export function RecentLinksTable({ links = [], isLoading = false }: RecentLinksT
     const shortUrl = `${window.location.origin}/${code}`;
     navigator.clipboard.writeText(shortUrl);
     toast.success("Link copied to clipboard!");
-  };
-
-  const truncateUrl = (url: string, maxLength: number = 40) => {
-    if (url.length <= maxLength) return url;
-    return url.substring(0, maxLength) + "...";
   };
 
   if (isLoading) {
@@ -86,7 +73,7 @@ export function RecentLinksTable({ links = [], isLoading = false }: RecentLinksT
                 className="flex flex-col gap-2 rounded-lg border p-3 transition-colors hover:bg-muted/50"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 space-y-1">
+                  <div className="min-w-0 flex-1 space-y-1">
                     <div className="flex items-center gap-2">
                       <code className="text-sm font-semibold">{link.short_code}</code>
                       <Badge variant={link.is_active ? "default" : "secondary"} className="text-xs">
@@ -103,10 +90,12 @@ export function RecentLinksTable({ links = [], isLoading = false }: RecentLinksT
                       href={link.original_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary line-clamp-1"
+                      className="inline-flex w-full min-w-0 items-center gap-1 text-xs text-muted-foreground hover:text-primary"
                       title={link.original_url}
                     >
-                      {truncateUrl(link.original_url, 50)}
+                      <span className="block min-w-0 flex-1 truncate">
+                        {link.original_url}
+                      </span>
                       <IconExternalLink className="size-3 flex-shrink-0" />
                     </a>
                   </div>
@@ -122,7 +111,7 @@ export function RecentLinksTable({ links = [], isLoading = false }: RecentLinksT
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => window.open(`/links/${link.short_code}`, "_blank")}
+                      onClick={() => window.open(`/main/links/${link.short_code}`, "_blank")}
                       title="View stats"
                     >
                       <IconEye className="size-4" />
