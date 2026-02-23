@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
+const PUBLIC_FRONTEND_ORIGIN =
+  process.env.NEXT_PUBLIC_FRONTEND_URL?.replace(/\/+$/, "") || "";
 
 interface BackendErrorResponse {
   success: boolean;
@@ -9,6 +11,24 @@ interface BackendErrorResponse {
   error?: Record<string, string> | null;
 }
 export const dynamic = "force-dynamic";
+
+function getRedirectOrigin(request: NextRequest): string {
+  if (PUBLIC_FRONTEND_ORIGIN) return PUBLIC_FRONTEND_ORIGIN;
+
+  const forwardedHost = request.headers
+    .get("x-forwarded-host")
+    ?.split(",")[0]
+    .trim();
+  const host = forwardedHost || request.headers.get("host");
+  const forwardedProto = request.headers
+    .get("x-forwarded-proto")
+    ?.split(",")[0]
+    .trim();
+  const protocol =
+    forwardedProto || request.nextUrl.protocol.replace(":", "") || "https";
+
+  return host ? `${protocol}://${host}` : request.nextUrl.origin;
+}
 
 function isClickLimitError(errorData: BackendErrorResponse): boolean {
   const message = (errorData.message || "").toLowerCase();
@@ -28,6 +48,7 @@ export async function GET(
   { params }: { params: Promise<{ short_code: string; passcode: string }> }
 ) {
   const { short_code, passcode } = await params;
+  const redirectOrigin = getRedirectOrigin(request);
 
   try {
     // Fetch from backend with passcode
@@ -77,7 +98,7 @@ export async function GET(
     // Handle error responses
     const errorData: BackendErrorResponse = await response.json();
 
-    const errorUrl = new URL("/link-error", request.url);
+    const errorUrl = new URL("/link-error", redirectOrigin);
     errorUrl.searchParams.set("code", short_code);
     errorUrl.searchParams.set("status", response.status.toString());
     errorUrl.searchParams.set(
@@ -116,7 +137,7 @@ export async function GET(
 
     return NextResponse.redirect(errorUrl.toString());
   } catch {
-    const errorUrl = new URL("/link-error", request.url);
+    const errorUrl = new URL("/link-error", redirectOrigin);
     errorUrl.searchParams.set("code", short_code);
     errorUrl.searchParams.set("type", "network");
     errorUrl.searchParams.set(

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
+const PUBLIC_FRONTEND_ORIGIN =
+  process.env.NEXT_PUBLIC_FRONTEND_URL?.replace(/\/+$/, "") || "";
 
 interface BackendErrorResponse {
   success: boolean;
@@ -10,6 +12,24 @@ interface BackendErrorResponse {
 }
 
 export const dynamic = "force-dynamic";
+
+function getRedirectOrigin(request: NextRequest): string {
+  if (PUBLIC_FRONTEND_ORIGIN) return PUBLIC_FRONTEND_ORIGIN;
+
+  const forwardedHost = request.headers
+    .get("x-forwarded-host")
+    ?.split(",")[0]
+    .trim();
+  const host = forwardedHost || request.headers.get("host");
+  const forwardedProto = request.headers
+    .get("x-forwarded-proto")
+    ?.split(",")[0]
+    .trim();
+  const protocol =
+    forwardedProto || request.nextUrl.protocol.replace(":", "") || "https";
+
+  return host ? `${protocol}://${host}` : request.nextUrl.origin;
+}
 
 function isClickLimitError(errorData: BackendErrorResponse): boolean {
   const message = (errorData.message || "").toLowerCase();
@@ -30,6 +50,7 @@ export async function GET(
 ) {
   const { short_code } = await params;
   const targetUrl = `${BACKEND_URL}/short/${short_code}`;
+  const redirectOrigin = getRedirectOrigin(request);
 
   try {
     // Fetch from backend with redirect: "manual" to capture Location header
@@ -77,7 +98,7 @@ export async function GET(
     const errorData: BackendErrorResponse = await response.json();
 
     // Build error page URL with query params
-    const errorUrl = new URL("/link-error", request.url);
+    const errorUrl = new URL("/link-error", redirectOrigin);
     errorUrl.searchParams.set("code", short_code);
     errorUrl.searchParams.set("status", response.status.toString());
     errorUrl.searchParams.set(
@@ -89,10 +110,7 @@ export async function GET(
     switch (response.status) {
       case 401:
         // Passcode required - redirect to passcode input page
-        const passcodeUrl = new URL(
-          `/${short_code}/enter-passcode`,
-          request.url
-        );
+        const passcodeUrl = new URL(`/${short_code}/enter-passcode`, redirectOrigin);
         return NextResponse.redirect(passcodeUrl.toString());
 
       case 404:
@@ -121,7 +139,7 @@ export async function GET(
     return NextResponse.redirect(errorUrl.toString());
   } catch {
     // Network error or backend unreachable
-    const errorUrl = new URL("/link-error", request.url);
+    const errorUrl = new URL("/link-error", redirectOrigin);
     errorUrl.searchParams.set("code", short_code);
     errorUrl.searchParams.set("type", "network");
     errorUrl.searchParams.set(
