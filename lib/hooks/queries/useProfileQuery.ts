@@ -1,10 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  changeUsername,
   changeEmail,
+  checkUsernameChangeEligibility,
   checkEmailChangeEligibility,
   getProfile,
   updateProfile,
   type ChangeEmailRequest,
+  type ChangeUsernameRequest,
   type UpdateProfileRequest,
 } from "@/lib/api/auth";
 
@@ -12,6 +15,8 @@ export const profileKeys = {
   all: ["profile"] as const,
   detail: () => [...profileKeys.all, "detail"] as const,
   emailEligibility: () => [...profileKeys.all, "email-eligibility"] as const,
+  usernameEligibility: () =>
+    [...profileKeys.all, "username-eligibility"] as const,
 };
 
 export function useProfileQuery() {
@@ -72,6 +77,40 @@ export function useChangeEmailMutation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: profileKeys.detail() });
       queryClient.invalidateQueries({ queryKey: profileKeys.emailEligibility() });
+    },
+  });
+}
+
+export function useUsernameChangeEligibilityQuery(enabled: boolean) {
+  return useQuery({
+    queryKey: profileKeys.usernameEligibility(),
+    queryFn: async () => {
+      const response = await checkUsernameChangeEligibility();
+      if (!response.success) {
+        throw new Error(response.message || "Failed to check eligibility");
+      }
+      return response;
+    },
+    enabled,
+  });
+}
+
+export function useChangeUsernameMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: ChangeUsernameRequest) => {
+      const response = await changeUsername(payload);
+      if (!response.success) {
+        throw new Error(response.message || "Failed to change username");
+      }
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: profileKeys.detail() });
+      queryClient.invalidateQueries({
+        queryKey: profileKeys.usernameEligibility(),
+      });
     },
   });
 }

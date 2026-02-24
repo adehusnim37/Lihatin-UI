@@ -14,32 +14,34 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  useChangeEmailMutation,
-  useEmailChangeEligibilityQuery,
+  useChangeUsernameMutation,
+  useUsernameChangeEligibilityQuery,
 } from "@/lib/hooks/queries/useProfileQuery";
 import { toast } from "sonner";
 
-interface ChangeEmailModalProps {
-  currentEmail?: string;
-  onEmailChanged?: () => void;
+interface ChangeUsernameModalProps {
+  currentUsername?: string;
+  onUsernameChanged?: () => void;
 }
 
-export default function ChangeEmailModal({
-  currentEmail,
-  onEmailChanged,
-}: ChangeEmailModalProps = {}) {
+export default function ChangeUsernameModal({
+  currentUsername,
+  onUsernameChanged,
+}: ChangeUsernameModalProps = {}) {
   const [isOpen, setIsOpen] = useState(false);
-  const [newEmail, setNewEmail] = useState("");
+  const [newUsername, setNewUsername] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const {
     data: eligibilityResponse,
     isLoading: isCheckingEligibility,
+    isError: isEligibilityError,
+    error: eligibilityError,
     refetch: refetchEligibility,
-  } = useEmailChangeEligibilityQuery(isOpen);
-  const changeEmailMutation = useChangeEmailMutation();
-  const eligibility = eligibilityResponse?.data ?? null;
-  const isSubmitting = changeEmailMutation.isPending;
+  } = useUsernameChangeEligibilityQuery(isOpen);
+  const changeUsernameMutation = useChangeUsernameMutation();
+  const isSubmitting = changeUsernameMutation.isPending;
+  const isEligible = Boolean(eligibilityResponse?.success) && !isEligibilityError;
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -50,11 +52,9 @@ export default function ChangeEmailModal({
       return;
     }
 
-    if (!open) {
-      setNewEmail("");
-      setErrorMessage("");
-      setSuccessMessage("");
-    }
+    setNewUsername("");
+    setErrorMessage("");
+    setSuccessMessage("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,78 +62,87 @@ export default function ChangeEmailModal({
     setErrorMessage("");
     setSuccessMessage("");
 
-    const normalizedCurrent = currentEmail?.trim().toLowerCase();
-    const normalizedNew = newEmail.trim().toLowerCase();
+    const current = currentUsername?.trim();
+    const normalized = newUsername.trim();
 
-    if (!normalizedNew) {
-      setErrorMessage("New email is required.");
+    if (!normalized) {
+      setErrorMessage("New username is required.");
       return;
     }
 
-    if (normalizedCurrent && normalizedCurrent === normalizedNew) {
-      setErrorMessage("New email must be different from current email.");
+    if (!/^[a-zA-Z0-9]+$/.test(normalized)) {
+      setErrorMessage("Username must contain only letters and numbers.");
       return;
     }
 
-    if (!eligibility?.eligible) {
+    if (normalized.length < 3 || normalized.length > 30) {
+      setErrorMessage("Username must be between 3 and 30 characters.");
+      return;
+    }
+
+    if (current && current === normalized) {
+      setErrorMessage("New username must be different from current username.");
+      return;
+    }
+
+    if (!isEligible) {
       setErrorMessage(
-        eligibility?.message ||
-          "You are not eligible to change your email at this time."
+        eligibilityError instanceof Error
+          ? eligibilityError.message
+          : "You are not eligible to change username at this time."
       );
       return;
     }
 
     try {
-      const response = await changeEmailMutation.mutateAsync({
-        new_email: normalizedNew,
+      const response = await changeUsernameMutation.mutateAsync({
+        new_username: normalized,
       });
-      setSuccessMessage(response.message || "Email change requested.");
-      toast.success("Email change requested", {
-        description:
-          "Check your new inbox and verify the email to complete the change.",
+
+      setSuccessMessage(response.message || "Username changed successfully.");
+      toast.success("Username changed", {
+        description: "Your username has been updated successfully.",
       });
-      onEmailChanged?.();
+      onUsernameChanged?.();
       setTimeout(() => setIsOpen(false), 1200);
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? error.message : "Failed to change email."
+        error instanceof Error ? error.message : "Failed to change username."
       );
     }
   };
 
-  const isEligible = eligibility?.eligible ?? false;
   const disableSubmit = isCheckingEligibility || isSubmitting || !isEligible;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="min-w-40 justify-center">
-          Change Email
+          Change Username
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Change Email</DialogTitle>
+            <DialogTitle>Change Username</DialogTitle>
             <DialogDescription>
-              Update your email address and verify it from the new inbox.
+              You can only change your username once.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Current Email</Label>
-              <Input value={currentEmail || "-"} disabled />
+              <Label>Current Username</Label>
+              <Input value={currentUsername || "-"} disabled />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="new-email">New Email</Label>
+              <Label htmlFor="new-username">New Username</Label>
               <Input
-                id="new-email"
-                type="email"
-                value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
-                placeholder="Enter new email address"
+                id="new-username"
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
+                placeholder="Enter new username"
                 disabled={isSubmitting}
               />
             </div>
@@ -146,21 +155,18 @@ export default function ChangeEmailModal({
               }`}
             >
               {isCheckingEligibility && "Checking eligibility..."}
-              {!isCheckingEligibility && eligibility?.eligible && (
-                <span>{eligibility.message || "You can change your email."}</span>
-              )}
-              {!isCheckingEligibility && eligibility && !eligibility.eligible && (
+              {!isCheckingEligibility && isEligible && (
                 <span>
-                  {eligibility.message ||
-                    "You cannot change your email right now."}
-                  {typeof eligibility.days_remaining === "number" &&
-                  eligibility.days_remaining > 0
-                    ? ` (${eligibility.days_remaining} day(s) remaining)`
-                    : ""}
+                  {eligibilityResponse?.message ||
+                    "You can change your username now."}
                 </span>
               )}
-              {!isCheckingEligibility && !eligibility && (
-                <span>Eligibility data is unavailable.</span>
+              {!isCheckingEligibility && !isEligible && (
+                <span>
+                  {eligibilityError instanceof Error
+                    ? eligibilityError.message
+                    : "You cannot change your username right now."}
+                </span>
               )}
             </div>
 

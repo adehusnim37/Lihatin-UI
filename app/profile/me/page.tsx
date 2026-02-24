@@ -94,7 +94,6 @@ function ProfilePageContent() {
       setEditedUser({
         first_name: profile.user.first_name,
         last_name: profile.user.last_name,
-        username: profile.user.username,
         email: profile.user.email,
       });
     }
@@ -109,7 +108,6 @@ function ProfilePageContent() {
       setEditedUser({
         first_name: user.first_name,
         last_name: user.last_name,
-        username: user.username,
         email: user.email,
       });
     }
@@ -122,7 +120,6 @@ function ProfilePageContent() {
     const payload: UpdateProfileRequest = {};
     const firstName = editedUser.first_name?.trim();
     const lastName = editedUser.last_name?.trim();
-    const username = editedUser.username?.trim();
 
     if (firstName && firstName !== user.first_name) {
       payload.first_name = firstName;
@@ -130,13 +127,10 @@ function ProfilePageContent() {
     if (lastName && lastName !== user.last_name) {
       payload.last_name = lastName;
     }
-    if (username && username !== user.username) {
-      payload.username = username;
-    }
 
     if (Object.keys(payload).length === 0) {
       toast.info("No changes detected", {
-        description: "Edit your name or username before saving.",
+        description: "Edit your name before saving.",
       });
       setIsEditing(false);
       return;
@@ -524,6 +518,7 @@ function ProfilePageContent() {
                       isEditing={isEditing}
                       formatDate={formatDate}
                       onEmailChanged={loadUserData}
+                      onUsernameChanged={loadUserData}
                     />
 
                     {/* Security Tab */}

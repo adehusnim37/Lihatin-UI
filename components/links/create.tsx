@@ -620,42 +620,44 @@ export default function CreateLink() {
 
       {/* Bulk Creation Confirmation Dialog */}
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Bulk Creation</AlertDialogTitle>
+        <AlertDialogContent className="z-[70] w-[min(94vw,760px)] max-h-[85vh] overflow-hidden p-0">
+          <AlertDialogHeader className="border-b px-5 py-4 sm:px-6">
+            <AlertDialogTitle className="text-xl">Confirm Bulk Creation</AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <div className="space-y-3">
-                <p>
+              <div className="space-y-4 px-5 py-4 sm:px-6">
+                <p className="leading-relaxed text-sm sm:text-base">
                   You are about to create{" "}
                   <span className="font-semibold text-foreground">
                     {pendingData?.links.length} links
                   </span>{" "}
                   at once. Please review the details below:
                 </p>
-                <ul className="list-disc list-inside space-y-1 text-sm">
-                  {pendingData?.links.map((link, index) => (
-                    <li key={index} className="truncate">
-                      <span className="font-medium">
-                        {link.title || "Untitled"}
-                      </span>
-                      <span className="text-muted-foreground"> — </span>
-                      <span className="text-muted-foreground text-xs">
-                        {link.original_url || "No URL"}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                <div className="max-h-[40vh] overflow-y-auto rounded-lg border bg-muted/20 p-3">
+                  <ul className="space-y-2">
+                    {pendingData?.links.map((link, index) => (
+                      <li key={index} className="rounded-md border bg-background p-3">
+                        <p className="text-sm font-semibold break-words">
+                          {link.title || `Untitled #${index + 1}`}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground break-all">
+                          {link.original_url || "No URL"}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
                 <p className="text-sm text-muted-foreground">
                   Do you want to proceed with creating these links?
                 </p>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPendingData(null)}>
+          <AlertDialogFooter className="border-t px-5 py-4 sm:px-6">
+            <AlertDialogCancel className="w-full sm:w-auto" onClick={() => setPendingData(null)}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
+              className="w-full sm:w-auto"
               onClick={() => pendingData && handleConfirmedSubmit(pendingData)}
             >
               Create {pendingData?.links.length} Links

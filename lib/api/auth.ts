@@ -91,12 +91,20 @@ export interface RegisterResponse {
 export interface UpdateProfileRequest {
   first_name?: string;
   last_name?: string;
-  username?: string;
   avatar?: string;
 }
 
 export interface ChangeEmailRequest {
   new_email: string;
+}
+
+export interface ChangeUsernameRequest {
+  new_username: string;
+}
+
+export interface ChangeUsernameResponse {
+  old_username: string;
+  new_username: string;
 }
 
 export interface EmailChangeEligibilityResponse {
@@ -492,6 +500,53 @@ export async function changeEmail(
 
   if (!response.ok) {
     throw new Error(getErrorMessage(result) || "Failed to change email");
+  }
+
+  return result;
+}
+
+/**
+ * Check whether current user can change username right now.
+ */
+export async function checkUsernameChangeEligibility(): Promise<
+  APIResponse<null>
+> {
+  const response = await fetch(`${API_URL}/auth/username/check-eligibility`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
+
+  const result: APIResponse<null> = await response.json();
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to check eligibility");
+  }
+
+  return result;
+}
+
+/**
+ * Request username change for authenticated user.
+ */
+export async function changeUsername(
+  data: ChangeUsernameRequest
+): Promise<APIResponse<ChangeUsernameResponse>> {
+  const response = await fetch(`${API_URL}/auth/username/change`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  const result: APIResponse<ChangeUsernameResponse> = await response.json();
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to change username");
   }
 
   return result;

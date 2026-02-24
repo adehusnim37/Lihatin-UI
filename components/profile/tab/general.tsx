@@ -15,6 +15,7 @@ import {
   IconShield,
 } from "@tabler/icons-react";
 import ChangeEmailModal from "../modal/changeEmail";
+import ChangeUsernameModal from "../modal/changeUsername";
 import type { Dispatch, SetStateAction } from "react";
 import type { AuthProfileData } from "@/lib/api/auth";
 
@@ -25,6 +26,7 @@ export function ProfileGeneralTab({
   isEditing,
   formatDate,
   onEmailChanged,
+  onUsernameChanged,
 }: {
   user: AuthProfileData["user"];
   editedUser: Partial<AuthProfileData["user"]>;
@@ -32,6 +34,7 @@ export function ProfileGeneralTab({
   isEditing: boolean;
   formatDate: (dateString: string) => string;
   onEmailChanged?: () => void;
+  onUsernameChanged?: () => void;
 }) {
   return (
     <TabsContent value="general" className="space-y-4">
@@ -85,16 +88,19 @@ export function ProfileGeneralTab({
               <IconUser className="h-4 w-4 text-muted-foreground" />
               <Input
                 id="username"
-                value={editedUser.username || ""}
-                onChange={(e) =>
-                  setEditedUser((prev) => ({
-                    ...prev,
-                    username: e.target.value,
-                  }))
-                }
-                disabled={!isEditing}
+                value={user.username || ""}
+                disabled
+                readOnly
+              />
+              <ChangeUsernameModal
+                currentUsername={user.username}
+                onUsernameChanged={onUsernameChanged}
               />
             </div>
+            <p className="text-xs text-muted-foreground">
+              Username changes are handled via a separate endpoint and can only
+              be done once.
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email Address</Label>

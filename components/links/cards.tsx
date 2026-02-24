@@ -188,11 +188,11 @@ export default function ShortLinkCard({
               </Tooltip>
             </TooltipProvider>
             <ItemContent className="gap-0 min-w-0">
-              <ItemTitle
-                className="truncate text-sm font-semibold flex items-center gap-1.5 cursor-pointer hover:text-primary transition-colors"
+            <ItemTitle
+                className="w-full min-w-0 text-sm font-semibold flex items-center gap-1.5 cursor-pointer hover:text-primary transition-colors"
                 onClick={handleNavigateToDetail}
               >
-                <span className="truncate">{data.title || "Untitled"}</span>
+                <span className="min-w-0 flex-1 truncate">{data.title || "Untitled"}</span>
                 {/* Icons in Title */}
                 {hasPasscode && (
                   <TooltipProvider>
@@ -334,10 +334,10 @@ export default function ShortLinkCard({
               href={data.original_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs font-medium text-muted-foreground hover:text-foreground flex items-center gap-1.5 truncate transition-colors"
+              className="text-xs font-medium text-muted-foreground hover:text-foreground flex w-full min-w-0 items-center gap-1.5 transition-colors"
             >
               <ExternalLink className="h-3 w-3 shrink-0" />
-              <span className="truncate">{data.original_url}</span>
+              <span className="min-w-0 flex-1 truncate">{data.original_url}</span>
             </a>
 
             {/* Metadata Row Pinned to Bottom */}
