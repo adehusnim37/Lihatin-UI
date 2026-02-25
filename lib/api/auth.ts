@@ -156,6 +156,18 @@ export function getErrorMessage(response: APIResponse): string {
 }
 
 /**
+ * Use authenticated fetch wrapper for protected endpoints.
+ * This automatically attaches CSRF token on mutating methods.
+ */
+async function fetchProtected(
+  input: RequestInfo | URL,
+  init?: RequestInit
+): Promise<Response> {
+  const { fetchWithAuth } = await import("./fetch-wrapper");
+  return fetchWithAuth(input, init);
+}
+
+/**
  * Login user with email/username and password
  * 🔐 If TOTP is enabled, returns pending_auth_token (NO JWT cookies yet!)
  * 🔐 If TOTP is disabled, tokens are set as HTTP-Only cookies
@@ -197,12 +209,11 @@ export async function login(
 export async function updateProfile(
   userData: UpdateProfileRequest
 ): Promise<APIResponse<UserProfile>> {
-  const response = await fetch(`${API_URL}/auth/profile`, {
+  const response = await fetchProtected(`${API_URL}/auth/profile`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include", // ✅ Include for consistency
     body: JSON.stringify(userData),
   });
 
@@ -224,9 +235,8 @@ export async function uploadProfileAvatar(
   const formData = new FormData();
   formData.append("avatar", file);
 
-  const response = await fetch(`${API_URL}/auth/profile/avatar`, {
+  const response = await fetchProtected(`${API_URL}/auth/profile/avatar`, {
     method: "POST",
-    credentials: "include",
     body: formData,
   });
 
@@ -270,12 +280,11 @@ export async function register(
 export async function redeemPremiumCode(
   payload: RedeemPremiumCodeRequest
 ): Promise<APIResponse<RedeemPremiumCodeResponse>> {
-  const response = await fetch(`${API_URL}/auth/redeem-premium-code`, {
+  const response = await fetchProtected(`${API_URL}/auth/redeem-premium-code`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include",
     body: JSON.stringify(payload),
   });
 
@@ -397,12 +406,11 @@ export async function logout(): Promise<APIResponse<LogoutResponse>> {
   // Import here to avoid circular dependency
   const { clearCSRFToken } = await import("./fetch-wrapper");
 
-  const response = await fetch(`${API_URL}/auth/logout`, {
+  const response = await fetchProtected(`${API_URL}/auth/logout`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include", // ✅ Send cookies for session validation
   });
 
   const data: APIResponse<LogoutResponse> = await response.json();
@@ -468,12 +476,11 @@ export interface ChangePasswordRequest {
 export async function changePassword(
   data: ChangePasswordRequest
 ): Promise<APIResponse<null>> {
-  const response = await fetch(`${API_URL}/auth/change-password`, {
+  const response = await fetchProtected(`${API_URL}/auth/change-password`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include", // ✅ Send access_token cookie
     body: JSON.stringify(data),
   });
 
@@ -516,12 +523,11 @@ export async function checkEmailChangeEligibility(): Promise<
 export async function changeEmail(
   data: ChangeEmailRequest
 ): Promise<APIResponse<string>> {
-  const response = await fetch(`${API_URL}/auth/change-email`, {
+  const response = await fetchProtected(`${API_URL}/auth/change-email`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include",
     body: JSON.stringify(data),
   });
 
@@ -563,12 +569,11 @@ export async function checkUsernameChangeEligibility(): Promise<
 export async function changeUsername(
   data: ChangeUsernameRequest
 ): Promise<APIResponse<ChangeUsernameResponse>> {
-  const response = await fetch(`${API_URL}/auth/username/change`, {
+  const response = await fetchProtected(`${API_URL}/auth/username/change`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include",
     body: JSON.stringify(data),
   });
 
@@ -586,12 +591,11 @@ export async function changeUsername(
  * 🔐 Requires authentication
  */
 export async function sendVerificationEmail(): Promise<APIResponse<null>> {
-  const response = await fetch(`${API_URL}/auth/send-verification-email`, {
+  const response = await fetchProtected(`${API_URL}/auth/send-verification-email`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include", // ✅ Send access_token cookie
   });
 
   const result: APIResponse<null> = await response.json();
@@ -734,12 +738,11 @@ export async function verifyTOTPLogin(
  * 🔐 Generates QR code and recovery codes
  */
 export async function setupTOTP(): Promise<APIResponse<TOTPSetupResponse>> {
-  const response = await fetch(`${API_URL}/auth/totp/setup`, {
+  const response = await fetchProtected(`${API_URL}/auth/totp/setup`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include",
   });
 
   const result: APIResponse<TOTPSetupResponse> = await response.json();
@@ -758,12 +761,11 @@ export async function setupTOTP(): Promise<APIResponse<TOTPSetupResponse>> {
 export async function verifyTOTP(
   totp_code: string
 ): Promise<APIResponse<null>> {
-  const response = await fetch(`${API_URL}/auth/totp/verify`, {
+  const response = await fetchProtected(`${API_URL}/auth/totp/verify`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include",
     body: JSON.stringify({ totp_code }),
   });
 
@@ -784,12 +786,11 @@ export async function disableTOTP(
   password?: string,
   totpCode?: string
 ): Promise<APIResponse<{ message: string }>> {
-  const response = await fetch(`${API_URL}/auth/totp/disable`, {
+  const response = await fetchProtected(`${API_URL}/auth/totp/disable`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include",
     body: JSON.stringify({
       password,
       totp_code: totpCode,
