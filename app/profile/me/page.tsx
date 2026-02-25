@@ -22,13 +22,15 @@ import {
   IconX,
   IconCrown,
   IconUserQuestion,
+  IconCamera,
 } from "@tabler/icons-react";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   AuthProfileData,
   redeemPremiumCode,
   saveUserData,
+  uploadProfileAvatar,
   type UpdateProfileRequest,
 } from "@/lib/api/auth";
 import {
@@ -73,6 +75,8 @@ function ProfilePageContent() {
   const [isRedeemOpen, setIsRedeemOpen] = useState(false);
   const [secretCode, setSecretCode] = useState("");
   const [isRedeeming, setIsRedeeming] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const { data: profileResponse, isLoading: isProfileLoading, refetch } =
     useProfileQuery();
   const updateProfileMutation = useUpdateProfileMutation();
@@ -185,8 +189,86 @@ function ProfilePageContent() {
     }
   };
 
+  const handleAvatarUploadClick = () => {
+    avatarInputRef.current?.click();
+  };
+
+  const handleAvatarSelected = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const allowedMimeTypes = new Set([
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ]);
+    if (!allowedMimeTypes.has(file.type)) {
+      toast.error("Invalid image format", {
+        description: "Only JPG, PNG, WEBP, or GIF are allowed.",
+      });
+      event.target.value = "";
+      return;
+    }
+
+    const maxSizeBytes = 5 * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      toast.error("Image too large", {
+        description: "Maximum file size is 5MB.",
+      });
+      event.target.value = "";
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    try {
+      const response = await uploadProfileAvatar(file);
+      const uploadedAvatar = response.data?.avatar_url;
+
+      if (!uploadedAvatar) {
+        throw new Error("Avatar URL is missing from upload response");
+      }
+
+      setUser((prev) => (prev ? { ...prev, avatar: uploadedAvatar } : prev));
+      await refetch();
+
+      toast.success("Profile photo updated", {
+        description: "Your avatar has been uploaded successfully.",
+      });
+    } catch (error) {
+      toast.error("Avatar upload failed", {
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to upload avatar image.",
+      });
+    } finally {
+      setIsUploadingAvatar(false);
+      event.target.value = "";
+    }
+  };
+
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  };
+
+  const normalizeAvatarURL = (rawURL?: string) => {
+    if (!rawURL) return "";
+
+    const trimmed = rawURL.trim();
+    if (!trimmed) return "";
+
+    if (trimmed.startsWith("//")) {
+      return `https:${trimmed}`;
+    }
+
+    if (/^https?:\/\//i.test(trimmed)) {
+      return trimmed;
+    }
+
+    return `https://${trimmed}`;
   };
 
   const formatDate = (dateString: string) => {
@@ -197,6 +279,8 @@ function ProfilePageContent() {
       day: "numeric",
     });
   };
+
+  const avatarURL = normalizeAvatarURL(user?.avatar);
 
   if (isProfileLoading && !user) {
     return (
@@ -352,15 +436,47 @@ function ProfilePageContent() {
                 <Card className="md:col-span-1 mx-auto w-full max-w-md">
                   <CardHeader className="text-center">
                     <div className="flex justify-center mb-4">
-                      <Avatar className="h-32 w-32">
-                        <AvatarImage
-                          src={user.avatar}
-                          alt={`${user.first_name} ${user.last_name}`}
+                      <div className="relative group">
+                        <Avatar className="h-32 w-32 ring-2 ring-border">
+                          <AvatarImage
+                            src={avatarURL}
+                            alt={`${user.first_name} ${user.last_name}`}
+                          />
+                          <AvatarFallback className="text-2xl">
+                            {getInitials(user.first_name, user.last_name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <button
+                          type="button"
+                          onClick={handleAvatarUploadClick}
+                          disabled={isUploadingAvatar}
+                          className="absolute inset-0 rounded-full bg-black/55 text-white flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity disabled:opacity-80"
+                          aria-label={
+                            user.avatar ? "Change profile photo" : "Upload profile photo"
+                          }
+                        >
+                          {isUploadingAvatar ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              <span className="text-xs font-medium">Uploading...</span>
+                            </>
+                          ) : (
+                            <>
+                              <IconCamera className="h-4 w-4" />
+                              <span className="text-xs font-medium">
+                                {user.avatar ? "Change Photo" : "Upload Photo"}
+                              </span>
+                            </>
+                          )}
+                        </button>
+                        <input
+                          ref={avatarInputRef}
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          className="hidden"
+                          onChange={handleAvatarSelected}
                         />
-                        <AvatarFallback className="text-2xl">
-                          {getInitials(user.first_name, user.last_name)}
-                        </AvatarFallback>
-                      </Avatar>
+                      </div>
                     </div>
                     <CardTitle className="text-2xl">
                       {user.first_name} {user.last_name}

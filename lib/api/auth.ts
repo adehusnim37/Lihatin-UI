@@ -94,6 +94,11 @@ export interface UpdateProfileRequest {
   avatar?: string;
 }
 
+export interface UploadAvatarResponse {
+  avatar_url: string;
+  object_key: string;
+}
+
 export interface ChangeEmailRequest {
   new_email: string;
 }
@@ -205,6 +210,30 @@ export async function updateProfile(
 
   if (!response.ok) {
     throw new Error(getErrorMessage(data) || "Update profile failed");
+  }
+
+  return data;
+}
+
+/**
+ * Upload user avatar image (multipart/form-data)
+ */
+export async function uploadProfileAvatar(
+  file: File
+): Promise<APIResponse<UploadAvatarResponse>> {
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  const response = await fetch(`${API_URL}/auth/profile/avatar`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+
+  const data: APIResponse<UploadAvatarResponse> = await response.json();
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(data) || "Avatar upload failed");
   }
 
   return data;
