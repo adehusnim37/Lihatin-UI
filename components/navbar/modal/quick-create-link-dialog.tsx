@@ -11,7 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { useCreateLink } from "@/lib/hooks/queries/useLinksQuery";
+import { hasRepeatedConsecutiveDigits } from "@/lib/validators/passcode";
 
 interface QuickCreateLinkDialogProps {
   open: boolean;
@@ -28,6 +30,10 @@ export default function QuickCreateLinkDialog({
 
   const createLinkMutation = useCreateLink();
 
+  const isPasscodeValid =
+    passcode.length === 0 ||
+    (/^\d{6}$/.test(passcode) && !hasRepeatedConsecutiveDigits(passcode));
+
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
       setLinkName("");
@@ -38,6 +44,14 @@ export default function QuickCreateLinkDialog({
   };
 
   const handleCreateLink = async () => {
+    if (!isPasscodeValid) {
+      toast.error("Passcode is too weak", {
+        description:
+          "Use 6 digits without 4 or more repeated digits in a row, like 11111 or 121111.",
+      });
+      return;
+    }
+
     // Build request in correct format: { is_bulky: boolean, links: [...] }
     const requestData = {
       is_bulky: false,
@@ -108,7 +122,12 @@ export default function QuickCreateLinkDialog({
         <DialogFooter>
           <Button
             onClick={handleCreateLink}
-            disabled={createLinkMutation.isPending || !linkName || !linkURL}
+            disabled={
+              createLinkMutation.isPending ||
+              !linkName ||
+              !linkURL ||
+              !isPasscodeValid
+            }
           >
             {createLinkMutation.isPending ? (
               <Loader2 className="animate-spin mr-2" />

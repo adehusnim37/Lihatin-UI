@@ -43,19 +43,31 @@ interface UserData {
   role: string
 }
 
+let cachedUserRaw: string | null = null
+let cachedUserSnapshot: UserData | null = null
+
 const readUserFromStorage = (): UserData | null => {
   if (typeof window === "undefined") {
     return null
   }
 
   const savedUser = localStorage.getItem("user")
+  if (savedUser === cachedUserRaw) {
+    return cachedUserSnapshot
+  }
+
+  cachedUserRaw = savedUser
+
   if (!savedUser) {
+    cachedUserSnapshot = null
     return null
   }
 
   try {
-    return JSON.parse(savedUser) as UserData
+    cachedUserSnapshot = JSON.parse(savedUser) as UserData
+    return cachedUserSnapshot
   } catch {
+    cachedUserSnapshot = null
     return null
   }
 }

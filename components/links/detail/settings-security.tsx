@@ -31,6 +31,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { hasRepeatedConsecutiveDigits } from "@/lib/validators/passcode";
 
 import {
   useUpdateLink,
@@ -43,7 +44,10 @@ const passcodeSchema = z.object({
   passcode: z
     .string()
     .length(6, "Passcode must be exactly 6 digits")
-    .regex(/^\d+$/, "Numbers only"),
+    .regex(/^\d+$/, "Numbers only")
+    .refine((value) => !hasRepeatedConsecutiveDigits(value), {
+      message: "Passcode cannot contain 4 or more repeated digits in a row",
+    }),
 });
 
 interface SettingsSecurityProps {
@@ -109,6 +113,9 @@ function PasscodeSection({
   };
 
   const hasPasscode = !!currentPasscode && currentPasscode !== "0";
+  const passcodeValue = form.watch("passcode");
+  const slotClassName =
+    "w-auto min-w-0 flex-1 max-w-[2.85rem] h-10 sm:h-12 rounded-md border border-border bg-muted/20 text-base sm:text-lg font-semibold";
 
   return (
     <Card
@@ -216,9 +223,14 @@ function PasscodeSection({
             )}
           </div>
         ) : (
-          <div className="space-y-4 rounded-lg border p-4 bg-background">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-sm font-medium">Set 6-Digit PIN</h4>
+          <div className="space-y-4 rounded-lg border p-4 bg-background shadow-xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-medium">Set 6-Digit PIN</h4>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Use numbers only. Share this PIN only with trusted users.
+                </p>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
@@ -238,24 +250,59 @@ function PasscodeSection({
                   name="passcode"
                   render={({ field }) => (
                     <FormItem>
+                      <div className="rounded-md border bg-muted/40 p-3 space-y-2">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-muted-foreground">
+                            PIN completeness
+                          </span>
+                          <span className="font-medium">
+                            {passcodeValue.length}/6
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-6 gap-1.5">
+                          {Array.from({ length: 6 }).map((_, i) => (
+                            <div
+                              key={i}
+                              className={cn(
+                                "h-1.5 rounded-full transition-colors",
+                                i < passcodeValue.length
+                                  ? "bg-primary"
+                                  : "bg-muted-foreground/25"
+                              )}
+                            />
+                          ))}
+                        </div>
+                      </div>
                       <FormControl>
-                        <InputOTP maxLength={6} {...field}>
-                          <InputOTPGroup>
-                            {[0, 1, 2, 3, 4, 5].map((i) => (
-                              <InputOTPSlot key={i} index={i} />
-                            ))}
+                        <InputOTP
+                          maxLength={6}
+                          {...field}
+                          className="w-full"
+                          containerClassName="mx-auto w-full max-w-[21rem] justify-center overflow-hidden"
+                        >
+                          <InputOTPGroup className="w-full gap-1.5 sm:gap-2">
+                            <InputOTPSlot index={0} className={slotClassName} />
+                            <InputOTPSlot index={1} className={slotClassName} />
+                            <InputOTPSlot index={2} className={slotClassName} />
+                            <InputOTPSlot index={3} className={slotClassName} />
+                            <InputOTPSlot index={4} className={slotClassName} />
+                            <InputOTPSlot index={5} className={slotClassName} />
                           </InputOTPGroup>
                         </InputOTP>
                       </FormControl>
+                      <p className="text-[11px] text-muted-foreground text-center">
+                        Tip: avoid repeating digits like 111111.
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Button
                     type="submit"
                     size="sm"
                     disabled={updateMutation.isPending}
+                    className="min-w-20"
                   >
                     {updateMutation.isPending && (
                       <Loader2 className="mr-2 h-3 w-3 animate-spin" />
@@ -269,6 +316,7 @@ function PasscodeSection({
                       size="sm"
                       onClick={handleRemove}
                       disabled={removeMutation.isPending}
+                      className="min-w-24"
                     >
                       Remove
                     </Button>

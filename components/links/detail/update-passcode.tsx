@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRemovePasscode } from "@/lib/hooks/queries/useLinksQuery";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Lock } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -30,13 +29,17 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { useRemovePasscode } from "@/lib/hooks/queries/useLinksQuery";
+import { hasRepeatedConsecutiveDigits } from "@/lib/validators/passcode";
 
-// Schema for passcode validation
 const passcodeSchema = z.object({
   passcode: z
     .string()
     .length(6, "Passcode must be exactly 6 digits")
-    .regex(/^\d+$/, "Passcode must contain only numbers"),
+    .regex(/^\d+$/, "Passcode must contain only numbers")
+    .refine((value) => !hasRepeatedConsecutiveDigits(value), {
+      message: "Passcode cannot contain 4 or more repeated digits in a row",
+    }),
 });
 
 type PasscodeFormValues = z.infer<typeof passcodeSchema>;
@@ -66,7 +69,6 @@ export function UpdatePasscodeDialog({
     },
   });
 
-  // Auto-focus logic
   useEffect(() => {
     if (open) {
       const timer = setTimeout(() => {
@@ -83,7 +85,6 @@ export function UpdatePasscodeDialog({
       onOpenChange(false);
       form.reset();
     } catch (error) {
-      // Error handled by the mutation hook (toast)
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -130,15 +131,16 @@ export function UpdatePasscodeDialog({
                       value={field.value}
                       onChange={(value) => field.onChange(value)}
                       autoFocus
-                      className="justify-center"
+                      className="w-full"
+                      containerClassName="mx-auto w-full max-w-[21rem] justify-center overflow-hidden"
                     >
-                      <InputOTPGroup>
-                        <InputOTPSlot index={0} />
-                        <InputOTPSlot index={1} />
-                        <InputOTPSlot index={2} />
-                        <InputOTPSlot index={3} />
-                        <InputOTPSlot index={4} />
-                        <InputOTPSlot index={5} />
+                      <InputOTPGroup className="w-full gap-1.5 sm:gap-2">
+                        <InputOTPSlot index={0} className="w-auto min-w-0 flex-1 max-w-[2.75rem] h-10 sm:h-11 rounded-md border border-border bg-muted/20 text-base font-semibold" />
+                        <InputOTPSlot index={1} className="w-auto min-w-0 flex-1 max-w-[2.75rem] h-10 sm:h-11 rounded-md border border-border bg-muted/20 text-base font-semibold" />
+                        <InputOTPSlot index={2} className="w-auto min-w-0 flex-1 max-w-[2.75rem] h-10 sm:h-11 rounded-md border border-border bg-muted/20 text-base font-semibold" />
+                        <InputOTPSlot index={3} className="w-auto min-w-0 flex-1 max-w-[2.75rem] h-10 sm:h-11 rounded-md border border-border bg-muted/20 text-base font-semibold" />
+                        <InputOTPSlot index={4} className="w-auto min-w-0 flex-1 max-w-[2.75rem] h-10 sm:h-11 rounded-md border border-border bg-muted/20 text-base font-semibold" />
+                        <InputOTPSlot index={5} className="w-auto min-w-0 flex-1 max-w-[2.75rem] h-10 sm:h-11 rounded-md border border-border bg-muted/20 text-base font-semibold" />
                       </InputOTPGroup>
                     </InputOTP>
                   </FormControl>

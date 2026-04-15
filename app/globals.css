@@ -143,4 +143,9 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  .recharts-wrapper,
+  .recharts-wrapper * {
+    font-family: var(--font-geist-sans);
+  }
 }

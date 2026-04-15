@@ -91,7 +91,7 @@ export default function AnalyticsDetailPage() {
             <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold tracking-tight">
+                  <h1 className="text-3xl font-bold tracking-tight">
                     Analytics: {link.title || link.short_code}
                   </h1>
                   <Badge variant={link.is_active ? "default" : "secondary"}>

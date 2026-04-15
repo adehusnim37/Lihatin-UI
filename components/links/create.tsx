@@ -53,6 +53,7 @@ import {
 import { Badge } from "../ui/badge";
 import { useEffect } from "react";
 import { useCreateLink } from "@/lib/hooks/queries/useLinksQuery";
+import { hasRepeatedConsecutiveDigits } from "@/lib/validators/passcode";
 import { IconInfoCircle } from "@tabler/icons-react";
 
 const FRONTEND_BASE_URL =
@@ -78,6 +79,9 @@ const linkSchema = z.object({
     .string()
     .refine((val) => !val || (val.length === 6 && /^\d{6}$/.test(val)), {
       message: "Passcode must be exactly 6 digits",
+    })
+    .refine((val) => !val || !hasRepeatedConsecutiveDigits(val), {
+      message: "Passcode cannot contain 4 or more repeated digits in a row",
     })
     .or(z.literal("")), // Tambahkan ini biar aman kalau string kosong
 
