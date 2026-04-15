@@ -1,6 +1,5 @@
 import { IconDeviceDesktop, IconDeviceMobile, IconWorld, IconExternalLink } from "@tabler/icons-react"
 
-import { Badge } from "@/components/ui/badge"
 import {
   Card,
   CardContent,
@@ -10,10 +9,6 @@ import {
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Progress } from "@/components/ui/progress"
-
-interface TopItem {
-  [key: string]: string | number;
-}
 
 interface AnalyticsCardsProps {
   topCountries?: Array<{ country: string; count: number }>;

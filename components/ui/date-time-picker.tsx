@@ -3,7 +3,6 @@
 import * as React from "react";
 import { IconCalendarClock } from "@tabler/icons-react";
 import { format, isSameDay, startOfDay } from "date-fns";
-import { Calendar as CalendarIcon, Clock } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";

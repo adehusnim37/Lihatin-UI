@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Icon } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
 import Link from "next/link";
@@ -28,7 +28,7 @@ export default function NotFound() {
               Page not found
             </h1>
             <p className="text-muted-foreground text-base lg:text-lg">
-              Sorry, we couldn't find the page you're looking for. Please check
+              Sorry, we couldn&apos;t find the page you&apos;re looking for. Please check
               the URL or navigate back home.
             </p>
           </div>

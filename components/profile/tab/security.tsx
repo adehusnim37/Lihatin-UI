@@ -32,7 +32,6 @@ import { getProfile, AuthProfileData } from "@/lib/api/auth";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProfileSecurityTab() {
-  const [isOpen, setIsOpen] = useState(false);
   const [isSessionOpen, setIsSessionOpen] = useState(false);
   const [profileData, setProfileData] = useState<AuthProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);

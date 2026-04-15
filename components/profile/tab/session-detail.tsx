@@ -17,20 +17,11 @@ import {
   IconUser,
   IconCopy,
   IconCheck as IconCheckCopied,
-  IconChevronDown,
-  IconChevronUp,
-  IconInfoCircle,
   IconShield,
   IconWorld,
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -47,7 +38,6 @@ interface SessionDetailProps {
 }
 
 export function SessionDetail({ attempt }: SessionDetailProps) {
-  const [isOpen, setIsOpen] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   // Helper to parse user agent (reused logic for consistency)
@@ -84,10 +74,10 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
     else if (ua.includes("android")) os = "Android";
     else if (ua.includes("ios") || ua.includes("iphone")) os = "iOS";
 
-    return { browser, isMobile, os, BrowserIcon, DeviceIcon };
+    return { browser, os, BrowserIcon, DeviceIcon };
   };
 
-  const { browser, isMobile, os, BrowserIcon, DeviceIcon } = parseUserAgent(
+  const { browser, os, BrowserIcon, DeviceIcon } = parseUserAgent(
     attempt.user_agent,
   );
 

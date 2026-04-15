@@ -3,13 +3,10 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-  ArrowLeft,
   Activity,
   BarChart2,
-  ExternalLink,
   Copy,
   Check,
-  QrCode,
   Link as LinkIcon,
   Users,
 } from "lucide-react";

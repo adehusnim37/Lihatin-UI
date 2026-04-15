@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { toast } from 'sonner'
 import { checkAuth, logout as apiLogout, clearUserData } from '@/lib/api/auth'
@@ -20,12 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
 
-  // Check authentication on mount and path change
-  useEffect(() => {
-    checkAuthentication()
-  }, [pathname])
-
-  const checkAuthentication = async () => {
+  const checkAuthentication = useCallback(async () => {
     setIsLoading(true)
     
     try {
@@ -63,7 +58,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [pathname, router])
+
+  // Check authentication on mount and path change
+  useEffect(() => {
+    void checkAuthentication()
+  }, [checkAuthentication])
 
   const login = async () => {
     // After successful login, recheck authentication

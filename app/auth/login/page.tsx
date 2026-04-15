@@ -136,11 +136,22 @@ function LoginContent() {
         router.push(redirectTo);
       }
     } catch (error: unknown) {
-      console.error("Login error:", error);
       const errorMessage =
         error instanceof Error
           ? error.message
           : "Invalid credentials. Please try again.";
+
+      // Avoid noisy console logs for expected auth/business errors
+      if (
+        process.env.NODE_ENV !== "production" &&
+        ![
+          "User not found",
+          "Your email address is not verified. Please verify your email to proceed.",
+          "Too many requests, please try again later",
+        ].includes(errorMessage)
+      ) {
+        console.error("Login error:", error);
+      }
 
       // Show error toast
       toast.error("Login Failed", {
@@ -261,8 +272,10 @@ function LoginContent() {
       <Image
         src="/sign-in.svg"
         alt="Image"
-        width="600"
-        height="800"
+        width={600}
+        height={800}
+        priority
+        loading="eager"
         className="w-1/2 rounded-xl object-contain md:block hidden"
         style={{ transform: "scale(0.70)" }} // ← Custom scale
       />

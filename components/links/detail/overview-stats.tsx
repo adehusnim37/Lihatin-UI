@@ -4,8 +4,6 @@ import { useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
-  Bar,
-  BarChart,
   CartesianGrid,
   Cell,
   Legend,
@@ -22,15 +20,11 @@ import {
   Globe,
   MonitorSmartphone,
   MapPin,
-  CalendarDays,
-  ArrowUpRight,
   TrendingUp,
 } from "lucide-react";
 import {
   format,
-  parseISO,
   subDays,
-  isAfter,
   startOfDay,
   eachDayOfInterval,
   eachHourOfInterval,
@@ -64,6 +58,7 @@ interface OverviewStatsProps {
 export function OverviewStats({ link }: OverviewStatsProps) {
   const { data: stats, isLoading } = useLinkStats(link.short_code);
   const [timeRange, setTimeRange] = useState("1"); // 1, 7, 30, 60, 90
+  const [isMounted] = useState(() => typeof window !== "undefined");
 
   // Filter Click History based on Time Range
   const filteredHistory = useMemo(() => {
@@ -244,7 +239,7 @@ export function OverviewStats({ link }: OverviewStatsProps) {
             </Select>
           </CardHeader>
           <CardContent className="h-[300px]">
-            {filteredHistory.length > 0 ? (
+            {isMounted && filteredHistory.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={filteredHistory}
@@ -314,7 +309,7 @@ export function OverviewStats({ link }: OverviewStatsProps) {
             <CardDescription>User device types</CardDescription>
           </CardHeader>
           <CardContent className="h-[300px]">
-            {top_devices && top_devices.length > 0 ? (
+            {isMounted && top_devices && top_devices.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -327,7 +322,7 @@ export function OverviewStats({ link }: OverviewStatsProps) {
                     dataKey="count"
                     nameKey="device"
                   >
-                    {top_devices.map((entry, index) => (
+                    {top_devices.map((_, index) => (
                       <Cell
                         key={`cell-${index}`}
                         fill={COLORS[index % COLORS.length]}
@@ -365,7 +360,7 @@ export function OverviewStats({ link }: OverviewStatsProps) {
           <CardContent>
             {top_countries && top_countries.length > 0 ? (
               <div className="space-y-4">
-                {top_countries.map((item, index) => (
+                {top_countries.map((item) => (
                   <div key={item.country} className="flex items-center gap-3">
                     <div className="w-full space-y-1">
                       <div className="flex justify-between text-sm">
@@ -413,7 +408,7 @@ export function OverviewStats({ link }: OverviewStatsProps) {
           <CardContent>
             {top_referrers && top_referrers.length > 0 ? (
               <div className="space-y-4">
-                {top_referrers.map((item, index) => (
+                {top_referrers.map((item) => (
                   <div
                     key={item.host}
                     className="flex items-center justify-between border-b pb-2 last:border-0 last:pb-0"

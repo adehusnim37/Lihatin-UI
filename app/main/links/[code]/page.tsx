@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import {
-  ArrowLeft,
   ExternalLink,
   Copy,
   Check,
@@ -14,11 +13,8 @@ import {
   MousePointerClick,
   Link as LinkIcon,
   Calendar,
-  Lock,
   Tag,
-  Clock,
   Infinity,
-  ShieldAlert,
   QrCode,
   Settings,
   History,
@@ -27,21 +23,18 @@ import {
   Loader2,
 } from "lucide-react";
 import { useLink, useUpdateLink } from "@/lib/hooks/queries/useLinksQuery";
-import { cn } from "@/lib/utils";
+import type { UpdateShortLinkRequest } from "@/lib/api/shortlinks";
 import { SettingsSecurity } from "@/components/links/detail/settings-security";
 import { LinkQRCode } from "@/components/links/detail/link-qrcode";
-import { UpdateExpirationDialog } from "@/components/links/detail/update-expiration";
 import { UpdateClickLimitDialog } from "@/components/links/detail/update-click-limit";
 import { RulesCard } from "@/components/links/detail/rules-card";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
@@ -57,15 +50,6 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import {
-  Label as ReLabel,
-  PolarGrid,
-  PolarRadiusAxis,
-  RadialBar,
-  RadialBarChart,
-  PolarAngleAxis,
-} from "recharts";
-import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -100,12 +84,15 @@ export default function LinkDetailPage() {
     utm_content: "",
   });
 
-  const handleUpdate = async (data: any, successMessage: string) => {
+  const handleUpdate = async (
+    data: UpdateShortLinkRequest,
+    successMessage: string,
+  ) => {
     try {
       await updateLink.mutateAsync({ code, data });
       toast.success(successMessage);
       return true;
-    } catch (err) {
+    } catch {
       toast.error("Failed to update link");
       return false;
     }
@@ -131,7 +118,7 @@ export default function LinkDetailPage() {
       setIsEditing(false);
       // Redirect to new URL since the code changed
       router.push(`/main/links/${slugInput}`);
-    } catch (err) {
+    } catch {
       toast.error("Short link unavailable or invalid.");
     } finally {
       setIsCheckingSlug(false);
@@ -248,6 +235,11 @@ export default function LinkDetailPage() {
   const currentClicks = link.detail?.current_clicks || 0;
   const progressPercent =
     clickLimit > 0 ? Math.min((currentClicks / clickLimit) * 100, 100) : 0;
+  const ringRadius = 84;
+  const ringStroke = 24;
+  const ringCircumference = 2 * Math.PI * ringRadius;
+  const ringOffset =
+    ringCircumference * (1 - Math.max(0, Math.min(progressPercent, 100)) / 100);
 
   return (
     <SidebarProvider
@@ -624,88 +616,47 @@ export default function LinkDetailPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="flex-1 flex flex-col justify-end pt-6">
-                    <ChartContainer
-                      config={{
-                        clicks: {
-                          label: "Clicks",
-                          color: "hsl(var(--primary))",
-                        },
-                      }}
-                      className="mx-auto aspect-square max-h-[250px] w-full"
-                    >
-                      <RadialBarChart
-                        data={[
-                          {
-                            activity: "clicks",
-                            current: currentClicks,
-                            fill: "#70c5df",
-                          },
-                        ]}
-                        startAngle={90}
-                        endAngle={450}
-                        innerRadius={80}
-                        outerRadius={110}
+                    <div className="mx-auto relative h-[250px] w-full max-w-[250px]">
+                      <svg
+                        viewBox="0 0 220 220"
+                        className="h-full w-full overflow-visible"
+                        role="img"
+                        aria-label="Click activity progress"
                       >
-                        <PolarAngleAxis
-                          type="number"
-                          domain={[
-                            0,
-                            clickLimit > 0 ? clickLimit : currentClicks || 1,
-                          ]}
-                          tick={false}
-                        />
-                        <PolarGrid
-                          gridType="circle"
-                          radialLines={false}
-                          stroke="none"
-                          className="first:fill-muted last:fill-background"
-                        />
-                        <RadialBar
-                          dataKey="current"
-                          background
-                          cornerRadius={10}
-                        />
-                        <PolarRadiusAxis
-                          tick={false}
-                          tickLine={false}
-                          axisLine={false}
-                        >
-                          <ReLabel
-                            content={({ viewBox }) => {
-                              if (
-                                viewBox &&
-                                "cx" in viewBox &&
-                                "cy" in viewBox
-                              ) {
-                                return (
-                                  <text
-                                    x={viewBox.cx}
-                                    y={viewBox.cy}
-                                    textAnchor="middle"
-                                    dominantBaseline="middle"
-                                  >
-                                    <tspan
-                                      x={viewBox.cx}
-                                      y={viewBox.cy}
-                                      className="fill-foreground text-4xl font-bold"
-                                    >
-                                      {currentClicks.toLocaleString()}
-                                    </tspan>
-                                    <tspan
-                                      x={viewBox.cx}
-                                      y={(viewBox.cy || 0) + 24}
-                                      className="fill-muted-foreground"
-                                    >
-                                      Clicks
-                                    </tspan>
-                                  </text>
-                                );
-                              }
-                            }}
+                        <g transform="rotate(-90 110 110)">
+                          <circle
+                            cx="110"
+                            cy="110"
+                            r={ringRadius}
+                            fill="none"
+                            stroke="hsl(var(--muted))"
+                            strokeWidth={ringStroke}
                           />
-                        </PolarRadiusAxis>
-                      </RadialBarChart>
-                    </ChartContainer>
+                          {clickLimit > 0 && (
+                            <circle
+                              cx="110"
+                              cy="110"
+                              r={ringRadius}
+                              fill="none"
+                              stroke="#70c5df"
+                              strokeWidth={ringStroke}
+                              strokeLinecap="round"
+                              strokeDasharray={ringCircumference}
+                              strokeDashoffset={ringOffset}
+                            />
+                          )}
+                        </g>
+                      </svg>
+
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                        <span className="text-4xl font-bold text-foreground">
+                          {currentClicks.toLocaleString()}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          Clicks
+                        </span>
+                      </div>
+                    </div>
 
                     <div className="text-center text-sm text-muted-foreground mt-4">
                       {clickLimit > 0 ? (

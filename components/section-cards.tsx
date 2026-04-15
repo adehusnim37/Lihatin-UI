@@ -23,28 +23,16 @@ interface SectionCardsProps {
   isLoading?: boolean;
 }
 
-// Helper to calculate percentage change (comparing today vs yesterday as simple example)
-function calculateTrend(current: number, previous: number): { value: number; isUp: boolean } {
-  if (previous === 0) return { value: 0, isUp: current > 0 };
-  const change = ((current - previous) / previous) * 100;
-  return { value: Math.abs(change), isUp: change > 0 };
-}
-
 export function SectionCards({
   totalLinks = 0,
   activeLinks = 0,
   totalClicks = 0,
   clicksLast24h = 0,
-  clicksLast7d = 0,
   uniqueVisitors = 0,
   totalLogs = 0,
   recentActivityCount = 0,
   isLoading = false,
 }: SectionCardsProps) {
-  // Calculate simple trends (you can enhance this with historical data)
-  const linkTrend = { value: 12.5, isUp: activeLinks > 0 };
-  const clickTrend = { value: clicksLast24h > 0 ? ((clicksLast24h / totalClicks) * 100) : 0, isUp: clicksLast24h > 0 };
-  
   if (isLoading) {
     return (
       <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">

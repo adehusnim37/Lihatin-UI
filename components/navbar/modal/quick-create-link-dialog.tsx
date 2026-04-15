@@ -10,8 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
+import { useState } from "react";
 import { useCreateLink } from "@/lib/hooks/queries/useLinksQuery";
 
 interface QuickCreateLinkDialogProps {
@@ -29,14 +28,14 @@ export default function QuickCreateLinkDialog({
 
   const createLinkMutation = useCreateLink();
 
-  // Reset form when dialog closes
-  useEffect(() => {
-    if (!open) {
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
       setLinkName("");
       setLinkURL("");
       setPasscode("");
     }
-  }, [open]);
+    onOpenChange(nextOpen);
+  };
 
   const handleCreateLink = async () => {
     // Build request in correct format: { is_bulky: boolean, links: [...] }
@@ -52,11 +51,11 @@ export default function QuickCreateLinkDialog({
     };
 
     createLinkMutation.mutate(requestData);
-    onOpenChange(false);
+    handleOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create Quick Link</DialogTitle>

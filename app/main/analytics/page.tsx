@@ -14,7 +14,6 @@ import {
   Smartphone,
   Layout,
   ArrowRight,
-  Search,
   ExternalLink,
 } from "lucide-react";
 import {
@@ -41,7 +40,6 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-  CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -58,10 +56,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { useDashboardStats } from "@/lib/hooks/queries/useDashboardQuery";
 import { useLinks } from "@/lib/hooks/queries/useLinksQuery";
@@ -87,21 +83,19 @@ export default function AnalyticsPage() {
   });
 
   // Table state
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const [page] = useState(1);
   const limit = 5; // Smaller limit for dashboard view
 
   const startDate = date?.from ? format(date.from, "yyyy-MM-dd") : undefined;
   const endDate = date?.to ? format(date.to, "yyyy-MM-dd") : undefined;
 
-  const { data: stats, isLoading: statsLoading } = useDashboardStats(
+  const { data: stats } = useDashboardStats(
     startDate,
     endDate
   );
   const { data: linksData, isLoading: linksLoading } = useLinks(page, limit);
 
   const links = linksData?.short_links || [];
-  const totalPages = linksData?.total_pages || 0;
 
   return (
     <SidebarProvider
@@ -347,7 +341,6 @@ export default function AnalyticsPage() {
                     />
                     <Bar
                       dataKey="count"
-                      layout="vertical"
                       radius={5}
                       fill="#70c5df"
                     >
@@ -358,7 +351,11 @@ export default function AnalyticsPage() {
                         className="text-xs font-bold"
                         fontSize={10}
                         fill="#ffffff"
-                        formatter={(value: any) => value || "Unknown"}
+                        formatter={(value: unknown) =>
+                          typeof value === "string" && value.trim().length > 0
+                            ? value
+                            : "Unknown"
+                        }
                       />
                       <LabelList
                         dataKey="count"
@@ -465,7 +462,7 @@ export default function AnalyticsPage() {
                       strokeWidth={2}
                       label={({ name, percent }) =>
                         `${name?.substring(0, 10) || "Direct"}: ${(
-                          percent * 100
+                          (percent ?? 0) * 100
                         ).toFixed(0)}%`
                       }
                       labelLine={false}

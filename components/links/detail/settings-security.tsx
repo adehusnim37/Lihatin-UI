@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
 import {
   Loader2,
   Lock,
@@ -17,33 +16,21 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { Switch } from "@/components/ui/switch"; // For enable/disable
 
 import {
   useUpdateLink,
@@ -69,7 +56,6 @@ interface SettingsSecurityProps {
 export function SettingsSecurity({
   shortCode,
   currentPasscode,
-  expiresAt,
   className,
 }: SettingsSecurityProps) {
   // We treat this as two separate sections: Passcode and Expiration
@@ -109,7 +95,7 @@ function PasscodeSection({
       });
       setIsEditing(false);
       toast.success("Passcode updated successfully");
-    } catch (error) {
+    } catch {
       // Toast handled by hook usually
     }
   };
@@ -119,7 +105,7 @@ function PasscodeSection({
       await removeMutation.mutateAsync(shortCode);
       form.reset({ passcode: "" });
       toast.success("Passcode removed");
-    } catch (error) {}
+    } catch {}
   };
 
   const hasPasscode = !!currentPasscode && currentPasscode !== "0";

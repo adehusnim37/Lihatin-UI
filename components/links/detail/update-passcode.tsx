@@ -25,7 +25,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import {
   InputOTP,
   InputOTPGroup,
@@ -47,7 +46,7 @@ interface UpdatePasscodeDialogProps {
   currentPasscode?: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onUpdate: (code: string, data: { passcode: string }) => Promise<any>;
+  onUpdate: (code: string, data: { passcode: string }) => Promise<unknown>;
 }
 
 export function UpdatePasscodeDialog({

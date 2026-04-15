@@ -41,8 +41,8 @@ interface UpdateClickLimitDialogProps {
   onOpenChange: (open: boolean) => void;
   onUpdate: (
     code: string,
-    data: { click_limit: number | null }
-  ) => Promise<any>;
+    data: { click_limit: number | null },
+  ) => Promise<unknown>;
 }
 
 export function UpdateClickLimitDialog({

@@ -19,13 +19,12 @@ import {
   IconRefresh,
   IconSparkles,
   IconArrowForwardUp,
-  IconX,
 } from "@tabler/icons-react";
 import {
   sendVerificationEmail,
   checkEmailVerificationStatus,
 } from "@/lib/api/auth";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface VerifyEmailModalProps {
   email?: string;

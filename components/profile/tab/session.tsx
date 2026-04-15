@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -36,19 +36,8 @@ import {
   IconBrandFirefox,
   IconBrandSafari,
   IconBrandEdge,
-  IconClock,
-  IconMapPin,
-  IconAlertCircle,
-  IconUser,
 } from "@tabler/icons-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Sheet,
   SheetContent,
@@ -56,28 +45,28 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Separator } from "@/components/ui/separator";
-import { formatDistanceToNow, format } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { SessionDetail } from "./session-detail";
 
 export default function SessionTab() {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [user, setUser] = useState<{ role: string } | null>(null);
+  const [user] = useState<{ role: string } | null>(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+    const savedUser = localStorage.getItem("user");
+    if (!savedUser) {
+      return null;
+    }
+    try {
+      return JSON.parse(savedUser) as { role: string };
+    } catch {
+      return null;
+    }
+  });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-
-  // Load user role from localStorage
-  useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch {
-        setUser(null);
-      }
-    }
-  }, []);
 
   const isAdmin = user?.role === "admin" || user?.role === "super_admin";
 

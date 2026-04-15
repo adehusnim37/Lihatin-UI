@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import QRCode from "qrcode";
 import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
@@ -22,27 +23,26 @@ export function LinkQRCode({ url, title }: LinkQRCodeProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    generateQR();
+    const generateQR = async () => {
+      try {
+        setLoading(true);
+        const dataUrl = await QRCode.toDataURL(url, {
+          width: 300,
+          margin: 2,
+          color: {
+            dark: "#000000",
+            light: "#ffffff",
+          },
+        });
+        setQrDataUrl(dataUrl);
+      } catch (err) {
+        console.error("Failed to generate QR code", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    void generateQR();
   }, [url]);
-
-  const generateQR = async () => {
-    try {
-      setLoading(true);
-      const dataUrl = await QRCode.toDataURL(url, {
-        width: 300,
-        margin: 2,
-        color: {
-          dark: "#000000",
-          light: "#ffffff",
-        },
-      });
-      setQrDataUrl(dataUrl);
-    } catch (err) {
-      console.error("Failed to generate QR code", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const downloadQR = () => {
     if (!qrDataUrl) return;
@@ -66,9 +66,12 @@ export function LinkQRCode({ url, title }: LinkQRCodeProps) {
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         ) : (
           qrDataUrl && (
-            <img
+            <Image
               src={qrDataUrl}
               alt="QR Code"
+              width={200}
+              height={200}
+              unoptimized
               className="w-full max-w-[200px] h-auto rounded-md shadow-sm bg-white p-2"
             />
           )

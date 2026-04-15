@@ -6,11 +6,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Globe,
-  Monitor,
   Smartphone,
   Tablet,
   MapPin,
-  Clock,
   ExternalLink,
   Laptop,
   HelpCircle,
@@ -34,7 +32,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface ViewsTableProps {
   code: string;

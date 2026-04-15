@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, FormEvent } from "react";
 import { GalleryVerticalEnd, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -78,7 +79,7 @@ export function OTPForm({
       <form onSubmit={handleSubmit}>
         <FieldGroup>
           <div className="flex flex-col items-center gap-2 text-center">
-            <a
+            <Link
               href="/auth/login"
               className="flex flex-col items-center gap-2 font-medium"
             >
@@ -86,7 +87,7 @@ export function OTPForm({
                 <GalleryVerticalEnd className="size-6" />
               </div>
               <span className="sr-only">Lihatin</span>
-            </a>
+            </Link>
             <h1 className="text-xl font-bold">Enter verification code</h1>
             <FieldDescription>
               {description ? (

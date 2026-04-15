@@ -19,6 +19,7 @@ import {
   IconAlertCircle,
   IconLock,
 } from "@tabler/icons-react";
+import Image from "next/image";
 import { useState, useCallback, useEffect } from "react";
 import { setupTOTP, verifyTOTP, TOTPSetupResponse } from "@/lib/api/auth";
 import { Input } from "@/components/ui/input";
@@ -137,7 +138,7 @@ export default function SetupTOTPModal({
       toast.success("Copied!", {
         description: type === "secret" ? "Secret key copied" : "Recovery codes copied",
       });
-    } catch (err) {
+    } catch {
       toast.error("Failed to copy", {
         description: "Please copy manually",
       });
@@ -215,11 +216,12 @@ export default function SetupTOTPModal({
                 <div className="flex justify-center w-full">
                   <div className="p-4 bg-white rounded-lg border-2 border-gray-200">
                     {qrCodeDataURL ? (
-                      <img
+                      <Image
                         src={qrCodeDataURL}
                         alt="TOTP QR Code"
                         width={200}
                         height={200}
+                        unoptimized
                         className="rounded"
                       />
                     ) : (

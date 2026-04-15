@@ -1,12 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useSyncExternalStore } from "react"
 import { useRouter } from "next/navigation"
 import {
   IconDeviceDesktop,
   IconDotsVertical,
   IconLogout,
-  IconSettings,
   IconShield,
   IconUserCircle,
 } from "@tabler/icons-react"
@@ -44,25 +43,49 @@ interface UserData {
   role: string
 }
 
+const readUserFromStorage = (): UserData | null => {
+  if (typeof window === "undefined") {
+    return null
+  }
+
+  const savedUser = localStorage.getItem("user")
+  if (!savedUser) {
+    return null
+  }
+
+  try {
+    return JSON.parse(savedUser) as UserData
+  } catch {
+    return null
+  }
+}
+
+const subscribeToUserStorage = (onStoreChange: () => void) => {
+  if (typeof window === "undefined") {
+    return () => {}
+  }
+
+  const handler = () => onStoreChange()
+  window.addEventListener("storage", handler)
+  window.addEventListener("focus", handler)
+
+  return () => {
+    window.removeEventListener("storage", handler)
+    window.removeEventListener("focus", handler)
+  }
+}
+
 export function NavUser() {
   const { isMobile } = useSidebar()
   const [isLoading, setIsLoading] = useState(false)
-  const [user, setUser] = useState<UserData | null>(null)
+  const user = useSyncExternalStore(
+    subscribeToUserStorage,
+    readUserFromStorage,
+    () => null
+  )
 
   const router = useRouter()
   const auth = useAuth()
-
-  // Load user data from localStorage
-  useEffect(() => {
-    const savedUser = localStorage.getItem("user")
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser))
-      } catch {
-        // ignore parse error
-      }
-    }
-  }, [])
 
   // Get display name and initials
   const displayName = user ? `${user.first_name} ${user.last_name}` : "User"

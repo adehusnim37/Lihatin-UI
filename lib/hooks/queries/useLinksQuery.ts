@@ -31,10 +31,18 @@ import {
   toggleShortLinkStatus,
   removeShortLinkPasscode,
   getShortLinkStats,
-  type ShortLink,
   type CreateShortLinkRequest,
   type UpdateShortLinkRequest,
 } from "@/lib/api/shortlinks";
+
+type APIErrorPayload = {
+  message?: string;
+  error?: Record<string, unknown>;
+};
+
+const isAPIErrorPayload = (value: unknown): value is APIErrorPayload => {
+  return typeof value === "object" && value !== null;
+};
 
 // ============================================
 // QUERY KEYS
@@ -223,17 +231,19 @@ export function useDashboardStats(startDate?: string, endDate?: string) {
 // ============================================
 
 // Helper to format API error response
-const formatAPIError = (error: any): string => {
-  if (error?.error && typeof error.error === "object") {
+const formatAPIError = (error: unknown): string => {
+  if (!isAPIErrorPayload(error)) {
+    return "Something went wrong. Please try again.";
+  }
+
+  if (error.error && typeof error.error === "object") {
     // Collect all validation messages
-    const messages = Object.values(error.error).filter(
-      (msg) => typeof msg === "string"
-    );
+    const messages = Object.values(error.error).filter((msg) => typeof msg === "string");
     if (messages.length > 0) {
       return messages.join("\n");
     }
   }
-  return error?.message || "Something went wrong. Please try again.";
+  return error.message || "Something went wrong. Please try again.";
 };
 
 /**
@@ -272,7 +282,7 @@ export function useCreateLink() {
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
       toast.success("Link successfully created");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error("Failed to create link", {
         description: formatAPIError(error),
       });
@@ -318,7 +328,7 @@ export function useUpdateLink() {
       });
       toast.success("Link successfully updated");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error("Failed to update link", {
         description: formatAPIError(error),
       });
@@ -350,7 +360,7 @@ export function useDeleteLink() {
       queryClient.invalidateQueries({ queryKey: linksKeys.lists() });
       toast.success("Link successfully deleted");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error("Failed to delete link", {
         description: formatAPIError(error),
       });
@@ -379,7 +389,7 @@ export function useRemovePasscode() {
       queryClient.invalidateQueries({ queryKey: linksKeys.detail(code) });
       toast.success("Passcode removed successfully");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error("Failed to remove passcode", {
         description: formatAPIError(error),
       });
@@ -425,7 +435,7 @@ export function useToggleLinkStatus() {
         description: response.message,
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       // Show error toast
       toast.error("Failed to change status", {
         description: formatAPIError(error),

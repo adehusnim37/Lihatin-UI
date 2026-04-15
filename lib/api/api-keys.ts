@@ -3,7 +3,6 @@
  * 🔑 Functions to manage API keys
  */
 
-import { number } from "zod";
 import {
   getWithAuth,
   postWithAuth,

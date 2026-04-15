@@ -4,8 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarIcon, Clock, Loader2 } from "lucide-react";
-import { format } from "date-fns";
+import { Clock, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,13 +23,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 
 const expirationSchema = z.object({
@@ -44,7 +36,10 @@ interface UpdateExpirationDialogProps {
   currentExpiration?: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onUpdate: (code: string, data: { expires_at: string | null }) => Promise<any>;
+  onUpdate: (
+    code: string,
+    data: { expires_at: string | null },
+  ) => Promise<unknown>;
 }
 
 export function UpdateExpirationDialog({

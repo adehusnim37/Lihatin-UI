@@ -55,6 +55,7 @@ import ActivateLink from "./detail/activate";
 import { UpdatePasscodeDialog } from "./detail/update-passcode";
 import { UpdateExpirationDialog } from "./detail/update-expiration";
 import { useUpdateLink } from "@/lib/hooks/queries/useLinksQuery";
+import type { UpdateShortLinkRequest } from "@/lib/api/shortlinks";
 
 export interface ShortLinkData {
   id: string;
@@ -83,9 +84,7 @@ interface ShortLinkCardProps {
 export default function ShortLinkCard({
   data,
   baseUrl,
-  onEdit,
   onDelete,
-  onAnalytics,
   onToggle,
 }: ShortLinkCardProps) {
   const router = useRouter();
@@ -141,7 +140,10 @@ export default function ShortLinkCard({
     return data.is_active ? "Active" : "Inactive";
   };
 
-  const handleUpdate = async (code: string, updateData: any) => {
+  const handleUpdate = async (
+    code: string,
+    updateData: UpdateShortLinkRequest,
+  ) => {
     return updateMutation.mutateAsync({ code, data: updateData });
   };
 

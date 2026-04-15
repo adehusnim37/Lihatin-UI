@@ -82,8 +82,9 @@ export default function VerifyLoginPage() {
         // Redirect to main page
         router.push("/main");
       }
-    } catch (err: any) {
-      const message = err.message || "Invalid verification code";
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Invalid verification code";
       setError(message);
       toast.error("Verification Failed", {
         description: message,

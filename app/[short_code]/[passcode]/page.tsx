@@ -27,7 +27,7 @@ export default function ShortCodeWithPasscodePage() {
             headers: {
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         if (response.ok || response.status === 401) {
@@ -40,7 +40,7 @@ export default function ShortCodeWithPasscodePage() {
           // Other error - still try to redirect
           setStatus("valid");
         }
-      } catch (error) {
+      } catch {
         // API unreachable - fallback
         setStatus("valid");
       }
@@ -72,7 +72,7 @@ export default function ShortCodeWithPasscodePage() {
       const redirectUrl = `/r/${params.short_code}/${params.passcode}`;
       console.log(
         "Countdown finished (passcode), redirecting to:",
-        redirectUrl
+        redirectUrl,
       );
       // Force hard navigation
       window.location.href = redirectUrl;
@@ -130,7 +130,7 @@ export default function ShortCodeWithPasscodePage() {
         <h1 className="text-xl font-semibold mb-2">Verifying passcode...</h1>
         <p className="text-muted-foreground text-sm">Checking your access 🔐</p>
         <p className="text-xs text-muted-foreground/60 mt-4">
-          /{params.short_code}/****
+          {`/${params.short_code}/****`}
         </p>
 
         <div className="w-48 h-1 bg-muted rounded-full mx-auto mt-4 overflow-hidden">

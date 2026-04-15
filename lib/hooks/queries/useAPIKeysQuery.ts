@@ -41,7 +41,15 @@ import {
   type UpdateAPIKeyRequest,
   getAPIKeyUsageStats,
 } from "@/lib/api/api-keys";
-import { stat } from "node:fs";
+
+type APIErrorPayload = {
+  message?: string;
+  error?: Record<string, unknown>;
+};
+
+const isAPIErrorPayload = (value: unknown): value is APIErrorPayload => {
+  return typeof value === "object" && value !== null;
+};
 
 // ============================================
 // QUERY KEYS
@@ -164,8 +172,12 @@ export function useAPIKeyUsage(
 // ============================================
 
 // Helper to format API error response
-const formatAPIError = (error: any): string => {
-  if (error?.error && typeof error.error === "object") {
+const formatAPIError = (error: unknown): string => {
+  if (!isAPIErrorPayload(error)) {
+    return "Something went wrong. Please try again.";
+  }
+
+  if (error.error && typeof error.error === "object") {
     // Collect all validation messages
     const messages = Object.values(error.error).filter(
       (msg) => typeof msg === "string",
@@ -174,7 +186,7 @@ const formatAPIError = (error: any): string => {
       return messages.join("\n");
     }
   }
-  return error?.message || "Something went wrong. Please try again.";
+  return error.message || "Something went wrong. Please try again.";
 };
 
 /**
@@ -212,7 +224,7 @@ export function useCreateAPIKey() {
       queryClient.invalidateQueries({ queryKey: apiKeysKeys.lists() });
       toast.success("API key successfully created");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error("Failed to create API key", {
         description: formatAPIError(error),
       });
@@ -261,7 +273,7 @@ export function useUpdateAPIKey() {
       });
       toast.success("API key successfully updated");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error("Failed to update API key", {
         description: formatAPIError(error),
       });
@@ -293,7 +305,7 @@ export function useRevokeAPIKey() {
       queryClient.invalidateQueries({ queryKey: apiKeysKeys.lists() });
       toast.success("API key successfully revoked");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error("Failed to revoke API key", {
         description: formatAPIError(error),
       });
@@ -367,7 +379,7 @@ export function useRefreshAPIKey() {
       queryClient.invalidateQueries({ queryKey: apiKeysKeys.detail(id) });
       toast.success("API key successfully refreshed");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error("Failed to refresh API key", {
         description: formatAPIError(error),
       });

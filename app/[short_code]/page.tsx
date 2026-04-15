@@ -43,7 +43,7 @@ export default function ShortCodePage() {
           // Other error - still try to redirect (let /r/ handle it)
           setStatus("valid");
         }
-      } catch (error) {
+      } catch {
         // API unreachable - fallback to letting /r/ handle validation
         setStatus("valid");
       }

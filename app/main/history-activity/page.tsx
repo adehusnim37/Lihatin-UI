@@ -177,10 +177,6 @@ export default function HistoryActivityPage() {
     setPage(1);
   };
 
-  const errorCount = logs.filter(
-    (l) => l.level === "ERROR" || l.status_code >= 400,
-  ).length;
-
   return (
     <SidebarProvider
       style={

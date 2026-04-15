@@ -1,4 +1,4 @@
-import { IconApi, IconCamera, IconChartBar, IconDashboard, IconDatabase, IconFileAi, IconFileDescription, IconFileWord, IconFolder, IconHelp, IconHistoryToggle, IconListDetails, IconReport, IconSearch, IconSettings, IconUnlink, IconUsers } from "@tabler/icons-react";
+import { IconApi, IconChartBar, IconDashboard,  IconHistoryToggle,IconUnlink } from "@tabler/icons-react";
 
 export const SidebarData = {
   navMain: [
