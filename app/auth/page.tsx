@@ -22,9 +22,6 @@ export default function AuthPage() {
                     <Button asChild variant="outline" className="w-full">
                         <Link href="/auth/forgot-password">Forgot Password</Link>
                     </Button>
-                    <Button asChild variant="outline" className="w-full">
-                        <Link href="/auth/verify-email">OTP Verification</Link>
-                    </Button>
                 </CardContent>
             </Card>
         </div>

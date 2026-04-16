@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { forgotPassword } from "@/lib/api/auth";
 import { Loader2 } from "lucide-react";
@@ -15,7 +14,6 @@ import { Switch } from "@/components/ui/switch";
 const BRAND_URL = process.env.NEXT_PUBLIC_BRAND_URL || "https://lihat.in";
 
 export default function ForgotPassword() {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [switchOn, setSwitchOn] = useState(false);
@@ -78,10 +76,6 @@ export default function ForgotPassword() {
           duration: 5000,
         });
 
-        // Redirect to check email page
-        setTimeout(() => {
-          router.push("/auth/check-email");
-        }, 1500);
       }
     } catch (error: unknown) {
       console.error("Forgot password error:", error);

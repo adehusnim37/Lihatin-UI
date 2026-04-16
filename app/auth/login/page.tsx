@@ -17,7 +17,6 @@ import {
   requiresEmailOTP,
   LoginResponse,
 } from "@/lib/api/auth";
-import { encodeIdentifierForQuery } from "@/lib/utils/identifier";
 import { useAuth } from "@/app/context/AuthContext";
 
 const BRAND_URL = process.env.NEXT_PUBLIC_BRAND_URL || "https://lihat.in";
@@ -51,6 +50,13 @@ function LoginContent() {
       toast.error("Session Expired", {
         description: "Your session has expired. Please login again.",
         duration: 4000,
+      });
+    }
+
+    if (searchParams.get("email_verified") === "1") {
+      toast.success("Email Verified", {
+        description: "Verification completed. Please sign in.",
+        duration: 3000,
       });
     }
   }, [searchParams]);
@@ -162,30 +168,11 @@ function LoginContent() {
           ? error.message
           : "Invalid credentials. Please try again.";
 
-      const isEmailNotVerified = errorMessage
-        .toLowerCase()
-        .includes("not verified");
-
-      if (isEmailNotVerified) {
-        toast.error("Email Not Verified", {
-          description: errorMessage,
-          duration: 4000,
-        });
-        const encodedIdentifier = encodeIdentifierForQuery(
-          formData.email_or_username.trim()
-        );
-        router.push(
-          `/auth/check-email?identifier=${encodeURIComponent(encodedIdentifier)}&auto_resend=1`
-        );
-        return;
-      }
-
       // Avoid noisy console logs for expected auth/business errors
       if (
         process.env.NODE_ENV !== "production" &&
         ![
           "User not found",
-          "Your email address is not verified. Please verify your email to proceed.",
           "Too many requests, please try again later",
         ].includes(errorMessage)
       ) {

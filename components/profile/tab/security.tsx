@@ -13,13 +13,10 @@ import {
   IconDeviceDesktopCode,
   IconKey,
   IconLock,
-  IconMail,
-  IconMailOff,
   IconShield,
 } from "@tabler/icons-react";
 import { Label } from "recharts";
 import ChangePasswordDialog from "../modal/changePassword";
-import VerifyEmailModal from "../modal/verifyEmail";
 import SetupTOTPModal from "../modal/setupTOTP";
 import DisableTOTPModal from "../modal/disableTOTP";
 import { useState, useEffect } from "react";
@@ -55,11 +52,6 @@ export default function ProfileSecurityTab() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // ✅ Callback when email is verified
-  const handleEmailVerified = () => {
-    fetchProfile();
   };
 
   useEffect(() => {
@@ -145,33 +137,6 @@ export default function ProfileSecurityTab() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Email Verification</Label>
-            <div className="flex items-center justify-between p-3 rounded-lg border">
-              <div className="flex items-center gap-3">
-                {profileData?.auth.is_email_verified ? (
-                  <IconMail className="h-5 w-5 text-green-600" />
-                ) : (
-                  <IconMailOff className="h-5 w-5 text-orange-600" />
-                )}
-                <div>
-                  <p className="text-sm font-medium">Email Status</p>
-                  <p className="text-xs text-muted-foreground">
-                    {profileData?.auth.is_email_verified
-                      ? "Verified"
-                      : "Not verified"}
-                  </p>
-                </div>
-              </div>
-              {!profileData?.auth.is_email_verified && (
-                <VerifyEmailModal
-                  email={profileData?.user.email}
-                  onVerified={handleEmailVerified}
-                />
-              )}
-            </div>
-          </div>
-
           <div className="space-y-2">
             <Label>Password</Label>
             <div className="flex items-center justify-between p-3 rounded-lg border">

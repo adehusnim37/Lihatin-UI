@@ -191,24 +191,10 @@ export interface ForgotPasswordRequest {
   username?: string;
 }
 
-export interface ResendVerificationRequest {
-  identifier: string;
-}
-
 export interface ResendOTPResponse {
   cooldown_seconds?: number;
   cooldown_remaining_seconds?: number;
 }
-
-type VerificationStatusPayload = {
-  verified?: boolean;
-};
-
-type ResendVerificationPayload = {
-  cooldown_seconds?: number;
-  cooldown_remaining_seconds?: number;
-  message?: string;
-};
 
 // API Response - unified format for all responses (including validation errors)
 export interface APIResponse<T = unknown> {
@@ -748,101 +734,6 @@ export async function changeUsername(
   }
 
   return result;
-}
-
-/**
- * Send verification email to current user
- * 🔐 Requires authentication
- */
-export async function sendVerificationEmail(): Promise<APIResponse<null>> {
-  const response = await fetchProtected(`${API_URL}/auth/send-verification-email`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  const result: APIResponse<null> = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.message || "Failed to send verification email");
-  }
-
-  return result;
-}
-
-/**
- * Resend email verification link (public endpoint).
- */
-export async function resendVerificationEmail(
-  data: ResendVerificationRequest
-): Promise<APIResponse<ResendVerificationPayload>> {
-  const response = await fetch(`${API_URL}/auth/resend-verification-email`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify(data),
-  });
-
-  const result: APIResponse<ResendVerificationPayload> = await response.json();
-
-  if (!response.ok) {
-    throw new Error(getErrorMessage(result) || "Failed to resend verification email");
-  }
-
-  return result;
-}
-
-/**
- * Check email verification status using encoded identifier.
- */
-export async function checkVerificationStatusByIdentifier(
-  identifier: string
-): Promise<boolean> {
-  const response = await fetch(
-    `${API_URL}/auth/check-verification-status?identifier=${encodeURIComponent(identifier)}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    }
-  );
-
-  if (!response.ok) {
-    return false;
-  }
-
-  const result: APIResponse<VerificationStatusPayload> = await response.json();
-  return !!result.data?.verified;
-}
-
-/**
- * Check email verification status
- * 🔐 Requires authentication
- */
-export async function checkEmailVerificationStatus(): Promise<boolean> {
-  try {
-    const response = await fetch(`${API_URL}/auth/check-verification-email`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include", // ✅ Send access_token cookie
-    });
-
-    const result: APIResponse<string> = await response.json();
-
-    // Backend returns 200 with data="VERIFIED" and message="EMAIL_VERIFIED" when verified
-    // Returns 400 with code "EMAIL_NOT_VERIFIED" when not verified
-    return response.ok && result.data === "VERIFIED";
-  } catch (error) {
-    console.error("Failed to check verification status:", error);
-    return false;
-  }
 }
 
 /**
