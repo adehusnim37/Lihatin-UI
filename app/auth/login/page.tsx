@@ -14,8 +14,10 @@ import {
   login,
   saveUserData,
   requiresTOTP,
+  requiresEmailOTP,
   LoginResponse,
 } from "@/lib/api/auth";
+import { encodeIdentifierForQuery } from "@/lib/utils/identifier";
 import { useAuth } from "@/app/context/AuthContext";
 
 const BRAND_URL = process.env.NEXT_PUBLIC_BRAND_URL || "https://lihat.in";
@@ -67,7 +69,7 @@ function LoginContent() {
     // Basic validation
     if (!formData.email_or_username) {
       toast.error("Validation Error", {
-        description: "Please enter your email or username",
+        description: "Please enter your email",
         duration: 3000,
       });
       return;
@@ -118,6 +120,25 @@ function LoginContent() {
           return;
         }
 
+        if (requiresEmailOTP(response.data)) {
+          sessionStorage.setItem(
+            "pending_email_otp_challenge",
+            response.data.challenge_token
+          );
+          sessionStorage.setItem("pending_email_otp_email", response.data.email);
+
+          toast.success("Verification Required", {
+            description: "We sent a 6-digit code to your email",
+            duration: 2500,
+          });
+
+          const redirectTo = searchParams.get("redirect") || "/main";
+          router.push(
+            `/auth/verify-email-otp?redirect=${encodeURIComponent(redirectTo)}`
+          );
+          return;
+        }
+
         // Normal login (no TOTP) - tokens are in cookies
         const loginData = response.data as LoginResponse;
         saveUserData(loginData.user);
@@ -140,6 +161,24 @@ function LoginContent() {
         error instanceof Error
           ? error.message
           : "Invalid credentials. Please try again.";
+
+      const isEmailNotVerified = errorMessage
+        .toLowerCase()
+        .includes("not verified");
+
+      if (isEmailNotVerified) {
+        toast.error("Email Not Verified", {
+          description: errorMessage,
+          duration: 4000,
+        });
+        const encodedIdentifier = encodeIdentifierForQuery(
+          formData.email_or_username.trim()
+        );
+        router.push(
+          `/auth/check-email?identifier=${encodeURIComponent(encodedIdentifier)}&auto_resend=1`
+        );
+        return;
+      }
 
       // Avoid noisy console logs for expected auth/business errors
       if (
@@ -192,10 +231,10 @@ function LoginContent() {
           <form onSubmit={handleLogin} className="space-y-4 mb-6">
             {/* Email input */}
             <div className="space-y-2">
-              <Label htmlFor="email_or_username">Email or Username</Label>
+              <Label htmlFor="email_or_username">Email</Label>
               <Input
                 id="email_or_username"
-                placeholder="Email or Username"
+                placeholder="Email"
                 type="text"
                 value={formData.email_or_username}
                 onChange={handleInputChange}

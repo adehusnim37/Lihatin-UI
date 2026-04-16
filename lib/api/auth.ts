@@ -14,6 +14,39 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface SignupStartRequest {
+  email: string;
+}
+
+export interface SignupStartResponse {
+  challenge_token?: string;
+  cooldown_seconds?: number;
+  signup_token?: string;
+  requires_profile_completion?: boolean;
+}
+
+export interface SignupVerifyOTPRequest {
+  challenge_token: string;
+  otp_code: string;
+}
+
+export interface SignupVerifyOTPResponse {
+  signup_token: string;
+}
+
+export interface SignupResendOTPRequest {
+  challenge_token: string;
+}
+
+export interface SignupCompleteRequest {
+  signup_token: string;
+  first_name: string;
+  last_name: string;
+  username: string;
+  password: string;
+  secret_code?: string;
+}
+
 // 1. Interface for the 'auth' object (Authentication details)
 export interface AuthData {
   id: string; // ID of the authentication session or record
@@ -55,14 +88,33 @@ export interface PendingTOTPResponse {
   user: UserProfile;
 }
 
+export interface PendingEmailOTPResponse {
+  requires_email_otp: boolean;
+  challenge_token: string;
+  cooldown_seconds?: number;
+  email: string;
+  user: UserProfile;
+}
+
 // Union type for login response - can be either full login or pending TOTP
-export type LoginResult = LoginResponse | PendingTOTPResponse;
+export type LoginResult =
+  | LoginResponse
+  | PendingTOTPResponse
+  | PendingEmailOTPResponse;
 
 // Type guard to check if response requires TOTP
 export function requiresTOTP(
   response: LoginResult
 ): response is PendingTOTPResponse {
   return "requires_totp" in response && response.requires_totp === true;
+}
+
+export function requiresEmailOTP(
+  response: LoginResult
+): response is PendingEmailOTPResponse {
+  return (
+    "requires_email_otp" in response && response.requires_email_otp === true
+  );
 }
 
 export interface AuthProfileData {
@@ -84,6 +136,11 @@ export interface RegisterRequest {
 }
 
 export interface RegisterResponse {
+  user_id: string;
+  email: string;
+}
+
+export interface SignupCompleteResponse {
   user_id: string;
   email: string;
 }
@@ -133,6 +190,25 @@ export interface ForgotPasswordRequest {
   email?: string;
   username?: string;
 }
+
+export interface ResendVerificationRequest {
+  identifier: string;
+}
+
+export interface ResendOTPResponse {
+  cooldown_seconds?: number;
+  cooldown_remaining_seconds?: number;
+}
+
+type VerificationStatusPayload = {
+  verified?: boolean;
+};
+
+type ResendVerificationPayload = {
+  cooldown_seconds?: number;
+  cooldown_remaining_seconds?: number;
+  message?: string;
+};
 
 // API Response - unified format for all responses (including validation errors)
 export interface APIResponse<T = unknown> {
@@ -192,8 +268,8 @@ export async function login(
     throw new Error(errorMessage);
   }
 
-  // Refresh CSRF token after successful login (if not requiring TOTP)
-  if (data.data && !requiresTOTP(data.data)) {
+  // Refresh CSRF token only when authentication is fully completed.
+  if (data.data && !requiresTOTP(data.data) && !requiresEmailOTP(data.data)) {
     const { refreshCSRFToken } = await import("./fetch-wrapper");
     await refreshCSRFToken();
   }
@@ -246,6 +322,94 @@ export async function uploadProfileAvatar(
     throw new Error(getErrorMessage(data) || "Avatar upload failed");
   }
 
+  return data;
+}
+
+/**
+ * Start email-first signup by sending OTP to email.
+ */
+export async function signupStart(
+  request: SignupStartRequest
+): Promise<APIResponse<SignupStartResponse>> {
+  const response = await fetch(`${API_URL}/auth/signup/start`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(request),
+  });
+
+  const data: APIResponse<SignupStartResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(data) || "Failed to start signup");
+  }
+  return data;
+}
+
+/**
+ * Resend OTP for pending signup challenge.
+ */
+export async function signupResendOTP(
+  request: SignupResendOTPRequest
+): Promise<APIResponse<ResendOTPResponse>> {
+  const response = await fetch(`${API_URL}/auth/signup/resend-otp`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(request),
+  });
+
+  const data: APIResponse<ResendOTPResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(data) || "Failed to resend signup OTP");
+  }
+  return data;
+}
+
+/**
+ * Verify signup OTP and receive one-time signup token.
+ */
+export async function signupVerifyOTP(
+  request: SignupVerifyOTPRequest
+): Promise<APIResponse<SignupVerifyOTPResponse>> {
+  const response = await fetch(`${API_URL}/auth/signup/verify-otp`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(request),
+  });
+
+  const data: APIResponse<SignupVerifyOTPResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(data) || "Failed to verify signup OTP");
+  }
+  return data;
+}
+
+/**
+ * Complete signup profile after OTP verification.
+ */
+export async function signupComplete(
+  request: SignupCompleteRequest
+): Promise<APIResponse<SignupCompleteResponse>> {
+  const response = await fetch(`${API_URL}/auth/signup/complete`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(request),
+  });
+
+  const data: APIResponse<SignupCompleteResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(data) || "Failed to complete signup");
+  }
   return data;
 }
 
@@ -608,6 +772,55 @@ export async function sendVerificationEmail(): Promise<APIResponse<null>> {
 }
 
 /**
+ * Resend email verification link (public endpoint).
+ */
+export async function resendVerificationEmail(
+  data: ResendVerificationRequest
+): Promise<APIResponse<ResendVerificationPayload>> {
+  const response = await fetch(`${API_URL}/auth/resend-verification-email`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  const result: APIResponse<ResendVerificationPayload> = await response.json();
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to resend verification email");
+  }
+
+  return result;
+}
+
+/**
+ * Check email verification status using encoded identifier.
+ */
+export async function checkVerificationStatusByIdentifier(
+  identifier: string
+): Promise<boolean> {
+  const response = await fetch(
+    `${API_URL}/auth/check-verification-status?identifier=${encodeURIComponent(identifier)}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    }
+  );
+
+  if (!response.ok) {
+    return false;
+  }
+
+  const result: APIResponse<VerificationStatusPayload> = await response.json();
+  return !!result.data?.verified;
+}
+
+/**
  * Check email verification status
  * 🔐 Requires authentication
  */
@@ -708,6 +921,15 @@ export interface VerifyTOTPLoginRequest {
   totp_code: string;
 }
 
+export interface VerifyLoginEmailOTPRequest {
+  challenge_token: string;
+  otp_code: string;
+}
+
+export interface ResendLoginEmailOTPRequest {
+  challenge_token: string;
+}
+
 export async function verifyTOTPLogin(
   request: VerifyTOTPLoginRequest
 ): Promise<APIResponse<LoginResponse>> {
@@ -729,6 +951,57 @@ export async function verifyTOTPLogin(
   // Refresh CSRF token after successful TOTP login
   const { refreshCSRFToken } = await import("./fetch-wrapper");
   await refreshCSRFToken();
+
+  return result;
+}
+
+/**
+ * Verify login email OTP challenge and complete login session.
+ */
+export async function verifyLoginEmailOTP(
+  request: VerifyLoginEmailOTPRequest
+): Promise<APIResponse<LoginResult>> {
+  const response = await fetch(`${API_URL}/auth/login/email-otp/verify`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(request),
+  });
+
+  const result: APIResponse<LoginResult> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Email OTP verification failed");
+  }
+
+  if (result.data && !requiresTOTP(result.data) && !requiresEmailOTP(result.data)) {
+    const { refreshCSRFToken } = await import("./fetch-wrapper");
+    await refreshCSRFToken();
+  }
+
+  return result;
+}
+
+/**
+ * Resend login email OTP challenge code.
+ */
+export async function resendLoginEmailOTP(
+  request: ResendLoginEmailOTPRequest
+): Promise<APIResponse<ResendOTPResponse>> {
+  const response = await fetch(`${API_URL}/auth/login/email-otp/resend`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(request),
+  });
+
+  const result: APIResponse<ResendOTPResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to resend login OTP");
+  }
 
   return result;
 }

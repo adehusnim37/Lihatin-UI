@@ -23,6 +23,7 @@ import VerifyEmailModal from "../modal/verifyEmail";
 import SetupTOTPModal from "../modal/setupTOTP";
 import DisableTOTPModal from "../modal/disableTOTP";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Collapsible,
   CollapsibleContent,
@@ -32,10 +33,14 @@ import { getProfile, AuthProfileData } from "@/lib/api/auth";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProfileSecurityTab() {
+  const searchParams = useSearchParams();
   const [isSessionOpen, setIsSessionOpen] = useState(false);
   const [profileData, setProfileData] = useState<AuthProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const shouldAutoOpenTOTP =
+    searchParams.get("openSetupTOTP") === "1" &&
+    !profileData?.auth.is_totp_enabled;
 
   const fetchProfile = async () => {
     try {
@@ -298,7 +303,10 @@ export default function ProfileSecurityTab() {
               {profileData?.auth.is_totp_enabled ? (
                 <DisableTOTPModal onDisableComplete={fetchProfile} />
               ) : (
-                <SetupTOTPModal onSetupComplete={fetchProfile} />
+                <SetupTOTPModal
+                  onSetupComplete={fetchProfile}
+                  openOnMount={shouldAutoOpenTOTP}
+                />
               )}
             </div>
           </div>

@@ -29,10 +29,12 @@ import QRCode from "qrcode";
 
 interface SetupTOTPModalProps {
   onSetupComplete?: () => void;
+  openOnMount?: boolean;
 }
 
 export default function SetupTOTPModal({
   onSetupComplete,
+  openOnMount = false,
 }: SetupTOTPModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -45,6 +47,13 @@ export default function SetupTOTPModal({
   const [copiedSecret, setCopiedSecret] = useState(false);
   const [copiedCodes, setCopiedCodes] = useState(false);
   const [qrCodeDataURL, setQrCodeDataURL] = useState<string>("");
+  const [hasAutoOpened, setHasAutoOpened] = useState(false);
+
+  useEffect(() => {
+    if (!openOnMount || hasAutoOpened) return;
+    setIsOpen(true);
+    setHasAutoOpened(true);
+  }, [openOnMount, hasAutoOpened]);
 
   // Generate QR code as data URL when totpData changes
   useEffect(() => {

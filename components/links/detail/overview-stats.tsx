@@ -219,7 +219,7 @@ export function OverviewStats({ link }: OverviewStatsProps) {
       {/* Charts Row 1: Trend & Devices */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Click Trend Area Chart (Takes 2/3 width) */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 min-w-0">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>Click Growth</CardTitle>
@@ -238,9 +238,14 @@ export function OverviewStats({ link }: OverviewStatsProps) {
               </SelectContent>
             </Select>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[300px] min-h-[220px] min-w-0">
             {isMounted && filteredHistory.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
+                minWidth={0}
+                minHeight={220}
+              >
                 <AreaChart
                   data={filteredHistory}
                   margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
@@ -303,14 +308,19 @@ export function OverviewStats({ link }: OverviewStatsProps) {
         </Card>
 
         {/* Device Distribution Pie Chart */}
-        <Card>
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle>Devices</CardTitle>
             <CardDescription>User device types</CardDescription>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[300px] min-h-[220px] min-w-0">
             {isMounted && top_devices && top_devices.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
+                minWidth={0}
+                minHeight={220}
+              >
                 <PieChart>
                   <Pie
                     data={top_devices}

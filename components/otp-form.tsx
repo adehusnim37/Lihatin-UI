@@ -20,7 +20,7 @@ import {
 
 interface OTPFormProps extends React.ComponentProps<"div"> {
   onVerify?: (otp: string) => Promise<void> | void;
-  onResend?: () => Promise<void> | void;
+  onResend?: () => Promise<number | void> | number | void;
   email?: string;
   description?: React.ReactNode;
   isSubmitting?: boolean;
@@ -70,7 +70,11 @@ export function OTPForm({
 
   const handleResend = async () => {
     if (!onResend || cooldown > 0 || isResending) return;
-    await onResend();
+    const nextCooldown = await onResend();
+    if (typeof nextCooldown === "number" && nextCooldown > 0) {
+      setCooldown(nextCooldown);
+      return;
+    }
     setCooldown(resendCooldown);
   };
 
