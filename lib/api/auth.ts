@@ -14,6 +14,20 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface GoogleOAuthStartResponse {
+  authorization_url: string;
+  state: string;
+}
+
+export interface GoogleOAuthStartRequest {
+  intent?: "login" | "signup";
+}
+
+export interface GoogleOAuthCallbackRequest {
+  code: string;
+  state: string;
+}
+
 export interface SignupStartRequest {
   email: string;
 }
@@ -255,6 +269,66 @@ export async function login(
   }
 
   // Refresh CSRF token only when authentication is fully completed.
+  if (data.data && !requiresTOTP(data.data) && !requiresEmailOTP(data.data)) {
+    const { refreshCSRFToken } = await import("./fetch-wrapper");
+    await refreshCSRFToken();
+  }
+
+  return data;
+}
+
+/**
+ * Start Google OAuth flow and return provider authorization URL.
+ */
+export async function startGoogleOAuth(): Promise<
+  APIResponse<GoogleOAuthStartResponse>
+>;
+export async function startGoogleOAuth(
+  request: GoogleOAuthStartRequest
+): Promise<APIResponse<GoogleOAuthStartResponse>>;
+export async function startGoogleOAuth(
+  request?: GoogleOAuthStartRequest
+): Promise<APIResponse<GoogleOAuthStartResponse>> {
+  const response = await fetch(`${API_URL}/auth/oauth/google/start`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      intent: request?.intent || "login",
+    }),
+  });
+
+  const data: APIResponse<GoogleOAuthStartResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(data) || "Failed to start Google OAuth");
+  }
+  return data;
+}
+
+/**
+ * Complete Google OAuth callback and continue with existing login step-2 flow.
+ */
+export async function completeGoogleOAuthCallback(
+  request: GoogleOAuthCallbackRequest
+): Promise<APIResponse<LoginResult>> {
+  const response = await fetch(`${API_URL}/auth/oauth/google/callback`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(request),
+  });
+
+  const data: APIResponse<LoginResult> = await response.json();
+  if (!response.ok) {
+    throw new Error(
+      getErrorMessage(data) || "Google OAuth callback verification failed"
+    );
+  }
+
   if (data.data && !requiresTOTP(data.data) && !requiresEmailOTP(data.data)) {
     const { refreshCSRFToken } = await import("./fetch-wrapper");
     await refreshCSRFToken();

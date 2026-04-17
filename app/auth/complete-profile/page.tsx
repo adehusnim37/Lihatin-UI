@@ -284,6 +284,7 @@ function CompleteProfileContent() {
         width={1000}
         height={1000}
         className="w-1/2 rounded-xl object-cover md:block hidden"
+        loading="eager"
       />
     </div>
   );

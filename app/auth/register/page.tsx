@@ -11,17 +11,48 @@ import { TermsDialog } from "@/components/auth/terms-dialog";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { signupStart } from "@/lib/api/auth";
+import { signupStart, startGoogleOAuth } from "@/lib/api/auth";
 
 const BRAND_URL = process.env.NEXT_PUBLIC_BRAND_URL || "https://lihat.in";
+
+function GoogleIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      width="18"
+      height="18"
+      viewBox="0 0 48 48"
+    >
+      <path
+        fill="#FFC107"
+        d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.3-.4-3.5z"
+      />
+      <path
+        fill="#FF3D00"
+        d="M6.3 14.7l6.6 4.8C14.7 15 19 12 24 12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.1 29.3 4 24 4c-7.7 0-14.4 4.3-17.7 10.7z"
+      />
+      <path
+        fill="#4CAF50"
+        d="M24 44c5.2 0 10-2 13.5-5.2l-6.2-5.2c-2.1 1.6-4.7 2.4-7.3 2.4-5.3 0-9.7-3.3-11.3-8l-6.6 5.1C9.5 39.5 16.2 44 24 44z"
+      />
+      <path
+        fill="#1976D2"
+        d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.3-4 5.6l.1-.1 6.2 5.2C37.1 39 44 34 44 24c0-1.2-.1-2.3-.4-3.5z"
+      />
+    </svg>
+  );
+}
 
 export default function RegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     agree_terms: false,
   });
+  const isAnyLoading = isLoading || isGoogleLoading;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -126,6 +157,41 @@ export default function RegisterPage() {
     }
   };
 
+  const handleGoogleSignup = async () => {
+    if (!formData.agree_terms) {
+      toast.error("Validation Error", {
+        description: "You must agree to the Terms & Conditions",
+        duration: 3000,
+      });
+      return;
+    }
+
+    setIsGoogleLoading(true);
+
+    try {
+      const response = await startGoogleOAuth({ intent: "signup" });
+      const authorizationURL = response.data?.authorization_url;
+
+      if (!authorizationURL) {
+        throw new Error("Google OAuth URL is not available");
+      }
+
+      sessionStorage.setItem("post_login_redirect", "/main");
+      window.location.assign(authorizationURL);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to start Google sign-up.";
+
+      toast.error("Google Sign-up Failed", {
+        description: errorMessage,
+        duration: 4000,
+      });
+      setIsGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="md:flex md:min-h-full bg-background md:p-6 py-6 gap-x-6">
       <div className="md:w-1/2 flex items-center justify-center">
@@ -157,7 +223,7 @@ export default function RegisterPage() {
                 type="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                disabled={isLoading}
+                disabled={isAnyLoading}
                 required
               />
             </div>
@@ -172,7 +238,7 @@ export default function RegisterPage() {
                     agree_terms: checked as boolean,
                   }))
                 }
-                disabled={isLoading}
+                disabled={isAnyLoading}
               />
               <Label htmlFor="agree_terms" className="text-sm font-normal">
                 I agree to the <TermsDialog>Terms & Conditions</TermsDialog>
@@ -184,7 +250,7 @@ export default function RegisterPage() {
             <Button
               className="w-full"
               onClick={handleStartSignup}
-              disabled={isLoading}
+              disabled={isAnyLoading}
               type="submit"
             >
               {isLoading ? (
@@ -194,6 +260,25 @@ export default function RegisterPage() {
                 </>
               ) : (
                 "Continue"
+              )}
+            </Button>
+            <Button
+              className="w-full"
+              variant="outline"
+              onClick={handleGoogleSignup}
+              disabled={isAnyLoading}
+              type="button"
+            >
+              {isGoogleLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Redirecting to Google...
+                </>
+              ) : (
+                <>
+                  <GoogleIcon />
+                  Sign up with Google
+                </>
               )}
             </Button>
             <p className="text-sm text-center text-muted-foreground">
@@ -212,6 +297,7 @@ export default function RegisterPage() {
         width={1000}
         height={1000}
         className="w-1/2 rounded-xl object-cover md:block hidden"
+        loading="eager"
       />
     </div>
   );

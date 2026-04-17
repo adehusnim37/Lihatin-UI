@@ -17,7 +17,13 @@ export default function BlobDefault() {
       </div>
       {/* Top Card */}
       <div className="absolute top-0 w-full left-1/8 h-72 opacity-100 blur-2xl">
-        <Image src="/blob/blob-2.svg" alt="" fill className="object-contain" />
+        <Image
+          src="/blob/blob-2.svg"
+          alt=""
+          fill
+          className="object-contain"
+          loading="eager"
+        />
       </div>
       {/* Bottom Card */}
       <div className="absolute bottom-30 w-full right-1/8 h-72 opacity-100 blur-2xl">
