@@ -1,4 +1,11 @@
-import { IconApi, IconChartBar, IconDashboard,  IconHistoryToggle,IconUnlink } from "@tabler/icons-react";
+import {
+  IconApi,
+  IconChartBar,
+  IconDashboard,
+  IconHistoryToggle,
+  IconShield,
+  IconUnlink,
+} from "@tabler/icons-react";
 
 export const SidebarData = {
   navMain: [
@@ -26,6 +33,12 @@ export const SidebarData = {
       title: "API & Integrations",
       url: "/main/api-integrations",
       icon: IconApi,
+    },
+    {
+      title: "Admin Security Policy",
+      url: "/main/admin/security-policy",
+      icon: IconShield,
+      adminOnly: true,
     },
   ],
   navSecondary: [

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { IconCirclePlusFilled, type Icon } from "@tabler/icons-react";
@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/sidebar";
 import QuickCreateLinkDialog from "./modal/quick-create-link-dialog";
 
+const USER_STORAGE_UPDATED_EVENT = "user-storage-updated";
+
 export function NavMain({
   items,
 }: {
@@ -21,10 +23,18 @@ export function NavMain({
     title: string;
     url: string;
     icon?: Icon;
+    adminOnly?: boolean;
   }[];
 }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const pathname = usePathname();
+  const role = useSyncExternalStore(
+    subscribeToUserStorage,
+    readRoleFromStorage,
+    () => null
+  );
+  const isAdmin = role === "admin" || role === "super_admin";
+  const visibleItems = items.filter((item) => !item.adminOnly || isAdmin);
 
   return (
     <SidebarGroup>
@@ -46,7 +56,7 @@ export function NavMain({
           </SidebarMenuItem>
         </SidebarMenu>
         <SidebarMenu>
-          {items.map((item) => {
+          {visibleItems.map((item) => {
             const isActive = pathname === item.url || 
               (item.url !== "/main" && pathname?.startsWith(item.url));
             
@@ -70,3 +80,47 @@ export function NavMain({
     </SidebarGroup>
   );
 }
+
+const readRoleFromStorage = (): string | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const raw = localStorage.getItem("user");
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as { role?: string };
+    return normalizeRole(parsed.role ?? null);
+  } catch {
+    return null;
+  }
+};
+
+const subscribeToUserStorage = (onStoreChange: () => void) => {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  const handler = () => onStoreChange();
+  window.addEventListener("storage", handler);
+  window.addEventListener("focus", handler);
+  window.addEventListener(USER_STORAGE_UPDATED_EVENT, handler);
+
+  return () => {
+    window.removeEventListener("storage", handler);
+    window.removeEventListener("focus", handler);
+    window.removeEventListener(USER_STORAGE_UPDATED_EVENT, handler);
+  };
+};
+
+const normalizeRole = (role: string | null | undefined): string | null => {
+  if (!role) {
+    return null;
+  }
+
+  const normalized = role.trim().toLowerCase();
+  return normalized || null;
+};

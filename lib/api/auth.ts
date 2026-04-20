@@ -7,6 +7,7 @@
  */
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
+const USER_STORAGE_UPDATED_EVENT = "user-storage-updated";
 
 // Type definitions matching backend DTOs
 export interface LoginRequest {
@@ -181,6 +182,17 @@ export interface ChangeUsernameRequest {
 export interface ChangeUsernameResponse {
   old_username: string;
   new_username: string;
+}
+
+export interface AdminDisposableEmailPolicyResponse {
+  enabled: boolean;
+  effective_in_current_env: boolean;
+  last_updated_by?: string | null;
+  last_updated_at?: string | null;
+}
+
+export interface UpdateAdminDisposableEmailPolicyRequest {
+  enabled: boolean;
 }
 
 export interface EmailChangeEligibilityResponse {
@@ -656,6 +668,7 @@ export async function logout(): Promise<APIResponse<LogoutResponse>> {
 export function saveUserData(user: LoginResponse["user"]): void {
   if (typeof window !== "undefined") {
     localStorage.setItem("user", JSON.stringify(user));
+    window.dispatchEvent(new Event(USER_STORAGE_UPDATED_EVENT));
   }
 }
 
@@ -686,6 +699,7 @@ export async function getUserData(): Promise<APIResponse<AuthProfileData>> {
 export function clearUserData(): void {
   if (typeof window !== "undefined") {
     localStorage.removeItem("user");
+    window.dispatchEvent(new Event(USER_STORAGE_UPDATED_EVENT));
   }
 }
 
@@ -805,6 +819,57 @@ export async function changeUsername(
 
   if (!response.ok) {
     throw new Error(getErrorMessage(result) || "Failed to change username");
+  }
+
+  return result;
+}
+
+/**
+ * Get disposable email policy (admin only).
+ */
+export async function getAdminDisposableEmailPolicy(): Promise<
+  APIResponse<AdminDisposableEmailPolicyResponse>
+> {
+  const response = await fetch(`${API_URL}/auth/admin/security/disposable-email`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
+
+  const result: APIResponse<AdminDisposableEmailPolicyResponse> =
+    await response.json();
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to get admin policy");
+  }
+
+  return result;
+}
+
+/**
+ * Update disposable email policy (admin only).
+ */
+export async function updateAdminDisposableEmailPolicy(
+  data: UpdateAdminDisposableEmailPolicyRequest
+): Promise<APIResponse<AdminDisposableEmailPolicyResponse>> {
+  const response = await fetchProtected(
+    `${API_URL}/auth/admin/security/disposable-email`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }
+  );
+
+  const result: APIResponse<AdminDisposableEmailPolicyResponse> =
+    await response.json();
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to update admin policy");
   }
 
   return result;
