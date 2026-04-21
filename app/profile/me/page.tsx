@@ -23,6 +23,7 @@ import {
   IconCrown,
   IconUserQuestion,
   IconCamera,
+  IconEye,
 } from "@tabler/icons-react";
 import { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -76,6 +77,7 @@ function ProfilePageContent() {
   const [secretCode, setSecretCode] = useState("");
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isViewPhotoOpen, setIsViewPhotoOpen] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const { data: profileResponse, isLoading: isProfileLoading, refetch } =
     useProfileQuery();
@@ -435,9 +437,12 @@ function ProfilePageContent() {
                 {/* Center Column - Profile Card */}
                 <Card className="md:col-span-1 mx-auto w-full max-w-md">
                   <CardHeader className="text-center">
-                    <div className="flex justify-center mb-4">
-                      <div className="relative group">
-                        <Avatar className="h-32 w-32 ring-2 ring-border">
+                    <div className="flex flex-col items-center gap-3 mb-2">
+                      {/* Avatar wrapper — grows ring and lifts on hover */}
+                      <div
+                        className="relative group cursor-pointer rounded-full transition-all duration-300 ease-out hover:scale-105 ring-2 ring-border hover:ring-4 hover:ring-primary/40 hover:shadow-xl hover:shadow-primary/20"
+                      >
+                        <Avatar className="h-32 w-32">
                           <AvatarImage
                             src={avatarURL}
                             alt={`${user.first_name} ${user.last_name}`}
@@ -446,29 +451,50 @@ function ProfilePageContent() {
                             {getInitials(user.first_name, user.last_name)}
                           </AvatarFallback>
                         </Avatar>
-                        <button
-                          type="button"
-                          onClick={handleAvatarUploadClick}
-                          disabled={isUploadingAvatar}
-                          className="absolute inset-0 rounded-full bg-black/55 text-white flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity disabled:opacity-80"
-                          aria-label={
-                            user.avatar ? "Change profile photo" : "Upload profile photo"
-                          }
-                        >
+
+                        {/* Frosted glass overlay */}
+                        <div className="absolute inset-0 rounded-full backdrop-blur-[2px] bg-black/50 flex flex-col items-stretch justify-center overflow-hidden opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out">
                           {isUploadingAvatar ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                              <span className="text-xs font-medium">Uploading...</span>
-                            </>
+                            <div className="flex flex-col items-center justify-center gap-1.5 h-full text-white">
+                              <Loader2 className="h-6 w-6 animate-spin" />
+                              <span className="text-[11px] font-semibold tracking-wide">Uploading…</span>
+                            </div>
                           ) : (
                             <>
-                              <IconCamera className="h-4 w-4" />
-                              <span className="text-xs font-medium">
-                                {user.avatar ? "Change Photo" : "Upload Photo"}
-                              </span>
+                              {/* View Photo */}
+                              {avatarURL && (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => setIsViewPhotoOpen(true)}
+                                    className="group/btn flex flex-col items-center justify-center gap-1 flex-1 text-white hover:bg-white/15 active:bg-white/25 transition-colors duration-150"
+                                    aria-label="View profile photo"
+                                  >
+                                    <IconEye className="h-[18px] w-[18px] transition-transform duration-200 group-hover/btn:scale-110" />
+                                    <span className="text-[10px] font-semibold tracking-wide leading-none">View</span>
+                                  </button>
+
+                                  {/* Divider */}
+                                  <div className="mx-auto w-10 h-px bg-white/25 shrink-0" />
+                                </>
+                              )}
+
+                              {/* Change / Upload Photo */}
+                              <button
+                                type="button"
+                                onClick={handleAvatarUploadClick}
+                                className="group/btn flex flex-col items-center justify-center gap-1 flex-1 text-white hover:bg-white/15 active:bg-white/25 transition-colors duration-150"
+                                aria-label={user.avatar ? "Change profile photo" : "Upload profile photo"}
+                              >
+                                <IconCamera className="h-[18px] w-[18px] transition-transform duration-200 group-hover/btn:scale-110" />
+                                <span className="text-[10px] font-semibold tracking-wide leading-none">
+                                  {user.avatar ? "Change" : "Upload"}
+                                </span>
+                              </button>
                             </>
                           )}
-                        </button>
+                        </div>
+
                         <input
                           ref={avatarInputRef}
                           type="file"
@@ -477,6 +503,37 @@ function ProfilePageContent() {
                           onChange={handleAvatarSelected}
                         />
                       </div>
+
+                      {/* View Photo Dialog */}
+                      <Dialog open={isViewPhotoOpen} onOpenChange={setIsViewPhotoOpen}>
+                        <DialogContent className="sm:max-w-sm p-0 overflow-hidden rounded-2xl border-0 shadow-2xl">
+                          <DialogHeader className="sr-only">
+                            <DialogTitle>Profile Photo</DialogTitle>
+                            <DialogDescription>Full-size profile photo preview</DialogDescription>
+                          </DialogHeader>
+                          {avatarURL ? (
+                            <div className="relative">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={avatarURL}
+                                alt={`${user.first_name} ${user.last_name}`}
+                                className="w-full h-auto object-cover max-h-[70vh]"
+                              />
+                              {/* Name caption at bottom */}
+                              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-4 py-3">
+                                <p className="text-white font-semibold text-sm">
+                                  {user.first_name} {user.last_name}
+                                </p>
+                                <p className="text-white/70 text-xs">@{user.username}</p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
+                              No photo uploaded
+                            </div>
+                          )}
+                        </DialogContent>
+                      </Dialog>
                     </div>
                     <CardTitle className="text-2xl">
                       {user.first_name} {user.last_name}
