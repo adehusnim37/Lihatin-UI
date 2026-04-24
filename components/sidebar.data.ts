@@ -2,9 +2,14 @@ import {
   IconApi,
   IconChartBar,
   IconDashboard,
+  IconHelp,
   IconHistoryToggle,
+  IconLifebuoy,
+  IconShieldCheck,
+  IconSparkles,
   IconShield,
   IconUnlink,
+  IconUsers,
 } from "@tabler/icons-react";
 
 export const SidebarData = {
@@ -34,23 +39,58 @@ export const SidebarData = {
       url: "/main/api-integrations",
       icon: IconApi,
     },
+  ],
+  navAdmin: [
+    {
+      title: "Premium Codes",
+      url: "/main/admin/premium-codes",
+      icon: IconShieldCheck,
+      children: [
+        {
+          title: "Usage",
+          url: "/main/admin/premium-codes",
+          icon: IconShieldCheck,
+        },
+        {
+          title: "Generate",
+          url: "/main/admin/premium-codes/generate",
+          icon: IconSparkles,
+        },
+      ],
+    },
     {
       title: "Admin Security Policy",
       url: "/main/admin/security-policy",
       icon: IconShield,
-      adminOnly: true,
+    },
+    {
+      title: "Premium Access",
+      url: "/main/admin/premium-access",
+      icon: IconUsers,
+      children: [
+        {
+          title: "Manage Users",
+          url: "/main/admin/premium-access",
+          icon: IconUsers,
+        },
+      ],
+    },
+    {
+      title: "Support Tickets",
+      url: "/main/admin/support-tickets",
+      icon: IconLifebuoy,
     },
   ],
   navSecondary: [
-    // {
-    //   title: "Settings",
-    //   url: "/main/settings",
-    //   icon: IconSettings,
-    // },
-    // {
-    //   title: "Get Help",
-    //   url: "/main/help",
-    //   icon: IconHelp,
-    // },
+    {
+      title: "Support",
+      url: "/support",
+      icon: IconLifebuoy,
+    },
+    {
+      title: "Get Help",
+      url: "/main/help",
+      icon: IconHelp,
+    },
   ],
 }

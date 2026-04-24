@@ -22,11 +22,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { LoginAttemptBadge } from "@/components/ui/app-status-badges";
 import { Button } from "@/components/ui/button";
 import {
-  IconCheck,
-  IconX,
   IconRefresh,
   IconChevronLeft,
   IconChevronRight,
@@ -231,23 +229,7 @@ export default function SessionTab() {
                           }}
                         >
                           <TableCell>
-                            {attempt.success ? (
-                              <Badge
-                                variant="outline"
-                                className="border-green-600 bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
-                              >
-                                <IconCheck className="mr-1 h-3 w-3" />
-                                Success
-                              </Badge>
-                            ) : (
-                              <Badge
-                                variant="outline"
-                                className="border-red-600 bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-400"
-                              >
-                                <IconX className="mr-1 h-3 w-3" />
-                                Failed
-                              </Badge>
-                            )}
+                            <LoginAttemptBadge success={attempt.success} />
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">

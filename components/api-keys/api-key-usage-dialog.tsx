@@ -9,7 +9,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import {
+  HttpMethodBadge,
+  HttpStatusCodeBadge,
+} from "@/components/ui/app-status-badges";
 import {
   Activity,
   Loader2,
@@ -28,20 +31,6 @@ interface APIKeyUsageDialogProps {
   onOpenChange: (open: boolean) => void;
   apiKey: APIKeyResponse;
 }
-
-const METHOD_COLORS: Record<string, string> = {
-  GET: "bg-blue-500/10 text-blue-500",
-  POST: "bg-green-500/10 text-green-500",
-  PUT: "bg-amber-500/10 text-amber-500",
-  PATCH: "bg-orange-500/10 text-orange-500",
-  DELETE: "bg-red-500/10 text-red-500",
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  success: "bg-green-500/10 text-green-500",
-  error: "bg-red-500/10 text-red-500",
-  warning: "bg-amber-500/10 text-amber-500",
-};
 
 export function APIKeyUsageDialog({
   open,
@@ -76,13 +65,6 @@ export function APIKeyUsageDialog({
     } catch {
       return "Invalid date";
     }
-  };
-
-  const getStatusColor = (statusCode?: number) => {
-    if (!statusCode) return STATUS_COLORS.warning;
-    if (statusCode >= 200 && statusCode < 300) return STATUS_COLORS.success;
-    if (statusCode >= 400) return STATUS_COLORS.error;
-    return STATUS_COLORS.warning;
   };
 
   return (
@@ -145,24 +127,12 @@ export function APIKeyUsageDialog({
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Badge
-                        variant="outline"
-                        className={
-                          METHOD_COLORS[log.activity_log.method || "GET"]
-                        }
-                      >
-                        {log.activity_log.method || "GET"}
-                      </Badge>
+                      <HttpMethodBadge method={log.activity_log.method || "GET"} />
                       <code className="text-xs bg-muted px-2 py-0.5 rounded font-mono">
                         {log.activity_log.route || "/"}
                       </code>
                     </div>
-                    <Badge
-                      variant="outline"
-                      className={getStatusColor(log.activity_log.status_code)}
-                    >
-                      {log.activity_log.status_code || "N/A"}
-                    </Badge>
+                    <HttpStatusCodeBadge statusCode={log.activity_log.status_code} />
                   </div>
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">

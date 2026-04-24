@@ -18,6 +18,10 @@ import {
   LoginResponse,
   startGoogleOAuth,
 } from "@/lib/api/auth";
+import {
+  buildAuthSupportURL,
+  getAuthSupportReasonFromMessage,
+} from "@/lib/auth-support";
 import { useAuth } from "@/app/context/AuthContext";
 
 const BRAND_URL = process.env.NEXT_PUBLIC_BRAND_URL || "https://lihat.in";
@@ -57,6 +61,7 @@ function LoginContent() {
   const auth = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [supportLink, setSupportLink] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email_or_username: "",
     password: "",
@@ -138,6 +143,7 @@ function LoginContent() {
       });
 
       if (response.success && response.data) {
+        setSupportLink(null);
         // Check if TOTP verification is required (NO tokens issued yet!)
         if (requiresTOTP(response.data)) {
           // Save pending auth token and user info for TOTP verification
@@ -216,6 +222,14 @@ function LoginContent() {
         description: errorMessage,
         duration: 4000,
       });
+
+      const supportReason = getAuthSupportReasonFromMessage(errorMessage);
+      if (supportReason) {
+        const emailForSupport = formData.email_or_username.includes("@")
+          ? formData.email_or_username.trim()
+          : undefined;
+        setSupportLink(buildAuthSupportURL(supportReason, emailForSupport));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -370,6 +384,19 @@ function LoginContent() {
                 Sign up
               </Link>
             </p>
+            {supportLink && (
+              <div className="text-center mt-2">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Need help accessing your account?
+                </p>
+                <Link
+                  href={supportLink}
+                  className="text-sm text-primary hover:underline"
+                >
+                  Contact Support →
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

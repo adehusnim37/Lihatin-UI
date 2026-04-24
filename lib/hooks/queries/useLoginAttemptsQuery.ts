@@ -7,7 +7,9 @@ import {
   getLoginAttemptsAdmin,
   LoginAttemptsQueryParams,
   getRecentActivity,
+  type RecentActivityResponse,
   getAttemptsByHour,
+  type AttemptsByHourResponse,
   getLoginAttemptById,
   getLoginStats,
   getTopFailedIPs,
@@ -32,6 +34,22 @@ export const loginAttemptsKeys = {
   topFailedIPs: (isAdmin: boolean) => [...loginAttemptsKeys.all, "top-failed-ips", isAdmin],
 
   suspiciousActivity : (isAdmin: boolean) => [...loginAttemptsKeys.all, "suspicious-activity", isAdmin],
+};
+
+const EMPTY_RECENT_ACTIVITY: RecentActivityResponse = {
+  total_attempts: 0,
+  successful_attempts: 0,
+  failed_attempts: 0,
+  unique_ips: 0,
+  hours: 24,
+  since: "",
+  period_start: "",
+  period_end: "",
+};
+
+const EMPTY_ATTEMPTS_BY_HOUR: AttemptsByHourResponse = {
+  attempts_by_hour: [],
+  days: 0,
 };
 
 // Fetch login attempts with pagination and filters
@@ -85,9 +103,12 @@ export function useLoginStatsQuery(
 export function useRecentActivityQuery(
   isAdmin = false
 ) {
-  return useQuery({
+  return useQuery<RecentActivityResponse>({
     queryKey: loginAttemptsKeys.recentActivity(isAdmin),
-    queryFn: () => getRecentActivity(isAdmin),
+    queryFn: async () => {
+      const result = await getRecentActivity(isAdmin);
+      return result ?? EMPTY_RECENT_ACTIVITY;
+    },
   });
 }
 
@@ -95,9 +116,12 @@ export function useRecentActivityQuery(
 export function useAttemptsByHourQuery(
   isAdmin = false
 ) {
-  return useQuery({
+  return useQuery<AttemptsByHourResponse>({
     queryKey: loginAttemptsKeys.attemptsByHour(isAdmin),
-    queryFn: () => getAttemptsByHour(isAdmin),
+    queryFn: async () => {
+      const result = await getAttemptsByHour(isAdmin);
+      return result ?? EMPTY_ATTEMPTS_BY_HOUR;
+    },
   });
 }
 

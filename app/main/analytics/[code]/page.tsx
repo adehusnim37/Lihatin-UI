@@ -20,7 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
-import { Badge } from "@/components/ui/badge";
+import { ActiveInactiveBadge } from "@/components/ui/app-status-badges";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
@@ -94,9 +94,7 @@ export default function AnalyticsDetailPage() {
                   <h1 className="text-3xl font-bold tracking-tight">
                     Analytics: {link.title || link.short_code}
                   </h1>
-                  <Badge variant={link.is_active ? "default" : "secondary"}>
-                    {link.is_active ? "Active" : "Inactive"}
-                  </Badge>
+                  <ActiveInactiveBadge isActive={link.is_active} />
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground text-sm">
                   <LinkIcon className="h-3 w-3 shrink-0" />

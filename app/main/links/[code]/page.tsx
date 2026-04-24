@@ -38,7 +38,7 @@ import {
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
-import { Badge } from "@/components/ui/badge";
+import { ActiveInactiveBadge } from "@/components/ui/app-status-badges";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -315,16 +315,7 @@ export default function LinkDetailPage() {
                     <h1 className="text-3xl font-bold tracking-tight text-foreground">
                       {link.title || link.short_code}
                     </h1>
-                    <Badge
-                      className={
-                        link.is_active
-                          ? "bg-green-500/15 text-green-600 hover:bg-green-500/25 border-green-500/20"
-                          : "bg-gray-500/15 text-gray-600 border-gray-500/20"
-                      }
-                      variant="outline"
-                    >
-                      {link.is_active ? "Active" : "Inactive"}
-                    </Badge>
+                    <ActiveInactiveBadge isActive={link.is_active} />
                     <Button
                       size="icon"
                       variant="ghost"

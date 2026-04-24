@@ -23,6 +23,7 @@ export function proxy(request: NextRequest) {
     "/profile",
     "/dashboard",
     "/r",
+    "/support",
     "/link-error",
     "/not-found",
     "/api",

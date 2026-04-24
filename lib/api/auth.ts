@@ -195,6 +195,135 @@ export interface UpdateAdminDisposableEmailPolicyRequest {
   enabled: boolean;
 }
 
+export interface AdminPremiumCodeUsage {
+  id: number;
+  premium_key_id: number;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminPremiumCode {
+  id: number;
+  secret_code: string;
+  valid_until?: string | null;
+  limit_usage?: number | null;
+  usage_count: number;
+  created_at: string;
+  updated_at: string;
+  key_usage?: AdminPremiumCodeUsage[];
+}
+
+export interface AdminPremiumCodesResponse {
+  keys: AdminPremiumCode[];
+  page: number;
+  limit: number;
+  total: number;
+  total_pages: number;
+  sort: string;
+  order_by: string;
+}
+
+export interface AdminGeneratePremiumCodeRequest {
+  valid_until: string;
+  limit_usage: number;
+  is_bulk?: boolean;
+  amount?: number;
+}
+
+export interface AdminGeneratePremiumCodeBulkResponse {
+  is_bulk: boolean;
+  total: number;
+  items: AdminPremiumCode[];
+}
+
+export interface AdminSendPremiumCodeEmailRequest {
+  user_id?: string;
+  recipient_email?: string;
+  recipient_name?: string;
+  note?: string;
+}
+
+export interface AdminSendPremiumCodeEmailResponse {
+  premium_key_id: number;
+  recipient_email: string;
+  recipient_name: string;
+  delivered_secret: string;
+  sent_at: string;
+}
+
+export interface AdminUserResponse {
+  id: string;
+  username: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  created_at: string;
+  updated_at: string;
+  is_premium: boolean;
+  is_locked: boolean;
+  locked_at?: string | null;
+  locked_reason?: string;
+  role: string;
+  premium_revoke_type?: string;
+  premium_revoked_at?: string | null;
+  premium_revoked_by?: string | null;
+  premium_revoked_reason?: string;
+  premium_reactivated_at?: string | null;
+  premium_reactivated_by?: string | null;
+  premium_reactivated_reason?: string;
+}
+
+export interface AdminUsersListResponse {
+  users: AdminUserResponse[];
+  total_count: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+}
+
+export interface AdminRevokePremiumAccessRequest {
+  reason: string;
+  revoke_type: "temporary" | "permanent";
+}
+
+export interface AdminReactivatePremiumAccessRequest {
+  reason: string;
+  override_permanent?: boolean;
+}
+
+export interface AdminPremiumStatusMutationResponse {
+  user_id: string;
+  is_premium: boolean;
+  role: string;
+  premium_revoke_type?: string;
+  premium_revoked_at?: string | null;
+  premium_reactivated_at?: string | null;
+  premium_revoked_reason?: string;
+  premium_reactivated_reason?: string;
+}
+
+export interface AdminPremiumStatusEventResponse {
+  id: number;
+  user_id: string;
+  action: "revoke" | "reactivate" | string;
+  old_status: string;
+  new_status: string;
+  old_role: string;
+  new_role: string;
+  revoke_type?: string;
+  reason: string;
+  changed_by?: string | null;
+  changed_role: string;
+  created_at: string;
+}
+
+export interface AdminPremiumStatusEventsListResponse {
+  user_id: string;
+  total: number;
+  items: AdminPremiumStatusEventResponse[];
+}
+
 export interface EmailChangeEligibilityResponse {
   eligible: boolean;
   days_remaining: number;
@@ -649,16 +778,61 @@ export async function logout(): Promise<APIResponse<LogoutResponse>> {
     },
   });
 
-  const data: APIResponse<LogoutResponse> = await response.json();
+  let data: APIResponse<LogoutResponse> | null = null;
+  try {
+    data = (await response.json()) as APIResponse<LogoutResponse>;
+  } catch {
+    data = null;
+  }
 
   // Clear CSRF token regardless of response
   clearCSRFToken();
 
-  if (!response.ok) {
-    throw new Error(data.message || "Logout failed");
+  if (response.ok) {
+    return (
+      data ?? {
+        success: true,
+        data: { message: "Logout successful" },
+        message: "Logout successful",
+        error: null,
+      }
+    );
   }
 
-  return data;
+  // Make logout idempotent on client side:
+  // if session/token already invalid, still treat as successful logout.
+  if (response.status === 401 || response.status === 403) {
+    const message = (data?.message || "").toLowerCase();
+    const errorText = Object.values(data?.error || {}).join(" ").toLowerCase();
+    if (
+      message.includes("session") ||
+      message.includes("token") ||
+      message.includes("unauthorized") ||
+      errorText.includes("session") ||
+      errorText.includes("token") ||
+      errorText.includes("auth")
+    ) {
+      return {
+        success: true,
+        data: { message: "Already logged out" },
+        message: "Already logged out",
+        error: null,
+      };
+    }
+  }
+
+  if (!response.ok) {
+    throw new Error(data?.message || "Logout failed");
+  }
+
+  return (
+    data ?? {
+      success: true,
+      data: { message: "Logout successful" },
+      message: "Logout successful",
+      error: null,
+    }
+  );
 }
 
 /**
@@ -876,6 +1050,231 @@ export async function updateAdminDisposableEmailPolicy(
 }
 
 /**
+ * Get paginated premium codes (admin only).
+ */
+export async function getAdminPremiumCodes(params?: {
+  page?: number;
+  limit?: number;
+  sort?: string;
+  order_by?: "asc" | "desc";
+}): Promise<APIResponse<AdminPremiumCodesResponse>> {
+  const query = new URLSearchParams();
+  if (params?.page) query.set("page", String(params.page));
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.sort) query.set("sort", params.sort);
+  if (params?.order_by) query.set("order_by", params.order_by);
+
+  const suffix = query.toString();
+  const response = await fetch(
+    `${API_URL}/auth/admin/premium-codes${suffix ? `?${suffix}` : ""}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    }
+  );
+
+  const result: APIResponse<AdminPremiumCodesResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to get premium codes");
+  }
+
+  return result;
+}
+
+/**
+ * Generate premium code(s) (admin only).
+ */
+export async function generateAdminPremiumCodes(
+  data: AdminGeneratePremiumCodeRequest
+): Promise<APIResponse<AdminPremiumCode | AdminGeneratePremiumCodeBulkResponse>> {
+  const response = await fetchProtected(`${API_URL}/auth/admin/premium-codes`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  const result: APIResponse<AdminPremiumCode | AdminGeneratePremiumCodeBulkResponse> =
+    await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to generate premium code");
+  }
+
+  return result;
+}
+
+/**
+ * Get admin user by ID.
+ */
+export async function getAdminUserById(userId: string): Promise<APIResponse<AdminUserResponse>> {
+  const response = await fetch(`${API_URL}/auth/admin/users/${encodeURIComponent(userId)}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
+
+  const result: APIResponse<AdminUserResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to get user");
+  }
+
+  return result;
+}
+
+/**
+ * Get paginated admin users list.
+ */
+export async function getAdminUsers(params?: {
+  page?: number;
+  limit?: number;
+  sort?: string;
+  order_by?: "asc" | "desc";
+}): Promise<APIResponse<AdminUsersListResponse>> {
+  const query = new URLSearchParams();
+  if (params?.page) query.set("page", String(params.page));
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.sort) query.set("sort", params.sort);
+  if (params?.order_by) query.set("order_by", params.order_by);
+
+  const suffix = query.toString();
+  const response = await fetch(
+    `${API_URL}/auth/admin/users${suffix ? `?${suffix}` : ""}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    }
+  );
+
+  const result: APIResponse<AdminUsersListResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to get admin users");
+  }
+
+  return result;
+}
+
+/**
+ * Revoke premium access for user (admin only).
+ */
+export async function revokeAdminUserPremiumAccess(
+  userId: string,
+  payload: AdminRevokePremiumAccessRequest
+): Promise<APIResponse<AdminPremiumStatusMutationResponse>> {
+  const response = await fetchProtected(
+    `${API_URL}/auth/admin/users/${encodeURIComponent(userId)}/revoke-premium`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  const result: APIResponse<AdminPremiumStatusMutationResponse> =
+    await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to revoke premium access");
+  }
+
+  return result;
+}
+
+/**
+ * Reactivate premium access for user (admin only).
+ */
+export async function reactivateAdminUserPremiumAccess(
+  userId: string,
+  payload: AdminReactivatePremiumAccessRequest
+): Promise<APIResponse<AdminPremiumStatusMutationResponse>> {
+  const response = await fetchProtected(
+    `${API_URL}/auth/admin/users/${encodeURIComponent(userId)}/reactivate-premium`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  const result: APIResponse<AdminPremiumStatusMutationResponse> =
+    await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to reactivate premium access");
+  }
+
+  return result;
+}
+
+/**
+ * Get premium status events for user (admin only).
+ */
+export async function getAdminUserPremiumStatusEvents(
+  userId: string,
+  params?: { limit?: number }
+): Promise<APIResponse<AdminPremiumStatusEventsListResponse>> {
+  const query = new URLSearchParams();
+  if (params?.limit) query.set("limit", String(params.limit));
+
+  const suffix = query.toString();
+  const response = await fetch(
+    `${API_URL}/auth/admin/users/${encodeURIComponent(userId)}/premium-status-events${suffix ? `?${suffix}` : ""}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    }
+  );
+
+  const result: APIResponse<AdminPremiumStatusEventsListResponse> =
+    await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to get premium status events");
+  }
+
+  return result;
+}
+
+/**
+ * Send premium code by email (admin only).
+ */
+export async function sendAdminPremiumCodeEmail(
+  premiumCodeId: number,
+  payload: AdminSendPremiumCodeEmailRequest
+): Promise<APIResponse<AdminSendPremiumCodeEmailResponse>> {
+  const response = await fetchProtected(
+    `${API_URL}/auth/admin/premium-codes/${premiumCodeId}/send-email`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  const result: APIResponse<AdminSendPremiumCodeEmailResponse> =
+    await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to send premium code email");
+  }
+
+  return result;
+}
+
+/**
  * Get user profile with auth details
  * 🔐 Fetches complete user profile and authentication data
  */
@@ -975,7 +1374,7 @@ export async function verifyTOTPLogin(
   const result: APIResponse<LoginResponse> = await response.json();
 
   if (!response.ok) {
-    throw new Error(result.message || "TOTP verification failed");
+    throw new Error(getErrorMessage(result) || "TOTP verification failed");
   }
 
   // Refresh CSRF token after successful TOTP login

@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 import BlobDefault from "@/components/blob/blob-default";
 import { OTPForm } from "@/components/otp-form";
@@ -12,6 +13,10 @@ import {
   saveUserData,
   verifyLoginEmailOTP,
 } from "@/lib/api/auth";
+import {
+  buildAuthSupportURL,
+  getAuthSupportReasonFromMessage,
+} from "@/lib/auth-support";
 import { useAuth } from "@/app/context/AuthContext";
 const TOTP_PROMPT_PENDING_KEY = "totp_migration_prompt_pending";
 
@@ -25,6 +30,7 @@ function VerifyEmailOTPContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [supportLink, setSupportLink] = useState<string | null>(null);
 
   const redirectTo = useMemo(
     () => searchParams.get("redirect") || "/main",
@@ -64,6 +70,7 @@ function VerifyEmailOTPContent() {
 
     setIsSubmitting(true);
     setError(null);
+    setSupportLink(null);
 
     try {
       const response = await verifyLoginEmailOTP({
@@ -111,6 +118,11 @@ function VerifyEmailOTPContent() {
         description: message,
         duration: 4000,
       });
+      const supportReason = getAuthSupportReasonFromMessage(message);
+      if (supportReason) {
+        setSupportLink(buildAuthSupportURL(supportReason, email));
+      }
+
       if (message.toLowerCase().includes("expired")) {
         router.push("/auth/login");
       }
@@ -172,6 +184,16 @@ function VerifyEmailOTPContent() {
           resendCooldown={60}
           error={error}
         />
+        {supportLink && (
+          <div className="text-center mt-4">
+            <p className="text-sm text-muted-foreground mb-2">
+              Need help accessing your account?
+            </p>
+            <Link href={supportLink} className="text-sm text-primary hover:underline">
+              Contact Support →
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

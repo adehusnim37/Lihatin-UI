@@ -2,10 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 import BlobDefault from "@/components/blob/blob-default";
 import { OTPForm } from "@/components/otp-form";
 import { verifyTOTPLogin, saveUserData } from "@/lib/api/auth";
+import {
+  buildAuthSupportURL,
+  getAuthSupportReasonFromMessage,
+} from "@/lib/auth-support";
 import { useAuth } from "@/app/context/AuthContext";
 
 export default function VerifyLoginPage() {
@@ -15,6 +20,7 @@ export default function VerifyLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [pendingAuthToken, setPendingAuthToken] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | undefined>();
+  const [supportLink, setSupportLink] = useState<string | null>(null);
 
   useEffect(() => {
     // Get pending auth token from sessionStorage (set during login)
@@ -55,6 +61,7 @@ export default function VerifyLoginPage() {
 
     setIsSubmitting(true);
     setError(null);
+    setSupportLink(null);
 
     try {
       // Call new endpoint that issues JWT tokens ONLY after TOTP verification
@@ -90,7 +97,12 @@ export default function VerifyLoginPage() {
         description: message,
         duration: 4000,
       });
-      if (message === "Authentication expired") {
+      const supportReason = getAuthSupportReasonFromMessage(message);
+      if (supportReason) {
+        setSupportLink(buildAuthSupportURL(supportReason, userEmail));
+      }
+
+      if (message.toLowerCase().includes("expired") || message === "Authentication expired") {
         router.push("/auth/login");
       }
     } finally {
@@ -113,6 +125,16 @@ export default function VerifyLoginPage() {
           isSubmitting={isSubmitting}
           error={error}
         />
+        {supportLink && (
+          <div className="text-center mt-4">
+            <p className="text-sm text-muted-foreground mb-2">
+              Need help accessing your account?
+            </p>
+            <Link href={supportLink} className="text-sm text-primary hover:underline">
+              Contact Support →
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

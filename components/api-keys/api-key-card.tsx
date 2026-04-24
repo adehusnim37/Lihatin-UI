@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ActiveInactiveBadge } from "@/components/ui/app-status-badges";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -83,12 +84,7 @@ export function APIKeyCard({
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-medium">{apiKey.name}</h3>
-              <Badge
-                variant={apiKey.is_active ? "default" : "secondary"}
-                className={`text-xs ${apiKey.is_active ? "bg-green-500/10 text-green-500 hover:bg-green-500/20" : ""}`}
-              >
-                {apiKey.is_active ? "Active" : "Inactive"}
-              </Badge>
+              <ActiveInactiveBadge isActive={apiKey.is_active} className="text-xs" />
             </div>
             <div className="flex items-center gap-2 mt-1">
               <code className="text-xs bg-muted px-2 py-0.5 rounded font-mono">

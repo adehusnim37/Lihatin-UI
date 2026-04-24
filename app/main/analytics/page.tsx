@@ -67,6 +67,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { ActiveInactiveBadge } from "@/components/ui/app-status-badges";
 
 const chartConfig = {
   clicks: {
@@ -565,11 +566,7 @@ export default function AnalyticsPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            variant={link.is_active ? "default" : "secondary"}
-                          >
-                            {link.is_active ? "Active" : "Inactive"}
-                          </Badge>
+                          <ActiveInactiveBadge isActive={link.is_active} />
                         </TableCell>
                         <TableCell className="text-right">
                           <Button

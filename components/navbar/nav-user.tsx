@@ -43,6 +43,8 @@ interface UserData {
   role: string
 }
 
+const USER_STORAGE_UPDATED_EVENT = "user-storage-updated"
+
 let cachedUserRaw: string | null = null
 let cachedUserSnapshot: UserData | null = null
 
@@ -80,10 +82,12 @@ const subscribeToUserStorage = (onStoreChange: () => void) => {
   const handler = () => onStoreChange()
   window.addEventListener("storage", handler)
   window.addEventListener("focus", handler)
+  window.addEventListener(USER_STORAGE_UPDATED_EVENT, handler)
 
   return () => {
     window.removeEventListener("storage", handler)
     window.removeEventListener("focus", handler)
+    window.removeEventListener(USER_STORAGE_UPDATED_EVENT, handler)
   }
 }
 

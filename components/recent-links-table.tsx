@@ -4,6 +4,7 @@ import { IconExternalLink, IconEye, IconCopy } from "@tabler/icons-react"
 import { toast } from "sonner"
 
 import { Badge } from "@/components/ui/badge"
+import { ActiveInactiveBadge } from "@/components/ui/app-status-badges"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -76,9 +77,7 @@ export function RecentLinksTable({ links = [], isLoading = false }: RecentLinksT
                   <div className="min-w-0 flex-1 space-y-1">
                     <div className="flex items-center gap-2">
                       <code className="text-sm font-semibold">{link.short_code}</code>
-                      <Badge variant={link.is_active ? "default" : "secondary"} className="text-xs">
-                        {link.is_active ? "Active" : "Inactive"}
-                      </Badge>
+                      <ActiveInactiveBadge isActive={link.is_active} className="text-xs" />
                       <Badge variant="secondary" className="text-xs">
                         {link.click_count ?? 0} clicks
                       </Badge>

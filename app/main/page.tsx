@@ -53,7 +53,19 @@ export default function Page() {
   const { data: linksData, isLoading: linksLoading } = useLinks(1, 5, "created_at", "desc");
 
   // Calculate total logs from method breakdown
-  const totalLogs = (logCounts?.data.DELETE ?? 0) + (logCounts?.data.GET ?? 0) + (logCounts?.data.POST ?? 0) + (logCounts?.data.PUT ?? 0) + (logCounts?.data.PATCH ?? 0);
+  const methodCounts = logCounts?.data ?? {
+    DELETE: 0,
+    GET: 0,
+    POST: 0,
+    PUT: 0,
+    PATCH: 0,
+  };
+  const totalLogs =
+    (methodCounts.DELETE ?? 0) +
+    (methodCounts.GET ?? 0) +
+    (methodCounts.POST ?? 0) +
+    (methodCounts.PUT ?? 0) +
+    (methodCounts.PATCH ?? 0);
 
   useEffect(() => {
     const pending = sessionStorage.getItem(TOTP_PROMPT_PENDING_KEY);
@@ -196,7 +208,7 @@ export default function Page() {
               Security Upgrade
             </div>
             <DialogTitle className="text-xl leading-tight">
-              Aktivin Google Authenticator biar akun lebih aman
+              Aktifin Autentikasi Biar Akun Lebih Aman
             </DialogTitle>
             <DialogDescription className="pt-2 text-sm leading-6">
               Kamu baru login pakai OTP email. Upgrade ke TOTP bikin akun lebih tahan
@@ -215,7 +227,7 @@ export default function Page() {
             </div>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-2">
             <Button variant="outline" onClick={dismissPrompt}>
               Nanti aja
             </Button>

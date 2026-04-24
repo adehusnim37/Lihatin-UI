@@ -6,7 +6,10 @@ import { toast } from "sonner";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
-import { Badge } from "@/components/ui/badge";
+import {
+  EnabledDisabledBadge,
+  EnvironmentEffectiveBadge,
+} from "@/components/ui/app-status-badges";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -171,14 +174,8 @@ export default function AdminSecurityPolicyPage() {
                 <Separator />
 
                 <div className="flex flex-wrap items-center gap-3 text-sm">
-                  <Badge variant={policy.enabled ? "default" : "secondary"}>
-                    {policy.enabled ? "Enabled" : "Disabled"}
-                  </Badge>
-                  <Badge variant={policy.effective_in_current_env ? "default" : "outline"}>
-                    {policy.effective_in_current_env
-                      ? "Effective in current environment"
-                      : "Not effective in current environment"}
-                  </Badge>
+                  <EnabledDisabledBadge enabled={policy.enabled} />
+                  <EnvironmentEffectiveBadge effective={policy.effective_in_current_env} />
                 </div>
 
                 <div className="space-y-1 text-xs text-muted-foreground">

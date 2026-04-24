@@ -15,7 +15,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import {
+  HttpMethodBadge,
+  HttpStatusCodeBadge,
+} from "@/components/ui/app-status-badges";
 import {
   Sheet,
   SheetContent,
@@ -45,31 +48,6 @@ export function ActivityLogTable({ code }: ActivityLogTableProps) {
 
   const handlePrev = () => {
     if (page > 1) setPage((p) => p - 1);
-  };
-
-  const getStatusColor = (status: number) => {
-    if (status >= 200 && status < 300)
-      return "bg-green-100 text-green-700 hover:bg-green-100/80 border-green-200";
-    if (status >= 300 && status < 400)
-      return "bg-blue-100 text-blue-700 hover:bg-blue-100/80 border-blue-200";
-    if (status >= 400 && status < 500)
-      return "bg-yellow-100 text-yellow-700 hover:bg-yellow-100/80 border-yellow-200";
-    return "bg-red-100 text-red-700 hover:bg-red-100/80 border-red-200";
-  };
-
-  const getMethodColor = (method: string) => {
-    switch (method?.toUpperCase()) {
-      case "GET":
-        return "secondary";
-      case "POST":
-        return "default";
-      case "PUT":
-        return "outline";
-      case "DELETE":
-        return "destructive";
-      default:
-        return "secondary";
-    }
   };
 
   if (isLoading) {
@@ -116,20 +94,16 @@ export function ActivityLogTable({ code }: ActivityLogTableProps) {
             {logs.map((log) => (
               <TableRow key={log.id}>
                 <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={`font-mono font-normal ${getStatusColor(log.status_code)}`}
-                  >
-                    {log.status_code}
-                  </Badge>
+                  <HttpStatusCodeBadge
+                    statusCode={log.status_code}
+                    className="font-mono font-normal"
+                  />
                 </TableCell>
                 <TableCell>
-                  <Badge
-                    variant={getMethodColor(log.method)}
+                  <HttpMethodBadge
+                    method={log.method}
                     className="text-[10px] px-1.5 h-5"
-                  >
-                    {log.method}
-                  </Badge>
+                  />
                 </TableCell>
                 <TableCell
                   className="font-mono text-xs text-muted-foreground max-w-[200px] truncate"
@@ -208,12 +182,8 @@ function LogDetailSheet({ log }: { log: ActivityLog }) {
         <SheetHeader className="px-6 py-4 border-b shrink-0">
           <SheetTitle className="flex items-center gap-2 pr-10">
             Activity Log Detail
-            <Badge variant="outline" className="font-mono">
-              {log.status_code}
-            </Badge>
-            <Badge variant="secondary" className="font-mono">
-              {log.method}
-            </Badge>
+            <HttpStatusCodeBadge statusCode={log.status_code} className="font-mono" />
+            <HttpMethodBadge method={log.method} className="font-mono" />
           </SheetTitle>
           <SheetDescription>
             Recorded at {format(new Date(log.timestamp), "PPpp")}

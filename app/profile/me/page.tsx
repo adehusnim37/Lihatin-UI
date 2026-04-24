@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -595,14 +595,15 @@ function ProfilePageContent() {
                         </ItemTitle>
                       </ItemContent>
                       {user.is_premium ? (
-                        <Badge variant="default" className="gap-1">
+                        <StatusBadge tone="success" withIcon={false} className="gap-1">
                           <IconCrown className="h-3 w-3" />
                           Premium
-                        </Badge>
+                        </StatusBadge>
                       ) : (
                         <Dialog open={isRedeemOpen} onOpenChange={setIsRedeemOpen}>
-                          <Badge
-                            variant="secondary"
+                          <StatusBadge
+                            tone="neutral"
+                            withIcon={false}
                             className="cursor-pointer transition-colors hover:bg-secondary/80"
                             onClick={() => setIsRedeemOpen(true)}
                             role="button"
@@ -615,7 +616,7 @@ function ProfilePageContent() {
                             }}
                           >
                             Free
-                          </Badge>
+                          </StatusBadge>
                           <DialogContent className="sm:max-w-md">
                             <DialogHeader>
                               <DialogTitle>Redeem Premium Code</DialogTitle>

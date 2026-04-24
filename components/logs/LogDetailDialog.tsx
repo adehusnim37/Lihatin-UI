@@ -10,7 +10,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+import {
+  HttpMethodBadge,
+  HttpStatusCodeBadge,
+} from "@/components/ui/app-status-badges";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLogById } from "@/lib/hooks/queries/useLogsQuery";
 import { LogDetailContent } from "@/components/logs/LogDetailContent";
@@ -40,12 +43,11 @@ export function LogDetailDialog({ logId, onClose }: LogDetailDialogProps) {
             Log Details
             {logDetail?.data && (
               <>
-                <Badge variant="outline" className="font-mono">
-                  {logDetail.data.status_code}
-                </Badge>
-                <Badge variant="secondary" className="font-mono">
-                  {logDetail.data.method}
-                </Badge>
+                <HttpStatusCodeBadge
+                  statusCode={logDetail.data.status_code}
+                  className="font-mono"
+                />
+                <HttpMethodBadge method={logDetail.data.method} className="font-mono" />
               </>
             )}
           </DialogTitle>
