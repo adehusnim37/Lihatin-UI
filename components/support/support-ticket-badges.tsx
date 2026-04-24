@@ -57,7 +57,7 @@ export function SupportStatusBadge({ status }: { status: SupportTicketStatus }) 
   const item = statusMap[status];
 
   return (
-    <StatusBadge tone={item.tone} icon={item.icon}>
+    <StatusBadge tone={item.tone}>
       {item.label}
     </StatusBadge>
   );
@@ -67,7 +67,7 @@ export function SupportPriorityBadge({ priority }: { priority: SupportPriority }
   const item = priorityMap[priority];
 
   return (
-    <StatusBadge tone={item.tone} icon={item.icon}>
+    <StatusBadge tone={item.tone}>
       {item.label}
     </StatusBadge>
   );

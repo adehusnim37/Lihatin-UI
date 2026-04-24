@@ -18,7 +18,13 @@ import {
 } from "@/components/support/support-ticket-badges";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -30,7 +36,14 @@ import {
 } from "@/components/ui/select";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   getAdminSupportTicket,
   listAdminSupportTickets,
@@ -45,7 +58,10 @@ import {
 
 type LoadState = "loading" | "ready" | "forbidden" | "error";
 
-const statusFilterOptions: { value: SupportTicketStatus | "all"; label: string }[] = [
+const statusFilterOptions: {
+  value: SupportTicketStatus | "all";
+  label: string;
+}[] = [
   { value: "all", label: "All Status" },
   { value: "open", label: "Open" },
   { value: "in_progress", label: "In Progress" },
@@ -53,7 +69,10 @@ const statusFilterOptions: { value: SupportTicketStatus | "all"; label: string }
   { value: "closed", label: "Closed" },
 ];
 
-const categoryFilterOptions: { value: SupportCategory | "all"; label: string }[] = [
+const categoryFilterOptions: {
+  value: SupportCategory | "all";
+  label: string;
+}[] = [
   { value: "all", label: "All Category" },
   { value: "account_locked", label: "Account Locked" },
   { value: "account_deactivated", label: "Account Deactivated" },
@@ -65,7 +84,10 @@ const categoryFilterOptions: { value: SupportCategory | "all"; label: string }[]
   { value: "other", label: "Other" },
 ];
 
-const priorityFilterOptions: { value: SupportPriority | "all"; label: string }[] = [
+const priorityFilterOptions: {
+  value: SupportPriority | "all";
+  label: string;
+}[] = [
   { value: "all", label: "All Priority" },
   { value: "low", label: "Low" },
   { value: "normal", label: "Normal" },
@@ -80,16 +102,24 @@ export default function AdminSupportTicketsPage() {
   const [items, setItems] = useState<AdminSupportTicketItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<SupportTicketStatus | "all">("open");
-  const [categoryFilter, setCategoryFilter] = useState<SupportCategory | "all">("all");
-  const [priorityFilter, setPriorityFilter] = useState<SupportPriority | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<SupportTicketStatus | "all">(
+    "open",
+  );
+  const [categoryFilter, setCategoryFilter] = useState<SupportCategory | "all">(
+    "all",
+  );
+  const [priorityFilter, setPriorityFilter] = useState<SupportPriority | "all">(
+    "all",
+  );
   const [search, setSearch] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const [activeTicket, setActiveTicket] = useState<AdminSupportTicketDetailResponse | null>(null);
+  const [activeTicket, setActiveTicket] =
+    useState<AdminSupportTicketDetailResponse | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [adminNotes, setAdminNotes] = useState("");
-  const [nextStatus, setNextStatus] = useState<SupportTicketStatus>("in_progress");
+  const [nextStatus, setNextStatus] =
+    useState<SupportTicketStatus>("in_progress");
   const [nextPriority, setNextPriority] = useState<SupportPriority>("normal");
   const [updating, setUpdating] = useState(false);
 
@@ -125,7 +155,8 @@ export default function AdminSupportTicketsPage() {
         setState("ready");
       } catch (error) {
         if (!active) return;
-        const message = error instanceof Error ? error.message.toLowerCase() : "";
+        const message =
+          error instanceof Error ? error.message.toLowerCase() : "";
         if (
           message.includes("administrator") ||
           message.includes("permission") ||
@@ -150,7 +181,14 @@ export default function AdminSupportTicketsPage() {
     return () => {
       active = false;
     };
-  }, [page, statusFilter, categoryFilter, priorityFilter, search, isRefreshing]);
+  }, [
+    page,
+    statusFilter,
+    categoryFilter,
+    priorityFilter,
+    search,
+    isRefreshing,
+  ]);
 
   const totalPages = useMemo(() => {
     if (total <= 0) return 1;
@@ -174,7 +212,8 @@ export default function AdminSupportTicketsPage() {
       setNextPriority((ticket?.priority as SupportPriority) || "normal");
     } catch (error) {
       toast.error("Failed to load ticket detail", {
-        description: error instanceof Error ? error.message : "Please try again.",
+        description:
+          error instanceof Error ? error.message : "Please try again.",
       });
     } finally {
       setDetailsLoading(false);
@@ -183,7 +222,7 @@ export default function AdminSupportTicketsPage() {
 
   const applyUpdate = async (
     action?: AdminSupportAction,
-    statusOverride?: SupportTicketStatus
+    statusOverride?: SupportTicketStatus,
   ) => {
     if (!activeTicket || updating) return;
 
@@ -206,7 +245,8 @@ export default function AdminSupportTicketsPage() {
       await handleOpenTicket(activeTicket.id);
     } catch (error) {
       toast.error("Update failed", {
-        description: error instanceof Error ? error.message : "Please try again.",
+        description:
+          error instanceof Error ? error.message : "Please try again.",
       });
     } finally {
       setUpdating(false);
@@ -228,7 +268,9 @@ export default function AdminSupportTicketsPage() {
         <div className="flex flex-1 flex-col gap-6 p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-2">
-              <h1 className="text-2xl font-semibold tracking-tight">Support Tickets</h1>
+              <h1 className="text-2xl font-semibold tracking-tight">
+                Support Tickets
+              </h1>
               <p className="text-sm text-muted-foreground">
                 Review account access issues and resolve support requests.
               </p>
@@ -247,9 +289,7 @@ export default function AdminSupportTicketsPage() {
             <Card className="min-w-0">
               <CardHeader>
                 <CardTitle>Ticket List</CardTitle>
-                <CardDescription>
-                  Total tickets: {total}
-                </CardDescription>
+                <CardDescription>Total tickets: {total}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="rounded-xl border bg-muted/20 p-3 md:p-4">
@@ -285,7 +325,10 @@ export default function AdminSupportTicketsPage() {
                           setStatusFilter(value as SupportTicketStatus | "all");
                         }}
                       >
-                        <SelectTrigger id="ticket-status-filter" className="w-full">
+                        <SelectTrigger
+                          id="ticket-status-filter"
+                          className="w-full"
+                        >
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="max-h-72">
@@ -307,7 +350,10 @@ export default function AdminSupportTicketsPage() {
                           setCategoryFilter(value as SupportCategory | "all");
                         }}
                       >
-                        <SelectTrigger id="ticket-category-filter" className="w-full">
+                        <SelectTrigger
+                          id="ticket-category-filter"
+                          className="w-full"
+                        >
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="max-h-72">
@@ -329,7 +375,10 @@ export default function AdminSupportTicketsPage() {
                           setPriorityFilter(value as SupportPriority | "all");
                         }}
                       >
-                        <SelectTrigger id="ticket-priority-filter" className="w-full">
+                        <SelectTrigger
+                          id="ticket-priority-filter"
+                          className="w-full"
+                        >
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="max-h-72">
@@ -391,7 +440,10 @@ export default function AdminSupportTicketsPage() {
                         <TableBody>
                           {items.length === 0 ? (
                             <TableRow>
-                              <TableCell colSpan={6} className="text-center text-muted-foreground">
+                              <TableCell
+                                colSpan={6}
+                                className="text-center text-muted-foreground"
+                              >
                                 No support tickets found.
                               </TableCell>
                             </TableRow>
@@ -403,18 +455,26 @@ export default function AdminSupportTicketsPage() {
                                 onClick={() => void handleOpenTicket(item.id)}
                               >
                                 <TableCell>
-                                  <p className="font-medium">{item.ticket_code}</p>
-                                  <p className="text-xs text-muted-foreground">{item.subject}</p>
+                                  <p className="font-medium">
+                                    {item.ticket_code}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {item.subject}
+                                  </p>
                                 </TableCell>
                                 <TableCell>{item.email}</TableCell>
                                 <TableCell>{toLabel(item.category)}</TableCell>
                                 <TableCell>
-                                  <SupportPriorityBadge priority={item.priority as SupportPriority} />
+                                  <SupportPriorityBadge
+                                    priority={item.priority as SupportPriority}
+                                  />
                                 </TableCell>
                                 <TableCell>
                                   <SupportStatusBadge status={item.status} />
                                 </TableCell>
-                                <TableCell>{formatDate(item.created_at)}</TableCell>
+                                <TableCell>
+                                  {formatDate(item.created_at)}
+                                </TableCell>
                               </TableRow>
                             ))
                           )}
@@ -430,7 +490,9 @@ export default function AdminSupportTicketsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                          onClick={() =>
+                            setPage((prev) => Math.max(1, prev - 1))
+                          }
                           disabled={page <= 1}
                         >
                           Previous
@@ -438,7 +500,9 @@ export default function AdminSupportTicketsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                          onClick={() =>
+                            setPage((prev) => Math.min(totalPages, prev + 1))
+                          }
                           disabled={page >= totalPages}
                         >
                           Next
@@ -454,7 +518,9 @@ export default function AdminSupportTicketsPage() {
               <CardHeader>
                 <CardTitle>Ticket Detail</CardTitle>
                 <CardDescription>
-                  {activeTicket ? activeTicket.ticket_code : "Select ticket from list"}
+                  {activeTicket
+                    ? activeTicket.ticket_code
+                    : "Select ticket from list"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -469,47 +535,81 @@ export default function AdminSupportTicketsPage() {
                 {!detailsLoading && activeTicket && (
                   <>
                     <div className="space-y-1 text-sm">
-                      <p><strong>Email:</strong> {activeTicket.email}</p>
-                      <p><strong>Category:</strong> {toLabel(activeTicket.category)}</p>
-                      <p className="flex items-center gap-2"><strong>Status:</strong> <SupportStatusBadge status={activeTicket.status} /></p>
-                      <p className="flex items-center gap-2"><strong>Priority:</strong> <SupportPriorityBadge priority={activeTicket.priority as SupportPriority} /></p>
-                      <p><strong>Created:</strong> {formatDate(activeTicket.created_at)}</p>
+                      <p>
+                        <strong>Email:</strong> {activeTicket.email}
+                      </p>
+                      <p>
+                        <strong>Category:</strong>{" "}
+                        {toLabel(activeTicket.category)}
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <strong>Status:</strong>{" "}
+                        <SupportStatusBadge status={activeTicket.status} />
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <strong>Priority:</strong>{" "}
+                        <SupportPriorityBadge
+                          priority={activeTicket.priority as SupportPriority}
+                        />
+                      </p>
+                      <p>
+                        <strong>Created:</strong>{" "}
+                        {formatDate(activeTicket.created_at)}
+                      </p>
                     </div>
 
                     <div className="rounded-lg border p-3 text-sm">
                       <p className="font-medium mb-1">Subject</p>
                       <p className="break-words">{activeTicket.subject}</p>
                       <p className="font-medium mt-3 mb-1">Description</p>
-                      <p className="text-muted-foreground whitespace-pre-wrap break-words">{activeTicket.description}</p>
+                      <p className="text-muted-foreground whitespace-pre-wrap break-words">
+                        {activeTicket.description}
+                      </p>
                     </div>
 
-                    {activeTicket.status === "resolved" || activeTicket.status === "closed" ? (
+                    {activeTicket.status === "resolved" ||
+                    activeTicket.status === "closed" ? (
                       <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 text-sm mt-4">
-                        <p className="font-medium text-emerald-800">Ticket Closed</p>
-                        <p className="text-emerald-700 mt-1">This ticket has been marked as {activeTicket.status} and cannot be edited further.</p>
+                        <p className="font-medium text-emerald-800">
+                          Ticket Closed
+                        </p>
+                        <p className="text-emerald-700 mt-1">
+                          This ticket has been marked as {activeTicket.status}{" "}
+                          and cannot be edited further.
+                        </p>
                         {activeTicket.admin_notes && (
                           <div className="mt-4 border-t border-emerald-200/60 pt-4">
-                            <p className="font-medium text-emerald-800 mb-1">Final Admin Notes</p>
-                            <p className="text-emerald-700 whitespace-pre-wrap break-words">{activeTicket.admin_notes}</p>
+                            <p className="font-medium text-emerald-800 mb-1">
+                              Final Admin Notes
+                            </p>
+                            <p className="text-emerald-700 whitespace-pre-wrap break-words">
+                              {activeTicket.admin_notes}
+                            </p>
                           </div>
                         )}
                       </div>
                     ) : (
                       <>
-                        <div className="mt-6 grid gap-3 md:grid-cols-2">
+                        <div className="mt-6 flex items-center gap-4">
                           <div className="space-y-2">
                             <Label>Next Status</Label>
                             <Select
                               value={nextStatus}
-                              onValueChange={(value) => setNextStatus(value as SupportTicketStatus)}
+                              onValueChange={(value) =>
+                                setNextStatus(value as SupportTicketStatus)
+                              }
                             >
                               <SelectTrigger>
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="open">Open</SelectItem>
-                                <SelectItem value="in_progress">In Progress</SelectItem>
-                                <SelectItem value="resolved">Resolved</SelectItem>
+                                <SelectItem value="in_progress">
+                                  In Progress
+                                </SelectItem>
+                                <SelectItem value="resolved">
+                                  Resolved
+                                </SelectItem>
                                 <SelectItem value="closed">Closed</SelectItem>
                               </SelectContent>
                             </Select>
@@ -519,7 +619,9 @@ export default function AdminSupportTicketsPage() {
                             <Label>Priority</Label>
                             <Select
                               value={nextPriority}
-                              onValueChange={(value) => setNextPriority(value as SupportPriority)}
+                              onValueChange={(value) =>
+                                setNextPriority(value as SupportPriority)
+                              }
                             >
                               <SelectTrigger>
                                 <SelectValue />
@@ -538,7 +640,9 @@ export default function AdminSupportTicketsPage() {
                           <Label>Admin Notes</Label>
                           <textarea
                             value={adminNotes}
-                            onChange={(event) => setAdminNotes(event.target.value)}
+                            onChange={(event) =>
+                              setAdminNotes(event.target.value)
+                            }
                             className="min-h-28 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                             placeholder="Internal notes or resolution message"
                           />
@@ -583,7 +687,9 @@ export default function AdminSupportTicketsPage() {
 
                           <Button
                             variant="outline"
-                            onClick={() => void applyUpdate("resend_verification")}
+                            onClick={() =>
+                              void applyUpdate("resend_verification")
+                            }
                             disabled={updating}
                           >
                             <IconSend className="mr-2 h-4 w-4" />
