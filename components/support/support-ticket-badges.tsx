@@ -1,11 +1,3 @@
-import {
-  AlertTriangleIcon,
-  CheckCircleIcon,
-  CircleDotIcon,
-  Clock3Icon,
-  type LucideIcon,
-} from "lucide-react";
-
 import { StatusBadge, type StatusBadgeTone } from "@/components/ui/status-badge";
 import type { SupportPriority, SupportTicketStatus } from "@/lib/api/support";
 

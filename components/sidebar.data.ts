@@ -39,6 +39,11 @@ export const SidebarData = {
       url: "/main/api-integrations",
       icon: IconApi,
     },
+    {
+      title: "Support Inbox",
+      url: "/main/support",
+      icon: IconLifebuoy,
+    },
   ],
   navAdmin: [
     {

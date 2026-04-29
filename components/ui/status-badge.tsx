@@ -1,12 +1,4 @@
 import * as React from "react";
-import type { LucideIcon } from "lucide-react";
-import {
-  AlertCircleIcon,
-  AlertTriangleIcon,
-  CheckCircleIcon,
-  Clock3Icon,
-  MinusCircleIcon,
-} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";

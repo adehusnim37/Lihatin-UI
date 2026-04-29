@@ -590,8 +590,8 @@ export default function AdminSupportTicketsPage() {
                       </div>
                     ) : (
                       <>
-                        <div className="mt-6 flex items-center gap-4">
-                          <div className="space-y-2">
+                        <div className="mt-6 flex flex-wrap gap-4">
+                          <div className="space-y-2 w-full sm:w-48">
                             <Label>Next Status</Label>
                             <Select
                               value={nextStatus}
@@ -615,7 +615,7 @@ export default function AdminSupportTicketsPage() {
                             </Select>
                           </div>
 
-                          <div className="space-y-2">
+                          <div className="space-y-2 w-full sm:w-48">
                             <Label>Priority</Label>
                             <Select
                               value={nextPriority}

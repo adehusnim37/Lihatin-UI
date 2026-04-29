@@ -42,6 +42,49 @@ export interface TrackSupportTicketResponse {
   resolved_at?: string | null;
 }
 
+export interface SupportOTPChallengeResponse {
+  challenge_token: string;
+  cooldown_seconds: number;
+}
+
+export interface SupportAccessResponse {
+  access_token: string;
+  expires_in_seconds: number;
+  ticket: TrackSupportTicketResponse;
+}
+
+export interface SupportAttachmentResponse {
+  id: string;
+  file_name: string;
+  content_type: string;
+  size_bytes: number;
+  created_at: string;
+}
+
+export interface SupportMessageResponse {
+  id: string;
+  ticket_id: string;
+  sender_type: "public" | "user" | "admin" | "system";
+  sender_user_id?: string | null;
+  sender_email?: string | null;
+  body: string;
+  is_internal: boolean;
+  created_at: string;
+  updated_at: string;
+  attachments?: SupportAttachmentResponse[];
+}
+
+export interface SupportConversationResponse {
+  ticket_code: string;
+  ticket_id: string;
+  category: SupportCategory;
+  subject: string;
+  status: SupportTicketStatus;
+  created_at: string;
+  updated_at: string;
+  messages: SupportMessageResponse[];
+}
+
 export interface AdminSupportTicketItem {
   id: string;
   ticket_code: string;
@@ -101,8 +144,16 @@ export interface AdminUpdateSupportTicketResponse {
   action_applied?: string;
 }
 
+export interface UserListSupportTicketsResponse {
+  items: AdminSupportTicketItem[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+}
+
 export async function createSupportTicket(
-  payload: CreateSupportTicketRequest
+  payload: CreateSupportTicketRequest,
 ): Promise<APIResponse<CreateSupportTicketResponse>> {
   const response = await fetch(`${API_URL}/support/tickets`, {
     method: "POST",
@@ -146,6 +197,163 @@ export async function trackSupportTicket(params: {
   return result;
 }
 
+export async function requestSupportAccessOTP(payload: {
+  ticket: string;
+  email: string;
+}): Promise<APIResponse<SupportOTPChallengeResponse>> {
+  const response = await fetch(`${API_URL}/support/access/request-otp`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  const result: APIResponse<SupportOTPChallengeResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to request verification code");
+  }
+
+  return result;
+}
+
+export async function resendSupportAccessOTP(payload: {
+  challenge_token: string;
+}): Promise<APIResponse<{ cooldown_seconds?: number; cooldown_remaining_seconds?: number }>> {
+  const response = await fetch(`${API_URL}/support/access/resend-otp`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  const result: APIResponse<{ cooldown_seconds?: number; cooldown_remaining_seconds?: number }> =
+    await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to resend verification code");
+  }
+
+  return result;
+}
+
+export async function verifySupportAccessOTP(payload: {
+  challenge_token: string;
+  otp_code: string;
+}): Promise<APIResponse<SupportAccessResponse>> {
+  const response = await fetch(`${API_URL}/support/access/verify-otp`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  const result: APIResponse<SupportAccessResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to verify code");
+  }
+
+  return result;
+}
+
+export async function verifySupportAccessCode(payload: {
+  ticket: string;
+  email: string;
+  code: string;
+}): Promise<APIResponse<SupportAccessResponse>> {
+  const response = await fetch(`${API_URL}/support/access/verify-code`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  const result: APIResponse<SupportAccessResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to verify access code");
+  }
+
+  return result;
+}
+
+export async function listPublicSupportConversation(params: {
+  ticket: string;
+  email: string;
+  accessToken: string;
+}): Promise<APIResponse<SupportConversationResponse>> {
+  const query = new URLSearchParams({
+    email: params.email,
+    access_token: params.accessToken,
+  });
+
+  const response = await fetch(
+    `${API_URL}/support/tickets/${encodeURIComponent(params.ticket)}/messages?${query.toString()}`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
+
+  const result: APIResponse<SupportConversationResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to load conversation");
+  }
+
+  return result;
+}
+
+export async function sendPublicSupportMessage(
+  params: { ticket: string; email: string; accessToken: string },
+  payload: { body?: string; attachments?: File[] },
+): Promise<APIResponse<SupportMessageResponse>> {
+  const formData = new FormData();
+  formData.set("email", params.email);
+  formData.set("access_token", params.accessToken);
+  if (payload.body && payload.body.trim()) {
+    formData.set("body", payload.body.trim());
+  }
+
+  for (const file of payload.attachments || []) {
+    formData.append("attachments", file);
+  }
+
+  const response = await fetch(
+    `${API_URL}/support/tickets/${encodeURIComponent(params.ticket)}/messages`,
+    {
+      method: "POST",
+      credentials: "include",
+      body: formData,
+    },
+  );
+
+  const result: APIResponse<SupportMessageResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to send message");
+  }
+
+  return result;
+}
+
+export function getPublicSupportAttachmentURL(params: {
+  ticket: string;
+  email: string;
+  accessToken: string;
+  attachmentID: string;
+}): string {
+  const query = new URLSearchParams({
+    email: params.email,
+    access_token: params.accessToken,
+  });
+
+  return `${API_URL}/support/tickets/${encodeURIComponent(params.ticket)}/attachments/${encodeURIComponent(params.attachmentID)}?${query.toString()}`;
+}
+
 export async function listAdminSupportTickets(params?: {
   status?: SupportTicketStatus | "all";
   category?: SupportCategory | "all";
@@ -168,15 +376,14 @@ export async function listAdminSupportTickets(params?: {
   if (params?.email) query.set("email", params.email);
 
   const suffix = query.toString();
-  const response = await fetch(
+  const response = await fetchWithAuth(
     `${API_URL}/auth/admin/support/tickets${suffix ? `?${suffix}` : ""}`,
     {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-      credentials: "include",
-    }
+    },
   );
 
   const result: APIResponse<AdminListSupportTicketsResponse> = await response.json();
@@ -188,17 +395,16 @@ export async function listAdminSupportTickets(params?: {
 }
 
 export async function getAdminSupportTicket(
-  id: string
+  id: string,
 ): Promise<APIResponse<AdminSupportTicketDetailResponse>> {
-  const response = await fetch(
+  const response = await fetchWithAuth(
     `${API_URL}/auth/admin/support/tickets/${encodeURIComponent(id)}`,
     {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-      credentials: "include",
-    }
+    },
   );
 
   const result: APIResponse<AdminSupportTicketDetailResponse> = await response.json();
@@ -211,7 +417,7 @@ export async function getAdminSupportTicket(
 
 export async function updateAdminSupportTicket(
   id: string,
-  payload: AdminUpdateSupportTicketRequest
+  payload: AdminUpdateSupportTicketRequest,
 ): Promise<APIResponse<AdminUpdateSupportTicketResponse>> {
   const response = await fetchWithAuth(
     `${API_URL}/auth/admin/support/tickets/${encodeURIComponent(id)}`,
@@ -221,7 +427,7 @@ export async function updateAdminSupportTicket(
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
-    }
+    },
   );
 
   const result: APIResponse<AdminUpdateSupportTicketResponse> = await response.json();
@@ -230,4 +436,133 @@ export async function updateAdminSupportTicket(
   }
 
   return result;
+}
+
+export async function getAdminSupportConversation(
+  id: string,
+): Promise<APIResponse<SupportConversationResponse>> {
+  const response = await fetchWithAuth(
+    `${API_URL}/auth/admin/support/tickets/${encodeURIComponent(id)}/messages`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    },
+  );
+
+  const result: APIResponse<SupportConversationResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to get support conversation");
+  }
+
+  return result;
+}
+
+export async function sendAdminSupportMessage(
+  id: string,
+  payload: { body?: string; attachments?: File[]; is_internal?: boolean },
+): Promise<APIResponse<SupportMessageResponse>> {
+  const formData = new FormData();
+  if (payload.body && payload.body.trim()) {
+    formData.set("body", payload.body.trim());
+  }
+  if (payload.is_internal) {
+    formData.set("is_internal", "true");
+  }
+  for (const file of payload.attachments || []) {
+    formData.append("attachments", file);
+  }
+
+  const response = await fetchWithAuth(`${API_URL}/auth/admin/support/tickets/${encodeURIComponent(id)}/messages`, {
+    method: "POST",
+    body: formData,
+  });
+
+  const result: APIResponse<SupportMessageResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to send support message");
+  }
+
+  return result;
+}
+
+export function getAdminSupportAttachmentURL(attachmentID: string): string {
+  return `${API_URL}/auth/admin/support/attachments/${encodeURIComponent(attachmentID)}`;
+}
+
+export async function listUserSupportTickets(params?: {
+  page?: number;
+  limit?: number;
+}): Promise<APIResponse<UserListSupportTicketsResponse>> {
+  const query = new URLSearchParams();
+  if (params?.page) query.set("page", String(params.page));
+  if (params?.limit) query.set("limit", String(params.limit));
+
+  const response = await fetchWithAuth(
+    `${API_URL}/auth/support/tickets${query.toString() ? `?${query.toString()}` : ""}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    },
+  );
+
+  const result: APIResponse<UserListSupportTicketsResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to get support tickets");
+  }
+
+  return result;
+}
+
+export async function getUserSupportConversation(
+  id: string,
+): Promise<APIResponse<SupportConversationResponse>> {
+  const response = await fetchWithAuth(
+    `${API_URL}/auth/support/tickets/${encodeURIComponent(id)}/messages`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    },
+  );
+
+  const result: APIResponse<SupportConversationResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to get support conversation");
+  }
+
+  return result;
+}
+
+export async function sendUserSupportMessage(
+  id: string,
+  payload: { body?: string; attachments?: File[] },
+): Promise<APIResponse<SupportMessageResponse>> {
+  const formData = new FormData();
+  if (payload.body && payload.body.trim()) {
+    formData.set("body", payload.body.trim());
+  }
+  for (const file of payload.attachments || []) {
+    formData.append("attachments", file);
+  }
+
+  const response = await fetchWithAuth(`${API_URL}/auth/support/tickets/${encodeURIComponent(id)}/messages`, {
+    method: "POST",
+    body: formData,
+  });
+
+  const result: APIResponse<SupportMessageResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to send support message");
+  }
+
+  return result;
+}
+
+export function getUserSupportAttachmentURL(attachmentID: string): string {
+  return `${API_URL}/auth/support/attachments/${encodeURIComponent(attachmentID)}`;
 }
