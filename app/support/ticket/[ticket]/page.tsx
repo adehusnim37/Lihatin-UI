@@ -1,12 +1,21 @@
 "use client";
 
-import { FormEvent, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FormEvent,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
   IconArrowLeft,
   IconKey,
+  IconMessage2,
   IconPaperclip,
   IconRefresh,
   IconSend,
@@ -15,24 +24,32 @@ import { toast } from "sonner";
 
 import { SupportStatusBadge } from "@/components/support/support-ticket-badges";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   getPublicSupportAttachmentURL,
-  listPublicSupportConversation,
-  sendPublicSupportMessage,
-  verifySupportAccessCode,
   type SupportCategory,
-  type SupportConversationResponse,
-  type SupportMessageResponse,
 } from "@/lib/api/support";
+import {
+  usePublicSupportConversationQuery,
+  useSendPublicSupportMessageMutation,
+  useVerifySupportAccessCodeMutation,
+} from "@/lib/hooks/queries/useSupportQuery";
 import {
   buildPublicSupportConversationURL,
   clearStoredPublicSupportAccessToken,
   getStoredPublicSupportAccessToken,
   storePublicSupportAccessToken,
 } from "@/lib/support/public-access";
+import { SupportConversationBubble, formatDate } from "@/components/support/support-conversation-bubble";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const categoryLabelMap: Record<SupportCategory, string> = {
   account_locked: "Account Locked",
@@ -50,117 +67,168 @@ function PublicSupportConversationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const attachmentInputRef = useRef<HTMLInputElement | null>(null);
-  const autoOpenRef = useRef(false);
+  const attemptedCodeRef = useRef("");
 
-  const ticketCode = useMemo(() => decodeURIComponent(params.ticket || "").trim().toUpperCase(), [params.ticket]);
+  const ticketCode = useMemo(
+    () =>
+      decodeURIComponent(params.ticket || "")
+        .trim()
+        .toUpperCase(),
+    [params.ticket],
+  );
+  const email = useMemo(
+    () => (searchParams.get("email") || "").trim(),
+    [searchParams],
+  );
+  const linkCode = useMemo(
+    () => (searchParams.get("code") || "").trim(),
+    [searchParams],
+  );
 
-  const [email, setEmail] = useState("");
-  const [linkCode, setLinkCode] = useState("");
   const [supportAccessToken, setSupportAccessToken] = useState("");
-  const [conversation, setConversation] = useState<SupportConversationResponse | null>(null);
-  const [isConversationLoading, setIsConversationLoading] = useState(false);
-  const [isVerifyingAccess, setIsVerifyingAccess] = useState(false);
+  const [storageReady, setStorageReady] = useState(false);
   const [draftMessage, setDraftMessage] = useState("");
   const [draftFiles, setDraftFiles] = useState<File[]>([]);
-  const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [accessError, setAccessError] = useState("");
   const hasCodeQuery = searchParams.get("code");
+  const verifyCodeMutation = useVerifySupportAccessCodeMutation();
+  const sendMessageMutation = useSendPublicSupportMessageMutation();
+  const conversationQuery = usePublicSupportConversationQuery(
+    {
+      ticket: ticketCode,
+      email: email.trim(),
+      accessToken: supportAccessToken.trim(),
+    },
+    Boolean(ticketCode && email.trim() && supportAccessToken.trim()),
+  );
+  const conversation = conversationQuery.data ?? null;
+  const isConversationLoading = conversationQuery.isLoading;
+  const isRefreshingConversation =
+    conversationQuery.isFetching && Boolean(conversation);
+  const {
+    data: conversationData,
+    isFetching: isConversationFetching,
+    refetch: refetchConversation,
+  } = conversationQuery;
 
-  useEffect(() => {
-    setEmail((searchParams.get("email") || "").trim());
-    setLinkCode((searchParams.get("code") || "").trim());
-  }, [searchParams]);
+  const openConversation = useCallback(
+    (token: string) => {
+      setSupportAccessToken(token);
+      storePublicSupportAccessToken(ticketCode, email.trim(), token);
+      setAccessError("");
+    },
+    [email, ticketCode],
+  );
 
-  const loadConversation = useCallback(async (token: string) => {
-    if (!ticketCode || !email.trim() || !token.trim()) {
-      return;
-    }
-
-    setIsConversationLoading(true);
-    setAccessError("");
-    try {
-      const response = await listPublicSupportConversation({
-        ticket: ticketCode,
-        email: email.trim(),
-        accessToken: token.trim(),
-      });
-
-      setConversation(response.data || null);
-    } catch (error: unknown) {
-      setConversation(null);
-      setAccessError(error instanceof Error ? error.message : "Please verify access again.");
-      toast.error("Failed to load conversation", {
-        description: error instanceof Error ? error.message : "Please verify access again.",
-      });
-    } finally {
-      setIsConversationLoading(false);
-    }
-  }, [email, ticketCode]);
-
-  const openConversation = useCallback(async (token: string) => {
-    setSupportAccessToken(token);
-    storePublicSupportAccessToken(ticketCode, email.trim(), token);
-    await loadConversation(token);
-  }, [email, loadConversation, ticketCode]);
-
-  const verifyCodeAndOpen = useCallback(async (code: string) => {
-    if (!ticketCode || !email.trim() || !code.trim()) {
-      setAccessError("Ticket, email, and access code are required.");
-      return;
-    }
-
-    setIsVerifyingAccess(true);
-    setAccessError("");
-    try {
-      const response = await verifySupportAccessCode({
-        ticket: ticketCode,
-        email: email.trim(),
-        code: code.trim(),
-      });
-
-      const token = response.data?.access_token || "";
-      if (!token) {
-        throw new Error("Access token missing in response");
+  const verifyCodeAndOpen = useCallback(
+    async (code: string) => {
+      if (!ticketCode || !email.trim() || !code.trim()) {
+        setAccessError("Ticket, email, and access code are required.");
+        return;
       }
 
-      await openConversation(token);
+      setAccessError("");
+      try {
+        const response = await verifyCodeMutation.mutateAsync({
+          ticket: ticketCode,
+          email: email.trim(),
+          code: code.trim(),
+        });
 
-      if (hasCodeQuery) {
-        router.replace(buildPublicSupportConversationURL(ticketCode, email.trim()));
+        const token = response.access_token || "";
+        if (!token) {
+          throw new Error("Access token missing in response");
+        }
+
+        openConversation(token);
+
+        if (hasCodeQuery) {
+          router.replace(
+            buildPublicSupportConversationURL(ticketCode, email.trim()),
+          );
+        }
+
+        toast.success("Secure access granted");
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Please verify access again.";
+        setAccessError(message);
+        toast.error("Failed to verify access code", {
+          description: message,
+        });
       }
-
-      toast.success("Secure access granted");
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Please verify access again.";
-      setAccessError(message);
-      toast.error("Failed to verify access code", {
-        description: message,
-      });
-    } finally {
-      setIsVerifyingAccess(false);
-    }
-  }, [email, hasCodeQuery, openConversation, router, ticketCode]);
+    },
+    [
+      email,
+      hasCodeQuery,
+      openConversation,
+      router,
+      ticketCode,
+      verifyCodeMutation,
+    ],
+  );
 
   useEffect(() => {
-    if (autoOpenRef.current || !ticketCode || !email.trim()) {
+    if (!ticketCode || !email.trim() || supportAccessToken.trim()) {
+      setStorageReady(true);
       return;
     }
 
-    autoOpenRef.current = true;
-    const storedToken = getStoredPublicSupportAccessToken(ticketCode, email.trim());
+    const storedToken = getStoredPublicSupportAccessToken(
+      ticketCode,
+      email.trim(),
+    );
     if (storedToken) {
       setSupportAccessToken(storedToken);
-      void loadConversation(storedToken);
+      setAccessError("");
+      setStorageReady(true);
       return;
     }
 
-    if (linkCode.trim()) {
+    if (linkCode.trim() && attemptedCodeRef.current !== linkCode.trim()) {
+      attemptedCodeRef.current = linkCode.trim();
       void verifyCodeAndOpen(linkCode.trim());
+      setStorageReady(true);
       return;
     }
 
     setAccessError("Secure access required before opening conversation.");
-  }, [email, linkCode, loadConversation, ticketCode, verifyCodeAndOpen]);
+    setStorageReady(true);
+  }, [email, linkCode, supportAccessToken, ticketCode, verifyCodeAndOpen]);
+
+  useEffect(() => {
+    if (!supportAccessToken.trim()) {
+      return;
+    }
+
+    if (isConversationFetching || conversationData) {
+      return;
+    }
+
+    void refetchConversation();
+  }, [
+    conversationData,
+    isConversationFetching,
+    refetchConversation,
+    supportAccessToken,
+  ]);
+
+  useEffect(() => {
+    if (!conversationQuery.error) {
+      return;
+    }
+
+    const message =
+      conversationQuery.error instanceof Error
+        ? conversationQuery.error.message
+        : "Please verify access again.";
+    setAccessError(message);
+    toast.error("Failed to load conversation", {
+      description: message,
+    });
+  }, [conversationQuery.error]);
 
   const handleSendMessage = async (event: FormEvent) => {
     event.preventDefault();
@@ -175,44 +243,50 @@ function PublicSupportConversationContent() {
       return;
     }
 
-    setIsSendingMessage(true);
     try {
-      await sendPublicSupportMessage(
-        {
+      await sendMessageMutation.mutateAsync({
+        params: {
           ticket: ticketCode,
           email: email.trim(),
           accessToken: supportAccessToken,
         },
-        {
+        payload: {
           body: draftMessage.trim(),
           attachments: draftFiles,
         },
-      );
+      });
 
       setDraftMessage("");
       setDraftFiles([]);
       if (attachmentInputRef.current) {
         attachmentInputRef.current.value = "";
       }
-      await loadConversation(supportAccessToken);
+      await conversationQuery.refetch();
       toast.success("Message sent");
     } catch (error: unknown) {
       toast.error("Failed to send message", {
-        description: error instanceof Error ? error.message : "Please try again.",
+        description:
+          error instanceof Error ? error.message : "Please try again.",
       });
-    } finally {
-      setIsSendingMessage(false);
     }
   };
 
   const handleResetAccess = () => {
     clearStoredPublicSupportAccessToken(ticketCode, email.trim());
     setSupportAccessToken("");
-    setConversation(null);
-    router.push(`/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email.trim())}`);
+    router.push(
+      `/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email.trim())}`,
+    );
   };
 
-  const categoryLabel = conversation ? categoryLabelMap[conversation.category] : null;
+  const categoryLabel = conversation
+    ? categoryLabelMap[conversation.category]
+    : null;
+  const conversationDescription = !storageReady
+    ? "Checking secure access..."
+    : supportAccessToken
+      ? "Secure thread active. You can reply and upload files."
+      : "Access needed before thread can open.";
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-gradient-to-b from-white via-slate-50 to-slate-100 px-4 py-10 md:px-8">
@@ -222,15 +296,21 @@ function PublicSupportConversationContent() {
             <div className="flex items-center gap-3">
               <Image src="/logo.svg" alt="Lihatin" width={40} height={40} />
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Public Access</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  Public Access
+                </p>
                 <h1 className="text-2xl font-semibold">Support Conversation</h1>
-                <p className="mt-1 text-sm text-muted-foreground">Ticket {ticketCode || "-"}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Ticket {ticketCode || "-"}
+                </p>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
               <Button asChild variant="outline">
-                <Link href={`/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email.trim())}`}>
+                <Link
+                  href={`/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email.trim())}`}
+                >
                   <IconArrowLeft className="mr-2 h-4 w-4" />
                   Back to Support Access
                 </Link>
@@ -249,82 +329,131 @@ function PublicSupportConversationContent() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <CardTitle className="text-xl">Conversation</CardTitle>
-                    <CardDescription>
-                      {supportAccessToken
-                        ? "Secure thread active. You can reply and upload files."
-                        : "Access needed before thread can open."}
-                    </CardDescription>
+                    <CardDescription>{conversationDescription}</CardDescription>
                   </div>
-                  {conversation && <SupportStatusBadge status={conversation.status} />}
+                  {conversation && (
+                    <SupportStatusBadge status={conversation.status} />
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 {!email.trim() ? (
                   <div className="rounded-lg border bg-muted/20 p-4 text-sm text-muted-foreground">
-                    Email missing from support link. Return to support page and verify ticket again.
+                    Email missing from support link. Return to support page and
+                    verify ticket again.
                   </div>
-                ) : isConversationLoading || isVerifyingAccess ? (
+                ) : isConversationLoading || verifyCodeMutation.isPending ? (
                   <div className="rounded-lg border bg-muted/20 p-4 text-sm text-muted-foreground">
-                    {isVerifyingAccess ? "Verifying secure access..." : "Loading conversation..."}
+                    {verifyCodeMutation.isPending
+                      ? "Verifying secure access..."
+                      : "Loading conversation..."}
                   </div>
                 ) : conversation ? (
                   <>
                     <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-muted/20 px-4 py-3 text-sm">
                       <div>
-                        <p className="font-medium text-foreground">{conversation.subject}</p>
+                        <p className="font-medium text-foreground">
+                          {conversation.subject}
+                        </p>
                         <p className="text-muted-foreground">{email}</p>
                       </div>
-                      <Button variant="outline" size="sm" onClick={() => void loadConversation(supportAccessToken)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void conversationQuery.refetch()}
+                        disabled={conversationQuery.isFetching}
+                      >
                         <IconRefresh className="mr-2 h-4 w-4" />
-                        Refresh
+                        {isRefreshingConversation ? "Refreshing..." : "Refresh"}
                       </Button>
                     </div>
 
                     <div className="max-h-[520px] space-y-3 overflow-y-auto rounded-xl border bg-muted/20 p-3">
                       {(conversation.messages ?? []).length === 0 ? (
-                        <p className="text-sm text-muted-foreground">No messages yet.</p>
+                        <p className="text-sm text-muted-foreground">
+                          No messages yet.
+                        </p>
                       ) : (
                         (conversation.messages ?? []).map((message) => (
-                          <MessageBubble
+                          <SupportConversationBubble
                             key={message.id}
                             message={message}
-                            ticketCode={conversation.ticket_code}
-                            email={email.trim()}
-                            accessToken={supportAccessToken}
+                            getAttachmentUrl={(id) =>
+                              getPublicSupportAttachmentURL({
+                                ticket: conversation.ticket_code,
+                                email,
+                                accessToken: supportAccessToken,
+                                attachmentID: id,
+                              })
+                            }
                           />
                         ))
                       )}
                     </div>
 
-                    <form onSubmit={handleSendMessage} className="space-y-3 rounded-xl border p-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="support-reply-message">Reply</Label>
-                        <textarea
-                          id="support-reply-message"
-                          value={draftMessage}
-                          onChange={(event) => setDraftMessage(event.target.value)}
-                          className="min-h-28 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                          placeholder="Write message to support team"
-                        />
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-2">
-                        <input
-                          ref={attachmentInputRef}
-                          type="file"
-                          multiple
-                          className="hidden"
-                          onChange={(event) => setDraftFiles(Array.from(event.target.files || []))}
-                        />
-                        <Button type="button" variant="outline" onClick={() => attachmentInputRef.current?.click()}>
-                          <IconPaperclip className="mr-2 h-4 w-4" />
-                          Attach Files
-                        </Button>
-                        <Button type="submit" disabled={isSendingMessage}>
-                          <IconSend className="mr-2 h-4 w-4" />
-                          {isSendingMessage ? "Sending..." : "Send Reply"}
-                        </Button>
-                      </div>
+                    <form
+                      onSubmit={handleSendMessage}
+                      className="space-y-3 rounded-xl border p-4"
+                    >
+                      {conversation.status === "resolved" ||
+                      conversation.status === "closed" ? (
+                        <Alert className="mt-4 border-emerald-200 bg-emerald-50/50 text-emerald-900">
+                          <IconMessage2 className="h-4 w-4 stroke-emerald-600" />
+                          <AlertTitle>Conversation Closed</AlertTitle>
+                          <AlertDescription className="text-emerald-800">
+                            This ticket has been marked as {conversation.status}{" "} on{" "}
+                            {formatDate(conversation.updated_at!)}.{" "}
+                            Cannot receive or send new messages.
+                          </AlertDescription>
+                        </Alert>
+                      ) : (
+                        <>
+                          <div className="space-y-2">
+                            <Label htmlFor="support-reply-message">Reply</Label>
+                            <textarea
+                              id="support-reply-message"
+                              value={draftMessage}
+                              onChange={(event) =>
+                                setDraftMessage(event.target.value)
+                              }
+                              className="min-h-28 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                              placeholder="Write message to support team"
+                            />
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <input
+                              ref={attachmentInputRef}
+                              type="file"
+                              multiple
+                              className="hidden"
+                              onChange={(event) =>
+                                setDraftFiles(
+                                  Array.from(event.target.files || []),
+                                )
+                              }
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() =>
+                                attachmentInputRef.current?.click()
+                              }
+                            >
+                              <IconPaperclip className="mr-2 h-4 w-4" />
+                              Attach Files
+                            </Button>
+                            <Button
+                              type="submit"
+                              disabled={sendMessageMutation.isPending}
+                            >
+                              <IconSend className="mr-2 h-4 w-4" />
+                              {sendMessageMutation.isPending
+                                ? "Sending..."
+                                : "Send Reply"}
+                            </Button>
+                          </div>
+                        </>
+                      )}
 
                       {draftFiles.length > 0 && (
                         <div className="rounded-md border bg-muted/20 p-2 text-xs text-muted-foreground">
@@ -336,11 +465,14 @@ function PublicSupportConversationContent() {
                 ) : (
                   <div className="space-y-3 rounded-xl border bg-muted/20 p-4">
                     <p className="text-sm text-muted-foreground">
-                      {accessError || "Secure access required before opening conversation."}
+                      {accessError ||
+                        "Secure access required before opening conversation."}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       <Button asChild>
-                        <Link href={`/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email.trim())}`}>
+                        <Link
+                          href={`/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email.trim())}`}
+                        >
                           <IconKey className="mr-2 h-4 w-4" />
                           Verify Access on Support Page
                         </Link>
@@ -359,31 +491,45 @@ function PublicSupportConversationContent() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Ticket Overview</CardTitle>
-                <CardDescription>Reference info for this secure thread.</CardDescription>
+                <CardDescription>
+                  Reference info for this secure thread.
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 text-sm">
                 <div className="rounded-xl border bg-muted/20 p-4 space-y-3">
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Ticket Code</p>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Ticket Code
+                    </p>
                     <p className="mt-1 font-semibold">{ticketCode || "-"}</p>
                   </div>
 
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Email</p>
-                    <p className="mt-1 break-words font-medium">{email || "-"}</p>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Email
+                    </p>
+                    <p className="mt-1 break-words font-medium">
+                      {email || "-"}
+                    </p>
                   </div>
 
                   {categoryLabel && (
                     <div>
-                      <p className="text-xs uppercase tracking-wide text-muted-foreground">Category</p>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Category
+                      </p>
                       <p className="mt-1 font-medium">{categoryLabel}</p>
                     </div>
                   )}
 
                   {conversation?.created_at && (
                     <div>
-                      <p className="text-xs uppercase tracking-wide text-muted-foreground">Created</p>
-                      <p className="mt-1 font-medium">{formatDateTime(conversation.created_at)}</p>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Created
+                      </p>
+                      <p className="mt-1 font-medium">
+                        {formatDate(conversation.created_at)}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -393,83 +539,12 @@ function PublicSupportConversationContent() {
         </div>
 
         <div className="text-center text-xs text-muted-foreground">
-          Keep ticket code private. Support team will never ask your OTP or password.
+          Keep ticket code private. Support team will never ask your OTP or
+          password.
         </div>
       </div>
     </div>
   );
-}
-
-function MessageBubble({
-  message,
-  ticketCode,
-  email,
-  accessToken,
-}: {
-  message: SupportMessageResponse;
-  ticketCode: string;
-  email: string;
-  accessToken: string;
-}) {
-  const attachments = message.attachments ?? [];
-  const mine = message.sender_type === "public" || message.sender_type === "user";
-  const senderLabel = mine ? "You" : message.sender_type === "admin" ? "Support Team" : "System";
-
-  return (
-    <div className={`rounded-xl border p-3 text-sm ${mine ? "bg-white" : "bg-blue-50/50"}`}>
-      <div className="mb-1 flex items-center justify-between gap-2">
-        <p className="font-medium">{senderLabel}</p>
-        <p className="text-xs text-muted-foreground">{formatDateTime(message.created_at)}</p>
-      </div>
-      <p className="whitespace-pre-wrap break-words text-foreground/90">{message.body}</p>
-
-      {attachments.length > 0 && (
-        <div className="mt-2 space-y-1">
-          {attachments.map((attachment) => (
-            <a
-              key={attachment.id}
-              href={getPublicSupportAttachmentURL({
-                ticket: ticketCode,
-                email,
-                accessToken,
-                attachmentID: attachment.id,
-              })}
-              className="block text-xs text-blue-600 hover:underline"
-              target="_blank"
-              rel="noreferrer"
-            >
-              {attachment.file_name} ({formatBytes(attachment.size_bytes)})
-            </a>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function formatDateTime(raw: string): string {
-  const date = new Date(raw);
-  if (Number.isNaN(date.getTime())) {
-    return raw;
-  }
-  return date.toLocaleString();
-}
-
-function formatBytes(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) {
-    return "0 B";
-  }
-
-  const units = ["B", "KB", "MB", "GB"];
-  let size = value;
-  let unitIndex = 0;
-
-  while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024;
-    unitIndex += 1;
-  }
-
-  return `${size.toFixed(size >= 10 || unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
 }
 
 export default function PublicSupportConversationPage() {

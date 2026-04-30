@@ -18,7 +18,9 @@ import {
   SupportPriorityBadge,
   SupportStatusBadge,
 } from "@/components/support/support-ticket-badges";
+import { SupportConversationBubble } from "@/components/support/support-conversation-bubble";
 import { SiteHeader } from "@/components/site-header";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,20 +59,19 @@ import {
 import { cn } from "@/lib/utils";
 import {
   getAdminSupportAttachmentURL,
-  getAdminSupportConversation,
-  getAdminSupportTicket,
-  listAdminSupportTickets,
-  sendAdminSupportMessage,
-  updateAdminSupportTicket,
   type AdminSupportAction,
-  type AdminSupportTicketDetailResponse,
-  type AdminSupportTicketItem,
   type SupportCategory,
-  type SupportConversationResponse,
   type SupportMessageResponse,
   type SupportPriority,
   type SupportTicketStatus,
 } from "@/lib/api/support";
+import {
+  useAdminSupportConversationQuery,
+  useAdminSupportTicketDetailQuery,
+  useAdminSupportTicketsQuery,
+  useSendAdminSupportMessageMutation,
+  useUpdateAdminSupportTicketMutation,
+} from "@/lib/hooks/queries/useSupportQuery";
 
 type LoadState = "loading" | "ready" | "forbidden" | "error";
 
@@ -114,9 +115,7 @@ const priorityFilterOptions: {
 const PAGE_LIMIT = 20;
 
 export default function AdminSupportTicketsPage() {
-  const [state, setState] = useState<LoadState>("loading");
-  const [items, setItems] = useState<AdminSupportTicketItem[]>([]);
-  const [total, setTotal] = useState(0);
+  const [storedRole] = useState<string | null>(() => getStoredRole());
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<SupportTicketStatus | "all">(
     "open",
@@ -128,90 +127,107 @@ export default function AdminSupportTicketsPage() {
     "all",
   );
   const [search, setSearch] = useState("");
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const [activeTicket, setActiveTicket] =
-    useState<AdminSupportTicketDetailResponse | null>(null);
+  const [activeTicketId, setActiveTicketId] = useState<string | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
-  const [detailsLoading, setDetailsLoading] = useState(false);
-  const [conversation, setConversation] = useState<SupportConversationResponse | null>(null);
-  const [conversationLoading, setConversationLoading] = useState(false);
   const [draftMessage, setDraftMessage] = useState("");
   const [draftFiles, setDraftFiles] = useState<File[]>([]);
-  const [sendingMessage, setSendingMessage] = useState(false);
-  const [adminNotes, setAdminNotes] = useState("");
-  const [nextStatus, setNextStatus] =
-    useState<SupportTicketStatus>("in_progress");
-  const [nextPriority, setNextPriority] = useState<SupportPriority>("normal");
-  const [updating, setUpdating] = useState(false);
+  const [ticketDraft, setTicketDraft] = useState<{
+    ticketId: string | null;
+    adminNotes: string;
+    nextStatus: SupportTicketStatus | "";
+    nextPriority: SupportPriority | "";
+  }>({
+    ticketId: null,
+    adminNotes: "",
+    nextStatus: "",
+    nextPriority: "",
+  });
   const attachmentInputRef = useRef<HTMLInputElement | null>(null);
+  const roleForbidden = Boolean(storedRole && !isAdminRole(storedRole));
+  const ticketsQuery = useAdminSupportTicketsQuery(
+    {
+      status: statusFilter,
+      category: categoryFilter,
+      priority: priorityFilter,
+      page,
+      limit: PAGE_LIMIT,
+      search: search.trim() || undefined,
+    },
+    !roleForbidden,
+  );
+  const ticketDetailQuery = useAdminSupportTicketDetailQuery(
+    activeTicketId ?? "",
+    !roleForbidden && isDetailDialogOpen,
+  );
+  const activeTicket = ticketDetailQuery.data ?? null;
+  const conversationQuery = useAdminSupportConversationQuery(
+    activeTicketId ?? "",
+    !roleForbidden && isDetailDialogOpen,
+  );
+  const conversation = conversationQuery.data ?? null;
+  const updateTicketMutation = useUpdateAdminSupportTicketMutation();
+  const sendMessageMutation = useSendAdminSupportMessageMutation();
+  const items = ticketsQuery.data?.items ?? [];
+  const total = ticketsQuery.data?.total ?? 0;
+  const detailsLoading = isDetailDialogOpen && ticketDetailQuery.isLoading;
+  const conversationLoading = conversationQuery.isLoading;
+  const ticketsErrorMessage =
+    ticketsQuery.error instanceof Error
+      ? ticketsQuery.error.message.toLowerCase()
+      : "";
+  const state: LoadState = roleForbidden
+    ? "forbidden"
+    : ticketsQuery.isLoading
+      ? "loading"
+      : ticketsQuery.isError
+        ? ticketsErrorMessage.includes("administrator") ||
+          ticketsErrorMessage.includes("permission") ||
+          ticketsErrorMessage.includes("access denied") ||
+          ticketsErrorMessage.includes("forbidden")
+          ? "forbidden"
+          : "error"
+        : "ready";
+  const resolvedAdminNotes = activeTicket
+    ? ticketDraft.ticketId === activeTicket.id
+      ? ticketDraft.adminNotes
+      : activeTicket.admin_notes || ""
+    : "";
+  const resolvedNextStatus = activeTicket
+    ? ticketDraft.ticketId === activeTicket.id && ticketDraft.nextStatus
+      ? ticketDraft.nextStatus
+      : ((activeTicket.status as SupportTicketStatus) || "in_progress")
+    : "in_progress";
+  const resolvedNextPriority = activeTicket
+    ? ticketDraft.ticketId === activeTicket.id && ticketDraft.nextPriority
+      ? ticketDraft.nextPriority
+      : ((activeTicket.priority as SupportPriority) || "normal")
+    : "normal";
 
   useEffect(() => {
-    let active = true;
+    if (!ticketDetailQuery.error) {
+      return;
+    }
 
-    const load = async () => {
-      try {
-        if (!isRefreshing) {
-          setState("loading");
-        }
+    toast.error("Failed to load ticket detail", {
+      description:
+        ticketDetailQuery.error instanceof Error
+          ? ticketDetailQuery.error.message
+          : "Please try again.",
+    });
+  }, [ticketDetailQuery.error]);
 
-        const roleFromStorage = getStoredRole();
-        if (roleFromStorage && !isAdminRole(roleFromStorage)) {
-          if (!active) return;
-          setState("forbidden");
-          return;
-        }
+  useEffect(() => {
+    if (!conversationQuery.error) {
+      return;
+    }
 
-        const response = await listAdminSupportTickets({
-          status: statusFilter,
-          category: categoryFilter,
-          priority: priorityFilter,
-          page,
-          limit: PAGE_LIMIT,
-          search: search.trim() || undefined,
-        });
-
-        if (!active) return;
-
-        setItems(response.data?.items ?? []);
-        setTotal(response.data?.total ?? 0);
-        setState("ready");
-      } catch (error) {
-        if (!active) return;
-        const message =
-          error instanceof Error ? error.message.toLowerCase() : "";
-        if (
-          message.includes("administrator") ||
-          message.includes("permission") ||
-          message.includes("access denied") ||
-          message.includes("forbidden")
-        ) {
-          setState("forbidden");
-          return;
-        }
-
-        console.error("Failed to load support tickets", error);
-        setState("error");
-      } finally {
-        if (active) {
-          setIsRefreshing(false);
-        }
-      }
-    };
-
-    void load();
-
-    return () => {
-      active = false;
-    };
-  }, [
-    page,
-    statusFilter,
-    categoryFilter,
-    priorityFilter,
-    search,
-    isRefreshing,
-  ]);
+    toast.error("Failed to load conversation", {
+      description:
+        conversationQuery.error instanceof Error
+          ? conversationQuery.error.message
+          : "Please try again.",
+    });
+  }, [conversationQuery.error]);
 
   const totalPages = useMemo(() => {
     if (total <= 0) return 1;
@@ -224,94 +240,86 @@ export default function AdminSupportTicketsPage() {
     priorityFilter !== "all" ||
     Boolean(search.trim());
 
-  const loadConversation = async (ticketId: string) => {
-    setConversationLoading(true);
-    try {
-      const response = await getAdminSupportConversation(ticketId);
-      setConversation(response.data || null);
-    } catch (error) {
-      setConversation(null);
-      toast.error("Failed to load conversation", {
-        description:
-          error instanceof Error ? error.message : "Please try again.",
-      });
-    } finally {
-      setConversationLoading(false);
+  const handleOpenTicket = (ticketId: string) => {
+    setIsDetailDialogOpen(true);
+    setActiveTicketId(ticketId);
+    setDraftMessage("");
+    setDraftFiles([]);
+    if (attachmentInputRef.current) {
+      attachmentInputRef.current.value = "";
     }
   };
 
-  const handleOpenTicket = async (ticketId: string) => {
-    setIsDetailDialogOpen(true);
-    setDetailsLoading(true);
-    try {
-      const response = await getAdminSupportTicket(ticketId);
-      const ticket = response.data || null;
-      setActiveTicket(ticket);
-      setAdminNotes(ticket?.admin_notes || "");
-      setNextStatus((ticket?.status as SupportTicketStatus) || "in_progress");
-      setNextPriority((ticket?.priority as SupportPriority) || "normal");
-      setDraftMessage("");
-      setDraftFiles([]);
-      if (attachmentInputRef.current) {
-        attachmentInputRef.current.value = "";
-      }
-      await loadConversation(ticketId);
-    } catch (error) {
-      toast.error("Failed to load ticket detail", {
-        description:
-          error instanceof Error ? error.message : "Please try again.",
-      });
-    } finally {
-      setDetailsLoading(false);
+  const patchTicketDraft = (
+    patch: Partial<{
+      adminNotes: string;
+      nextStatus: SupportTicketStatus;
+      nextPriority: SupportPriority;
+    }>,
+  ) => {
+    if (!activeTicket) {
+      return;
     }
+
+    setTicketDraft({
+      ticketId: activeTicket.id,
+      adminNotes: patch.adminNotes ?? resolvedAdminNotes,
+      nextStatus: patch.nextStatus ?? resolvedNextStatus,
+      nextPriority: patch.nextPriority ?? resolvedNextPriority,
+    });
   };
 
   const applyUpdate = async (
     action?: AdminSupportAction,
     statusOverride?: SupportTicketStatus,
   ) => {
-    if (!activeTicket || updating) return;
+    if (!activeTicket || updateTicketMutation.isPending) return;
 
-    setUpdating(true);
     try {
-      const response = await updateAdminSupportTicket(activeTicket.id, {
-        status: statusOverride || nextStatus,
-        priority: nextPriority,
-        admin_notes: adminNotes.trim() || undefined,
-        action,
+      const response = await updateTicketMutation.mutateAsync({
+        id: activeTicket.id,
+        payload: {
+          status: statusOverride || resolvedNextStatus,
+          priority: resolvedNextPriority,
+          admin_notes: resolvedAdminNotes.trim() || undefined,
+          action,
+        },
       });
 
       toast.success("Support ticket updated", {
-        description: response.data?.action_applied
-          ? `Action: ${response.data.action_applied}`
+        description: response.action_applied
+          ? `Action: ${response.action_applied}`
           : "Ticket status updated.",
       });
 
-      setIsRefreshing(true);
-      await handleOpenTicket(activeTicket.id);
+      await Promise.all([
+        ticketsQuery.refetch(),
+        ticketDetailQuery.refetch(),
+        conversationQuery.refetch(),
+      ]);
     } catch (error) {
       toast.error("Update failed", {
         description:
           error instanceof Error ? error.message : "Please try again.",
       });
-    } finally {
-      setUpdating(false);
     }
   };
 
   const handleSendMessage = async () => {
-    if (!activeTicket || sendingMessage) return;
+    if (!activeTicket || sendMessageMutation.isPending) return;
 
     if (!draftMessage.trim() && draftFiles.length === 0) {
       toast.error("Write message or attach file");
       return;
     }
 
-    setSendingMessage(true);
     try {
-      await sendAdminSupportMessage(activeTicket.id, {
-        body: draftMessage.trim(),
-        attachments: draftFiles,
+      await sendMessageMutation.mutateAsync({
+        id: activeTicket.id,
+        payload: {
+          body: draftMessage.trim(),
+          attachments: draftFiles,
+        },
       });
 
       setDraftMessage("");
@@ -320,16 +328,13 @@ export default function AdminSupportTicketsPage() {
         attachmentInputRef.current.value = "";
       }
 
-      await loadConversation(activeTicket.id);
-      setIsRefreshing(true);
+      await Promise.all([conversationQuery.refetch(), ticketsQuery.refetch()]);
       toast.success("Message sent");
     } catch (error) {
       toast.error("Failed to send message", {
         description:
           error instanceof Error ? error.message : "Please try again.",
       });
-    } finally {
-      setSendingMessage(false);
     }
   };
 
@@ -357,8 +362,8 @@ export default function AdminSupportTicketsPage() {
             </div>
             <Button
               variant="outline"
-              onClick={() => setIsRefreshing(true)}
-              disabled={state === "loading"}
+              onClick={() => void ticketsQuery.refetch()}
+              disabled={state === "loading" || ticketsQuery.isFetching}
             >
               <IconRefresh className="mr-2 h-4 w-4" />
               Refresh
@@ -515,13 +520,14 @@ export default function AdminSupportTicketsPage() {
                             <TableHead>Priority</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Created</TableHead>
+                            <TableHead>Updated</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {items.length === 0 ? (
                             <TableRow>
                               <TableCell
-                                colSpan={6}
+                                colSpan={7}
                                 className="text-center text-muted-foreground"
                               >
                                 No support tickets found.
@@ -554,6 +560,9 @@ export default function AdminSupportTicketsPage() {
                                 </TableCell>
                                 <TableCell>
                                   {formatDate(item.created_at)}
+                                </TableCell>
+                                <TableCell>
+                                  {item.updated_at && item.updated_at !== item.created_at ? formatDate(item.updated_at) : "-"}
                                 </TableCell>
                               </TableRow>
                             ))
@@ -689,8 +698,8 @@ export default function AdminSupportTicketsPage() {
                               type="button"
                               size="icon-sm"
                               variant="outline"
-                              onClick={() => void loadConversation(activeTicket.id)}
-                              disabled={conversationLoading}
+                              onClick={() => void conversationQuery.refetch()}
+                              disabled={conversationQuery.isFetching}
                               className="rounded-full"
                               aria-label="Refresh conversation"
                             >
@@ -709,13 +718,28 @@ export default function AdminSupportTicketsPage() {
                           ) : (
                             <div className="mt-4 max-h-[440px] space-y-3 overflow-y-auto rounded-xl border bg-muted/20 p-3 sm:p-4">
                               {(conversation?.messages ?? []).map((message) => (
-                                <AdminConversationBubble key={message.id} message={message} />
+                                <SupportConversationBubble 
+                                  key={message.id} 
+                                  message={message} 
+                                  getAttachmentUrl={getAdminSupportAttachmentURL}
+                                  isAdminView 
+                                />
                               ))}
                             </div>
                           )}
 
-                          <div className="mt-4 space-y-3 rounded-xl border bg-muted/20 p-3 sm:p-4">
-                            <div className="space-y-2">
+                          {activeTicket.status === "resolved" ||
+                          activeTicket.status === "closed" ? (
+                            <Alert className="mt-4 border-emerald-200 bg-emerald-50/50 text-emerald-900">
+                              <IconMessage2 className="h-4 w-4 stroke-emerald-600" />
+                              <AlertTitle>Conversation Closed</AlertTitle>
+                              <AlertDescription className="text-emerald-800">
+                                This ticket has been marked as {activeTicket.status} on {formatDate(activeTicket.updated_at)}. Cannot receive or send new messages.
+                              </AlertDescription>
+                            </Alert>
+                          ) : (
+                            <div className="mt-4 space-y-3 rounded-xl border bg-muted/20 p-3 sm:p-4">
+                              <div className="space-y-2">
                               <Label>Reply</Label>
                               <textarea
                                 value={draftMessage}
@@ -746,15 +770,15 @@ export default function AdminSupportTicketsPage() {
                                 Attach Files
                               </Button>
 
-                              <Button
-                                type="button"
-                                onClick={() => void handleSendMessage()}
-                                disabled={sendingMessage}
-                                className="rounded-xl"
-                              >
-                                <IconSend className="mr-2 h-4 w-4" />
-                                {sendingMessage ? "Sending..." : "Send Reply"}
-                              </Button>
+                                <Button
+                                  type="button"
+                                  onClick={() => void handleSendMessage()}
+                                  disabled={sendMessageMutation.isPending}
+                                  className="rounded-xl"
+                                >
+                                  <IconSend className="mr-2 h-4 w-4" />
+                                  {sendMessageMutation.isPending ? "Sending..." : "Send Reply"}
+                                </Button>
                             </div>
 
                             {draftFiles.length > 0 ? (
@@ -769,7 +793,8 @@ export default function AdminSupportTicketsPage() {
                                 ))}
                               </div>
                             ) : null}
-                          </div>
+                            </div>
+                          )}
                         </section>
                       </div>
 
@@ -789,7 +814,7 @@ export default function AdminSupportTicketsPage() {
                                 Ticket {toLabel(activeTicket.status)}
                               </p>
                               <p className="mt-1 text-emerald-700">
-                                Editing disabled for closed workflow.
+                                Closed on {formatDate(activeTicket.updated_at)}. Editing disabled.
                               </p>
                               {activeTicket.admin_notes ? (
                                 <div className="mt-4 border-t border-emerald-200 pt-4">
@@ -808,9 +833,11 @@ export default function AdminSupportTicketsPage() {
                                 <div className="min-w-0 flex-1 space-y-2">
                                   <Label>Next Status</Label>
                                   <Select
-                                    value={nextStatus}
+                                    value={resolvedNextStatus}
                                     onValueChange={(value) =>
-                                      setNextStatus(value as SupportTicketStatus)
+                                      patchTicketDraft({
+                                        nextStatus: value as SupportTicketStatus,
+                                      })
                                     }
                                   >
                                     <SelectTrigger className="h-10 w-full rounded-xl">
@@ -830,9 +857,11 @@ export default function AdminSupportTicketsPage() {
                                 <div className="min-w-0 flex-1 space-y-2">
                                   <Label>Priority</Label>
                                   <Select
-                                    value={nextPriority}
+                                    value={resolvedNextPriority}
                                     onValueChange={(value) =>
-                                      setNextPriority(value as SupportPriority)
+                                      patchTicketDraft({
+                                        nextPriority: value as SupportPriority,
+                                      })
                                     }
                                   >
                                     <SelectTrigger className="h-10 w-full rounded-xl">
@@ -851,8 +880,12 @@ export default function AdminSupportTicketsPage() {
                               <div className="space-y-2">
                                 <Label>Admin Notes</Label>
                                 <textarea
-                                  value={adminNotes}
-                                  onChange={(event) => setAdminNotes(event.target.value)}
+                                  value={resolvedAdminNotes}
+                                  onChange={(event) =>
+                                    patchTicketDraft({
+                                      adminNotes: event.target.value,
+                                    })
+                                  }
                                   className="min-h-36 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                                   placeholder="Internal notes, summary, or resolution context"
                                 />
@@ -861,7 +894,7 @@ export default function AdminSupportTicketsPage() {
                               <div className="space-y-2">
                                 <Button
                                   onClick={() => void applyUpdate()}
-                                  disabled={updating}
+                                  disabled={updateTicketMutation.isPending}
                                   className="h-11 w-full rounded-xl"
                                 >
                                   Save Update
@@ -870,10 +903,10 @@ export default function AdminSupportTicketsPage() {
                                 <Button
                                   variant="outline"
                                   onClick={() => {
-                                    setNextStatus("resolved");
+                                    patchTicketDraft({ nextStatus: "resolved" });
                                     void applyUpdate("manual_response", "resolved");
                                   }}
-                                  disabled={updating}
+                                  disabled={updateTicketMutation.isPending}
                                   className="h-11 w-full rounded-xl"
                                 >
                                   Resolve Ticket
@@ -892,7 +925,7 @@ export default function AdminSupportTicketsPage() {
                                   <Button
                                     variant="ghost"
                                     onClick={() => void applyUpdate("unlock_user")}
-                                    disabled={updating}
+                                    disabled={updateTicketMutation.isPending}
                                     className="h-10 justify-start rounded-xl px-3"
                                   >
                                     <IconShieldLock className="mr-2 h-4 w-4" />
@@ -902,7 +935,7 @@ export default function AdminSupportTicketsPage() {
                                   <Button
                                     variant="ghost"
                                     onClick={() => void applyUpdate("activate_user")}
-                                    disabled={updating}
+                                    disabled={updateTicketMutation.isPending}
                                     className="h-10 justify-start rounded-xl px-3"
                                   >
                                     <IconUserCheck className="mr-2 h-4 w-4" />
@@ -912,7 +945,7 @@ export default function AdminSupportTicketsPage() {
                                   <Button
                                     variant="ghost"
                                     onClick={() => void applyUpdate("resend_verification")}
-                                    disabled={updating}
+                                    disabled={updateTicketMutation.isPending}
                                     className="h-10 justify-start rounded-xl px-3"
                                   >
                                     <IconSend className="mr-2 h-4 w-4" />
@@ -943,66 +976,6 @@ function PageSkeleton() {
       <Skeleton className="h-6 w-full" />
       <Skeleton className="h-6 w-full" />
       <Skeleton className="h-6 w-4/5" />
-    </div>
-  );
-}
-
-function AdminConversationBubble({ message }: { message: SupportMessageResponse }) {
-  const attachments = message.attachments ?? [];
-  const mine = message.sender_type === "admin";
-  const senderLabel = mine
-    ? "Support Team"
-    : message.sender_type === "public" || message.sender_type === "user"
-      ? "User"
-      : "System";
-
-  return (
-    <div className={cn("flex", mine ? "justify-end" : "justify-start")}>
-      <div
-        className={cn(
-          "max-w-[88%] rounded-2xl border px-4 py-3 text-sm shadow-sm sm:max-w-[80%]",
-          mine
-            ? "border-primary/15 bg-primary/5 text-foreground"
-            : "bg-card text-card-foreground",
-        )}
-      >
-        <div className="mb-2 flex items-start justify-between gap-4">
-          <div className="space-y-0.5">
-            <p className="font-medium">{senderLabel}</p>
-            <p className="text-xs text-muted-foreground">{formatDate(message.created_at)}</p>
-          </div>
-          <span
-            className={cn(
-              "rounded-full px-2 py-0.5 text-[11px] font-medium",
-              mine ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
-            )}
-          >
-            {mine ? "Support" : "User"}
-          </span>
-        </div>
-
-        {message.body ? (
-          <p className="whitespace-pre-wrap break-words leading-6 text-foreground/90">
-            {message.body}
-          </p>
-        ) : null}
-
-        {attachments.length > 0 ? (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {attachments.map((attachment) => (
-              <a
-                key={attachment.id}
-                href={getAdminSupportAttachmentURL(attachment.id)}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-full bg-background px-3 py-1.5 text-xs font-medium text-primary shadow-sm ring-1 ring-border transition-colors hover:bg-muted/60"
-              >
-                {attachment.file_name} ({formatBytes(attachment.size_bytes)})
-              </a>
-            ))}
-          </div>
-        ) : null}
-      </div>
     </div>
   );
 }

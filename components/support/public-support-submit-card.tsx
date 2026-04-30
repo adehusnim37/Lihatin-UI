@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { IconLifebuoy } from "@tabler/icons-react";
 import { toast } from "sonner";
@@ -11,7 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createSupportTicket, type SupportCategory } from "@/lib/api/support";
+import { type SupportCategory } from "@/lib/api/support";
+import { useCreateSupportTicketMutation } from "@/lib/hooks/queries/useSupportQuery";
 import {
   categoryOptions,
   getSupportReasonFromSearch,
@@ -23,33 +24,23 @@ const IS_DEV = process.env.NODE_ENV === "development";
 
 export function PublicSupportSubmitCard() {
   const searchParams = useSearchParams();
-
-  const [email, setEmail] = useState("");
-  const [category, setCategory] = useState<SupportCategory>("other");
-  const [subject, setSubject] = useState("");
-  const [description, setDescription] = useState("");
-  const [captchaToken, setCaptchaToken] = useState("");
-  const [captchaResetSignal, setCaptchaResetSignal] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submittedCode, setSubmittedCode] = useState<string | null>(null);
-
+  const queryEmail = useMemo(
+    () => (searchParams.get("email") || "").trim(),
+    [searchParams],
+  );
   const reason = useMemo(() => getSupportReasonFromSearch(searchParams.get("reason")), [searchParams]);
   const preset = reason ? reasonPresetMap[reason] : null;
 
-  useEffect(() => {
-    const queryEmail = (searchParams.get("email") || "").trim();
-    if (queryEmail) {
-      setEmail(queryEmail);
-    }
+  const [email, setEmail] = useState(queryEmail);
+  const [category, setCategory] = useState<SupportCategory>(preset?.category || "other");
+  const [subject, setSubject] = useState(preset?.subject || "");
+  const [description, setDescription] = useState(preset?.descriptionHint || "");
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaResetSignal, setCaptchaResetSignal] = useState(0);
+  const [submittedCode, setSubmittedCode] = useState<string | null>(null);
+  const createTicketMutation = useCreateSupportTicketMutation();
 
-    if (preset) {
-      setCategory(preset.category);
-      setSubject((previous) => (previous ? previous : preset.subject));
-      setDescription((previous) => (previous ? previous : preset.descriptionHint));
-    }
-  }, [preset, searchParams]);
-
-  const handleSubmitTicket = async (event: ChangeEvent) => {
+  const handleSubmitTicket = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!email.trim() || !subject.trim() || !description.trim()) {
@@ -63,9 +54,8 @@ export function PublicSupportSubmitCard() {
       return;
     }
 
-    setIsSubmitting(true);
     try {
-      const response = await createSupportTicket({
+      const response = await createTicketMutation.mutateAsync({
         email: email.trim(),
         category,
         subject: subject.trim(),
@@ -73,7 +63,7 @@ export function PublicSupportSubmitCard() {
         captcha_token: skipCaptcha ? "dev-bypass" : captchaToken.trim(),
       });
 
-      const code = response.data?.ticket_code || null;
+      const code = response.ticket_code || null;
       setSubmittedCode(code);
 
       toast.success("Support ticket submitted", {
@@ -82,14 +72,15 @@ export function PublicSupportSubmitCard() {
           : "Ticket created successfully",
       });
 
+      setCategory(preset?.category || "other");
+      setSubject("");
+      setDescription("");
       setCaptchaToken("");
       setCaptchaResetSignal((previous) => previous + 1);
     } catch (error: unknown) {
       toast.error("Failed to submit ticket", {
         description: error instanceof Error ? error.message : "Please try again.",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -104,33 +95,35 @@ export function PublicSupportSubmitCard() {
         <CardDescription>Public form. No login required.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmitTicket} className="space-y-5">
-          <div className="space-y-2">
-            <Label htmlFor="support-email">Email</Label>
-            <Input
-              id="support-email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="you@example.com"
-              required
-            />
-          </div>
+        <form onSubmit={handleSubmitTicket} className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="support-email">Email</Label>
+              <Input
+                id="support-email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="you@example.com"
+                required
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label>Category</Label>
-            <Select value={category} onValueChange={(value) => setCategory(value as SupportCategory)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categoryOptions.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Select value={category} onValueChange={(value) => setCategory(value as SupportCategory)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categoryOptions.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -168,8 +161,8 @@ export function PublicSupportSubmitCard() {
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Submitting..." : "Submit Ticket"}
+          <Button type="submit" className="w-full" disabled={createTicketMutation.isPending}>
+            {createTicketMutation.isPending ? "Submitting..." : "Submit Ticket"}
           </Button>
 
           {submittedCode && (

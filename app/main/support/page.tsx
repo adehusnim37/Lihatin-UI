@@ -13,97 +13,92 @@ import { toast } from "sonner";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SupportStatusBadge } from "@/components/support/support-ticket-badges";
 import { SiteHeader } from "@/components/site-header";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   getUserSupportAttachmentURL,
-  getUserSupportConversation,
-  listUserSupportTickets,
-  sendUserSupportMessage,
   type AdminSupportTicketItem,
-  type SupportConversationResponse,
   type SupportMessageResponse,
 } from "@/lib/api/support";
+import { formatDate, SupportConversationBubble } from "@/components/support/support-conversation-bubble";
+import {
+  useSendUserSupportMessageMutation,
+  useUserSupportConversationQuery,
+  useUserSupportTicketsQuery,
+} from "@/lib/hooks/queries/useSupportQuery";
 
 export default function UserSupportPage() {
-  const [tickets, setTickets] = useState<AdminSupportTicketItem[]>([]);
-  const [loadingTickets, setLoadingTickets] = useState(true);
-  const [activeTicket, setActiveTicket] = useState<AdminSupportTicketItem | null>(null);
-  const [conversation, setConversation] = useState<SupportConversationResponse | null>(null);
-  const [loadingConversation, setLoadingConversation] = useState(false);
-
+  const [activeTicketId, setActiveTicketId] = useState<string | null>(null);
   const [draftBody, setDraftBody] = useState("");
   const [draftFiles, setDraftFiles] = useState<File[]>([]);
-  const [sending, setSending] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const loadTickets = async () => {
-    setLoadingTickets(true);
-    try {
-      const response = await listUserSupportTickets({ page: 1, limit: 50 });
-      const items = response.data?.items || [];
-      setTickets(items);
-
-      if (items.length === 0) {
-        setActiveTicket(null);
-        setConversation(null);
-        return;
-      }
-
-      const nextActive =
-        items.find((ticket) => ticket.id === activeTicket?.id) ||
-        items[0];
-      setActiveTicket(nextActive);
-      await loadConversation(nextActive.id);
-    } catch (error) {
-      toast.error("Failed to load support tickets", {
-        description: error instanceof Error ? error.message : "Please try again.",
-      });
-    } finally {
-      setLoadingTickets(false);
+  const ticketsQuery = useUserSupportTicketsQuery({ page: 1, limit: 50 });
+  const tickets = useMemo(
+    () => ticketsQuery.data?.items ?? [],
+    [ticketsQuery.data?.items],
+  );
+  const activeTicket = useMemo(() => {
+    if (tickets.length === 0) {
+      return null;
     }
-  };
 
-  const loadConversation = async (ticketID: string) => {
-    setLoadingConversation(true);
-    try {
-      const response = await getUserSupportConversation(ticketID);
-      setConversation(response.data || null);
-    } catch (error) {
-      setConversation(null);
-      toast.error("Failed to load conversation", {
-        description: error instanceof Error ? error.message : "Please try again.",
-      });
-    } finally {
-      setLoadingConversation(false);
-    }
-  };
+    return tickets.find((ticket) => ticket.id === activeTicketId) ?? tickets[0];
+  }, [activeTicketId, tickets]);
+  const conversationQuery = useUserSupportConversationQuery(
+    activeTicket?.id ?? "",
+    Boolean(activeTicket),
+  );
+  const conversation = conversationQuery.data ?? null;
+  const sendMessageMutation = useSendUserSupportMessageMutation();
 
   useEffect(() => {
-    void loadTickets();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (!ticketsQuery.error) {
+      return;
+    }
 
-  const handleOpenTicket = async (ticket: AdminSupportTicketItem) => {
-    setActiveTicket(ticket);
-    await loadConversation(ticket.id);
+    toast.error("Failed to load support tickets", {
+      description:
+        ticketsQuery.error instanceof Error
+          ? ticketsQuery.error.message
+          : "Please try again.",
+    });
+  }, [ticketsQuery.error]);
+
+  useEffect(() => {
+    if (!conversationQuery.error) {
+      return;
+    }
+
+    toast.error("Failed to load conversation", {
+      description:
+        conversationQuery.error instanceof Error
+          ? conversationQuery.error.message
+          : "Please try again.",
+    });
+  }, [conversationQuery.error]);
+
+  const handleOpenTicket = (ticket: AdminSupportTicketItem) => {
+    setActiveTicketId(ticket.id);
   };
 
   const handleSend = async () => {
-    if (!activeTicket || sending) return;
+    if (!activeTicket || sendMessageMutation.isPending) return;
 
     if (!draftBody.trim() && draftFiles.length === 0) {
       toast.error("Write message or attach file.");
       return;
     }
 
-    setSending(true);
     try {
-      await sendUserSupportMessage(activeTicket.id, {
-        body: draftBody.trim(),
-        attachments: draftFiles,
+      await sendMessageMutation.mutateAsync({
+        id: activeTicket.id,
+        payload: {
+          body: draftBody.trim(),
+          attachments: draftFiles,
+        },
       });
 
       setDraftBody("");
@@ -112,15 +107,12 @@ export default function UserSupportPage() {
         fileInputRef.current.value = "";
       }
 
-      await loadConversation(activeTicket.id);
-      await loadTickets();
+      await Promise.all([conversationQuery.refetch(), ticketsQuery.refetch()]);
       toast.success("Message sent");
     } catch (error) {
       toast.error("Failed to send message", {
         description: error instanceof Error ? error.message : "Please try again.",
       });
-    } finally {
-      setSending(false);
     }
   };
 
@@ -151,7 +143,11 @@ export default function UserSupportPage() {
               </p>
             </div>
 
-            <Button variant="outline" onClick={() => void loadTickets()} disabled={loadingTickets}>
+            <Button
+              variant="outline"
+              onClick={() => void Promise.all([ticketsQuery.refetch(), conversationQuery.refetch()])}
+              disabled={ticketsQuery.isFetching}
+            >
               <IconRefresh className="mr-2 h-4 w-4" />
               Refresh
             </Button>
@@ -167,7 +163,7 @@ export default function UserSupportPage() {
                 <CardDescription>{ticketCountText}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                {loadingTickets ? (
+                {ticketsQuery.isLoading ? (
                   <div className="space-y-3">
                     <Skeleton className="h-16 w-full" />
                     <Skeleton className="h-16 w-full" />
@@ -182,9 +178,9 @@ export default function UserSupportPage() {
                     <button
                       key={ticket.id}
                       type="button"
-                      onClick={() => void handleOpenTicket(ticket)}
+                      onClick={() => handleOpenTicket(ticket)}
                       className={`w-full rounded-lg border p-3 text-left transition-colors hover:bg-muted/20 ${
-                        ticket.id === activeTicket?.id ? "border-primary bg-primary/5" : "bg-card"
+                        ticket.id === activeTicketId ? "border-primary bg-primary/5" : "bg-card"
                       }`}
                     >
                       <p className="text-sm font-semibold">{ticket.ticket_code}</p>
@@ -210,7 +206,7 @@ export default function UserSupportPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {loadingConversation ? (
+                {conversationQuery.isLoading ? (
                   <div className="space-y-3">
                     <Skeleton className="h-20 w-full" />
                     <Skeleton className="h-20 w-full" />
@@ -236,15 +232,23 @@ export default function UserSupportPage() {
                         <p className="text-sm text-muted-foreground">No message yet.</p>
                       ) : (
                         (conversation?.messages || []).map((message) => (
-                          <UserConversationBubble key={message.id} message={message} />
+                          <SupportConversationBubble 
+                            key={message.id} 
+                            message={message} 
+                            getAttachmentUrl={getUserSupportAttachmentURL}
+                          />
                         ))
                       )}
                     </div>
 
                     {conversation?.status === "resolved" || conversation?.status === "closed" ? (
-                      <p className="rounded-lg border bg-muted/20 p-4 text-center text-sm text-muted-foreground">
-                        This ticket has been {conversation.status}. You can no longer send messages.
-                      </p>
+                      <Alert className="mt-4 border-emerald-200 bg-emerald-50/50 text-emerald-900">
+                        <IconMessage2 className="h-4 w-4 stroke-emerald-600" />
+                        <AlertTitle>Conversation Closed</AlertTitle>
+                        <AlertDescription className="text-emerald-800">
+                          This ticket has been marked as {conversation.status} on {formatDate(conversation.updated_at)} and cannot receive or send new messages.
+                        </AlertDescription>
+                      </Alert>
                     ) : (
                       <div className="space-y-3 rounded-lg border p-3">
                         <textarea
@@ -270,9 +274,9 @@ export default function UserSupportPage() {
                             <IconPaperclip className="mr-2 h-4 w-4" />
                             Attach Files
                           </Button>
-                          <Button type="button" onClick={() => void handleSend()} disabled={sending}>
+                          <Button type="button" onClick={() => void handleSend()} disabled={sendMessageMutation.isPending}>
                             <IconSend className="mr-2 h-4 w-4" />
-                            {sending ? "Sending..." : "Send"}
+                            {sendMessageMutation.isPending ? "Sending..." : "Send"}
                           </Button>
                         </div>
 
@@ -294,59 +298,4 @@ export default function UserSupportPage() {
   );
 }
 
-function UserConversationBubble({ message }: { message: SupportMessageResponse }) {
-  const attachments = message.attachments ?? [];
-  const mine = message.sender_type === "public" || message.sender_type === "user";
-  const senderLabel = mine ? "You" : message.sender_type === "admin" ? "Support Team" : "System";
 
-  return (
-    <div className={`rounded-lg border p-3 text-sm ${mine ? "bg-white" : "bg-blue-50/50"}`}>
-      <div className="mb-1 flex items-center justify-between gap-2">
-        <p className="font-medium">{senderLabel}</p>
-        <p className="text-xs text-muted-foreground">{formatDate(message.created_at)}</p>
-      </div>
-      <p className="whitespace-pre-wrap break-words text-foreground/90">{message.body}</p>
-
-      {attachments.length > 0 && (
-        <div className="mt-2 space-y-1">
-          {attachments.map((attachment) => (
-            <a
-              key={attachment.id}
-              href={getUserSupportAttachmentURL(attachment.id)}
-              target="_blank"
-              rel="noreferrer"
-              className="block text-xs text-blue-600 hover:underline"
-            >
-              {attachment.file_name} ({formatBytes(attachment.size_bytes)})
-            </a>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function formatDate(value: string): string {
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return value;
-  }
-  return parsed.toLocaleString();
-}
-
-function formatBytes(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) {
-    return "0 B";
-  }
-
-  const units = ["B", "KB", "MB", "GB"];
-  let size = value;
-  let unitIndex = 0;
-
-  while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024;
-    unitIndex += 1;
-  }
-
-  return `${size.toFixed(size >= 10 || unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
-}

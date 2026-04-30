@@ -95,6 +95,7 @@ export interface AdminSupportTicketItem {
   priority: string;
   user_id?: string | null;
   created_at: string;
+  updated_at: string;
   resolved_at?: string | null;
 }
 

@@ -12,13 +12,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  requestSupportAccessOTP,
-  resendSupportAccessOTP,
-  trackSupportTicket,
-  verifySupportAccessCode,
-  verifySupportAccessOTP,
   type TrackSupportTicketResponse,
 } from "@/lib/api/support";
+import {
+  useRequestSupportAccessOTPMutation,
+  useResendSupportAccessOTPMutation,
+  useTrackSupportTicketMutation,
+  useVerifySupportAccessCodeMutation,
+  useVerifySupportAccessOTPMutation,
+} from "@/lib/hooks/queries/useSupportQuery";
 import {
   buildPublicSupportConversationURL,
   storePublicSupportAccessToken,
@@ -30,40 +32,28 @@ const IS_DEV = process.env.NODE_ENV === "development";
 export function PublicSupportAccessCard() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const queryEmail = (searchParams.get("email") || "").trim();
+  const queryTicket = (searchParams.get("ticket") || "").trim().toUpperCase();
+  const queryCode = (searchParams.get("code") || "").trim();
 
-  const [trackTicket, setTrackTicket] = useState("");
-  const [trackEmail, setTrackEmail] = useState("");
+  const [trackTicket, setTrackTicket] = useState(queryTicket);
+  const [trackEmail, setTrackEmail] = useState(queryEmail);
   const [trackResult, setTrackResult] = useState<TrackSupportTicketResponse | null>(null);
-  const [isTracking, setIsTracking] = useState(false);
 
-  const [linkCode, setLinkCode] = useState("");
+  const [linkCode, setLinkCode] = useState(queryCode);
   const [otpChallengeToken, setOtpChallengeToken] = useState("");
   const [otpCode, setOtpCode] = useState("");
-  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
-  const [isRequestingOTP, setIsRequestingOTP] = useState(false);
-  const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
-  const [isResendingOTP, setIsResendingOTP] = useState(false);
   const [otpCooldownRemaining, setOtpCooldownRemaining] = useState(0);
   const [otpTargetEmail, setOtpTargetEmail] = useState("");
   const [otpSource, setOtpSource] = useState<{ ticket: string; email: string } | null>(null);
   const [captchaToken, setCaptchaToken] = useState("");
   const [captchaResetSignal, setCaptchaResetSignal] = useState(0);
-
-  useEffect(() => {
-    const queryEmail = (searchParams.get("email") || "").trim();
-    const queryTicket = (searchParams.get("ticket") || "").trim().toUpperCase();
-    const queryCode = (searchParams.get("code") || "").trim();
-
-    if (queryEmail) {
-      setTrackEmail(queryEmail);
-    }
-    if (queryTicket) {
-      setTrackTicket(queryTicket);
-    }
-    if (queryCode) {
-      setLinkCode(queryCode);
-    }
-  }, [searchParams]);
+  const [showOTPSection, setShowOTPSection] = useState(false);
+  const trackTicketMutation = useTrackSupportTicketMutation();
+  const verifyCodeMutation = useVerifySupportAccessCodeMutation();
+  const requestOTPMutation = useRequestSupportAccessOTPMutation();
+  const verifyOTPMutation = useVerifySupportAccessOTPMutation();
+  const resendOTPMutation = useResendSupportAccessOTPMutation();
 
   useEffect(() => {
     if (!otpSource) {
@@ -109,14 +99,13 @@ export function PublicSupportAccessCard() {
       return;
     }
 
-    setIsTracking(true);
     try {
-      const response = await trackSupportTicket({
+      const response = await trackTicketMutation.mutateAsync({
         ticket: trackTicket.trim().toUpperCase(),
         email: trackEmail.trim(),
       });
 
-      setTrackResult(response.data || null);
+      setTrackResult(response);
       toast.success("Ticket found", {
         description: "Continue with access code or OTP to open conversation page.",
       });
@@ -125,8 +114,6 @@ export function PublicSupportAccessCard() {
       toast.error("Ticket not found", {
         description: error instanceof Error ? error.message : "Please check ticket and email.",
       });
-    } finally {
-      setIsTracking(false);
     }
   };
 
@@ -140,15 +127,14 @@ export function PublicSupportAccessCard() {
       return;
     }
 
-    setIsVerifyingCode(true);
     try {
-      const response = await verifySupportAccessCode({
+      const response = await verifyCodeMutation.mutateAsync({
         ticket,
         email: ticketEmail,
         code,
       });
 
-      const token = response.data?.access_token || "";
+      const token = response.access_token || "";
       if (!token) {
         throw new Error("Access token missing in response");
       }
@@ -161,8 +147,6 @@ export function PublicSupportAccessCard() {
       toast.error("Failed to verify access code", {
         description: error instanceof Error ? error.message : "Please request OTP instead.",
       });
-    } finally {
-      setIsVerifyingCode(false);
     }
   };
 
@@ -181,16 +165,15 @@ export function PublicSupportAccessCard() {
       return;
     }
 
-    setIsRequestingOTP(true);
     try {
-      const response = await requestSupportAccessOTP({
+      const response = await requestOTPMutation.mutateAsync({
         ticket,
         email: ticketEmail,
         captcha_token: skipCaptcha ? "dev-bypass" : captchaToken.trim(),
       });
 
-      setOtpChallengeToken(response.data?.challenge_token || "");
-      setOtpCooldownRemaining(Math.max(0, response.data?.cooldown_seconds || 0));
+      setOtpChallengeToken(response.challenge_token || "");
+      setOtpCooldownRemaining(Math.max(0, response.cooldown_seconds || 0));
       setOtpTargetEmail(ticketEmail);
       setOtpSource({
         ticket,
@@ -206,7 +189,6 @@ export function PublicSupportAccessCard() {
     } finally {
       setCaptchaToken("");
       setCaptchaResetSignal((previous) => previous + 1);
-      setIsRequestingOTP(false);
     }
   };
 
@@ -219,14 +201,13 @@ export function PublicSupportAccessCard() {
     const ticket = trackTicket.trim().toUpperCase();
     const ticketEmail = trackEmail.trim();
 
-    setIsVerifyingOTP(true);
     try {
-      const response = await verifySupportAccessOTP({
+      const response = await verifyOTPMutation.mutateAsync({
         challenge_token: otpChallengeToken.trim(),
         otp_code: otpCode.trim(),
       });
 
-      const token = response.data?.access_token || "";
+      const token = response.access_token || "";
       if (!token) {
         throw new Error("Access token missing in response");
       }
@@ -239,8 +220,6 @@ export function PublicSupportAccessCard() {
       toast.error("Failed to verify OTP", {
         description: error instanceof Error ? error.message : "Please try again.",
       });
-    } finally {
-      setIsVerifyingOTP(false);
     }
   };
 
@@ -256,16 +235,14 @@ export function PublicSupportAccessCard() {
       return;
     }
 
-    setIsResendingOTP(true);
     try {
-      const response = await resendSupportAccessOTP({
+      const response = await resendOTPMutation.mutateAsync({
         challenge_token: otpChallengeToken.trim(),
         captcha_token: skipCaptcha ? "dev-bypass" : captchaToken.trim(),
       });
 
-      const nextChallengeToken = response.data?.challenge_token?.trim();
-      const nextCooldown = Math.max(0, response.data?.cooldown_seconds ?? 0);
-      const isCooldownOnly = response.message?.toLowerCase().includes("please wait");
+      const nextChallengeToken = response.challenge_token?.trim();
+      const nextCooldown = Math.max(0, response.cooldown_seconds ?? 0);
       if (nextChallengeToken) {
         setOtpChallengeToken(nextChallengeToken);
       }
@@ -275,15 +252,9 @@ export function PublicSupportAccessCard() {
         ticket: trackTicket.trim().toUpperCase(),
         email: trackEmail.trim().toLowerCase(),
       });
-      if (isCooldownOnly) {
-        toast.message("Please wait", {
-          description: `Retry in ${nextCooldown} seconds.`,
-        });
-      } else {
-        toast.success("OTP resent", {
-          description: nextCooldown > 0 ? `You can request another resend in ${nextCooldown} seconds.` : undefined,
-        });
-      }
+      toast.success("OTP resent", {
+        description: nextCooldown > 0 ? `You can request another resend in ${nextCooldown} seconds.` : undefined,
+      });
     } catch (error: unknown) {
       toast.error("Failed to resend OTP", {
         description: error instanceof Error ? error.message : "Please try again.",
@@ -291,7 +262,6 @@ export function PublicSupportAccessCard() {
     } finally {
       setCaptchaToken("");
       setCaptchaResetSignal((previous) => previous + 1);
-      setIsResendingOTP(false);
     }
   };
 
@@ -332,8 +302,8 @@ export function PublicSupportAccessCard() {
             />
           </div>
 
-          <Button type="submit" variant="outline" className="w-full" disabled={isTracking}>
-            {isTracking ? "Checking..." : "Check Ticket"}
+          <Button type="submit" variant="outline" className="w-full" disabled={trackTicketMutation.isPending}>
+            {trackTicketMutation.isPending ? "Checking..." : "Check Ticket"}
           </Button>
         </form>
 
@@ -344,67 +314,120 @@ export function PublicSupportAccessCard() {
               Use secure access code from email first. OTP is fallback if link code is unavailable.
             </p>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="support-link-code">Access Code (from email link)</Label>
-            <Input
-              id="support-link-code"
-              value={linkCode}
-              onChange={(event) => setLinkCode(event.target.value)}
-              placeholder="Paste code from ticket email"
-            />
-          </div>
+          {!showOTPSection ? (
+            <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+              <div className="space-y-2">
+                <Label htmlFor="support-link-code">Access Code (from email link)</Label>
+                <Input
+                  id="support-link-code"
+                  value={linkCode}
+                  onChange={(event) => setLinkCode(event.target.value)}
+                  placeholder="Paste code from ticket email"
+                />
+              </div>
 
-          <Button onClick={() => void handleVerifyCode()} className="w-full" disabled={isVerifyingCode}>
-            <IconKey className="mr-2 h-4 w-4" />
-            {isVerifyingCode ? "Verifying..." : "Open with Access Code"}
-          </Button>
+              <Button onClick={() => void handleVerifyCode()} className="w-full" disabled={verifyCodeMutation.isPending}>
+                <IconKey className="mr-2 h-4 w-4" />
+                {verifyCodeMutation.isPending ? "Verifying..." : "Open with Access Code"}
+              </Button>
 
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Button
-              variant="secondary"
-              onClick={() => void handleRequestOTP()}
-              disabled={isRequestingOTP || Boolean(otpChallengeToken)}
-            >
-              {isRequestingOTP ? "Requesting..." : otpChallengeToken ? "OTP Sent" : "Send OTP"}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => void handleResendOTP()}
-              disabled={!otpChallengeToken || isResendingOTP || otpCooldownRemaining > 0}
-            >
-              {isResendingOTP
-                ? "Resending..."
-                : otpCooldownRemaining > 0
-                  ? `Resend in ${otpCooldownRemaining}s`
-                  : "Resend OTP"}
-            </Button>
-          </div>
+              <div className="pt-4 border-t border-border/50 flex flex-wrap items-center justify-center gap-1.5 text-sm">
+                <p className="font-medium text-foreground">Have you lost the access code?</p>
+                <p onClick={() => setShowOTPSection(true)} className="font-medium text-primary hover:underline cursor-pointer">
+                  Verify with OTP instead
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center justify-between pb-3 border-b border-border/50">
+                <p className="text-sm font-medium">OTP Verification</p>
+                <Button variant="ghost" size="sm" onClick={() => setShowOTPSection(false)} className="h-8 text-xs">
+                  Use Access Code
+                </Button>
+              </div>
 
-          <div className="space-y-2">
-            <Label>Captcha</Label>
-            <SupportTurnstileField
-              token={captchaToken}
-              onTokenChange={setCaptchaToken}
-              resetSignal={captchaResetSignal}
-            />
-          </div>
+              {!otpChallengeToken ? (
+                <div className="space-y-4 py-2">
+                  <p className="text-sm text-muted-foreground text-center">
+                    Complete the security check below to receive a 6-digit verification code in your email.
+                  </p>
 
-          <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-            <Input
-              value={otpCode}
-              onChange={(event) => setOtpCode(event.target.value)}
-              placeholder="Enter 6-digit OTP"
-            />
-            <Button onClick={() => void handleVerifyOTP()} disabled={!otpChallengeToken || isVerifyingOTP}>
-              {isVerifyingOTP ? "Verifying..." : "Open with OTP"}
-            </Button>
-          </div>
+                  <div className="flex justify-center py-2">
+                    <SupportTurnstileField
+                      token={captchaToken}
+                      onTokenChange={setCaptchaToken}
+                      resetSignal={captchaResetSignal}
+                    />
+                  </div>
 
-          {otpChallengeToken && otpTargetEmail ? (
-            <p className="text-xs text-muted-foreground">
-              OTP sent to <span className="font-medium text-foreground">{otpTargetEmail}</span>.
-            </p>
-          ) : null}
+                  <Button
+                    className="w-full"
+                    onClick={() => void handleRequestOTP()}
+                    disabled={requestOTPMutation.isPending}
+                  >
+                    {requestOTPMutation.isPending ? "Sending OTP..." : "Send OTP to Email"}
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-5 py-2">
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-center">
+                    <p className="text-sm">
+                      Code sent to <span className="font-semibold">{otpTargetEmail}</span>
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="otp-input" className="sr-only">Enter OTP</Label>
+                    <Input
+                      id="otp-input"
+                      value={otpCode}
+                      onChange={(event) => setOtpCode(event.target.value)}
+                      placeholder="• • • • • •"
+                      className="h-12 text-center text-2xl tracking-[0.5em] font-medium transition-all focus:tracking-[0.7em]"
+                      maxLength={6}
+                    />
+                    <Button 
+                      onClick={() => void handleVerifyOTP()} 
+                      className="w-full h-11"
+                      disabled={verifyOTPMutation.isPending || otpCode.trim().length < 6}
+                    >
+                      {verifyOTPMutation.isPending ? "Verifying..." : "Verify & Open Ticket"}
+                    </Button>
+                  </div>
+
+                  <div className="space-y-4 pt-4 border-t border-border/50">
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground mb-3">Didn't receive the code?</p>
+                      
+                      {otpCooldownRemaining <= 0 ? (
+                        <div className="flex flex-col items-center gap-3">
+                          <SupportTurnstileField
+                            token={captchaToken}
+                            onTokenChange={setCaptchaToken}
+                            resetSignal={captchaResetSignal}
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => void handleResendOTP()}
+                            disabled={resendOTPMutation.isPending}
+                            className="w-full sm:w-auto"
+                          >
+                            {resendOTPMutation.isPending ? "Resending..." : "Resend OTP Code"}
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button variant="outline" size="sm" disabled className="w-full sm:w-auto">
+                          Resend available in {otpCooldownRemaining}s
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {trackResult && (

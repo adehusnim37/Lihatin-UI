@@ -82,13 +82,8 @@ function ProfilePageContent() {
   const { data: profileResponse, isLoading: isProfileLoading, refetch } =
     useProfileQuery();
   const updateProfileMutation = useUpdateProfileMutation();
-
-  const loadUserData = async () => {
-    try {
-      await refetch();
-    } catch (err) {
-      console.error("Failed to refresh user data", err);
-    }
+  const refreshProfile = () => {
+    void refetch();
   };
 
   useEffect(() => {
@@ -691,8 +686,8 @@ function ProfilePageContent() {
                       setEditedUser={setEditedUser}
                       isEditing={isEditing}
                       formatDate={formatDate}
-                      onEmailChanged={loadUserData}
-                      onUsernameChanged={loadUserData}
+                      onEmailChanged={refreshProfile}
+                      onUsernameChanged={refreshProfile}
                     />
 
                     {/* Security Tab */}
