@@ -353,14 +353,6 @@ export function PublicSupportAccessCard() {
                     Complete the security check below to receive a 6-digit verification code in your email.
                   </p>
 
-                  <div className="flex justify-center py-2">
-                    <SupportTurnstileField
-                      token={captchaToken}
-                      onTokenChange={setCaptchaToken}
-                      resetSignal={captchaResetSignal}
-                    />
-                  </div>
-
                   <Button
                     className="w-full"
                     onClick={() => void handleRequestOTP()}
@@ -368,6 +360,14 @@ export function PublicSupportAccessCard() {
                   >
                     {requestOTPMutation.isPending ? "Sending OTP..." : "Send OTP to Email"}
                   </Button>
+
+                  <div className="flex justify-center py-2">
+                    <SupportTurnstileField
+                      token={captchaToken}
+                      onTokenChange={setCaptchaToken}
+                      resetSignal={captchaResetSignal}
+                    />
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-5 py-2">
