@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import {
+  IconMessage2,
+  IconPaperclip,
   IconRefresh,
   IconSearch,
   IconSend,
@@ -25,6 +27,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -45,13 +54,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  getAdminSupportAttachmentURL,
+  getAdminSupportConversation,
   getAdminSupportTicket,
   listAdminSupportTickets,
+  sendAdminSupportMessage,
   updateAdminSupportTicket,
   type AdminSupportAction,
   type AdminSupportTicketDetailResponse,
   type AdminSupportTicketItem,
   type SupportCategory,
+  type SupportConversationResponse,
+  type SupportMessageResponse,
   type SupportPriority,
   type SupportTicketStatus,
 } from "@/lib/api/support";
@@ -116,12 +130,19 @@ export default function AdminSupportTicketsPage() {
 
   const [activeTicket, setActiveTicket] =
     useState<AdminSupportTicketDetailResponse | null>(null);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [conversation, setConversation] = useState<SupportConversationResponse | null>(null);
+  const [conversationLoading, setConversationLoading] = useState(false);
+  const [draftMessage, setDraftMessage] = useState("");
+  const [draftFiles, setDraftFiles] = useState<File[]>([]);
+  const [sendingMessage, setSendingMessage] = useState(false);
   const [adminNotes, setAdminNotes] = useState("");
   const [nextStatus, setNextStatus] =
     useState<SupportTicketStatus>("in_progress");
   const [nextPriority, setNextPriority] = useState<SupportPriority>("normal");
   const [updating, setUpdating] = useState(false);
+  const attachmentInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -201,7 +222,24 @@ export default function AdminSupportTicketsPage() {
     priorityFilter !== "all" ||
     Boolean(search.trim());
 
+  const loadConversation = async (ticketId: string) => {
+    setConversationLoading(true);
+    try {
+      const response = await getAdminSupportConversation(ticketId);
+      setConversation(response.data || null);
+    } catch (error) {
+      setConversation(null);
+      toast.error("Failed to load conversation", {
+        description:
+          error instanceof Error ? error.message : "Please try again.",
+      });
+    } finally {
+      setConversationLoading(false);
+    }
+  };
+
   const handleOpenTicket = async (ticketId: string) => {
+    setIsDetailDialogOpen(true);
     setDetailsLoading(true);
     try {
       const response = await getAdminSupportTicket(ticketId);
@@ -210,6 +248,12 @@ export default function AdminSupportTicketsPage() {
       setAdminNotes(ticket?.admin_notes || "");
       setNextStatus((ticket?.status as SupportTicketStatus) || "in_progress");
       setNextPriority((ticket?.priority as SupportPriority) || "normal");
+      setDraftMessage("");
+      setDraftFiles([]);
+      if (attachmentInputRef.current) {
+        attachmentInputRef.current.value = "";
+      }
+      await loadConversation(ticketId);
     } catch (error) {
       toast.error("Failed to load ticket detail", {
         description:
@@ -253,6 +297,40 @@ export default function AdminSupportTicketsPage() {
     }
   };
 
+  const handleSendMessage = async () => {
+    if (!activeTicket || sendingMessage) return;
+
+    if (!draftMessage.trim() && draftFiles.length === 0) {
+      toast.error("Write message or attach file");
+      return;
+    }
+
+    setSendingMessage(true);
+    try {
+      await sendAdminSupportMessage(activeTicket.id, {
+        body: draftMessage.trim(),
+        attachments: draftFiles,
+      });
+
+      setDraftMessage("");
+      setDraftFiles([]);
+      if (attachmentInputRef.current) {
+        attachmentInputRef.current.value = "";
+      }
+
+      await loadConversation(activeTicket.id);
+      setIsRefreshing(true);
+      toast.success("Message sent");
+    } catch (error) {
+      toast.error("Failed to send message", {
+        description:
+          error instanceof Error ? error.message : "Please try again.",
+      });
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
   return (
     <SidebarProvider
       style={
@@ -285,7 +363,7 @@ export default function AdminSupportTicketsPage() {
             </Button>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
+          <div className="space-y-6">
             <Card className="min-w-0">
               <CardHeader>
                 <CardTitle>Ticket List</CardTitle>
@@ -513,17 +591,20 @@ export default function AdminSupportTicketsPage() {
                 )}
               </CardContent>
             </Card>
+          </div>
 
-            <Card className="min-w-0 sticky top-6 self-start">
-              <CardHeader>
-                <CardTitle>Ticket Detail</CardTitle>
-                <CardDescription>
+          <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+            <DialogContent className="h-[min(92vh,960px)] w-[min(96vw,1280px)] max-w-[1280px] gap-0 overflow-hidden p-0">
+              <DialogHeader className="shrink-0 border-b px-5 py-4 sm:px-6">
+                <DialogTitle>Ticket Detail</DialogTitle>
+                <DialogDescription>
                   {activeTicket
-                    ? activeTicket.ticket_code
+                    ? `${activeTicket.ticket_code} • ${activeTicket.email}`
                     : "Select ticket from list"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6 sm:py-5">
                 {detailsLoading && <PageSkeleton />}
 
                 {!detailsLoading && !activeTicket && (
@@ -534,175 +615,268 @@ export default function AdminSupportTicketsPage() {
 
                 {!detailsLoading && activeTicket && (
                   <>
-                    <div className="space-y-1 text-sm">
-                      <p>
-                        <strong>Email:</strong> {activeTicket.email}
-                      </p>
-                      <p>
-                        <strong>Category:</strong>{" "}
-                        {toLabel(activeTicket.category)}
-                      </p>
-                      <p className="flex items-center gap-2">
-                        <strong>Status:</strong>{" "}
-                        <SupportStatusBadge status={activeTicket.status} />
-                      </p>
-                      <p className="flex items-center gap-2">
-                        <strong>Priority:</strong>{" "}
-                        <SupportPriorityBadge
-                          priority={activeTicket.priority as SupportPriority}
-                        />
-                      </p>
-                      <p>
-                        <strong>Created:</strong>{" "}
-                        {formatDate(activeTicket.created_at)}
-                      </p>
-                    </div>
-
-                    <div className="rounded-lg border p-3 text-sm">
-                      <p className="font-medium mb-1">Subject</p>
-                      <p className="break-words">{activeTicket.subject}</p>
-                      <p className="font-medium mt-3 mb-1">Description</p>
-                      <p className="text-muted-foreground whitespace-pre-wrap break-words">
-                        {activeTicket.description}
-                      </p>
-                    </div>
-
-                    {activeTicket.status === "resolved" ||
-                    activeTicket.status === "closed" ? (
-                      <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 text-sm mt-4">
-                        <p className="font-medium text-emerald-800">
-                          Ticket Closed
-                        </p>
-                        <p className="text-emerald-700 mt-1">
-                          This ticket has been marked as {activeTicket.status}{" "}
-                          and cannot be edited further.
-                        </p>
-                        {activeTicket.admin_notes && (
-                          <div className="mt-4 border-t border-emerald-200/60 pt-4">
-                            <p className="font-medium text-emerald-800 mb-1">
-                              Final Admin Notes
-                            </p>
-                            <p className="text-emerald-700 whitespace-pre-wrap break-words">
-                              {activeTicket.admin_notes}
-                            </p>
+                    <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+                      <div className="space-y-5">
+                        <div className="rounded-xl border bg-muted/10 p-5 shadow-sm">
+                          <div className="flex flex-col gap-4">
+                            <div>
+                              <h3 className="break-words text-lg font-semibold tracking-tight text-foreground">
+                                {activeTicket.subject}
+                              </h3>
+                              <p
+                                className="mt-1.5 truncate text-sm text-muted-foreground"
+                                title={activeTicket.email}
+                              >
+                                {activeTicket.email}
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="inline-flex items-center rounded-md border bg-background px-2.5 py-0.5 text-xs font-semibold shadow-sm">
+                                {toLabel(activeTicket.category)}
+                              </span>
+                              <SupportStatusBadge status={activeTicket.status} />
+                              <SupportPriorityBadge
+                                priority={activeTicket.priority as SupportPriority}
+                              />
+                            </div>
                           </div>
+
+                          <div className="my-5 h-px w-full bg-border/60" />
+
+                          <div className="space-y-4">
+                            <div>
+                              <p className="mb-2 text-[11px] uppercase tracking-wide text-muted-foreground">
+                                Description
+                              </p>
+                              <div className="whitespace-pre-wrap rounded-lg border bg-background p-4 text-sm leading-relaxed text-foreground/90">
+                                {activeTicket.description}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              <p>
+                                <span className="uppercase tracking-wide">Created:</span>{" "}
+                                {formatDate(activeTicket.created_at)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 rounded-xl border bg-muted/10 p-4">
+                        <p className="text-sm font-medium">Update Controls</p>
+
+                        {activeTicket.status === "resolved" ||
+                        activeTicket.status === "closed" ? (
+                          <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 text-sm">
+                            <p className="font-medium text-emerald-800">
+                              Ticket Closed
+                            </p>
+                            <p className="mt-1 text-emerald-700">
+                              This ticket has been marked as {activeTicket.status}{" "}
+                              and cannot be edited further.
+                            </p>
+                            {activeTicket.admin_notes && (
+                              <div className="mt-4 border-t border-emerald-200/60 pt-4">
+                                <p className="mb-1 font-medium text-emerald-800">
+                                  Final Admin Notes
+                                </p>
+                                <p className="whitespace-pre-wrap break-words text-emerald-700">
+                                  {activeTicket.admin_notes}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <div className="space-y-2">
+                                <Label>Next Status</Label>
+                                <Select
+                                  value={nextStatus}
+                                  onValueChange={(value) =>
+                                    setNextStatus(value as SupportTicketStatus)
+                                  }
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="open">Open</SelectItem>
+                                    <SelectItem value="in_progress">
+                                      In Progress
+                                    </SelectItem>
+                                    <SelectItem value="resolved">
+                                      Resolved
+                                    </SelectItem>
+                                    <SelectItem value="closed">Closed</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label>Priority</Label>
+                                <Select
+                                  value={nextPriority}
+                                  onValueChange={(value) =>
+                                    setNextPriority(value as SupportPriority)
+                                  }
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="low">Low</SelectItem>
+                                    <SelectItem value="normal">Normal</SelectItem>
+                                    <SelectItem value="high">High</SelectItem>
+                                    <SelectItem value="urgent">Urgent</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label>Admin Notes</Label>
+                              <textarea
+                                value={adminNotes}
+                                onChange={(event) => setAdminNotes(event.target.value)}
+                                className="min-h-32 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                                placeholder="Internal notes or resolution message"
+                              />
+                            </div>
+
+                            <div className="grid gap-2">
+                              <Button
+                                onClick={() => void applyUpdate()}
+                                disabled={updating}
+                              >
+                                Save Update
+                              </Button>
+
+                              <Button
+                                variant="secondary"
+                                onClick={() => {
+                                  setNextStatus("resolved");
+                                  void applyUpdate("manual_response", "resolved");
+                                }}
+                                disabled={updating}
+                              >
+                                Resolve Ticket
+                              </Button>
+
+                              <Button
+                                variant="outline"
+                                onClick={() => void applyUpdate("unlock_user")}
+                                disabled={updating}
+                              >
+                                <IconShieldLock className="mr-2 h-4 w-4" />
+                                Unlock User
+                              </Button>
+
+                              <Button
+                                variant="outline"
+                                onClick={() => void applyUpdate("activate_user")}
+                                disabled={updating}
+                              >
+                                <IconUserCheck className="mr-2 h-4 w-4" />
+                                Activate Account
+                              </Button>
+
+                              <Button
+                                variant="outline"
+                                onClick={() => void applyUpdate("resend_verification")}
+                                disabled={updating}
+                              >
+                                <IconSend className="mr-2 h-4 w-4" />
+                                Resend Verification
+                              </Button>
+                            </div>
+                          </>
                         )}
                       </div>
-                    ) : (
-                      <>
-                        <div className="mt-6 flex flex-wrap gap-4">
-                          <div className="space-y-2 w-full sm:w-48">
-                            <Label>Next Status</Label>
-                            <Select
-                              value={nextStatus}
-                              onValueChange={(value) =>
-                                setNextStatus(value as SupportTicketStatus)
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="open">Open</SelectItem>
-                                <SelectItem value="in_progress">
-                                  In Progress
-                                </SelectItem>
-                                <SelectItem value="resolved">
-                                  Resolved
-                                </SelectItem>
-                                <SelectItem value="closed">Closed</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+                    </div>
 
-                          <div className="space-y-2 w-full sm:w-48">
-                            <Label>Priority</Label>
-                            <Select
-                              value={nextPriority}
-                              onValueChange={(value) =>
-                                setNextPriority(value as SupportPriority)
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="low">Low</SelectItem>
-                                <SelectItem value="normal">Normal</SelectItem>
-                                <SelectItem value="high">High</SelectItem>
-                                <SelectItem value="urgent">Urgent</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+                    <div className="mt-5 space-y-4 rounded-xl border bg-muted/10 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="flex items-center gap-2 text-sm font-medium">
+                          <IconMessage2 className="h-4 w-4" />
+                          Conversation
+                        </p>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => void loadConversation(activeTicket.id)}
+                          disabled={conversationLoading}
+                        >
+                          <IconRefresh className="mr-2 h-4 w-4" />
+                          Refresh chat
+                        </Button>
+                      </div>
+
+                      {conversationLoading ? (
+                        <PageSkeleton />
+                      ) : (conversation?.messages ?? []).length === 0 ? (
+                        <p className="rounded-lg border bg-background p-4 text-sm text-muted-foreground">
+                          No conversation yet.
+                        </p>
+                      ) : (
+                        <div className="max-h-[420px] space-y-3 overflow-y-auto rounded-lg border bg-background p-3">
+                          {(conversation?.messages ?? []).map((message) => (
+                            <AdminConversationBubble key={message.id} message={message} />
+                          ))}
                         </div>
+                      )}
 
-                        <div className="space-y-2 mt-2">
-                          <Label>Admin Notes</Label>
-                          <textarea
-                            value={adminNotes}
-                            onChange={(event) =>
-                              setAdminNotes(event.target.value)
-                            }
-                            className="min-h-28 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                            placeholder="Internal notes or resolution message"
-                          />
-                        </div>
+                      <div className="space-y-3 rounded-lg border bg-background p-3">
+                        <textarea
+                          value={draftMessage}
+                          onChange={(event) => setDraftMessage(event.target.value)}
+                          className="min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                          placeholder="Reply to user"
+                        />
 
-                        <div className="grid gap-2 mt-2">
+                        <input
+                          ref={attachmentInputRef}
+                          type="file"
+                          multiple
+                          className="hidden"
+                          onChange={(event) =>
+                            setDraftFiles(Array.from(event.target.files || []))
+                          }
+                        />
+
+                        <div className="flex flex-wrap gap-2">
                           <Button
-                            onClick={() => void applyUpdate()}
-                            disabled={updating}
-                          >
-                            Save Update
-                          </Button>
-
-                          <Button
-                            variant="secondary"
-                            onClick={() => {
-                              setNextStatus("resolved");
-                              void applyUpdate("manual_response", "resolved");
-                            }}
-                            disabled={updating}
-                          >
-                            Resolve Ticket
-                          </Button>
-
-                          <Button
+                            type="button"
                             variant="outline"
-                            onClick={() => void applyUpdate("unlock_user")}
-                            disabled={updating}
+                            onClick={() => attachmentInputRef.current?.click()}
                           >
-                            <IconShieldLock className="mr-2 h-4 w-4" />
-                            Unlock User
+                            <IconPaperclip className="mr-2 h-4 w-4" />
+                            Attach Files
                           </Button>
 
                           <Button
-                            variant="outline"
-                            onClick={() => void applyUpdate("activate_user")}
-                            disabled={updating}
-                          >
-                            <IconUserCheck className="mr-2 h-4 w-4" />
-                            Activate Account
-                          </Button>
-
-                          <Button
-                            variant="outline"
-                            onClick={() =>
-                              void applyUpdate("resend_verification")
-                            }
-                            disabled={updating}
+                            type="button"
+                            onClick={() => void handleSendMessage()}
+                            disabled={sendingMessage}
                           >
                             <IconSend className="mr-2 h-4 w-4" />
-                            Resend Verification
+                            {sendingMessage ? "Sending..." : "Send Reply"}
                           </Button>
                         </div>
-                      </>
-                    )}
+
+                        {draftFiles.length > 0 && (
+                          <p className="text-xs text-muted-foreground">
+                            Files: {draftFiles.map((file) => file.name).join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </>
                 )}
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </SidebarInset>
     </SidebarProvider>
@@ -715,6 +889,44 @@ function PageSkeleton() {
       <Skeleton className="h-6 w-full" />
       <Skeleton className="h-6 w-full" />
       <Skeleton className="h-6 w-4/5" />
+    </div>
+  );
+}
+
+function AdminConversationBubble({ message }: { message: SupportMessageResponse }) {
+  const attachments = message.attachments ?? [];
+  const mine = message.sender_type === "admin";
+  const senderLabel = mine
+    ? "Support Team"
+    : message.sender_type === "public" || message.sender_type === "user"
+      ? "User"
+      : "System";
+
+  return (
+    <div
+      className={`rounded-lg border p-3 text-sm ${mine ? "bg-blue-50/70" : "bg-muted/40"}`}
+    >
+      <div className="mb-1 flex items-center justify-between gap-2">
+        <p className="font-medium">{senderLabel}</p>
+        <p className="text-xs text-muted-foreground">{formatDate(message.created_at)}</p>
+      </div>
+      <p className="whitespace-pre-wrap break-words text-foreground/90">{message.body}</p>
+
+      {attachments.length > 0 && (
+        <div className="mt-2 space-y-1">
+          {attachments.map((attachment) => (
+            <a
+              key={attachment.id}
+              href={getAdminSupportAttachmentURL(attachment.id)}
+              target="_blank"
+              rel="noreferrer"
+              className="block text-xs text-blue-700 hover:underline"
+            >
+              {attachment.file_name} ({formatBytes(attachment.size_bytes)})
+            </a>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -732,6 +944,20 @@ function toLabel(value: string): string {
     .split("_")
     .map((item) => item.charAt(0).toUpperCase() + item.slice(1))
     .join(" ");
+}
+
+function formatBytes(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) {
+    return "0 B";
+  }
+
+  const units = ["B", "KB", "MB", "GB"];
+  const index = Math.min(
+    Math.floor(Math.log(value) / Math.log(1024)),
+    units.length - 1,
+  );
+  const size = value / 1024 ** index;
+  return `${size >= 100 ? Math.round(size) : size.toFixed(size >= 10 ? 1 : 2)} ${units[index]}`;
 }
 
 function getStoredRole(): string | null {
