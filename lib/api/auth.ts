@@ -747,13 +747,47 @@ export async function resetPassword(
  * Backend reads refresh_token from cookie and sets new tokens as cookies
  */
 export async function refreshToken(): Promise<APIResponse<null>> {
-  const response = await fetch(`${API_URL}/auth/refresh-token`, {
-    method: "POST",
-    headers: {
+  const { getCSRFToken, refreshCSRFToken } = await import("./fetch-wrapper");
+
+  const sendRefreshRequest = async (csrfToken?: string): Promise<Response> => {
+    const headers = new Headers({
       "Content-Type": "application/json",
-    },
-    credentials: "include", // ✅ Send refresh_token cookie
-  });
+    });
+
+    if (csrfToken) {
+      headers.set("X-CSRF-Token", csrfToken);
+    }
+
+    return fetch(`${API_URL}/auth/refresh-token`, {
+      method: "POST",
+      headers,
+      credentials: "include", // ✅ Send refresh_token cookie
+    });
+  };
+
+  let token = await getCSRFToken();
+  let response = await sendRefreshRequest(token);
+
+  if (response.status === 403) {
+    let looksLikeCSRFError = false;
+
+    try {
+      const errorData = (await response.clone().json()) as APIResponse<unknown>;
+      looksLikeCSRFError =
+        errorData.message?.includes("CSRF") ||
+        Object.values(errorData.error || {}).some((value) =>
+          String(value).includes("CSRF"),
+        );
+    } catch {
+      looksLikeCSRFError = false;
+    }
+
+    if (looksLikeCSRFError) {
+      await refreshCSRFToken();
+      token = await getCSRFToken();
+      response = await sendRefreshRequest(token);
+    }
+  }
 
   const data: APIResponse<null> = await response.json();
 

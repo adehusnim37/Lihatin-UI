@@ -1,10 +1,11 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { IconLifebuoy } from "@tabler/icons-react";
 import { toast } from "sonner";
 
+import { SupportTurnstileField } from "@/components/support/support-turnstile-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,34 +21,15 @@ import {
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 const IS_DEV = process.env.NODE_ENV === "development";
 
-declare global {
-  interface Window {
-    turnstile?: {
-      render: (
-        container: HTMLElement,
-        options: {
-          sitekey: string;
-          callback: (token: string) => void;
-          "error-callback"?: () => void;
-          "expired-callback"?: () => void;
-        },
-      ) => string;
-      reset: (widgetId?: string) => void;
-      remove: (widgetId: string) => void;
-    };
-  }
-}
-
 export function PublicSupportSubmitCard() {
   const searchParams = useSearchParams();
-  const captchaRef = useRef<HTMLDivElement | null>(null);
-  const captchaWidgetIdRef = useRef<string | null>(null);
 
   const [email, setEmail] = useState("");
   const [category, setCategory] = useState<SupportCategory>("other");
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaResetSignal, setCaptchaResetSignal] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
 
@@ -67,51 +49,7 @@ export function PublicSupportSubmitCard() {
     }
   }, [preset, searchParams]);
 
-  useEffect(() => {
-    if (!TURNSTILE_SITE_KEY || !captchaRef.current) {
-      return;
-    }
-
-    const renderWidget = () => {
-      if (!window.turnstile || !captchaRef.current) return;
-      if (captchaWidgetIdRef.current) {
-        window.turnstile.remove(captchaWidgetIdRef.current);
-      }
-
-      captchaWidgetIdRef.current = window.turnstile.render(captchaRef.current, {
-        sitekey: TURNSTILE_SITE_KEY,
-        callback: (token: string) => setCaptchaToken(token),
-        "error-callback": () => setCaptchaToken(""),
-        "expired-callback": () => setCaptchaToken(""),
-      });
-    };
-
-    const scriptId = "support-turnstile-script";
-    const existing = document.getElementById(scriptId) as HTMLScriptElement | null;
-
-    if (existing) {
-      if (window.turnstile) {
-        renderWidget();
-      } else {
-        existing.addEventListener("load", renderWidget, { once: true });
-      }
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.id = scriptId;
-    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-    script.async = true;
-    script.defer = true;
-    script.addEventListener("load", renderWidget, { once: true });
-    document.body.appendChild(script);
-
-    return () => {
-      script.removeEventListener("load", renderWidget);
-    };
-  }, []);
-
-  const handleSubmitTicket = async (event: FormEvent) => {
+  const handleSubmitTicket = async (event: ChangeEvent) => {
     event.preventDefault();
 
     if (!email.trim() || !subject.trim() || !description.trim()) {
@@ -145,9 +83,7 @@ export function PublicSupportSubmitCard() {
       });
 
       setCaptchaToken("");
-      if (captchaWidgetIdRef.current && window.turnstile) {
-        window.turnstile.reset(captchaWidgetIdRef.current);
-      }
+      setCaptchaResetSignal((previous) => previous + 1);
     } catch (error: unknown) {
       toast.error("Failed to submit ticket", {
         description: error instanceof Error ? error.message : "Please try again.",
@@ -225,17 +161,11 @@ export function PublicSupportSubmitCard() {
 
           <div className="space-y-2">
             <Label>Captcha</Label>
-            {TURNSTILE_SITE_KEY ? (
-              <div ref={captchaRef} />
-            ) : IS_DEV ? (
-              <div className="rounded-md border border-dashed border-amber-300 bg-amber-50 p-3 text-sm text-amber-700">
-                Dev mode: captcha bypass enabled.
-              </div>
-            ) : (
-              <div className="rounded-md border border-dashed border-red-300 bg-red-50 p-3 text-sm text-red-700">
-                Turnstile site key missing (`NEXT_PUBLIC_TURNSTILE_SITE_KEY`).
-              </div>
-            )}
+            <SupportTurnstileField
+              token={captchaToken}
+              onTokenChange={setCaptchaToken}
+              resetSignal={captchaResetSignal}
+            />
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>

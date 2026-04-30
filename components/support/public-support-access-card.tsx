@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { IconKey, IconSearch } from "@tabler/icons-react";
 import { toast } from "sonner";
 
+import { SupportTurnstileField } from "@/components/support/support-turnstile-field";
 import { SupportStatusBadge } from "@/components/support/support-ticket-badges";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +24,8 @@ import {
   storePublicSupportAccessToken,
 } from "@/lib/support/public-access";
 import { formatSupportDateTime } from "@/lib/support/public-support";
+
+const IS_DEV = process.env.NODE_ENV === "development";
 
 export function PublicSupportAccessCard() {
   const router = useRouter();
@@ -43,6 +46,8 @@ export function PublicSupportAccessCard() {
   const [otpCooldownRemaining, setOtpCooldownRemaining] = useState(0);
   const [otpTargetEmail, setOtpTargetEmail] = useState("");
   const [otpSource, setOtpSource] = useState<{ ticket: string; email: string } | null>(null);
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaResetSignal, setCaptchaResetSignal] = useState(0);
 
   useEffect(() => {
     const queryEmail = (searchParams.get("email") || "").trim();
@@ -76,6 +81,8 @@ export function PublicSupportAccessCard() {
     setOtpCooldownRemaining(0);
     setOtpTargetEmail("");
     setOtpSource(null);
+    setCaptchaToken("");
+    setCaptchaResetSignal((previous) => previous + 1);
   }, [otpSource, trackEmail, trackTicket]);
 
   useEffect(() => {
@@ -168,11 +175,18 @@ export function PublicSupportAccessCard() {
       return;
     }
 
+    const skipCaptcha = IS_DEV && !process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+    if (!skipCaptcha && !captchaToken.trim()) {
+      toast.error("Please complete captcha first");
+      return;
+    }
+
     setIsRequestingOTP(true);
     try {
       const response = await requestSupportAccessOTP({
         ticket,
         email: ticketEmail,
+        captcha_token: skipCaptcha ? "dev-bypass" : captchaToken.trim(),
       });
 
       setOtpChallengeToken(response.data?.challenge_token || "");
@@ -190,6 +204,8 @@ export function PublicSupportAccessCard() {
         description: error instanceof Error ? error.message : "Please try again.",
       });
     } finally {
+      setCaptchaToken("");
+      setCaptchaResetSignal((previous) => previous + 1);
       setIsRequestingOTP(false);
     }
   };
@@ -234,32 +250,47 @@ export function PublicSupportAccessCard() {
       return;
     }
 
+    const skipCaptcha = IS_DEV && !process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+    if (!skipCaptcha && !captchaToken.trim()) {
+      toast.error("Please complete captcha first");
+      return;
+    }
+
     setIsResendingOTP(true);
     try {
       const response = await resendSupportAccessOTP({
         challenge_token: otpChallengeToken.trim(),
+        captcha_token: skipCaptcha ? "dev-bypass" : captchaToken.trim(),
       });
 
-      const remaining = response.data?.cooldown_remaining_seconds;
-      const nextCooldown = Math.max(0, remaining ?? response.data?.cooldown_seconds ?? 0);
+      const nextChallengeToken = response.data?.challenge_token?.trim();
+      const nextCooldown = Math.max(0, response.data?.cooldown_seconds ?? 0);
+      const isCooldownOnly = response.message?.toLowerCase().includes("please wait");
+      if (nextChallengeToken) {
+        setOtpChallengeToken(nextChallengeToken);
+      }
       setOtpCooldownRemaining(nextCooldown);
       setOtpTargetEmail(trackEmail.trim());
       setOtpSource({
         ticket: trackTicket.trim().toUpperCase(),
         email: trackEmail.trim().toLowerCase(),
       });
-      if (nextCooldown > 0) {
+      if (isCooldownOnly) {
         toast.message("Please wait", {
           description: `Retry in ${nextCooldown} seconds.`,
         });
       } else {
-        toast.success("OTP resent");
+        toast.success("OTP resent", {
+          description: nextCooldown > 0 ? `You can request another resend in ${nextCooldown} seconds.` : undefined,
+        });
       }
     } catch (error: unknown) {
       toast.error("Failed to resend OTP", {
         description: error instanceof Error ? error.message : "Please try again.",
       });
     } finally {
+      setCaptchaToken("");
+      setCaptchaResetSignal((previous) => previous + 1);
       setIsResendingOTP(false);
     }
   };
@@ -347,6 +378,15 @@ export function PublicSupportAccessCard() {
                   ? `Resend in ${otpCooldownRemaining}s`
                   : "Resend OTP"}
             </Button>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Captcha</Label>
+            <SupportTurnstileField
+              token={captchaToken}
+              onTokenChange={setCaptchaToken}
+              resetSignal={captchaResetSignal}
+            />
           </div>
 
           <div className="grid gap-2 sm:grid-cols-[1fr_auto]">

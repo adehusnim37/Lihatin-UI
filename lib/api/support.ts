@@ -200,6 +200,7 @@ export async function trackSupportTicket(params: {
 export async function requestSupportAccessOTP(payload: {
   ticket: string;
   email: string;
+  captcha_token: string;
 }): Promise<APIResponse<SupportOTPChallengeResponse>> {
   const response = await fetch(`${API_URL}/support/access/request-otp`, {
     method: "POST",
@@ -220,7 +221,8 @@ export async function requestSupportAccessOTP(payload: {
 
 export async function resendSupportAccessOTP(payload: {
   challenge_token: string;
-}): Promise<APIResponse<{ cooldown_seconds?: number; cooldown_remaining_seconds?: number }>> {
+  captcha_token: string;
+}): Promise<APIResponse<SupportOTPChallengeResponse>> {
   const response = await fetch(`${API_URL}/support/access/resend-otp`, {
     method: "POST",
     headers: {
@@ -230,8 +232,7 @@ export async function resendSupportAccessOTP(payload: {
     body: JSON.stringify(payload),
   });
 
-  const result: APIResponse<{ cooldown_seconds?: number; cooldown_remaining_seconds?: number }> =
-    await response.json();
+  const result: APIResponse<SupportOTPChallengeResponse> = await response.json();
   if (!response.ok) {
     throw new Error(getErrorMessage(result) || "Failed to resend verification code");
   }
