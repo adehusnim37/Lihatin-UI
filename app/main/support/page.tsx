@@ -241,42 +241,48 @@ export default function UserSupportPage() {
                       )}
                     </div>
 
-                    <div className="space-y-3 rounded-lg border p-3">
-                      <textarea
-                        value={draftBody}
-                        onChange={(event) => setDraftBody(event.target.value)}
-                        className="min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                        placeholder="Reply to support team"
-                      />
-
-                      <div className="flex flex-wrap items-center gap-2">
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          multiple
-                          className="hidden"
-                          onChange={(event) => setDraftFiles(Array.from(event.target.files || []))}
+                    {conversation?.status === "resolved" || conversation?.status === "closed" ? (
+                      <p className="rounded-lg border bg-muted/20 p-4 text-center text-sm text-muted-foreground">
+                        This ticket has been {conversation.status}. You can no longer send messages.
+                      </p>
+                    ) : (
+                      <div className="space-y-3 rounded-lg border p-3">
+                        <textarea
+                          value={draftBody}
+                          onChange={(event) => setDraftBody(event.target.value)}
+                          className="min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                          placeholder="Reply to support team"
                         />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => fileInputRef.current?.click()}
-                        >
-                          <IconPaperclip className="mr-2 h-4 w-4" />
-                          Attach Files
-                        </Button>
-                        <Button type="button" onClick={() => void handleSend()} disabled={sending}>
-                          <IconSend className="mr-2 h-4 w-4" />
-                          {sending ? "Sending..." : "Send"}
-                        </Button>
-                      </div>
 
-                      {draftFiles.length > 0 && (
-                        <p className="text-xs text-muted-foreground">
-                          Files: {draftFiles.map((file) => file.name).join(", ")}
-                        </p>
-                      )}
-                    </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            multiple
+                            className="hidden"
+                            onChange={(event) => setDraftFiles(Array.from(event.target.files || []))}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => fileInputRef.current?.click()}
+                          >
+                            <IconPaperclip className="mr-2 h-4 w-4" />
+                            Attach Files
+                          </Button>
+                          <Button type="button" onClick={() => void handleSend()} disabled={sending}>
+                            <IconSend className="mr-2 h-4 w-4" />
+                            {sending ? "Sending..." : "Send"}
+                          </Button>
+                        </div>
+
+                        {draftFiles.length > 0 && (
+                          <p className="text-xs text-muted-foreground">
+                            Files: {draftFiles.map((file) => file.name).join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </>
                 )}
               </CardContent>

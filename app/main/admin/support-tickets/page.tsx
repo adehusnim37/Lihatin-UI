@@ -19,6 +19,7 @@ import {
   SupportStatusBadge,
 } from "@/components/support/support-ticket-badges";
 import { SiteHeader } from "@/components/site-header";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -53,6 +54,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import {
   getAdminSupportAttachmentURL,
   getAdminSupportConversation,
@@ -594,17 +596,43 @@ export default function AdminSupportTicketsPage() {
           </div>
 
           <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
-            <DialogContent className="h-[min(92vh,960px)] w-[min(96vw,1280px)] max-w-[1280px] gap-0 overflow-hidden p-0">
-              <DialogHeader className="shrink-0 border-b px-5 py-4 sm:px-6">
-                <DialogTitle>Ticket Detail</DialogTitle>
-                <DialogDescription>
-                  {activeTicket
-                    ? `${activeTicket.ticket_code} • ${activeTicket.email}`
-                    : "Select ticket from list"}
+            <DialogContent className="h-[min(96vh,1120px)] !w-[calc(100vw-24px)] !max-w-[1600px] gap-0 overflow-hidden rounded-xl p-0 shadow-lg">
+              <DialogHeader className="shrink-0 border-b bg-background px-5 py-4 pr-18 sm:px-6 sm:pr-20">
+                <div className="flex flex-col gap-4">
+                  <div className="min-w-0 space-y-2">
+                    <DialogTitle className="text-xl font-semibold tracking-tight">
+                      Ticket Detail
+                    </DialogTitle>
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                      <span className="rounded-md bg-muted px-2.5 py-1 font-mono text-[12px] font-medium text-foreground">
+                        #{activeTicket?.ticket_code || "TICKET"}
+                      </span>
+                      <span className="truncate max-w-[420px]">
+                        {activeTicket?.email || "Select ticket from list"}
+                      </span>
+                      {activeTicket ? (
+                        <>
+                          <SupportStatusBadge status={activeTicket.status} />
+                          <Badge
+                            variant="outline"
+                            className="rounded-full border-border bg-muted/40 px-3 py-1 text-foreground"
+                          >
+                            {toLabel(activeTicket.category)}
+                          </Badge>
+                          <SupportPriorityBadge
+                            priority={activeTicket.priority as SupportPriority}
+                          />
+                        </>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+                <DialogDescription className="sr-only">
+                  View support ticket details, conversation, and admin actions.
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6 sm:py-5">
+              <div className="min-h-0 flex-1 overflow-y-auto bg-muted/20 px-4 py-4 sm:px-6 sm:py-5">
                 {detailsLoading && <PageSkeleton />}
 
                 {!detailsLoading && !activeTicket && (
@@ -615,263 +643,289 @@ export default function AdminSupportTicketsPage() {
 
                 {!detailsLoading && activeTicket && (
                   <>
-                    <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
-                      <div className="space-y-5">
-                        <div className="rounded-xl border bg-muted/10 p-5 shadow-sm">
-                          <div className="flex flex-col gap-4">
-                            <div>
-                              <h3 className="break-words text-lg font-semibold tracking-tight text-foreground">
-                                {activeTicket.subject}
-                              </h3>
-                              <p
-                                className="mt-1.5 truncate text-sm text-muted-foreground"
-                                title={activeTicket.email}
-                              >
-                                {activeTicket.email}
+                    <div className="flex flex-col gap-5 xl:gap-6 lg:flex-row lg:items-start">
+                      <div className="min-w-0 space-y-5 lg:basis-[65%] lg:flex-1">
+                        <section className="rounded-xl border bg-card p-5 shadow-sm sm:p-6">
+                          <div className="space-y-5">
+                            <div className="space-y-3">
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                                Ticket Overview
                               </p>
+                              <h2 className="break-words text-2xl font-semibold tracking-tight">
+                                {activeTicket.subject}
+                              </h2>
                             </div>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span className="inline-flex items-center rounded-md border bg-background px-2.5 py-0.5 text-xs font-semibold shadow-sm">
-                                {toLabel(activeTicket.category)}
-                              </span>
-                              <SupportStatusBadge status={activeTicket.status} />
-                              <SupportPriorityBadge
-                                priority={activeTicket.priority as SupportPriority}
-                              />
-                            </div>
-                          </div>
 
-                          <div className="my-5 h-px w-full bg-border/60" />
-
-                          <div className="space-y-4">
-                            <div>
-                              <p className="mb-2 text-[11px] uppercase tracking-wide text-muted-foreground">
+                            <div className="space-y-3">
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                                 Description
                               </p>
-                              <div className="whitespace-pre-wrap rounded-lg border bg-background p-4 text-sm leading-relaxed text-foreground/90">
+                              <div className="whitespace-pre-wrap rounded-xl border bg-muted/20 px-4 py-4 text-sm leading-7 text-foreground/90 sm:px-5">
                                 {activeTicket.description}
                               </div>
                             </div>
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              <p>
-                                <span className="uppercase tracking-wide">Created:</span>{" "}
-                                {formatDate(activeTicket.created_at)}
+
+                            <div className="flex flex-wrap items-center gap-3 border-t pt-4 text-xs text-muted-foreground">
+                              <span>Created on {formatDateLong(activeTicket.created_at)}</span>
+                              {activeTicket.updated_at !== activeTicket.created_at ? (
+                                <span>Updated {formatDateLong(activeTicket.updated_at)}</span>
+                              ) : null}
+                            </div>
+                          </div>
+                        </section>
+
+                        <section className="rounded-xl border bg-card p-4 shadow-sm sm:p-5">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="space-y-1">
+                              <p className="flex items-center gap-2 text-sm font-semibold">
+                                <IconMessage2 className="h-4 w-4" />
+                                Conversation
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Full thread between support team and user.
                               </p>
                             </div>
+                            <Button
+                              type="button"
+                              size="icon-sm"
+                              variant="outline"
+                              onClick={() => void loadConversation(activeTicket.id)}
+                              disabled={conversationLoading}
+                              className="rounded-full"
+                              aria-label="Refresh conversation"
+                            >
+                              <IconRefresh className="h-4 w-4" />
+                            </Button>
                           </div>
-                        </div>
-                      </div>
 
-                      <div className="space-y-4 rounded-xl border bg-muted/10 p-4">
-                        <p className="text-sm font-medium">Update Controls</p>
-
-                        {activeTicket.status === "resolved" ||
-                        activeTicket.status === "closed" ? (
-                          <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 text-sm">
-                            <p className="font-medium text-emerald-800">
-                              Ticket Closed
-                            </p>
-                            <p className="mt-1 text-emerald-700">
-                              This ticket has been marked as {activeTicket.status}{" "}
-                              and cannot be edited further.
-                            </p>
-                            {activeTicket.admin_notes && (
-                              <div className="mt-4 border-t border-emerald-200/60 pt-4">
-                                <p className="mb-1 font-medium text-emerald-800">
-                                  Final Admin Notes
-                                </p>
-                                <p className="whitespace-pre-wrap break-words text-emerald-700">
-                                  {activeTicket.admin_notes}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <>
-                            <div className="grid gap-3 sm:grid-cols-2">
-                              <div className="space-y-2">
-                                <Label>Next Status</Label>
-                                <Select
-                                  value={nextStatus}
-                                  onValueChange={(value) =>
-                                    setNextStatus(value as SupportTicketStatus)
-                                  }
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="open">Open</SelectItem>
-                                    <SelectItem value="in_progress">
-                                      In Progress
-                                    </SelectItem>
-                                    <SelectItem value="resolved">
-                                      Resolved
-                                    </SelectItem>
-                                    <SelectItem value="closed">Closed</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-
-                              <div className="space-y-2">
-                                <Label>Priority</Label>
-                                <Select
-                                  value={nextPriority}
-                                  onValueChange={(value) =>
-                                    setNextPriority(value as SupportPriority)
-                                  }
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="low">Low</SelectItem>
-                                    <SelectItem value="normal">Normal</SelectItem>
-                                    <SelectItem value="high">High</SelectItem>
-                                    <SelectItem value="urgent">Urgent</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
+                          {conversationLoading ? (
+                            <div className="mt-4">
+                              <PageSkeleton />
                             </div>
+                          ) : (conversation?.messages ?? []).length === 0 ? (
+                            <p className="mt-4 rounded-xl border bg-muted/20 p-4 text-sm text-muted-foreground">
+                              No conversation yet.
+                            </p>
+                          ) : (
+                            <div className="mt-4 max-h-[440px] space-y-3 overflow-y-auto rounded-xl border bg-muted/20 p-3 sm:p-4">
+                              {(conversation?.messages ?? []).map((message) => (
+                                <AdminConversationBubble key={message.id} message={message} />
+                              ))}
+                            </div>
+                          )}
 
+                          <div className="mt-4 space-y-3 rounded-xl border bg-muted/20 p-3 sm:p-4">
                             <div className="space-y-2">
-                              <Label>Admin Notes</Label>
+                              <Label>Reply</Label>
                               <textarea
-                                value={adminNotes}
-                                onChange={(event) => setAdminNotes(event.target.value)}
-                                className="min-h-32 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                                placeholder="Internal notes or resolution message"
+                                value={draftMessage}
+                                onChange={(event) => setDraftMessage(event.target.value)}
+                                className="min-h-28 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                                placeholder="Write clear update for user"
                               />
                             </div>
 
-                            <div className="grid gap-2">
-                              <Button
-                                onClick={() => void applyUpdate()}
-                                disabled={updating}
-                              >
-                                Save Update
-                              </Button>
+                            <input
+                              ref={attachmentInputRef}
+                              type="file"
+                              multiple
+                              className="hidden"
+                              onChange={(event) =>
+                                setDraftFiles(Array.from(event.target.files || []))
+                              }
+                            />
 
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                               <Button
-                                variant="secondary"
-                                onClick={() => {
-                                  setNextStatus("resolved");
-                                  void applyUpdate("manual_response", "resolved");
-                                }}
-                                disabled={updating}
-                              >
-                                Resolve Ticket
-                              </Button>
-
-                              <Button
+                                type="button"
                                 variant="outline"
-                                onClick={() => void applyUpdate("unlock_user")}
-                                disabled={updating}
+                                onClick={() => attachmentInputRef.current?.click()}
+                                className="rounded-xl"
                               >
-                                <IconShieldLock className="mr-2 h-4 w-4" />
-                                Unlock User
+                                <IconPaperclip className="mr-2 h-4 w-4" />
+                                Attach Files
                               </Button>
 
                               <Button
-                                variant="outline"
-                                onClick={() => void applyUpdate("activate_user")}
-                                disabled={updating}
-                              >
-                                <IconUserCheck className="mr-2 h-4 w-4" />
-                                Activate Account
-                              </Button>
-
-                              <Button
-                                variant="outline"
-                                onClick={() => void applyUpdate("resend_verification")}
-                                disabled={updating}
+                                type="button"
+                                onClick={() => void handleSendMessage()}
+                                disabled={sendingMessage}
+                                className="rounded-xl"
                               >
                                 <IconSend className="mr-2 h-4 w-4" />
-                                Resend Verification
+                                {sendingMessage ? "Sending..." : "Send Reply"}
                               </Button>
                             </div>
-                          </>
-                        )}
+
+                            {draftFiles.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {draftFiles.map((file) => (
+                                  <span
+                                    key={`${file.name}-${file.size}`}
+                                    className="rounded-full bg-background px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-border"
+                                  >
+                                    {file.name}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                        </section>
                       </div>
+
+                      <aside className="min-w-0 lg:sticky lg:top-0 lg:w-[420px] lg:min-w-[420px] lg:self-start xl:w-[460px] xl:min-w-[460px]">
+                        <div className="space-y-4 rounded-xl border bg-card p-4 shadow-sm sm:p-5">
+                          <div className="space-y-1">
+                            <p className="text-sm font-semibold">Admin Controls</p>
+                            <p className="text-sm text-muted-foreground">
+                              Update status, set priority, and leave internal notes.
+                            </p>
+                          </div>
+
+                          {activeTicket.status === "resolved" ||
+                          activeTicket.status === "closed" ? (
+                            <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 text-sm">
+                              <p className="font-medium text-emerald-900">
+                                Ticket {toLabel(activeTicket.status)}
+                              </p>
+                              <p className="mt-1 text-emerald-700">
+                                Editing disabled for closed workflow.
+                              </p>
+                              {activeTicket.admin_notes ? (
+                                <div className="mt-4 border-t border-emerald-200 pt-4">
+                                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700/80">
+                                    Final Admin Notes
+                                  </p>
+                                  <p className="whitespace-pre-wrap break-words text-emerald-800">
+                                    {activeTicket.admin_notes}
+                                  </p>
+                                </div>
+                              ) : null}
+                            </div>
+                          ) : (
+                            <>
+                              <div className="flex flex-col gap-3 sm:flex-row">
+                                <div className="min-w-0 flex-1 space-y-2">
+                                  <Label>Next Status</Label>
+                                  <Select
+                                    value={nextStatus}
+                                    onValueChange={(value) =>
+                                      setNextStatus(value as SupportTicketStatus)
+                                    }
+                                  >
+                                    <SelectTrigger className="h-10 w-full rounded-xl">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="open">Open</SelectItem>
+                                      <SelectItem value="in_progress">
+                                        In Progress
+                                      </SelectItem>
+                                      <SelectItem value="resolved">Resolved</SelectItem>
+                                      <SelectItem value="closed">Closed</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+
+                                <div className="min-w-0 flex-1 space-y-2">
+                                  <Label>Priority</Label>
+                                  <Select
+                                    value={nextPriority}
+                                    onValueChange={(value) =>
+                                      setNextPriority(value as SupportPriority)
+                                    }
+                                  >
+                                    <SelectTrigger className="h-10 w-full rounded-xl">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="low">Low</SelectItem>
+                                      <SelectItem value="normal">Normal</SelectItem>
+                                      <SelectItem value="high">High</SelectItem>
+                                      <SelectItem value="urgent">Urgent</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label>Admin Notes</Label>
+                                <textarea
+                                  value={adminNotes}
+                                  onChange={(event) => setAdminNotes(event.target.value)}
+                                  className="min-h-36 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                                  placeholder="Internal notes, summary, or resolution context"
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Button
+                                  onClick={() => void applyUpdate()}
+                                  disabled={updating}
+                                  className="h-11 w-full rounded-xl"
+                                >
+                                  Save Update
+                                </Button>
+
+                                <Button
+                                  variant="outline"
+                                  onClick={() => {
+                                    setNextStatus("resolved");
+                                    void applyUpdate("manual_response", "resolved");
+                                  }}
+                                  disabled={updating}
+                                  className="h-11 w-full rounded-xl"
+                                >
+                                  Resolve Ticket
+                                </Button>
+                              </div>
+
+                              <div className="space-y-3 border-t pt-4">
+                                <div className="space-y-1">
+                                  <p className="text-sm font-medium">User Management</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    Low-risk account actions for support flow.
+                                  </p>
+                                </div>
+
+                                <div className="grid gap-1.5">
+                                  <Button
+                                    variant="ghost"
+                                    onClick={() => void applyUpdate("unlock_user")}
+                                    disabled={updating}
+                                    className="h-10 justify-start rounded-xl px-3"
+                                  >
+                                    <IconShieldLock className="mr-2 h-4 w-4" />
+                                    Unlock User
+                                  </Button>
+
+                                  <Button
+                                    variant="ghost"
+                                    onClick={() => void applyUpdate("activate_user")}
+                                    disabled={updating}
+                                    className="h-10 justify-start rounded-xl px-3"
+                                  >
+                                    <IconUserCheck className="mr-2 h-4 w-4" />
+                                    Activate Account
+                                  </Button>
+
+                                  <Button
+                                    variant="ghost"
+                                    onClick={() => void applyUpdate("resend_verification")}
+                                    disabled={updating}
+                                    className="h-10 justify-start rounded-xl px-3"
+                                  >
+                                    <IconSend className="mr-2 h-4 w-4" />
+                                    Resend Verification
+                                  </Button>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </aside>
                     </div>
 
-                    <div className="mt-5 space-y-4 rounded-xl border bg-muted/10 p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="flex items-center gap-2 text-sm font-medium">
-                          <IconMessage2 className="h-4 w-4" />
-                          Conversation
-                        </p>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => void loadConversation(activeTicket.id)}
-                          disabled={conversationLoading}
-                        >
-                          <IconRefresh className="mr-2 h-4 w-4" />
-                          Refresh chat
-                        </Button>
-                      </div>
-
-                      {conversationLoading ? (
-                        <PageSkeleton />
-                      ) : (conversation?.messages ?? []).length === 0 ? (
-                        <p className="rounded-lg border bg-background p-4 text-sm text-muted-foreground">
-                          No conversation yet.
-                        </p>
-                      ) : (
-                        <div className="max-h-[420px] space-y-3 overflow-y-auto rounded-lg border bg-background p-3">
-                          {(conversation?.messages ?? []).map((message) => (
-                            <AdminConversationBubble key={message.id} message={message} />
-                          ))}
-                        </div>
-                      )}
-
-                      <div className="space-y-3 rounded-lg border bg-background p-3">
-                        <textarea
-                          value={draftMessage}
-                          onChange={(event) => setDraftMessage(event.target.value)}
-                          className="min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                          placeholder="Reply to user"
-                        />
-
-                        <input
-                          ref={attachmentInputRef}
-                          type="file"
-                          multiple
-                          className="hidden"
-                          onChange={(event) =>
-                            setDraftFiles(Array.from(event.target.files || []))
-                          }
-                        />
-
-                        <div className="flex flex-wrap gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => attachmentInputRef.current?.click()}
-                          >
-                            <IconPaperclip className="mr-2 h-4 w-4" />
-                            Attach Files
-                          </Button>
-
-                          <Button
-                            type="button"
-                            onClick={() => void handleSendMessage()}
-                            disabled={sendingMessage}
-                          >
-                            <IconSend className="mr-2 h-4 w-4" />
-                            {sendingMessage ? "Sending..." : "Send Reply"}
-                          </Button>
-                        </div>
-
-                        {draftFiles.length > 0 && (
-                          <p className="text-xs text-muted-foreground">
-                            Files: {draftFiles.map((file) => file.name).join(", ")}
-                          </p>
-                        )}
-                      </div>
-                    </div>
                   </>
                 )}
               </div>
@@ -903,30 +957,52 @@ function AdminConversationBubble({ message }: { message: SupportMessageResponse 
       : "System";
 
   return (
-    <div
-      className={`rounded-lg border p-3 text-sm ${mine ? "bg-blue-50/70" : "bg-muted/40"}`}
-    >
-      <div className="mb-1 flex items-center justify-between gap-2">
-        <p className="font-medium">{senderLabel}</p>
-        <p className="text-xs text-muted-foreground">{formatDate(message.created_at)}</p>
-      </div>
-      <p className="whitespace-pre-wrap break-words text-foreground/90">{message.body}</p>
-
-      {attachments.length > 0 && (
-        <div className="mt-2 space-y-1">
-          {attachments.map((attachment) => (
-            <a
-              key={attachment.id}
-              href={getAdminSupportAttachmentURL(attachment.id)}
-              target="_blank"
-              rel="noreferrer"
-              className="block text-xs text-blue-700 hover:underline"
-            >
-              {attachment.file_name} ({formatBytes(attachment.size_bytes)})
-            </a>
-          ))}
+    <div className={cn("flex", mine ? "justify-end" : "justify-start")}>
+      <div
+        className={cn(
+          "max-w-[88%] rounded-2xl border px-4 py-3 text-sm shadow-sm sm:max-w-[80%]",
+          mine
+            ? "border-primary/15 bg-primary/5 text-foreground"
+            : "bg-card text-card-foreground",
+        )}
+      >
+        <div className="mb-2 flex items-start justify-between gap-4">
+          <div className="space-y-0.5">
+            <p className="font-medium">{senderLabel}</p>
+            <p className="text-xs text-muted-foreground">{formatDate(message.created_at)}</p>
+          </div>
+          <span
+            className={cn(
+              "rounded-full px-2 py-0.5 text-[11px] font-medium",
+              mine ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
+            )}
+          >
+            {mine ? "Support" : "User"}
+          </span>
         </div>
-      )}
+
+        {message.body ? (
+          <p className="whitespace-pre-wrap break-words leading-6 text-foreground/90">
+            {message.body}
+          </p>
+        ) : null}
+
+        {attachments.length > 0 ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {attachments.map((attachment) => (
+              <a
+                key={attachment.id}
+                href={getAdminSupportAttachmentURL(attachment.id)}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full bg-background px-3 py-1.5 text-xs font-medium text-primary shadow-sm ring-1 ring-border transition-colors hover:bg-muted/60"
+              >
+                {attachment.file_name} ({formatBytes(attachment.size_bytes)})
+              </a>
+            ))}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -937,6 +1013,19 @@ function formatDate(value: string): string {
     return value;
   }
   return parsed.toLocaleString();
+}
+
+function formatDateLong(value: string): string {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return parsed.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 function toLabel(value: string): string {

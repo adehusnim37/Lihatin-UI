@@ -41,5 +41,5 @@ export function buildAuthSupportURL(reason: AuthSupportReason, email?: string): 
     params.set("email", cleanEmail);
   }
 
-  return `/support?${params.toString()}`;
+  return `/support/new?${params.toString()}`;
 }
