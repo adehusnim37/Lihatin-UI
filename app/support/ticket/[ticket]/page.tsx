@@ -6,13 +6,10 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
   IconArrowLeft,
-  IconClock,
   IconKey,
-  IconMail,
   IconPaperclip,
   IconRefresh,
   IconSend,
-  IconTicket,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 
@@ -358,7 +355,7 @@ function PublicSupportConversationContent() {
             </Card>
           </div>
 
-          <div className="min-w-0 space-y-6">
+          <div className="min-w-0">
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Ticket Overview</CardTitle>
@@ -389,43 +386,6 @@ function PublicSupportConversationContent() {
                       <p className="mt-1 font-medium">{formatDateTime(conversation.created_at)}</p>
                     </div>
                   )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="min-w-0">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Support Info</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 px-5 pb-5 pt-2">
-                <div className="flex items-start gap-3 rounded-xl border bg-muted/20 px-4 py-3.5">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                    <IconClock className="h-[18px] w-[18px]" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Estimated Response</p>
-                    <p className="mt-0.5 text-sm font-semibold">Within 24 hours (business day)</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 rounded-xl border bg-muted/20 px-4 py-3.5">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
-                    <IconTicket className="h-[18px] w-[18px]" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Support Hours</p>
-                    <p className="mt-0.5 text-sm font-semibold">Mon - Fri, 09:00 - 18:00 WIB</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 rounded-xl border bg-muted/20 px-4 py-3.5">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
-                    <IconMail className="h-[18px] w-[18px]" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Email Fallback</p>
-                    <p className="mt-0.5 text-sm font-semibold">support@lihat.in</p>
-                  </div>
                 </div>
               </CardContent>
             </Card>

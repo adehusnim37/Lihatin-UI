@@ -40,6 +40,9 @@ export function PublicSupportAccessCard() {
   const [isRequestingOTP, setIsRequestingOTP] = useState(false);
   const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
   const [isResendingOTP, setIsResendingOTP] = useState(false);
+  const [otpCooldownRemaining, setOtpCooldownRemaining] = useState(0);
+  const [otpTargetEmail, setOtpTargetEmail] = useState("");
+  const [otpSource, setOtpSource] = useState<{ ticket: string; email: string } | null>(null);
 
   useEffect(() => {
     const queryEmail = (searchParams.get("email") || "").trim();
@@ -56,6 +59,36 @@ export function PublicSupportAccessCard() {
       setLinkCode(queryCode);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!otpSource) {
+      return;
+    }
+
+    const normalizedTicket = trackTicket.trim().toUpperCase();
+    const normalizedEmail = trackEmail.trim().toLowerCase();
+    if (otpSource.ticket === normalizedTicket && otpSource.email === normalizedEmail) {
+      return;
+    }
+
+    setOtpChallengeToken("");
+    setOtpCode("");
+    setOtpCooldownRemaining(0);
+    setOtpTargetEmail("");
+    setOtpSource(null);
+  }, [otpSource, trackEmail, trackTicket]);
+
+  useEffect(() => {
+    if (otpCooldownRemaining <= 0) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setOtpCooldownRemaining((previous) => Math.max(0, previous - 1));
+    }, 1000);
+
+    return () => window.clearTimeout(timeout);
+  }, [otpCooldownRemaining]);
 
   const openConversation = (ticket: string, ticketEmail: string, accessToken: string) => {
     storePublicSupportAccessToken(ticket, ticketEmail, accessToken);
@@ -143,6 +176,12 @@ export function PublicSupportAccessCard() {
       });
 
       setOtpChallengeToken(response.data?.challenge_token || "");
+      setOtpCooldownRemaining(Math.max(0, response.data?.cooldown_seconds || 0));
+      setOtpTargetEmail(ticketEmail);
+      setOtpSource({
+        ticket,
+        email: ticketEmail.toLowerCase(),
+      });
       toast.success("OTP sent", {
         description: "Check your email inbox for verification code.",
       });
@@ -202,9 +241,16 @@ export function PublicSupportAccessCard() {
       });
 
       const remaining = response.data?.cooldown_remaining_seconds;
-      if (remaining && remaining > 0) {
+      const nextCooldown = Math.max(0, remaining ?? response.data?.cooldown_seconds ?? 0);
+      setOtpCooldownRemaining(nextCooldown);
+      setOtpTargetEmail(trackEmail.trim());
+      setOtpSource({
+        ticket: trackTicket.trim().toUpperCase(),
+        email: trackEmail.trim().toLowerCase(),
+      });
+      if (nextCooldown > 0) {
         toast.message("Please wait", {
-          description: `Retry in ${remaining} seconds.`,
+          description: `Retry in ${nextCooldown} seconds.`,
         });
       } else {
         toast.success("OTP resent");
@@ -283,11 +329,23 @@ export function PublicSupportAccessCard() {
           </Button>
 
           <div className="grid gap-2 sm:grid-cols-2">
-            <Button variant="secondary" onClick={() => void handleRequestOTP()} disabled={isRequestingOTP}>
-              {isRequestingOTP ? "Requesting..." : "Send OTP"}
+            <Button
+              variant="secondary"
+              onClick={() => void handleRequestOTP()}
+              disabled={isRequestingOTP || Boolean(otpChallengeToken)}
+            >
+              {isRequestingOTP ? "Requesting..." : otpChallengeToken ? "OTP Sent" : "Send OTP"}
             </Button>
-            <Button variant="outline" onClick={() => void handleResendOTP()} disabled={!otpChallengeToken || isResendingOTP}>
-              {isResendingOTP ? "Resending..." : "Resend OTP"}
+            <Button
+              variant="outline"
+              onClick={() => void handleResendOTP()}
+              disabled={!otpChallengeToken || isResendingOTP || otpCooldownRemaining > 0}
+            >
+              {isResendingOTP
+                ? "Resending..."
+                : otpCooldownRemaining > 0
+                  ? `Resend in ${otpCooldownRemaining}s`
+                  : "Resend OTP"}
             </Button>
           </div>
 
@@ -301,6 +359,12 @@ export function PublicSupportAccessCard() {
               {isVerifyingOTP ? "Verifying..." : "Open with OTP"}
             </Button>
           </div>
+
+          {otpChallengeToken && otpTargetEmail ? (
+            <p className="text-xs text-muted-foreground">
+              OTP sent to <span className="font-medium text-foreground">{otpTargetEmail}</span>.
+            </p>
+          ) : null}
         </div>
 
         {trackResult && (
