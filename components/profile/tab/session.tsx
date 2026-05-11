@@ -130,11 +130,11 @@ export default function SessionTab() {
     <TabsContent value="session" className="space-y-4">
       {/* Recent Activity Summary Card */}
       {recentActivity && (
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Total Attempts (24h)</CardDescription>
-              <CardTitle className="text-3xl">
+              <CardTitle className="text-2xl sm:text-3xl">
                 {recentActivity.total_attempts}
               </CardTitle>
             </CardHeader>
@@ -142,7 +142,7 @@ export default function SessionTab() {
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Successful</CardDescription>
-              <CardTitle className="text-3xl text-green-600">
+              <CardTitle className="text-2xl sm:text-3xl text-green-600">
                 {recentActivity.successful_attempts}
               </CardTitle>
             </CardHeader>
@@ -150,7 +150,7 @@ export default function SessionTab() {
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Failed</CardDescription>
-              <CardTitle className="text-3xl text-red-600">
+              <CardTitle className="text-2xl sm:text-3xl text-red-600">
                 {recentActivity.failed_attempts}
               </CardTitle>
             </CardHeader>
@@ -158,7 +158,7 @@ export default function SessionTab() {
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Unique IPs</CardDescription>
-              <CardTitle className="text-3xl">
+              <CardTitle className="text-2xl sm:text-3xl">
                 {recentActivity.unique_ips}
               </CardTitle>
             </CardHeader>
@@ -205,7 +205,7 @@ export default function SessionTab() {
                       <TableHead className="min-w-[180px]">
                         Device & Browser
                       </TableHead>
-                      <TableHead className="min-w-[120px]">
+                      <TableHead className="hidden sm:table-cell min-w-[120px]">
                         IP Address
                       </TableHead>
                       <TableHead className="min-w-[120px]">Time</TableHead>
@@ -240,7 +240,7 @@ export default function SessionTab() {
                               </span>
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="hidden sm:table-cell">
                             <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
                               {attempt.ip_address}
                             </code>
@@ -261,13 +261,13 @@ export default function SessionTab() {
               </div>
 
               {/* Pagination */}
-              <div className="mt-4 flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-sm text-muted-foreground hidden sm:block">
                   Showing {(page - 1) * limit + 1} to{" "}
                   {Math.min(page * limit, attemptsData.total_count)} of{" "}
                   {attemptsData.total_count} attempts
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between sm:justify-end sm:gap-2 w-full sm:w-auto">
                   <Button
                     variant="outline"
                     size="sm"
@@ -275,10 +275,10 @@ export default function SessionTab() {
                     disabled={!attemptsData.has_prev}
                   >
                     <IconChevronLeft className="h-4 w-4" />
-                    Previous
+                    <span className="hidden sm:inline">Previous</span>
                   </Button>
                   <span className="text-sm">
-                    Page {page} of {attemptsData.total_pages}
+                    {page} / {attemptsData.total_pages}
                   </span>
                   <Button
                     variant="outline"
@@ -286,7 +286,7 @@ export default function SessionTab() {
                     onClick={() => setPage((p) => p + 1)}
                     disabled={!attemptsData.has_next}
                   >
-                    Next
+                    <span className="hidden sm:inline">Next</span>
                     <IconChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
@@ -302,7 +302,7 @@ export default function SessionTab() {
 
       {/* Detail Sheet */}
       <Sheet open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <SheetContent className="sm:max-w-[600px] overflow-y-auto">
+        <SheetContent className="w-full sm:max-w-[600px] overflow-y-auto">
           <SheetHeader className="mb-6">
             <SheetTitle>Login Attempt</SheetTitle>
             <SheetDescription>Authentication attempt details</SheetDescription>

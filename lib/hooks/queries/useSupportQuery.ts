@@ -195,6 +195,22 @@ export function useVerifySupportAccessCodeMutation() {
   });
 }
 
+export function useVerifySupportAccessCodeQuery(
+  params: { ticket: string; email: string; code: string },
+  enabled: boolean,
+) {
+  return useQuery({
+    queryKey: [...supportKeys.public(), "verify-code", params] as const,
+    queryFn: async (): Promise<SupportAccessResponse> => {
+      const response = await verifySupportAccessCode(params);
+      return ensureSuccess(response, "Failed to verify access code");
+    },
+    enabled: enabled && Boolean(params.ticket && params.email && params.code),
+    retry: false,
+    staleTime: Infinity,
+  });
+}
+
 export function usePublicSupportConversationQuery(
   params: PublicConversationParams,
   enabled: boolean,

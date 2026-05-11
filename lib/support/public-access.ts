@@ -30,7 +30,7 @@ export function storePublicSupportAccessToken(ticket: string, email: string, tok
     return;
   }
 
-  window.sessionStorage.setItem(getStorageKey(ticket, email), token);
+  window.localStorage.setItem(getStorageKey(ticket, email), token);
 }
 
 export function getStoredPublicSupportAccessToken(ticket: string, email: string): string {
@@ -38,7 +38,7 @@ export function getStoredPublicSupportAccessToken(ticket: string, email: string)
     return "";
   }
 
-  return window.sessionStorage.getItem(getStorageKey(ticket, email)) || "";
+  return window.localStorage.getItem(getStorageKey(ticket, email)) || "";
 }
 
 export function clearStoredPublicSupportAccessToken(ticket: string, email: string): void {
@@ -46,5 +46,5 @@ export function clearStoredPublicSupportAccessToken(ticket: string, email: strin
     return;
   }
 
-  window.sessionStorage.removeItem(getStorageKey(ticket, email));
+  window.localStorage.removeItem(getStorageKey(ticket, email));
 }

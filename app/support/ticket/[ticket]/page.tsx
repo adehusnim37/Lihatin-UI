@@ -3,7 +3,6 @@
 import {
   FormEvent,
   Suspense,
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -40,15 +39,17 @@ import {
 import {
   usePublicSupportConversationQuery,
   useSendPublicSupportMessageMutation,
-  useVerifySupportAccessCodeMutation,
+  useVerifySupportAccessCodeQuery,
 } from "@/lib/hooks/queries/useSupportQuery";
 import {
-  buildPublicSupportConversationURL,
   clearStoredPublicSupportAccessToken,
   getStoredPublicSupportAccessToken,
   storePublicSupportAccessToken,
 } from "@/lib/support/public-access";
-import { SupportConversationBubble, formatDate } from "@/components/support/support-conversation-bubble";
+import {
+  SupportConversationBubble,
+  formatDate,
+} from "@/components/support/support-conversation-bubble";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const categoryLabelMap: Record<SupportCategory, string> = {
@@ -67,7 +68,6 @@ function PublicSupportConversationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const attachmentInputRef = useRef<HTMLInputElement | null>(null);
-  const attemptedCodeRef = useRef("");
 
   const ticketCode = useMemo(
     () =>
@@ -86,134 +86,71 @@ function PublicSupportConversationContent() {
   );
 
   const [supportAccessToken, setSupportAccessToken] = useState("");
-  const [storageReady, setStorageReady] = useState(false);
+  const [tokenFromVerify, setTokenFromVerify] = useState("");
   const [draftMessage, setDraftMessage] = useState("");
   const [draftFiles, setDraftFiles] = useState<File[]>([]);
   const [accessError, setAccessError] = useState("");
-  const hasCodeQuery = searchParams.get("code");
-  const verifyCodeMutation = useVerifySupportAccessCodeMutation();
+
+  const hasToken = Boolean(supportAccessToken.trim() || tokenFromVerify.trim());
+  const shouldVerifyLinkCode =
+    !hasToken && Boolean(linkCode) && Boolean(ticketCode) && Boolean(email);
+
+  const verifyCodeQuery = useVerifySupportAccessCodeQuery(
+    { ticket: ticketCode, email, code: linkCode },
+    shouldVerifyLinkCode,
+  );
+
   const sendMessageMutation = useSendPublicSupportMessageMutation();
   const conversationQuery = usePublicSupportConversationQuery(
     {
       ticket: ticketCode,
-      email: email.trim(),
-      accessToken: supportAccessToken.trim(),
+      email,
+      accessToken: supportAccessToken || tokenFromVerify,
     },
-    Boolean(ticketCode && email.trim() && supportAccessToken.trim()),
+    Boolean(ticketCode && email && hasToken),
   );
   const conversation = conversationQuery.data ?? null;
   const isConversationLoading = conversationQuery.isLoading;
   const isRefreshingConversation =
     conversationQuery.isFetching && Boolean(conversation);
-  const {
-    data: conversationData,
-    isFetching: isConversationFetching,
-    refetch: refetchConversation,
-  } = conversationQuery;
 
-  const openConversation = useCallback(
-    (token: string) => {
+  useEffect(() => {
+    if (ticketCode && email) {
+      const stored = getStoredPublicSupportAccessToken(ticketCode, email);
+      if (stored) setSupportAccessToken(stored);
+    }
+  }, [ticketCode, email]);
+
+  useEffect(() => {
+    if (verifyCodeQuery.status === "success" && verifyCodeQuery.data?.access_token) {
+      const token = verifyCodeQuery.data.access_token;
       setSupportAccessToken(token);
-      storePublicSupportAccessToken(ticketCode, email.trim(), token);
+      storePublicSupportAccessToken(ticketCode, email, token);
       setAccessError("");
-    },
-    [email, ticketCode],
-  );
 
-  const verifyCodeAndOpen = useCallback(
-    async (code: string) => {
-      if (!ticketCode || !email.trim() || !code.trim()) {
-        setAccessError("Ticket, email, and access code are required.");
-        return;
-      }
-
-      setAccessError("");
-      try {
-        const response = await verifyCodeMutation.mutateAsync({
-          ticket: ticketCode,
-          email: email.trim(),
-          code: code.trim(),
-        });
-
-        const token = response.access_token || "";
-        if (!token) {
-          throw new Error("Access token missing in response");
-        }
-
-        openConversation(token);
-
-        if (hasCodeQuery) {
-          router.replace(
-            buildPublicSupportConversationURL(ticketCode, email.trim()),
-          );
-        }
-
-        toast.success("Secure access granted");
-      } catch (error: unknown) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Please verify access again.";
-        setAccessError(message);
-        toast.error("Failed to verify access code", {
-          description: message,
-        });
-      }
-    },
-    [
-      email,
-      hasCodeQuery,
-      openConversation,
-      router,
-      ticketCode,
-      verifyCodeMutation,
-    ],
-  );
+      const url = new URL(window.location.href);
+      url.searchParams.delete("code");
+      router.replace(url.toString());
+      toast.success("Secure access granted");
+    }
+  }, [verifyCodeQuery.status, verifyCodeQuery.data, ticketCode, email, router]);
 
   useEffect(() => {
-    if (!ticketCode || !email.trim() || supportAccessToken.trim()) {
-      setStorageReady(true);
-      return;
+    if (
+      verifyCodeQuery.status === "error" &&
+      verifyCodeQuery.error &&
+      shouldVerifyLinkCode
+    ) {
+      const message =
+        verifyCodeQuery.error instanceof Error
+          ? verifyCodeQuery.error.message
+          : "Please verify access again.";
+      setAccessError(message);
+      toast.error("Failed to verify access code", {
+        description: message,
+      });
     }
-
-    const storedToken = getStoredPublicSupportAccessToken(
-      ticketCode,
-      email.trim(),
-    );
-    if (storedToken) {
-      setSupportAccessToken(storedToken);
-      setAccessError("");
-      setStorageReady(true);
-      return;
-    }
-
-    if (linkCode.trim() && attemptedCodeRef.current !== linkCode.trim()) {
-      attemptedCodeRef.current = linkCode.trim();
-      void verifyCodeAndOpen(linkCode.trim());
-      setStorageReady(true);
-      return;
-    }
-
-    setAccessError("Secure access required before opening conversation.");
-    setStorageReady(true);
-  }, [email, linkCode, supportAccessToken, ticketCode, verifyCodeAndOpen]);
-
-  useEffect(() => {
-    if (!supportAccessToken.trim()) {
-      return;
-    }
-
-    if (isConversationFetching || conversationData) {
-      return;
-    }
-
-    void refetchConversation();
-  }, [
-    conversationData,
-    isConversationFetching,
-    refetchConversation,
-    supportAccessToken,
-  ]);
+  }, [verifyCodeQuery.status, verifyCodeQuery.error, shouldVerifyLinkCode]);
 
   useEffect(() => {
     if (!conversationQuery.error) {
@@ -233,7 +170,7 @@ function PublicSupportConversationContent() {
   const handleSendMessage = async (event: FormEvent) => {
     event.preventDefault();
 
-    if (!email.trim() || !supportAccessToken.trim()) {
+    if (!email || !activeToken) {
       toast.error("Secure access required first");
       return;
     }
@@ -247,8 +184,8 @@ function PublicSupportConversationContent() {
       await sendMessageMutation.mutateAsync({
         params: {
           ticket: ticketCode,
-          email: email.trim(),
-          accessToken: supportAccessToken,
+          email,
+          accessToken: activeToken,
         },
         payload: {
           body: draftMessage.trim(),
@@ -272,19 +209,23 @@ function PublicSupportConversationContent() {
   };
 
   const handleResetAccess = () => {
-    clearStoredPublicSupportAccessToken(ticketCode, email.trim());
+    clearStoredPublicSupportAccessToken(ticketCode, email);
     setSupportAccessToken("");
+    setTokenFromVerify("");
     router.push(
-      `/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email.trim())}`,
+      `/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email)}`,
     );
   };
 
   const categoryLabel = conversation
     ? categoryLabelMap[conversation.category]
     : null;
-  const conversationDescription = !storageReady
-    ? "Checking secure access..."
-    : supportAccessToken
+  const activeToken = supportAccessToken || tokenFromVerify;
+  const isVerifyingFromLink = verifyCodeQuery.isPending && shouldVerifyLinkCode;
+  const needsAccess = !activeToken && !isVerifyingFromLink;
+  const conversationDescription = isVerifyingFromLink
+    ? "Verifying secure access..."
+    : activeToken
       ? "Secure thread active. You can reply and upload files."
       : "Access needed before thread can open.";
 
@@ -309,7 +250,7 @@ function PublicSupportConversationContent() {
             <div className="flex flex-wrap items-center gap-2">
               <Button asChild variant="outline">
                 <Link
-                  href={`/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email.trim())}`}
+                  href={`/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email)}`}
                 >
                   <IconArrowLeft className="mr-2 h-4 w-4" />
                   Back to Support Access
@@ -337,18 +278,20 @@ function PublicSupportConversationContent() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {!email.trim() ? (
+                {!email ? (
                   <div className="rounded-lg border bg-muted/20 p-4 text-sm text-muted-foreground">
                     Email missing from support link. Return to support page and
                     verify ticket again.
                   </div>
-                ) : isConversationLoading || verifyCodeMutation.isPending ? (
-                  <div className="rounded-lg border bg-muted/20 p-4 text-sm text-muted-foreground">
-                    {verifyCodeMutation.isPending
-                      ? "Verifying secure access..."
-                      : "Loading conversation..."}
+                ) : isVerifyingFromLink ? (
+                  <div className="rounded-lg border bg-primary/20 p-4 text-sm text-primary">
+                    Verifying secure access from link...
                   </div>
-                ) : conversation ? (
+                ) : isConversationLoading && activeToken ? (
+                  <div className="rounded-lg border bg-muted/20 p-4 text-sm text-muted-foreground">
+                    Loading conversation...
+                  </div>
+                ) : conversation && activeToken ? (
                   <>
                     <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-muted/20 px-4 py-3 text-sm">
                       <div>
@@ -382,7 +325,7 @@ function PublicSupportConversationContent() {
                               getPublicSupportAttachmentURL({
                                 ticket: conversation.ticket_code,
                                 email,
-                                accessToken: supportAccessToken,
+                                accessToken: activeToken,
                                 attachmentID: id,
                               })
                             }
@@ -401,9 +344,9 @@ function PublicSupportConversationContent() {
                           <IconMessage2 className="h-4 w-4 stroke-emerald-600" />
                           <AlertTitle>Conversation Closed</AlertTitle>
                           <AlertDescription className="text-emerald-800">
-                            This ticket has been marked as {conversation.status}{" "} on{" "}
-                            {formatDate(conversation.updated_at!)}.{" "}
-                            Cannot receive or send new messages.
+                            This ticket has been marked as {conversation.status}{" "}
+                            on {formatDate(conversation.updated_at!)}. Cannot
+                            receive or send new messages.
                           </AlertDescription>
                         </Alert>
                       ) : (
@@ -471,7 +414,7 @@ function PublicSupportConversationContent() {
                     <div className="flex flex-wrap gap-2">
                       <Button asChild>
                         <Link
-                          href={`/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email.trim())}`}
+                          href={`/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email)}`}
                         >
                           <IconKey className="mr-2 h-4 w-4" />
                           Verify Access on Support Page
