@@ -22,13 +22,19 @@ import { toast } from "sonner";
 interface ChangeEmailModalProps {
   currentEmail?: string;
   onEmailChanged?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export default function ChangeEmailModal({
   currentEmail,
   onEmailChanged,
+  open: externalOpen,
+  onOpenChange: externalOnOpenChange,
 }: ChangeEmailModalProps = {}) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = externalOpen ?? internalOpen;
+  const setIsOpen = externalOnOpenChange ?? setInternalOpen;
   const [newEmail, setNewEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -106,11 +112,6 @@ export default function ChangeEmailModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="min-w-40 justify-center">
-          Change Email
-        </Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit}>
           <DialogHeader>

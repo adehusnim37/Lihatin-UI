@@ -22,13 +22,19 @@ import { toast } from "sonner";
 interface ChangeUsernameModalProps {
   currentUsername?: string;
   onUsernameChanged?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export default function ChangeUsernameModal({
   currentUsername,
   onUsernameChanged,
+  open: externalOpen,
+  onOpenChange: externalOnOpenChange,
 }: ChangeUsernameModalProps = {}) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = externalOpen ?? internalOpen;
+  const setIsOpen = externalOnOpenChange ?? setInternalOpen;
   const [newUsername, setNewUsername] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -116,11 +122,6 @@ export default function ChangeUsernameModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="min-w-40 justify-center">
-          Change Username
-        </Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit}>
           <DialogHeader>

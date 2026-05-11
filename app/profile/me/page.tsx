@@ -17,9 +17,6 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   IconBell,
-  IconEdit,
-  IconCheck,
-  IconX,
   IconCrown,
   IconUserQuestion,
   IconCamera,
@@ -46,6 +43,7 @@ import { Item, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import SessionTab from "@/components/profile/tab/session";
 import {
   Dialog,
@@ -64,11 +62,6 @@ import { Input } from "@/components/ui/input";
 function ProfilePageContent() {
   const [user, setUser] = useState<AuthProfileData["user"]>();
   const [userAuth, setUserAuth] = useState<AuthProfileData["auth"]>();
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [editedUser, setEditedUser] = useState<
-    Partial<AuthProfileData["user"]>
-  >({});
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState(
     searchParams.get("tab") || "general",
@@ -78,7 +71,18 @@ function ProfilePageContent() {
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isViewPhotoOpen, setIsViewPhotoOpen] = useState(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const openPopover = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    setIsPopoverOpen(true);
+  };
+
+  const closePopoverWithDelay = () => {
+    hoverTimeoutRef.current = setTimeout(() => setIsPopoverOpen(false), 150);
+  };
   const { data: profileResponse, isLoading: isProfileLoading, refetch } =
     useProfileQuery();
   const updateProfileMutation = useUpdateProfileMutation();
@@ -92,69 +96,23 @@ function ProfilePageContent() {
       setUser(profile.user);
       setUserAuth(profile.auth);
       saveUserData(profile.user);
-      setEditedUser({
-        first_name: profile.user.first_name,
-        last_name: profile.user.last_name,
-        email: profile.user.email,
-      });
     }
   }, [profileResponse]);
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-
-  const handleCancel = () => {
-    if (user) {
-      setEditedUser({
-        first_name: user.first_name,
-        last_name: user.last_name,
-        email: user.email,
-      });
-    }
-    setIsEditing(false);
-  };
-
-  const handleSave = async () => {
+  const handleSaveName = async (firstName: string, lastName: string) => {
     if (!user) return;
 
     const payload: UpdateProfileRequest = {};
-    const firstName = editedUser.first_name?.trim();
-    const lastName = editedUser.last_name?.trim();
+    if (firstName && firstName !== user.first_name) payload.first_name = firstName;
+    if (lastName && lastName !== user.last_name) payload.last_name = lastName;
 
-    if (firstName && firstName !== user.first_name) {
-      payload.first_name = firstName;
-    }
-    if (lastName && lastName !== user.last_name) {
-      payload.last_name = lastName;
-    }
+    if (Object.keys(payload).length === 0) return;
 
-    if (Object.keys(payload).length === 0) {
-      toast.info("No changes detected", {
-        description: "Edit your name before saving.",
-      });
-      setIsEditing(false);
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      await updateProfileMutation.mutateAsync(payload);
-      await refetch();
-      setIsEditing(false);
-      toast.success("Profile Updated", {
-        description: "Your profile has been updated successfully.",
-      });
-    } catch (error) {
-      toast.error("Update failed", {
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to update profile.",
-      });
-    } finally {
-      setIsSaving(false);
-    }
+    await updateProfileMutation.mutateAsync(payload);
+    await refetch();
+    toast.success("Profile Updated", {
+      description: "Your profile has been updated successfully.",
+    });
   };
 
   const handleRedeemPremium = async () => {
@@ -405,25 +363,6 @@ function ProfilePageContent() {
                       Manage your account settings and preferences
                     </p>
                   </div>
-                  {activeTab === "general" ? (
-                    !isEditing ? (
-                      <Button onClick={handleEdit}>
-                        <IconEdit className="mr-2 h-6 w-6" />
-                        Edit Profile
-                      </Button>
-                    ) : (
-                      <div className="flex gap-2">
-                        <Button variant="outline" onClick={handleCancel}>
-                          <IconX className="mr-2 h-4 w-4" />
-                          Cancel
-                        </Button>
-                        <Button onClick={handleSave} disabled={isSaving}>
-                          <IconCheck className="mr-2 h-4 w-4" />
-                          {isSaving ? "Saving..." : "Save Changes"}
-                        </Button>
-                      </div>
-                    )
-                  ) : null}
                 </div>
               </div>
 
@@ -433,75 +372,75 @@ function ProfilePageContent() {
                 <Card className="md:col-span-1 mx-auto w-full max-w-md">
                   <CardHeader className="text-center">
                     <div className="flex flex-col items-center gap-3 mb-2">
-                      {/* Avatar wrapper — grows ring and lifts on hover */}
-                      <div
-                        className="relative group cursor-pointer rounded-full transition-all duration-300 ease-out hover:scale-105 ring-2 ring-border hover:ring-4 hover:ring-primary/40 hover:shadow-xl hover:shadow-primary/20"
-                      >
-                        <Avatar className="h-32 w-32">
-                          <AvatarImage
-                            src={avatarURL}
-                            alt={`${user.first_name} ${user.last_name}`}
-                          />
-                          <AvatarFallback className="text-2xl">
-                            {getInitials(user.first_name, user.last_name)}
-                          </AvatarFallback>
-                        </Avatar>
+                      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                        <PopoverTrigger asChild>
+                          <div
+                            className="relative cursor-pointer rounded-full transition-all duration-300 ease-out hover:scale-105 ring-2 ring-border hover:ring-4 hover:ring-primary/40 hover:shadow-xl hover:shadow-primary/20"
+                            onMouseEnter={openPopover}
+                            onMouseLeave={closePopoverWithDelay}
+                          >
+                            <Avatar className="h-32 w-32">
+                              <AvatarImage
+                                src={avatarURL}
+                                alt={`${user.first_name} ${user.last_name}`}
+                              />
+                              <AvatarFallback className="text-2xl">
+                                {getInitials(user.first_name, user.last_name)}
+                              </AvatarFallback>
+                            </Avatar>
 
-                        {/* Frosted glass overlay */}
-                        <div className="absolute inset-0 rounded-full backdrop-blur-[2px] bg-black/50 flex flex-col items-stretch justify-center overflow-hidden opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out">
-                          {isUploadingAvatar ? (
-                            <div className="flex flex-col items-center justify-center gap-1.5 h-full text-white">
-                              <Loader2 className="h-6 w-6 animate-spin" />
-                              <span className="text-[11px] font-semibold tracking-wide">Uploading…</span>
-                            </div>
-                          ) : (
-                            <>
-                              {/* View Photo */}
-                              {avatarURL && (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={() => setIsViewPhotoOpen(true)}
-                                    className="group/btn flex flex-col items-center justify-center gap-1 flex-1 text-white hover:bg-white/15 active:bg-white/25 transition-colors duration-150"
-                                    aria-label="View profile photo"
-                                  >
-                                    <IconEye className="h-[18px] w-[18px] transition-transform duration-200 group-hover/btn:scale-110" />
-                                    <span className="text-[10px] font-semibold tracking-wide leading-none">View</span>
-                                  </button>
+                            {isUploadingAvatar && (
+                              <div className="absolute inset-0 rounded-full backdrop-blur-[2px] bg-black/50 flex flex-col items-center justify-center text-white">
+                                <Loader2 className="h-6 w-6 animate-spin" />
+                                <span className="text-[11px] font-semibold tracking-wide">Uploading…</span>
+                              </div>
+                            )}
 
-                                  {/* Divider */}
-                                  <div className="mx-auto w-10 h-px bg-white/25 shrink-0" />
-                                </>
-                              )}
-
-                              {/* Change / Upload Photo */}
+                            <input
+                              ref={avatarInputRef}
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp,image/gif"
+                              className="hidden"
+                              onChange={handleAvatarSelected}
+                            />
+                          </div>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          className="w-auto min-w-[140px] p-1"
+                          side="right"
+                          align="center"
+                          sideOffset={12}
+                          onMouseEnter={openPopover}
+                          onMouseLeave={closePopoverWithDelay}
+                        >
+                          <div className="flex flex-col gap-0.5">
+                            {avatarURL && (
                               <button
                                 type="button"
-                                onClick={handleAvatarUploadClick}
-                                className="group/btn flex flex-col items-center justify-center gap-1 flex-1 text-white hover:bg-white/15 active:bg-white/25 transition-colors duration-150"
-                                aria-label={user.avatar ? "Change profile photo" : "Upload profile photo"}
+                                onClick={() => { setIsViewPhotoOpen(true); setIsPopoverOpen(false); }}
+                                className="flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors duration-150 w-full text-left"
+                                aria-label="View profile photo"
                               >
-                                <IconCamera className="h-[18px] w-[18px] transition-transform duration-200 group-hover/btn:scale-110" />
-                                <span className="text-[10px] font-semibold tracking-wide leading-none">
-                                  {user.avatar ? "Change" : "Upload"}
-                                </span>
+                                <IconEye className="h-4 w-4" />
+                                <span>View Photo</span>
                               </button>
-                            </>
-                          )}
-                        </div>
-
-                        <input
-                          ref={avatarInputRef}
-                          type="file"
-                          accept="image/jpeg,image/png,image/webp,image/gif"
-                          className="hidden"
-                          onChange={handleAvatarSelected}
-                        />
-                      </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => { handleAvatarUploadClick(); setIsPopoverOpen(false); }}
+                              className="flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors duration-150 w-full text-left"
+                              aria-label={user.avatar ? "Change profile photo" : "Upload profile photo"}
+                            >
+                              <IconCamera className="h-4 w-4" />
+                              <span>{user.avatar ? "Change Photo" : "Upload Photo"}</span>
+                            </button>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
 
                       {/* View Photo Dialog */}
                       <Dialog open={isViewPhotoOpen} onOpenChange={setIsViewPhotoOpen}>
-                        <DialogContent className="sm:max-w-sm p-0 overflow-hidden rounded-2xl border-0 shadow-2xl">
+                        <DialogContent className="sm:max-w-2xl p-0 overflow-hidden rounded-2xl border-0 shadow-2xl">
                           <DialogHeader className="sr-only">
                             <DialogTitle>Profile Photo</DialogTitle>
                             <DialogDescription>Full-size profile photo preview</DialogDescription>
@@ -682,10 +621,8 @@ function ProfilePageContent() {
                     {/* General Tab */}
                     <ProfileGeneralTab
                       user={user}
-                      editedUser={editedUser}
-                      setEditedUser={setEditedUser}
-                      isEditing={isEditing}
                       formatDate={formatDate}
+                      onSaveName={handleSaveName}
                       onEmailChanged={refreshProfile}
                       onUsernameChanged={refreshProfile}
                     />
