@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useMemo, type CSSProperties } from "react";
 import { ShieldAlert } from "lucide-react";
-import { toast } from "sonner";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
@@ -16,53 +15,18 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import {
-  getAdminDisposableEmailPolicy,
-  updateAdminDisposableEmailPolicy,
-  type AdminDisposableEmailPolicyResponse,
-} from "@/lib/api/auth";
-
-type LoadState = "loading" | "ready" | "forbidden" | "error";
+  useAdminDisposableEmailPolicyQuery,
+  useUpdateAdminDisposableEmailPolicyMutation,
+} from "@/lib/hooks/queries/useAdminQuery";
 
 export default function AdminSecurityPolicyPage() {
-  const [state, setState] = useState<LoadState>("loading");
-  const [policy, setPolicy] = useState<AdminDisposableEmailPolicyResponse | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        // Fast guard from same user payload used by sidebar.
-        const roleFromStorage = getStoredRole();
-        if (roleFromStorage && !isAdminRole(roleFromStorage)) {
-          setState("forbidden");
-          return;
-        }
-
-        // Authoritative check still done by admin endpoint (cookie-auth on backend).
-        const policyResponse = await getAdminDisposableEmailPolicy();
-        setPolicy(policyResponse.data ?? null);
-        setState("ready");
-      } catch (error) {
-        const message = error instanceof Error ? error.message.toLowerCase() : "";
-        if (
-          message.includes("administrator") ||
-          message.includes("permission") ||
-          message.includes("access denied") ||
-          message.includes("forbidden")
-        ) {
-          setState("forbidden");
-          return;
-        }
-        console.error("Failed to load admin policy page", error);
-        setState("error");
-      }
-    };
-
-    void load();
-  }, []);
+  const roleFromStorage = getStoredRole();
+  const isAdmin = roleFromStorage && isAdminRole(roleFromStorage);
+  const { data: policy, isLoading, isError } = useAdminDisposableEmailPolicyQuery();
+  const updatePolicyMutation = useUpdateAdminDisposableEmailPolicyMutation();
 
   const formattedUpdatedAt = useMemo(() => {
-    if (!policy?.last_updated_at) {
+    if (!policy || !policy.last_updated_at) {
       return "Unknown";
     }
     return new Date(policy.last_updated_at).toLocaleString("en-US", {
@@ -72,35 +36,11 @@ export default function AdminSecurityPolicyPage() {
       hour: "2-digit",
       minute: "2-digit",
     });
-  }, [policy?.last_updated_at]);
+  }, [policy]);
 
-  const handleToggle = async (checked: boolean) => {
-    if (!policy || isSaving) {
-      return;
-    }
-
-    const previous = policy;
-    setPolicy({ ...policy, enabled: checked });
-    setIsSaving(true);
-
-    try {
-      const response = await updateAdminDisposableEmailPolicy({ enabled: checked });
-      if (response.data) {
-        setPolicy(response.data);
-      }
-      toast.success("Policy updated", {
-        description: checked
-          ? "Disposable email protection is now enabled."
-          : "Disposable email protection is now disabled.",
-      });
-    } catch (error) {
-      setPolicy(previous);
-      toast.error("Failed to update policy", {
-        description: error instanceof Error ? error.message : "Please try again.",
-      });
-    } finally {
-      setIsSaving(false);
-    }
+  const handleToggle = (checked: boolean) => {
+    if (!policy || updatePolicyMutation.isPending) return;
+    updatePolicyMutation.mutate({ enabled: checked });
   };
 
   return (
@@ -123,9 +63,9 @@ export default function AdminSecurityPolicyPage() {
             </p>
           </div>
 
-          {state === "loading" && <PageSkeleton />}
+          {isLoading && <PageSkeleton />}
 
-          {state === "forbidden" && (
+          {!isAdmin && (
             <Card>
               <CardHeader>
                 <CardTitle>Access Denied</CardTitle>
@@ -134,7 +74,7 @@ export default function AdminSecurityPolicyPage() {
             </Card>
           )}
 
-          {state === "error" && (
+          {isError && (
             <Card>
               <CardHeader>
                 <CardTitle>Failed to Load Policy</CardTitle>
@@ -143,7 +83,7 @@ export default function AdminSecurityPolicyPage() {
             </Card>
           )}
 
-          {state === "ready" && policy && (
+          {!isLoading && !isError && policy && isAdmin && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -166,7 +106,7 @@ export default function AdminSecurityPolicyPage() {
                   <Switch
                     checked={policy.enabled}
                     onCheckedChange={handleToggle}
-                    disabled={isSaving}
+                    disabled={updatePolicyMutation.isPending}
                     aria-label="Toggle disposable email policy"
                   />
                 </div>
@@ -231,3 +171,5 @@ function getStoredRole(): string | null {
 function isAdminRole(role: string): boolean {
   return role === "admin" || role === "super_admin";
 }
+
+export { getStoredRole, isAdminRole };

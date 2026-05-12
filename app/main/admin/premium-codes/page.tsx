@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useMemo, useState, useEffect, type CSSProperties } from "react";
 import { IconCopy, IconMailForward } from "@tabler/icons-react";
 import { toast } from "sonner";
 
@@ -37,27 +37,29 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  getAdminUsers,
-  getAdminPremiumCodes,
-  sendAdminPremiumCodeEmail,
   type AdminPremiumCode,
-  type AdminPremiumCodesResponse,
   type AdminUserResponse,
 } from "@/lib/api/auth";
+import {
+  useAdminPremiumCodesQuery,
+  useAdminUsersQuery,
+  useSendAdminPremiumCodeEmailMutation,
+} from "@/lib/hooks/queries/useAdminQuery";
 
-type LoadState = "loading" | "ready" | "forbidden" | "error";
 type RecipientMode = "used_user" | "custom_email";
 
 const PAGE_LIMIT = 10;
 const USER_PAGE_LIMIT = 100;
 
 export default function AdminPremiumCodesPage() {
-  const [state, setState] = useState<LoadState>("loading");
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [codes, setCodes] = useState<AdminPremiumCode[]>([]);
-  const [adminUsers, setAdminUsers] = useState<AdminUserResponse[]>([]);
-  const [userLabelById, setUserLabelById] = useState<Record<string, string>>({});
-  const [pagination, setPagination] = useState<AdminPremiumCodesResponse | null>(null);
+  const [roleFromStorage, setRoleFromStorage] = useState<string | null | undefined>(undefined);
+  useEffect(() => {
+    // Read localStorage on client only to avoid SSR/client HTML mismatch
+    const r = getStoredRole();
+    setRoleFromStorage(r);
+  }, []);
+
+  const isAdmin = roleFromStorage ? isAdminRole(roleFromStorage) : false;
   const [page, setPage] = useState(1);
   const [detailOpen, setDetailOpen] = useState(false);
   const [activeCode, setActiveCode] = useState<AdminPremiumCode | null>(null);
@@ -66,157 +68,56 @@ export default function AdminPremiumCodesPage() {
   const [customEmail, setCustomEmail] = useState("");
   const [customName, setCustomName] = useState("");
   const [messageNote, setMessageNote] = useState("");
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
-  useEffect(() => {
-    let active = true;
+  const { data: codesData, isLoading, isError, isFetching, refetch } = useAdminPremiumCodesQuery(page, PAGE_LIMIT);
+  const codes = useMemo(() => codesData?.keys ?? [], [codesData?.keys]);
+  const pagination = codesData ?? null;
 
-    const load = async () => {
-      try {
-        if (!isRefreshing) {
-          setState("loading");
-        }
+  const { data: allUsersData } = useAdminUsersQuery(1, USER_PAGE_LIMIT);
+  const adminUsers = useMemo(() => allUsersData?.users ?? [], [allUsersData?.users]);
 
-        const roleFromStorage = getStoredRole();
-        if (roleFromStorage && !isAdminRole(roleFromStorage)) {
-          if (!active) return;
-          setState("forbidden");
-          return;
-        }
+  const sendEmailMutation = useSendAdminPremiumCodeEmailMutation();
 
-        const [listResponse, usersResponse] = await Promise.all([
-          getAdminPremiumCodes({
-            page,
-            limit: PAGE_LIMIT,
-            sort: "created_at",
-            order_by: "desc",
-          }),
-          getAdminUsers({
-            page: 1,
-            limit: USER_PAGE_LIMIT,
-            sort: "created_at",
-            order_by: "desc",
-          }),
-        ]);
-
-        if (!active) return;
-        const listData = listResponse.data;
-        const keys = listData?.keys ?? [];
-        setCodes(keys);
-        setPagination(listData);
-        const usersFromFirstPage = usersResponse.data?.users ?? [];
-        const totalUserPages = usersResponse.data?.total_pages ?? 1;
-        const userPages =
-          totalUserPages > 1
-            ? await Promise.all(
-                Array.from({ length: totalUserPages - 1 }, (_, index) =>
-                  getAdminUsers({
-                    page: index + 2,
-                    limit: USER_PAGE_LIMIT,
-                    sort: "created_at",
-                    order_by: "desc",
-                  })
-                )
-              )
-            : [];
-        const users = [
-          ...usersFromFirstPage,
-          ...userPages.flatMap((response) => response.data?.users ?? []),
-        ];
-        const dedupedUsers = Array.from(
-          new Map(users.map((user) => [user.id, user])).values()
-        );
-        setAdminUsers(dedupedUsers);
-
-        const mappedLabels: Record<string, string> = {};
-        for (const user of dedupedUsers) {
-          mappedLabels[user.id] = `${user.username} (${user.email})`;
-        }
-        for (const key of keys) {
-          for (const usage of key.key_usage ?? []) {
-            if (!mappedLabels[usage.user_id]) {
-              mappedLabels[usage.user_id] = usage.user_id;
-            }
-          }
-        }
-        setUserLabelById(mappedLabels);
-        setState("ready");
-      } catch (error) {
-        if (!active) return;
-        const message = error instanceof Error ? error.message.toLowerCase() : "";
-        if (
-          message.includes("administrator") ||
-          message.includes("permission") ||
-          message.includes("access denied") ||
-          message.includes("forbidden")
-        ) {
-          setState("forbidden");
-          return;
-        }
-        console.error("Failed to load premium codes", error);
-        setState("error");
-      } finally {
-        if (active) {
-          setIsRefreshing(false);
+  const userLabelById = useMemo(() => {
+    const mappedLabels: Record<string, string> = {};
+    for (const user of adminUsers) {
+      mappedLabels[user.id] = `${user.username} (${user.email})`;
+    }
+    for (const key of codes) {
+      for (const usage of key.key_usage ?? []) {
+        if (!mappedLabels[usage.user_id]) {
+          mappedLabels[usage.user_id] = usage.user_id;
         }
       }
-    };
-
-    void load();
-    return () => {
-      active = false;
-    };
-  }, [page, isRefreshing]);
+    }
+    return mappedLabels;
+  }, [adminUsers, codes]);
 
   const hasPrevious = page > 1;
   const hasNext = useMemo(() => {
-    if (!pagination) {
-      return false;
-    }
+    if (!pagination) return false;
     return pagination.page * pagination.limit < pagination.total;
   }, [pagination]);
 
   const activeCodeUsedUserIDs = useMemo(() => {
-    if (!activeCode) {
-      return [];
-    }
-    return Array.from(
-      new Set((activeCode.key_usage ?? []).map((usage) => usage.user_id))
-    );
+    if (!activeCode) return [];
+    return Array.from(new Set((activeCode.key_usage ?? []).map((usage) => usage.user_id)));
   }, [activeCode]);
 
   const isActiveCodeLimitReached = useMemo(() => {
-    if (!activeCode) {
-      return false;
-    }
-    if (!activeCode.limit_usage || activeCode.limit_usage <= 0) {
-      return false;
-    }
+    if (!activeCode) return false;
+    if (!activeCode.limit_usage || activeCode.limit_usage <= 0) return false;
     return activeCode.usage_count >= activeCode.limit_usage;
   }, [activeCode]);
 
   const activeCodeLastRedeemedAt = useMemo(() => {
-    if (!activeCode?.key_usage?.length) {
-      return null;
-    }
-
+    if (!activeCode?.key_usage?.length) return null;
     return activeCode.key_usage.reduce<string | null>((latest, usage) => {
       const current = usage.created_at;
-      if (!latest) {
-        return current;
-      }
-      return new Date(current).getTime() > new Date(latest).getTime()
-        ? current
-        : latest;
+      if (!latest) return current;
+      return new Date(current).getTime() > new Date(latest).getTime() ? current : latest;
     }, null);
   }, [activeCode]);
-
-  useEffect(() => {
-    if (recipientMode !== "used_user" || selectedUserID || adminUsers.length === 0) {
-      return;
-    }
-    setSelectedUserID(adminUsers[0].id);
-  }, [recipientMode, selectedUserID, adminUsers]);
 
   const openDetailDialog = (code: AdminPremiumCode) => {
     setActiveCode(code);
@@ -234,10 +135,8 @@ export default function AdminPremiumCodesPage() {
     setDetailOpen(true);
   };
 
-  const handleSendSecretCode = async () => {
-    if (!activeCode || isSendingEmail) {
-      return;
-    }
+  const handleSendSecretCode = () => {
+    if (!activeCode || sendEmailMutation.isPending) return;
 
     if (recipientMode === "used_user" && !selectedUserID) {
       toast.error("Recipient user required", {
@@ -254,32 +153,12 @@ export default function AdminPremiumCodesPage() {
       return;
     }
 
-    setIsSendingEmail(true);
-    try {
-      const payload =
-        recipientMode === "used_user"
-          ? {
-              user_id: selectedUserID,
-              note: messageNote.trim() || undefined,
-            }
-          : {
-              recipient_email: trimmedEmail,
-              recipient_name: customName.trim() || undefined,
-              note: messageNote.trim() || undefined,
-            };
+    const payload =
+      recipientMode === "used_user"
+        ? { user_id: selectedUserID, note: messageNote.trim() || undefined }
+        : { recipient_email: trimmedEmail, recipient_name: customName.trim() || undefined, note: messageNote.trim() || undefined };
 
-      const response = await sendAdminPremiumCodeEmail(activeCode.id, payload);
-      const sentTo = response.data?.recipient_email || "recipient";
-      toast.success("Secret code sent", {
-        description: `Email delivered to ${sentTo}.`,
-      });
-    } catch (error) {
-      toast.error("Failed to send secret code", {
-        description: error instanceof Error ? error.message : "Please try again.",
-      });
-    } finally {
-      setIsSendingEmail(false);
-    }
+    sendEmailMutation.mutate({ premiumCodeId: activeCode.id, payload });
   };
 
   return (
@@ -304,16 +183,18 @@ export default function AdminPremiumCodesPage() {
             </div>
             <Button
               variant="outline"
-              onClick={() => setIsRefreshing(true)}
-              disabled={state === "loading"}
+              onClick={() => refetch()}
+              disabled={isLoading || isFetching}
             >
               Refresh
             </Button>
           </div>
 
-          {state === "loading" && <PageSkeleton />}
+          {(isLoading || isFetching) && <PageSkeleton />}
 
-          {state === "forbidden" && (
+          {typeof roleFromStorage === "undefined" && <PageSkeleton />}
+
+          {!isAdmin && (
             <Card>
               <CardHeader>
                 <CardTitle>Access Denied</CardTitle>
@@ -322,7 +203,7 @@ export default function AdminPremiumCodesPage() {
             </Card>
           )}
 
-          {state === "error" && (
+          {isError && (
             <Card>
               <CardHeader>
                 <CardTitle>Failed to Load Premium Codes</CardTitle>
@@ -331,7 +212,7 @@ export default function AdminPremiumCodesPage() {
             </Card>
           )}
 
-          {state === "ready" && (
+          {!isLoading && !isError && isAdmin && (
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div className="space-y-1">
@@ -605,9 +486,9 @@ export default function AdminPremiumCodesPage() {
             </Button>
             <Button
               onClick={handleSendSecretCode}
-              disabled={!activeCode || isSendingEmail || isActiveCodeLimitReached}
+              disabled={!activeCode || sendEmailMutation.isPending || isActiveCodeLimitReached}
             >
-              {isSendingEmail ? "Sending..." : "Send Secret Code"}
+              {sendEmailMutation.isPending ? "Sending..." : "Send Secret Code"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -313,7 +313,7 @@ export default function AnalyticsPage() {
                 </CardTitle>
                 <CardDescription>Top locations by clicks</CardDescription>
               </CardHeader>
-              <CardContent className="flex-1 pb-0">
+              <CardContent className="flex-1 pb-0 min-w-0">
                 <ChartContainer
                   config={chartConfig}
                   className="mx-auto aspect-square max-h-[250px] w-full"
@@ -381,7 +381,7 @@ export default function AnalyticsPage() {
                 </CardTitle>
                 <CardDescription>Device distribution</CardDescription>
               </CardHeader>
-              <CardContent className="flex-1 pb-0">
+              <CardContent className="flex-1 pb-0 min-w-0">
                 <ChartContainer
                   config={chartConfig}
                   className="mx-auto aspect-square max-h-[250px]"
@@ -432,7 +432,7 @@ export default function AnalyticsPage() {
                 </CardTitle>
                 <CardDescription>Traffic sources</CardDescription>
               </CardHeader>
-              <CardContent className="flex-1 pb-0">
+              <CardContent className="flex-1 pb-0 min-w-0">
                 <ChartContainer
                   config={chartConfig}
                   className="mx-auto aspect-square max-h-[200px]"

@@ -19,48 +19,27 @@ import { Label } from "recharts";
 import ChangePasswordDialog from "../modal/changePassword";
 import SetupTOTPModal from "../modal/setupTOTP";
 import DisableTOTPModal from "../modal/disableTOTP";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { getProfile, AuthProfileData } from "@/lib/api/auth";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useProfileQuery } from "@/lib/hooks/queries/useProfileQuery";
 
 export default function ProfileSecurityTab() {
   const searchParams = useSearchParams();
   const [isSessionOpen, setIsSessionOpen] = useState(false);
-  const [profileData, setProfileData] = useState<AuthProfileData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: profileResponse, isLoading, error: profileError, refetch } = useProfileQuery();
+  const profileData = profileResponse?.data ?? null;
   const shouldAutoOpenTOTP =
     searchParams.get("openSetupTOTP") === "1" &&
     !profileData?.auth.is_totp_enabled;
 
-  const fetchProfile = async () => {
-    try {
-      setIsLoading(true);
-      const response = await getProfile();
-      if (response.success && response.data) {
-        setProfileData(response.data);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch profile");
-      console.error("Failed to fetch profile:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
   const handlePasswordChanged = () => {
-    // Refresh profile data to update password_changed_at timestamp
-    fetchProfile();
+    void refetch();
   };
 
   const formatDateTime = (dateString?: string) => {
@@ -111,7 +90,7 @@ export default function ProfileSecurityTab() {
     );
   }
 
-  if (error) {
+  if (profileError) {
     return (
       <TabsContent value="security" className="space-y-4">
         <Card>
@@ -120,7 +99,7 @@ export default function ProfileSecurityTab() {
             <CardDescription>Failed to load security settings</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-destructive">{error}</p>
+            <p className="text-sm text-destructive">{profileError instanceof Error ? profileError.message : "Failed to load security settings"}</p>
           </CardContent>
         </Card>
       </TabsContent>
@@ -266,10 +245,10 @@ export default function ProfileSecurityTab() {
                 </div>
               </div>
               {profileData?.auth.is_totp_enabled ? (
-                <DisableTOTPModal onDisableComplete={fetchProfile} />
+                <DisableTOTPModal onDisableComplete={() => refetch()} />
               ) : (
                 <SetupTOTPModal
-                  onSetupComplete={fetchProfile}
+                  onSetupComplete={() => refetch()}
                   openOnMount={shouldAutoOpenTOTP}
                 />
               )}

@@ -6,7 +6,8 @@ import {
   ExternalLink,
   BookOpen,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -26,27 +27,21 @@ const POSTMAN_COLLECTION_URL =
 
 export default function ApiIntegrationsPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [docsAvailable, setDocsAvailable] = useState(false);
-  const [docsLoading, setDocsLoading] = useState(true);
   const queryClient = useQueryClient();
 
   const docsUrl = API_DOCS_URL;
-
-  useEffect(() => {
-    // Check if the docs endpoint is available
-    fetch(docsUrl)
-      .then((res) => {
-        if (res.ok) {
-          setDocsAvailable(true);
-        }
-      })
-      .catch(() => {
-        // Docs endpoint not available
-      })
-      .finally(() => {
-        setDocsLoading(false);
-      });
-  }, [docsUrl]);
+  const { data: docsAvailable, isLoading: docsLoading } = useQuery({
+    queryKey: ["api-docs", "available", docsUrl] as const,
+    queryFn: async () => {
+      try {
+        const res = await fetch(docsUrl);
+        return res.ok;
+      } catch {
+        return false;
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
   return (
     <SidebarProvider

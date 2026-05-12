@@ -23,7 +23,8 @@ import { Loader2, Eye, EyeOff, CheckCircle2, XCircle } from "lucide-react";
 import PasswordIndicator, {
   calculatePasswordStrength,
 } from "@/components/forms/input/PasswordIndicator";
-import { validateResetToken, resetPassword } from "@/lib/api/auth";
+import { resetPassword } from "@/lib/api/auth";
+import { useValidateResetTokenQuery } from "@/lib/hooks/queries/useAdminQuery";
 
 const BRAND_URL = process.env.NEXT_PUBLIC_BRAND_URL || "https://lihat.in";
 
@@ -51,11 +52,30 @@ function ResetPasswordContent() {
   const searchParams = useSearchParams();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isValidating, setIsValidating] = useState(true);
-  const [isValidToken, setIsValidToken] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const tokenParam = searchParams.get("token");
+  const { isLoading: isValidating, isSuccess: isValidToken, isError: isTokenError, error: tokenError } = useValidateResetTokenQuery(tokenParam);
+
+  useEffect(() => {
+    if (isTokenError && tokenError) {
+      toast.error("Invalid Token", {
+        description: tokenError instanceof Error ? tokenError.message : "This reset link is invalid or expired",
+        duration: 4000,
+      });
+    }
+  }, [isTokenError, tokenError]);
+
+  useEffect(() => {
+    if (!tokenParam && !isValidating) {
+      toast.error("Invalid Request", {
+        description: "No reset token provided",
+        duration: 3000,
+      });
+      setTimeout(() => router.push("/auth/forgot-password"), 2000);
+    }
+  }, [tokenParam, isValidating, router]);
 
   // React Hook Form setup with Zod resolver
   const form = useForm<ResetPasswordFormValues>({
@@ -70,37 +90,8 @@ function ResetPasswordContent() {
   const password = form.watch("password");
   const confirmPassword = form.watch("confirmPassword");
 
-  // Validate token on mount
-  useEffect(() => {
-    const tokenParam = searchParams.get("token");
-
-    if (!tokenParam) {
-      toast.error("Invalid Request", {
-        description: "No reset token provided",
-        duration: 3000,
-      });
-      setTimeout(() => router.push("/auth/forgot-password"), 2000);
-      return;
-    }
-
-    setToken(tokenParam);
-
-    validateResetToken(tokenParam)
-      .then(() => {
-        setIsValidToken(true);
-        setIsValidating(false);
-      })
-      .catch((error) => {
-        toast.error("Invalid Token", {
-          description: error.message || "This reset link is invalid or expired",
-          duration: 4000,
-        });
-        setIsValidating(false);
-      });
-  }, [searchParams, router]);
-
   const onSubmit = async (data: ResetPasswordFormValues) => {
-    if (!token) {
+    if (!tokenParam) {
       toast.error("Invalid Request", {
         description: "Reset token is missing",
         duration: 3000,
@@ -112,7 +103,7 @@ function ResetPasswordContent() {
 
     try {
       const response = await resetPassword({
-        token,
+        token: tokenParam,
         new_password: data.password,
         confirm_password: data.confirmPassword,
       });

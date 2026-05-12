@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import {
   IconArrowRight,
   IconClockHour4,
@@ -42,109 +42,56 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  getAdminUserPremiumStatusEvents,
-  getAdminUsers,
-  reactivateAdminUserPremiumAccess,
-  revokeAdminUserPremiumAccess,
-  type AdminPremiumStatusEventResponse,
   type AdminUserResponse,
-  type AdminUsersListResponse,
 } from "@/lib/api/auth";
+import {
+  useAdminUsersQuery,
+  useAdminPremiumStatusEventsQuery,
+  useRevokeAdminUserPremiumMutation,
+  useReactivateAdminUserPremiumMutation,
+} from "@/lib/hooks/queries/useAdminQuery";
 
-type LoadState = "loading" | "ready" | "forbidden" | "error";
 type RevokeType = "temporary" | "permanent";
 
 const PAGE_LIMIT = 20;
 
 export default function AdminPremiumAccessPage() {
-  const [state, setState] = useState<LoadState>("loading");
-  const [users, setUsers] = useState<AdminUserResponse[]>([]);
-  const [pagination, setPagination] = useState<AdminUsersListResponse | null>(null);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [detailOpen, setDetailOpen] = useState(false);
+  const [activeUserId, setActiveUserId] = useState<string | null>(null);
   const [activeUser, setActiveUser] = useState<AdminUserResponse | null>(null);
-  const [events, setEvents] = useState<AdminPremiumStatusEventResponse[]>([]);
-  const [eventsLoading, setEventsLoading] = useState(false);
 
   const [revokeType, setRevokeType] = useState<RevokeType>("temporary");
   const [reason, setReason] = useState("");
   const [overridePermanent, setOverridePermanent] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    let active = true;
-
-    const load = async () => {
-      try {
-        if (!isRefreshing) {
-          setState("loading");
-        }
-
-        const roleFromStorage = getStoredRole();
-        if (roleFromStorage && !isAdminRole(roleFromStorage)) {
-          if (!active) return;
-          setState("forbidden");
-          return;
-        }
-
-        const response = await getAdminUsers({
-          page,
-          limit: PAGE_LIMIT,
-          sort: "created_at",
-          order_by: "desc",
-        });
-
-        if (!active) return;
-        const data = response.data;
-        setUsers(data?.users ?? []);
-        setPagination(data ?? null);
-        setState("ready");
-      } catch (error) {
-        if (!active) return;
-        const message = error instanceof Error ? error.message.toLowerCase() : "";
-        if (
-          message.includes("administrator") ||
-          message.includes("permission") ||
-          message.includes("access denied") ||
-          message.includes("forbidden")
-        ) {
-          setState("forbidden");
-          return;
-        }
-        console.error("Failed to load premium access users", error);
-        setState("error");
-      } finally {
-        if (active) {
-          setIsRefreshing(false);
-        }
-      }
-    };
-
-    void load();
-    return () => {
-      active = false;
-    };
-  }, [page, isRefreshing]);
-
-  const filteredUsers = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) {
-      return users;
-    }
-    return users.filter((user) => {
+  const roleFromStorage = getStoredRole();
+  const isAdmin = roleFromStorage && isAdminRole(roleFromStorage);
+  const { data: usersData, isLoading, isError, isFetching, refetch } = useAdminUsersQuery(page, PAGE_LIMIT);
+  const users = useMemo(() => (usersData?.users ?? [])
+    .filter((user) => {
+      const term = search.trim().toLowerCase();
+      if (!term) return true;
       const target = `${user.username} ${user.email} ${user.first_name} ${user.last_name}`.toLowerCase();
       return target.includes(term);
-    });
-  }, [users, search]);
+    }), [usersData, search]);
+
+  const pagination = usersData ?? null;
+
+  const { data: eventsData, isLoading: eventsLoading, refetch: refetchEvents } = useAdminPremiumStatusEventsQuery(
+    activeUserId ?? "",
+    Boolean(activeUserId) && detailOpen,
+  );
+  const events = useMemo(() => eventsData?.items ?? [], [eventsData?.items]);
+
+  const revokeMutation = useRevokeAdminUserPremiumMutation();
+  const reactivateMutation = useReactivateAdminUserPremiumMutation();
 
   const hasPrevious = page > 1;
   const hasNext = useMemo(() => {
-    if (!pagination) {
-      return false;
-    }
+    if (!pagination) return false;
     return pagination.page * pagination.limit < pagination.total_count;
   }, [pagination]);
 
@@ -168,36 +115,17 @@ export default function AdminPremiumAccessPage() {
     return { total, revoked, reactivated, permanent };
   }, [events]);
 
-  const openUserDetail = async (user: AdminUserResponse) => {
+  const openUserDetail = (user: AdminUserResponse) => {
+    setActiveUserId(user.id);
     setActiveUser(user);
     setDetailOpen(true);
     setRevokeType("temporary");
     setReason("");
     setOverridePermanent(false);
-    setEvents([]);
-    setEventsLoading(true);
-
-    try {
-      const response = await getAdminUserPremiumStatusEvents(user.id, { limit: 25 });
-      setEvents(response.data?.items ?? []);
-    } catch (error) {
-      toast.error("Failed to load premium status events", {
-        description: error instanceof Error ? error.message : "Please try again.",
-      });
-    } finally {
-      setEventsLoading(false);
-    }
   };
 
-  const mutateActiveUser = (partial: Partial<AdminUserResponse>) => {
-    setActiveUser((prev) => (prev ? { ...prev, ...partial } : prev));
-    setUsers((prev) =>
-      prev.map((user) => (user.id === activeUser?.id ? { ...user, ...partial } : user))
-    );
-  };
-
-  const handleRevoke = async () => {
-    if (!activeUser || submitting) return;
+  const handleRevoke = () => {
+    if (!activeUser || revokeMutation.isPending) return;
     if (!activeUser.is_premium) {
       toast.error("User is not premium", {
         description: "Revoke is only available for premium users.",
@@ -212,37 +140,19 @@ export default function AdminPremiumAccessPage() {
       return;
     }
 
-    setSubmitting(true);
-    try {
-      const response = await revokeAdminUserPremiumAccess(activeUser.id, {
-        reason: cleanReason,
-        revoke_type: revokeType,
-      });
-      const data = response.data;
-      mutateActiveUser({
-        is_premium: data?.is_premium ?? false,
-        role: data?.role ?? "user",
-        premium_revoke_type: data?.premium_revoke_type ?? revokeType,
-        premium_revoked_at: data?.premium_revoked_at ?? new Date().toISOString(),
-        premium_reactivated_at: data?.premium_reactivated_at ?? null,
-        premium_revoked_reason: data?.premium_revoked_reason ?? cleanReason,
-      });
-      toast.success("Premium revoked", {
-        description: "User downgraded to regular role.",
-      });
-      setReason("");
-      await refreshEvents(activeUser.id);
-    } catch (error) {
-      toast.error("Failed to revoke premium", {
-        description: error instanceof Error ? error.message : "Please try again.",
-      });
-    } finally {
-      setSubmitting(false);
-    }
+    revokeMutation.mutate(
+      { userId: activeUser.id, payload: { reason: cleanReason, revoke_type: revokeType } },
+      {
+        onSuccess: () => {
+          setReason("");
+          void refetchEvents();
+        },
+      },
+    );
   };
 
-  const handleReactivate = async () => {
-    if (!activeUser || submitting) return;
+  const handleReactivate = () => {
+    if (!activeUser || reactivateMutation.isPending) return;
     if (!isUserCurrentlyRevoked(activeUser)) {
       toast.error("User not in revoked state", {
         description: "Reactivate is only available after revoke.",
@@ -257,41 +167,16 @@ export default function AdminPremiumAccessPage() {
       return;
     }
 
-    setSubmitting(true);
-    try {
-      const response = await reactivateAdminUserPremiumAccess(activeUser.id, {
-        reason: cleanReason,
-        override_permanent: overridePermanent,
-      });
-      const data = response.data;
-      mutateActiveUser({
-        is_premium: data?.is_premium ?? true,
-        premium_reactivated_at: data?.premium_reactivated_at ?? new Date().toISOString(),
-        premium_reactivated_reason: data?.premium_reactivated_reason ?? cleanReason,
-      });
-      toast.success("Premium reactivated", {
-        description: "User premium access is active again.",
-      });
-      setReason("");
-      setOverridePermanent(false);
-      await refreshEvents(activeUser.id);
-    } catch (error) {
-      toast.error("Failed to reactivate premium", {
-        description: error instanceof Error ? error.message : "Please try again.",
-      });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const refreshEvents = async (userID: string) => {
-    setEventsLoading(true);
-    try {
-      const response = await getAdminUserPremiumStatusEvents(userID, { limit: 25 });
-      setEvents(response.data?.items ?? []);
-    } finally {
-      setEventsLoading(false);
-    }
+    reactivateMutation.mutate(
+      { userId: activeUser.id, payload: { reason: cleanReason, override_permanent: overridePermanent } },
+      {
+        onSuccess: () => {
+          setReason("");
+          setOverridePermanent(false);
+          void refetchEvents();
+        },
+      },
+    );
   };
 
   return (
@@ -316,17 +201,17 @@ export default function AdminPremiumAccessPage() {
             </div>
             <Button
               variant="outline"
-              onClick={() => setIsRefreshing(true)}
-              disabled={state === "loading"}
+              onClick={() => refetch()}
+              disabled={isLoading || isFetching}
             >
               <IconRefresh className="mr-2 h-4 w-4" />
               Refresh
             </Button>
           </div>
 
-          {state === "loading" && <PageSkeleton />}
+          {(isLoading || isFetching) && <PageSkeleton />}
 
-          {state === "forbidden" && (
+          {!isAdmin && (
             <Card>
               <CardHeader>
                 <CardTitle>Access Denied</CardTitle>
@@ -335,7 +220,7 @@ export default function AdminPremiumAccessPage() {
             </Card>
           )}
 
-          {state === "error" && (
+          {isError && (
             <Card>
               <CardHeader>
                 <CardTitle>Failed to Load Users</CardTitle>
@@ -344,7 +229,7 @@ export default function AdminPremiumAccessPage() {
             </Card>
           )}
 
-          {state === "ready" && (
+          {!isLoading && !isError && isAdmin && (
             <Card>
               <CardHeader className="space-y-4">
                 <div className="space-y-1">
@@ -379,7 +264,7 @@ export default function AdminPremiumAccessPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                {filteredUsers.length === 0 ? (
+                      {users.length === 0 ? (
                   <p className="text-sm text-muted-foreground">No users found on this page.</p>
                 ) : (
                   <Table>
@@ -393,7 +278,7 @@ export default function AdminPremiumAccessPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredUsers.map((user) => (
+                      {users.map((user) => (
                         <TableRow
                           key={user.id}
                           className="cursor-pointer"
@@ -541,7 +426,7 @@ export default function AdminPremiumAccessPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => void refreshEvents(activeUser.id)}
+                    onClick={() => void refetchEvents()}
                     disabled={eventsLoading}
                   >
                     Refresh Events
@@ -642,12 +527,12 @@ export default function AdminPremiumAccessPage() {
               Close
             </Button>
             {activeUserStatus === "revoked" ? (
-              <Button onClick={handleReactivate} disabled={!activeUser || submitting}>
-                {submitting ? "Submitting..." : "Reactivate Premium"}
+              <Button onClick={handleReactivate} disabled={!activeUser || reactivateMutation.isPending}>
+                {reactivateMutation.isPending ? "Submitting..." : "Reactivate Premium"}
               </Button>
             ) : activeUserStatus === "premium" ? (
-              <Button onClick={handleRevoke} disabled={!activeUser || submitting} variant="destructive">
-                {submitting ? "Submitting..." : "Revoke Premium"}
+              <Button onClick={handleRevoke} disabled={!activeUser || revokeMutation.isPending} variant="destructive">
+                {revokeMutation.isPending ? "Submitting..." : "Revoke Premium"}
               </Button>
             ) : null}
           </DialogFooter>
@@ -657,7 +542,7 @@ export default function AdminPremiumAccessPage() {
   );
 }
 
-function isUserCurrentlyRevoked(user: AdminUserResponse): boolean {
+function isUserCurrentlyRevoked(user: { is_premium: boolean; premium_revoked_at?: string | null; premium_reactivated_at?: string | null }): boolean {
   if (user.is_premium) {
     return false;
   }

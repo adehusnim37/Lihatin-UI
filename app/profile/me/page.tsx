@@ -25,7 +25,6 @@ import {
 import { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import {
-  AuthProfileData,
   redeemPremiumCode,
   saveUserData,
   uploadProfileAvatar,
@@ -60,8 +59,6 @@ import { Input } from "@/components/ui/input";
  * Uses useSearchParams() so must be wrapped in Suspense
  */
 function ProfilePageContent() {
-  const [user, setUser] = useState<AuthProfileData["user"]>();
-  const [userAuth, setUserAuth] = useState<AuthProfileData["auth"]>();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState(
     searchParams.get("tab") || "general",
@@ -90,14 +87,15 @@ function ProfilePageContent() {
     void refetch();
   };
 
+  const profile = profileResponse?.data;
+  const user = profile?.user;
+  const userAuth = profile?.auth;
+
   useEffect(() => {
-    if (profileResponse?.success && profileResponse.data) {
-      const profile = profileResponse.data;
-      setUser(profile.user);
-      setUserAuth(profile.auth);
-      saveUserData(profile.user);
+    if (user) {
+      saveUserData(user);
     }
-  }, [profileResponse]);
+  }, [user]);
 
   const handleSaveName = async (firstName: string, lastName: string) => {
     if (!user) return;
@@ -124,8 +122,8 @@ function ProfilePageContent() {
     setIsRedeeming(true);
     try {
       await redeemPremiumCode({ secret_code: secretCode.trim() });
+      await refetch();
 
-      setUser((prev) => (prev ? { ...prev, is_premium: true } : prev));
       setIsRedeemOpen(false);
       setSecretCode("");
 
@@ -186,7 +184,6 @@ function ProfilePageContent() {
         throw new Error("Avatar URL is missing from upload response");
       }
 
-      setUser((prev) => (prev ? { ...prev, avatar: uploadedAvatar } : prev));
       await refetch();
 
       toast.success("Profile photo updated", {

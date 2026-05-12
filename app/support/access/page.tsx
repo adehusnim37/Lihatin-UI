@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { PublicSupportAccessCard } from "@/components/support/public-support-access-card";
 import { PublicSupportInfoCard } from "@/components/support/public-support-info";
 import { PublicSupportShell } from "@/components/support/public-support-shell";
@@ -9,7 +10,13 @@ export default function SupportAccessPage() {
       description="Track support ticket, verify access, then continue to secure conversation."
     >
       <div className="space-y-6">
-        <PublicSupportAccessCard />
+        <Suspense
+          fallback={
+            <div className="min-h-[120px] flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
+          }
+        >
+          <PublicSupportAccessCard />
+        </Suspense>
         <PublicSupportInfoCard
           introLabel="Existing Request"
           introTitle="Before you reopen ticket"

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { PublicSupportInfoCard } from "@/components/support/public-support-info";
 import { PublicSupportShell } from "@/components/support/public-support-shell";
 import { PublicSupportSubmitCard } from "@/components/support/public-support-submit-card";
@@ -9,7 +10,13 @@ export default function SupportNewPage() {
       description="Create new support request. No login required."
     >
       <div className="space-y-6">
-        <PublicSupportSubmitCard />
+        <Suspense
+          fallback={
+            <div className="min-h-[120px] flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
+          }
+        >
+          <PublicSupportSubmitCard />
+        </Suspense>
         <PublicSupportInfoCard
           introLabel="New Request"
           introTitle="Before you submit"

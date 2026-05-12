@@ -4,61 +4,23 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { Loader2 } from "lucide-react";
 import NotFound from "@/app/not-found";
-
-type LinkStatus = "loading" | "valid" | "not_found" | "error";
+import { useCheckShortCodeQuery } from "@/lib/hooks/queries/useAdminQuery";
 
 export default function ShortCodePage() {
   const params = useParams<{ short_code: string }>();
   const router = useRouter();
   const [countdown, setCountdown] = useState(3);
-  const [status, setStatus] = useState<LinkStatus>("loading");
 
-  // First, validate if the short code exists
+  const { data: status, isLoading } = useCheckShortCodeQuery(params.short_code ?? "");
+
   useEffect(() => {
-    const validateShortCode = async () => {
-      try {
-        const apiUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
-
-        const response = await fetch(
-          `${apiUrl}/short/check/${params.short_code}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (response.ok) {
-          // Short code exists - show countdown and redirect
-          setStatus("valid");
-        } else if (response.status === 404) {
-          // Short code doesn't exist - show 404 UI
-          setStatus("not_found");
-        } else if (response.status === 401) {
-          // Needs passcode - redirect to passcode page
-          router.replace(`/${params.short_code}/enter-passcode`);
-        } else {
-          // Other error - still try to redirect (let /r/ handle it)
-          setStatus("valid");
-        }
-      } catch {
-        // API unreachable - fallback to letting /r/ handle validation
-        setStatus("valid");
-      }
-    };
-
-    if (params.short_code) {
-      validateShortCode();
+    if (status === "needs_passcode") {
+      router.replace(`/${params.short_code}/enter-passcode`);
     }
-  }, [params.short_code, router]);
+  }, [status, params.short_code, router]);
 
-  // Countdown timer - only starts when status is "valid"
-  // Countdown timer
   useEffect(() => {
     if (status !== "valid") return;
-
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
@@ -67,21 +29,14 @@ export default function ShortCodePage() {
 
   const hasRedirected = useRef(false);
 
-  // Handle redirect when countdown hits 0
   useEffect(() => {
     if (status === "valid" && countdown === 0 && !hasRedirected.current) {
       hasRedirected.current = true;
-      console.log(
-        "Countdown finished, redirecting to:",
-        `/r/${params.short_code}`
-      );
-      // Force hard navigation to ensure backend HIT and no RSC caching
       window.location.href = `/r/${params.short_code}`;
     }
   }, [countdown, status, params.short_code]);
 
-  // Loading state
-  if (status === "loading") {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30">
         <div className="text-center">

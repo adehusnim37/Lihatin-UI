@@ -16,10 +16,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { getProfile } from "@/lib/api/auth";
 import { IconShieldCheck, IconSparkles, IconLock } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/context/AuthContext";
 
 import { useDashboardStats, useLinks } from "@/lib/hooks/queries/useLinksQuery";
 import { useLogCounts } from "@/lib/hooks/queries/useLogsQuery";
@@ -46,6 +46,7 @@ const TOTP_PROMPT_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
 export default function Page() {
   const router = useRouter();
   const [showMigrateDialog, setShowMigrateDialog] = useState(false);
+  const { auth } = useAuth();
   // Fetch dashboard data in parallel
   const { data: dashboardStats, isLoading: statsLoading } = useDashboardStats();
   const { data: logCounts, isLoading: logsLoading } = useLogCounts();
@@ -81,26 +82,15 @@ export default function Page() {
       return;
     }
 
-    let active = true;
-    void getProfile()
-      .then((response) => {
-        if (!active || !response.success || !response.data) return;
+    if (auth?.is_totp_enabled) {
+      sessionStorage.removeItem(TOTP_PROMPT_PENDING_KEY);
+      return;
+    }
 
-        if (response.data.auth.is_totp_enabled) {
-          sessionStorage.removeItem(TOTP_PROMPT_PENDING_KEY);
-          return;
-        }
-
-        setShowMigrateDialog(true);
-      })
-      .catch(() => {
-        // Silent fallback. No modal when profile check fails.
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
+    // Use a microtask to avoid synchronous setState in effect
+    const timer = setTimeout(() => setShowMigrateDialog(true), 0);
+    return () => clearTimeout(timer);
+  }, [auth]);
 
   const dismissPrompt = () => {
     localStorage.setItem(
