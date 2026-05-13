@@ -42,7 +42,11 @@ import { Item, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import SessionTab from "@/components/profile/tab/session";
 import {
   Dialog,
@@ -53,6 +57,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import Image from "next/image";
 
 /**
  * Profile Page Content Component
@@ -80,8 +85,11 @@ function ProfilePageContent() {
   const closePopoverWithDelay = () => {
     hoverTimeoutRef.current = setTimeout(() => setIsPopoverOpen(false), 150);
   };
-  const { data: profileResponse, isLoading: isProfileLoading, refetch } =
-    useProfileQuery();
+  const {
+    data: profileResponse,
+    isLoading: isProfileLoading,
+    refetch,
+  } = useProfileQuery();
   const updateProfileMutation = useUpdateProfileMutation();
   const refreshProfile = () => {
     void refetch();
@@ -101,7 +109,8 @@ function ProfilePageContent() {
     if (!user) return;
 
     const payload: UpdateProfileRequest = {};
-    if (firstName && firstName !== user.first_name) payload.first_name = firstName;
+    if (firstName && firstName !== user.first_name)
+      payload.first_name = firstName;
     if (lastName && lastName !== user.last_name) payload.last_name = lastName;
 
     if (Object.keys(payload).length === 0) return;
@@ -369,7 +378,10 @@ function ProfilePageContent() {
                 <Card className="md:col-span-1 mx-auto w-full max-w-md">
                   <CardHeader className="text-center">
                     <div className="flex flex-col items-center gap-3 mb-2">
-                      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                      <Popover
+                        open={isPopoverOpen}
+                        onOpenChange={setIsPopoverOpen}
+                      >
                         <PopoverTrigger asChild>
                           <div
                             className="relative cursor-pointer rounded-full transition-all duration-300 ease-out hover:scale-105 ring-2 ring-border hover:ring-4 hover:ring-primary/40 hover:shadow-xl hover:shadow-primary/20"
@@ -389,7 +401,9 @@ function ProfilePageContent() {
                             {isUploadingAvatar && (
                               <div className="absolute inset-0 rounded-full backdrop-blur-[2px] bg-black/50 flex flex-col items-center justify-center text-white">
                                 <Loader2 className="size-6 animate-spin" />
-                                <span className="text-[11px] font-semibold tracking-wide">Uploading…</span>
+                                <span className="text-[11px] font-semibold tracking-wide">
+                                  Uploading…
+                                </span>
                               </div>
                             )}
 
@@ -414,7 +428,10 @@ function ProfilePageContent() {
                             {avatarURL && (
                               <button
                                 type="button"
-                                onClick={() => { setIsViewPhotoOpen(true); setIsPopoverOpen(false); }}
+                                onClick={() => {
+                                  setIsViewPhotoOpen(true);
+                                  setIsPopoverOpen(false);
+                                }}
                                 className="flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors duration-150 w-full text-left"
                                 aria-label="View profile photo"
                               >
@@ -424,38 +441,57 @@ function ProfilePageContent() {
                             )}
                             <button
                               type="button"
-                              onClick={() => { handleAvatarUploadClick(); setIsPopoverOpen(false); }}
+                              onClick={() => {
+                                handleAvatarUploadClick();
+                                setIsPopoverOpen(false);
+                              }}
                               className="flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors duration-150 w-full text-left"
-                              aria-label={user.avatar ? "Change profile photo" : "Upload profile photo"}
+                              aria-label={
+                                user.avatar
+                                  ? "Change profile photo"
+                                  : "Upload profile photo"
+                              }
                             >
                               <IconCamera className="size-4" />
-                              <span>{user.avatar ? "Change Photo" : "Upload Photo"}</span>
+                              <span>
+                                {user.avatar ? "Change Photo" : "Upload Photo"}
+                              </span>
                             </button>
                           </div>
                         </PopoverContent>
                       </Popover>
 
                       {/* View Photo Dialog */}
-                      <Dialog open={isViewPhotoOpen} onOpenChange={setIsViewPhotoOpen}>
+                      <Dialog
+                        open={isViewPhotoOpen}
+                        onOpenChange={setIsViewPhotoOpen}
+                      >
                         <DialogContent className="sm:max-w-2xl p-0 overflow-hidden rounded-2xl border-0 shadow-2xl">
                           <DialogHeader className="sr-only">
                             <DialogTitle>Profile Photo</DialogTitle>
-                            <DialogDescription>Full-size profile photo preview</DialogDescription>
+                            <DialogDescription>
+                              Full-size profile photo preview
+                            </DialogDescription>
                           </DialogHeader>
                           {avatarURL ? (
                             <div className="relative">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
+                              <Image
                                 src={avatarURL}
                                 alt={`${user.first_name} ${user.last_name}`}
                                 className="w-full h-auto object-cover max-h-[70vh]"
+                                width={500}
+                                height={500}
+                                unoptimized
                               />
                               {/* Name caption at bottom */}
                               <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-4 py-3">
                                 <p className="text-white font-semibold text-sm">
                                   {user.first_name} {user.last_name}
                                 </p>
-                                <p className="text-white/70 text-xs">@{user.username}</p>
+                                <p className="text-white/70 text-xs">
+                                  @{user.username}
+                                </p>
                               </div>
                             </div>
                           ) : (
@@ -526,12 +562,19 @@ function ProfilePageContent() {
                         </ItemTitle>
                       </ItemContent>
                       {user.is_premium ? (
-                        <StatusBadge tone="success" withIcon={false} className="gap-1">
+                        <StatusBadge
+                          tone="success"
+                          withIcon={false}
+                          className="gap-1"
+                        >
                           <IconCrown className="size-3" />
                           Premium
                         </StatusBadge>
                       ) : (
-                        <Dialog open={isRedeemOpen} onOpenChange={setIsRedeemOpen}>
+                        <Dialog
+                          open={isRedeemOpen}
+                          onOpenChange={setIsRedeemOpen}
+                        >
                           <StatusBadge
                             tone="neutral"
                             withIcon={false}
@@ -552,7 +595,8 @@ function ProfilePageContent() {
                             <DialogHeader>
                               <DialogTitle>Redeem Premium Code</DialogTitle>
                               <DialogDescription>
-                                Enter your secret code to upgrade this account to premium.
+                                Enter your secret code to upgrade this account
+                                to premium.
                               </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-2">
@@ -571,7 +615,10 @@ function ProfilePageContent() {
                               >
                                 Cancel
                               </Button>
-                              <Button onClick={handleRedeemPremium} disabled={isRedeeming}>
+                              <Button
+                                onClick={handleRedeemPremium}
+                                disabled={isRedeeming}
+                              >
                                 {isRedeeming ? (
                                   <>
                                     <Loader2 className="mr-2 size-4 animate-spin" />

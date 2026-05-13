@@ -52,6 +52,7 @@ export default function NotFound() {
               src="/404.svg"
               alt="404 illustration"
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="rounded-xl object-cover size-full"
               priority
             />

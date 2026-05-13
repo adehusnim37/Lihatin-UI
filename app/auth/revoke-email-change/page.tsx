@@ -57,6 +57,7 @@ function RevokeEmailChangeContent() {
               src={isSuccess ? "/Completed-bro.svg" : "/404.svg"}
               alt={isSuccess ? "Email change revoked" : "Revoke failed"}
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="object-contain"
             />
           </div>
