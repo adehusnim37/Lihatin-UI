@@ -1,13 +1,14 @@
 import {
   IconApi,
   IconChartBar,
+  IconCirclePlus,
   IconDashboard,
   IconHelp,
   IconHistoryToggle,
   IconLifebuoy,
-  IconShieldCheck,
-  IconSparkles,
+  IconReceipt,
   IconShield,
+  IconTicket,
   IconUnlink,
   IconUsers,
 } from "@tabler/icons-react";
@@ -47,19 +48,31 @@ export const SidebarData = {
   ],
   navAdmin: [
     {
+      title: "Users",
+      url: "/main/admin/users",
+      icon: IconUsers,
+      children: [
+        {
+          title: "List Users",
+          url: "/main/admin/users",
+          icon: IconUsers,
+        },
+      ],
+    },
+    {
       title: "Premium Codes",
       url: "/main/admin/premium-codes",
-      icon: IconShieldCheck,
+      icon: IconTicket,
       children: [
         {
           title: "Usage",
           url: "/main/admin/premium-codes",
-          icon: IconShieldCheck,
+          icon: IconReceipt,
         },
         {
           title: "Generate",
           url: "/main/admin/premium-codes/generate",
-          icon: IconSparkles,
+          icon: IconCirclePlus,
         },
       ],
     },
@@ -67,18 +80,6 @@ export const SidebarData = {
       title: "Admin Security Policy",
       url: "/main/admin/security-policy",
       icon: IconShield,
-    },
-    {
-      title: "Premium Access",
-      url: "/main/admin/premium-access",
-      icon: IconUsers,
-      children: [
-        {
-          title: "Manage Users",
-          url: "/main/admin/premium-access",
-          icon: IconUsers,
-        },
-      ],
     },
     {
       title: "Support Tickets",

@@ -239,3 +239,35 @@ export function LoginAttemptBadge({
     </StatusBadge>
   );
 }
+
+export function RoleBadge({
+  role,
+  className,
+}: {
+  role?: string | null;
+  className?: string;
+}) {
+  const normalized = (role || "user").toLowerCase();
+  
+  if (normalized === "super_admin") {
+    return (
+      <StatusBadge tone="danger" className={className}>
+        SUPER ADMIN
+      </StatusBadge>
+    );
+  }
+  
+  if (normalized === "admin") {
+    return (
+      <StatusBadge tone="warning" className={className}>
+        ADMIN
+      </StatusBadge>
+    );
+  }
+
+  return (
+    <StatusBadge tone="info" className={className}>
+      USER
+    </StatusBadge>
+  );
+}

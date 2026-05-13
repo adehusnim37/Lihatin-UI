@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   getAdminUsers,
+  getAdminUserById,
+  updateAdminUser,
   getAdminDisposableEmailPolicy,
   updateAdminDisposableEmailPolicy,
   getAdminPremiumCodes,
@@ -11,6 +13,8 @@ import {
   getAdminUserPremiumStatusEvents,
   validateResetToken,
   type AdminUsersListResponse,
+  type AdminUserResponse,
+  type AdminUpdateUserRequest,
   type AdminDisposableEmailPolicyResponse,
   type AdminPremiumCodesResponse,
   type AdminPremiumStatusEventsListResponse,
@@ -28,6 +32,8 @@ export const adminKeys = {
     all: () => [...adminKeys.all, "users"] as const,
     list: (page?: number, limit?: number) =>
       [...adminKeys.all, "users", "list", page, limit] as const,
+    detail: (userId: string) =>
+      [...adminKeys.all, "users", "detail", userId] as const,
   },
   disposableEmailPolicy: () =>
     [...adminKeys.all, "disposable-email-policy"] as const,
@@ -49,6 +55,47 @@ export function useAdminUsersQuery(page = 1, limit = 20) {
       return response.data as AdminUsersListResponse;
     },
     placeholderData: (previousData) => previousData,
+  });
+}
+
+export function useAdminUserDetailQuery(userId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: adminKeys.users.detail(userId),
+    queryFn: async () => {
+      const response = await getAdminUserById(userId);
+      if (!response.success) throw new Error(response.message || "Failed to load user detail");
+      return response.data as AdminUserResponse;
+    },
+    enabled: enabled && Boolean(userId),
+  });
+}
+
+export function useUpdateAdminUserMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      payload,
+    }: {
+      userId: string;
+      payload: AdminUpdateUserRequest;
+    }) => {
+      const response = await updateAdminUser(userId, payload);
+      return response.data as AdminUserResponse;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.users.all() });
+      queryClient.setQueryData(adminKeys.users.detail(data.id), data);
+      toast.success("User updated", {
+        description: "User profile data has been saved.",
+      });
+    },
+    onError: (error) => {
+      toast.error("Failed to update user", {
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
+    },
   });
 }
 

@@ -258,13 +258,17 @@ export interface AdminUserResponse {
   first_name: string;
   last_name: string;
   email: string;
+  avatar?: string;
   created_at: string;
   updated_at: string;
+  deleted_at?: string | null;
+  username_changed?: boolean;
   is_premium: boolean;
   is_locked: boolean;
   locked_at?: string | null;
   locked_reason?: string;
   role: string;
+  premium_status?: string;
   premium_revoke_type?: string;
   premium_revoked_at?: string | null;
   premium_revoked_by?: string | null;
@@ -272,6 +276,76 @@ export interface AdminUserResponse {
   premium_reactivated_at?: string | null;
   premium_reactivated_by?: string | null;
   premium_reactivated_reason?: string;
+  user_auth?: AdminUserAuthDetailResponse | null;
+  auth_methods?: AdminAuthMethodDetailResponse[];
+  stats?: AdminUserDetailStatsResponse;
+  recent_history?: AdminUserRecentHistoryResponse[];
+  recent_login_attempts?: AdminUserRecentLoginAttemptResponse[];
+}
+
+export interface AdminUserAuthDetailResponse {
+  id: string;
+  user_id: string;
+  is_email_verified: boolean;
+  password_changed_at?: string | null;
+  last_email_send_at?: string | null;
+  device_id?: string | null;
+  last_ip?: string | null;
+  last_login_at?: string | null;
+  last_logout_at?: string | null;
+  failed_login_attempts: number;
+  lockout_until?: string | null;
+  is_active: boolean;
+  is_totp_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string | null;
+}
+
+export interface AdminAuthMethodDetailResponse {
+  id: string;
+  user_auth_id: string;
+  type: string;
+  is_enabled: boolean;
+  is_verified: boolean;
+  verified_at?: string | null;
+  last_used_at?: string | null;
+  friendly_name?: string;
+  provider_user_id?: string;
+  disabled_at?: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string | null;
+}
+
+export interface AdminUserDetailStatsResponse {
+  api_keys_total: number;
+  api_keys_active: number;
+  history_events_total: number;
+  premium_key_usage_total: number;
+  premium_status_events_total: number;
+  login_attempts_24h: number;
+  login_attempts_7d: number;
+}
+
+export interface AdminUserRecentHistoryResponse {
+  id: number;
+  action_type: string;
+  reason?: string;
+  changed_by?: string | null;
+  ip_address?: string | null;
+  user_agent?: string | null;
+  changed_at: string;
+}
+
+export interface AdminUserRecentLoginAttemptResponse {
+  id: string;
+  email_or_username: string;
+  ip_address: string;
+  user_agent: string;
+  success: boolean;
+  fail_reason?: string;
+  created_at: string;
 }
 
 export interface AdminUsersListResponse {
@@ -280,6 +354,14 @@ export interface AdminUsersListResponse {
   page: number;
   limit: number;
   total_pages: number;
+}
+
+export interface AdminUpdateUserRequest {
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  email?: string;
+  role?: "user" | "admin" | "super_admin";
 }
 
 export interface AdminRevokePremiumAccessRequest {
@@ -1194,6 +1276,32 @@ export async function getAdminUsers(params?: {
   const result: APIResponse<AdminUsersListResponse> = await response.json();
   if (!response.ok) {
     throw new Error(getErrorMessage(result) || "Failed to get admin users");
+  }
+
+  return result;
+}
+
+/**
+ * Update admin user core fields by ID.
+ */
+export async function updateAdminUser(
+  userId: string,
+  payload: AdminUpdateUserRequest
+): Promise<APIResponse<AdminUserResponse>> {
+  const response = await fetchProtected(
+    `${API_URL}/auth/admin/users/${encodeURIComponent(userId)}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  const result: APIResponse<AdminUserResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to update user");
   }
 
   return result;
