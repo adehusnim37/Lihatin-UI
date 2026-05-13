@@ -94,6 +94,11 @@ export default function AdminPremiumCodesPage() {
   }, [adminUsers, codes]);
 
   const hasPrevious = page > 1;
+  const totalPages = useMemo(() => {
+    if (!pagination) return 1;
+    if (pagination.total <= 0) return 1;
+    return Math.ceil(pagination.total / pagination.limit);
+  }, [pagination]);
   const hasNext = useMemo(() => {
     if (!pagination) return false;
     return pagination.page * pagination.limit < pagination.total;
@@ -214,30 +219,12 @@ export default function AdminPremiumCodesPage() {
 
           {!isLoading && !isError && isAdmin && (
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader>
                 <div className="space-y-1">
                   <CardTitle>All Premium Codes</CardTitle>
                   <CardDescription>
                     Total {pagination?.total ?? 0} code(s), page {pagination?.page ?? 1}.
                   </CardDescription>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                    disabled={!hasPrevious}
-                  >
-                    Prev
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((prev) => prev + 1)}
-                    disabled={!hasNext}
-                  >
-                    Next
-                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
@@ -312,6 +299,30 @@ export default function AdminPremiumCodesPage() {
                     </TableBody>
                   </Table>
                 )}
+
+                <div className="flex items-center justify-between pt-4 text-sm">
+                  <p className="text-muted-foreground">
+                    Page {page} of {totalPages}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                      disabled={!hasPrevious}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                      disabled={!hasNext}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}

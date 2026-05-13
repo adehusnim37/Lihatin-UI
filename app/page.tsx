@@ -325,6 +325,10 @@ export default function Index() {
               Built with Next.js 15, React 19, Go & shadcn/ui
             </p>
           </div>
+          <div className="flex gap-4">
+            <Link href="/terms" className="text-sm text-muted-foreground hover:underline">Terms</Link>
+            <Link href="/privacy" className="text-sm text-muted-foreground hover:underline">Privacy</Link>
+          </div>
           <p className="text-sm text-muted-foreground">
             © 2026 Lihat.in. All rights reserved.
           </p>

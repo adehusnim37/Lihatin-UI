@@ -11,6 +11,7 @@ import type { NextRequest } from "next/server";
  */
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const search = request.nextUrl.search;
 
   // Get access_token from cookies
   const accessToken = request.cookies.get("access_token")?.value;
@@ -49,7 +50,7 @@ export function proxy(request: NextRequest) {
   // If accessing protected route without token, redirect to login
   if (isProtectedRoute && !accessToken) {
     const loginUrl = new URL("/auth/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
+    loginUrl.searchParams.set("redirect", `${pathname}${search}`);
     return NextResponse.redirect(loginUrl);
   }
 
@@ -72,7 +73,15 @@ export function proxy(request: NextRequest) {
     return NextResponse.rewrite(new URL("/not-found", request.url));
   }
 
-  return NextResponse.next();
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", pathname);
+  requestHeaders.set("x-search", search);
+
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 /**

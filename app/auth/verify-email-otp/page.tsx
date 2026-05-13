@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import BlobDefault from "@/components/blob/blob-default";
 import { OTPForm } from "@/components/otp-form";
 import {
+  type LoginResponse,
   resendLoginEmailOTP,
   requiresEmailOTP,
   requiresTOTP,
@@ -99,13 +100,14 @@ function VerifyEmailOTPContent() {
           return;
         }
 
-        saveUserData(response.data.user);
+        const loginData = response.data as LoginResponse;
+        saveUserData(loginData.user);
         cleanupPendingOTP();
-        await auth.login();
+        await auth.login(loginData);
         sessionStorage.setItem(TOTP_PROMPT_PENDING_KEY, "1");
 
         toast.success("Login Successful", {
-          description: `Welcome back, ${response.data.user.first_name}!`,
+          description: `Welcome back, ${loginData.user.first_name}!`,
           duration: 2500,
         });
         continueAfterLogin();

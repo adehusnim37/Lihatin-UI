@@ -178,9 +178,9 @@ export function OTPForm({
       </form>
       <FieldDescription className="px-6 text-center text-xs text-muted-foreground">
         By clicking Verify, you agree to our{" "}
-        <a href="#" className="underline">Terms of Service</a>{" "}
+        <a href="/terms" className="underline">Terms of Service</a>{" "}
         and{" "}
-        <a href="#" className="underline">Privacy Policy</a>.
+        <a href="/privacy" className="underline">Privacy Policy</a>.
       </FieldDescription>
     </div>
   );

@@ -8,7 +8,7 @@ import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
-import { useState, FormEvent, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, ChangeEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   login,
@@ -106,7 +106,7 @@ function LoginContent() {
     }));
   };
 
-  const handleLogin = async (e: FormEvent) => {
+  const handleLogin = async (e: React.SyntheticEvent) => {
     e.preventDefault();
 
     // Basic validation
@@ -194,7 +194,7 @@ function LoginContent() {
         });
 
         // Update auth context (triggers recheck of authentication)
-        await auth.login();
+        await auth.login(loginData);
 
         // Redirect to main or redirect URL from query params
         const redirectTo = searchParams.get("redirect") || "/main";

@@ -8,8 +8,8 @@ function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        // Data dianggap fresh selama 1 menit
-        staleTime: 60 * 1000,
+        // Data dianggap fresh selama 90 detik
+        staleTime: 90 * 1000,
         // Retry 1x jika gagal
         retry: 1,
         // Refetch saat window focus (bagus untuk real-time data)

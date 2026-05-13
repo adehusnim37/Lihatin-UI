@@ -84,7 +84,7 @@ export default function VerifyLoginPage() {
         });
 
         // Update auth context
-        await auth.login();
+        await auth.login(response.data);
 
         // Redirect to main page
         router.push("/main");

@@ -100,7 +100,7 @@ function GoogleOAuthCallbackContent() {
         }
 
         saveUserData(response.data.user);
-        await auth.login();
+        await auth.login(response.data);
         sessionStorage.removeItem("post_login_redirect");
 
         toast.success("Login Successful", {

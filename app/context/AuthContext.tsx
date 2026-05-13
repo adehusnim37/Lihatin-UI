@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
@@ -17,7 +17,7 @@ interface AuthContextType {
   isLoading: boolean
   user: UserProfile | null
   auth: AuthData | null
-  login: () => Promise<void>
+  login: (sessionData?: { user: UserProfile; auth: AuthData }) => Promise<void>
   logout: () => Promise<void>
 }
 
@@ -30,9 +30,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [auth, setAuth] = useState<AuthData | null>(null)
   const router = useRouter()
   const pathname = usePathname()
+  const pathnameRef = useRef(pathname)
+
+  useEffect(() => {
+    pathnameRef.current = pathname
+  }, [pathname])
 
   const checkAuthentication = useCallback(async () => {
     setIsLoading(true)
+    const currentPathname = pathnameRef.current
 
     try {
       const response = await getUserData()
@@ -46,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       saveUserData(response.data.user)
 
       const authRoutes = ['/auth/login', '/auth/register']
-      const isAuthRoute = authRoutes.some(route => pathname === route)
+      const isAuthRoute = authRoutes.some(route => currentPathname === route)
       if (isAuthRoute) {
         router.push('/main')
       }
@@ -58,23 +64,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       clearUserData()
 
       const protectedRoutes = ['/main', '/dashboard', '/profile']
-      const isProtected = protectedRoutes.some(route => pathname?.startsWith(route))
+      const isProtected = protectedRoutes.some(route => currentPathname?.startsWith(route))
       const message = error instanceof Error ? error.message : 'Authentication check failed'
 
       toast.error(message)
       if (isProtected) {
-        router.push(`/auth/login?redirect=${pathname}`)
+        router.push(`/auth/login?redirect=${currentPathname}`)
       }
     } finally {
       setIsLoading(false)
     }
-  }, [pathname, router])
+  }, [router])
 
   useEffect(() => {
     void checkAuthentication()
   }, [checkAuthentication])
 
-  const login = async () => {
+  const login = async (sessionData?: { user: UserProfile; auth: AuthData }) => {
+    if (sessionData?.user && sessionData?.auth) {
+      setIsAuthenticated(true)
+      setUser(sessionData.user)
+      setAuth(sessionData.auth)
+      saveUserData(sessionData.user)
+      return
+    }
+
     await checkAuthentication()
   }
 

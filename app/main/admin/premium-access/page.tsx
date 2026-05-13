@@ -90,6 +90,11 @@ export default function AdminPremiumAccessPage() {
   const reactivateMutation = useReactivateAdminUserPremiumMutation();
 
   const hasPrevious = page > 1;
+  const totalPages = useMemo(() => {
+    if (!pagination) return 1;
+    if (pagination.total_count <= 0) return 1;
+    return Math.ceil(pagination.total_count / pagination.limit);
+  }, [pagination]);
   const hasNext = useMemo(() => {
     if (!pagination) return false;
     return pagination.page * pagination.limit < pagination.total_count;
@@ -245,26 +250,10 @@ export default function AdminPremiumAccessPage() {
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                   />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                    disabled={!hasPrevious}
-                  >
-                    Prev
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((prev) => prev + 1)}
-                    disabled={!hasNext}
-                  >
-                    Next
-                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                      {users.length === 0 ? (
+                {users.length === 0 ? (
                   <p className="text-sm text-muted-foreground">No users found on this page.</p>
                 ) : (
                   <Table>
@@ -314,6 +303,30 @@ export default function AdminPremiumAccessPage() {
                     </TableBody>
                   </Table>
                 )}
+
+                <div className="flex items-center justify-between pt-4 text-sm">
+                  <p className="text-muted-foreground">
+                    Page {page} of {totalPages}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                      disabled={!hasPrevious}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                      disabled={!hasNext}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}
