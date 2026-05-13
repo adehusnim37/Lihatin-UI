@@ -70,9 +70,9 @@ function RevokeEmailChangeContent() {
               }`}
             >
               {isSuccess ? (
-                <CheckCircle2 className="h-6 w-6" />
+                <CheckCircle2 className="size-6" />
               ) : (
-                <AlertTriangle className="h-6 w-6" />
+                <AlertTriangle className="size-6" />
               )}
             </div>
           </div>
@@ -112,7 +112,7 @@ export default function RevokeEmailChangePage() {
     <Suspense
       fallback={
         <div className="flex min-h-full items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <Loader2 className="size-8 animate-spin text-muted-foreground" />
         </div>
       }
     >

@@ -209,7 +209,7 @@ export default function AdminPremiumAccessPage() {
               onClick={() => refetch()}
               disabled={isLoading || isFetching}
             >
-              <IconRefresh className="mr-2 h-4 w-4" />
+              <IconRefresh className="mr-2 size-4" />
               Refresh
             </Button>
           </div>
@@ -485,19 +485,19 @@ export default function AdminPremiumAccessPage() {
                             <PremiumEventActionBadge action={event.action} />
                             <Badge variant="outline" className="gap-1">
                               <span className="text-muted-foreground">{event.old_status}</span>
-                              <IconArrowRight className="h-3 w-3" />
+                              <IconArrowRight className="size-3" />
                               <span>{event.new_status}</span>
                             </Badge>
                             <Badge variant="outline" className="gap-1">
                               <span className="text-muted-foreground">{event.old_role}</span>
-                              <IconArrowRight className="h-3 w-3" />
+                              <IconArrowRight className="size-3" />
                               <span>{event.new_role}</span>
                             </Badge>
                             <RevokeTypeBadge revokeType={event.revoke_type} />
                           </div>
                           <div className="text-xs text-muted-foreground">
                             <div className="flex items-center gap-1">
-                              <IconClockHour4 className="h-3.5 w-3.5" />
+                              <IconClockHour4 className="size-3.5" />
                               <span>{formatDateTime(event.created_at)}</span>
                             </div>
                             <p className="mt-1">{formatRelativeTime(event.created_at)}</p>
@@ -513,7 +513,7 @@ export default function AdminPremiumAccessPage() {
                           </div>
                           <div className="rounded-md border p-3">
                             <div className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-muted-foreground">
-                              <IconUserCircle className="h-3.5 w-3.5" />
+                              <IconUserCircle className="size-3.5" />
                               Actor
                             </div>
                             <p className="mt-1 text-sm font-medium break-all" title={event.changed_by || "system"}>

@@ -270,7 +270,7 @@ export function PublicSupportAccessCard() {
       <CardHeader>
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Secure Access</p>
         <CardTitle className="flex items-center gap-2 text-lg">
-          <IconSearch className="h-5 w-5" />
+          <IconSearch className="size-5" />
           Track & Open Ticket
         </CardTitle>
         <CardDescription>
@@ -327,13 +327,24 @@ export function PublicSupportAccessCard() {
               </div>
 
               <Button onClick={() => void handleVerifyCode()} className="w-full" disabled={verifyCodeMutation.isPending}>
-                <IconKey className="mr-2 h-4 w-4" />
+                <IconKey className="mr-2 size-4" />
                 {verifyCodeMutation.isPending ? "Verifying..." : "Open with Access Code"}
               </Button>
 
               <div className="pt-4 border-t border-border/50 flex flex-wrap items-center justify-center gap-1.5 text-sm">
                 <p className="font-medium text-foreground">Have you lost the access code?</p>
-                <p onClick={() => setShowOTPSection(true)} className="font-medium text-primary hover:underline cursor-pointer">
+                <p 
+                  onClick={() => setShowOTPSection(true)} 
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setShowOTPSection(true);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  className="font-medium text-primary hover:underline cursor-pointer"
+                >
                   Verify with OTP instead
                 </p>
               </div>

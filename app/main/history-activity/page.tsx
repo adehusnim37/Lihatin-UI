@@ -46,17 +46,17 @@ type ActivityType = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "other";
 const getActivityIcon = (method: string) => {
   switch (method) {
     case "GET":
-      return <MousePointerClick className="h-4 w-4" />;
+      return <MousePointerClick className="size-4" />;
     case "POST":
-      return <Link2 className="h-4 w-4" />;
+      return <Link2 className="size-4" />;
     case "PUT":
-      return <Edit3 className="h-4 w-4" />;
+      return <Edit3 className="size-4" />;
     case "PATCH":
-      return <Settings className="h-4 w-4" />;
+      return <Settings className="size-4" />;
     case "DELETE":
-      return <Trash2 className="h-4 w-4" />;
+      return <Trash2 className="size-4" />;
     default:
-      return <History className="h-4 w-4" />;
+      return <History className="size-4" />;
   }
 };
 
@@ -208,7 +208,7 @@ export default function HistoryActivityPage() {
             >
               <DialogTrigger asChild>
                 <button className="flex items-center gap-2 px-4 py-2 rounded-lg border bg-card hover:bg-accent transition-colors">
-                  <SlidersHorizontal className="h-4 w-4" />
+                  <SlidersHorizontal className="size-4" />
                   <span className="text-sm font-medium">Filters</span>
                   {(hasActiveFilters || filter !== "all") && (
                     <span className="px-2 py-0.5 text-xs rounded-full bg-primary text-primary-foreground">
@@ -222,7 +222,7 @@ export default function HistoryActivityPage() {
               <DialogContent className="max-w-5xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
-                    <SlidersHorizontal className="h-5 w-5" />
+                    <SlidersHorizontal className="size-5" />
                     Filter Logs
                   </DialogTitle>
                   <DialogDescription>
@@ -465,7 +465,7 @@ export default function HistoryActivityPage() {
                         variant="outline"
                         className="w-full"
                       >
-                        <X className="h-4 w-4 mr-2" />
+                        <X className="size-4 mr-2" />
                         Clear All
                       </Button>
                     </>
@@ -493,7 +493,7 @@ export default function HistoryActivityPage() {
                           setFilter("all");
                         }}
                       >
-                        <X className="h-3 w-3" />
+                        <X className="size-3" />
                       </button>
                     </Badge>
                   )}
@@ -512,7 +512,7 @@ export default function HistoryActivityPage() {
                           });
                         }}
                       >
-                        <X className="h-3 w-3" />
+                        <X className="size-3" />
                       </button>
                     </Badge>
                   )}
@@ -528,7 +528,7 @@ export default function HistoryActivityPage() {
                           setAdvancedFilters({ ...advancedFilters, action: "" });
                         }}
                       >
-                        <X className="h-3 w-3" />
+                        <X className="size-3" />
                       </button>
                     </Badge>
                   )}
@@ -544,7 +544,7 @@ export default function HistoryActivityPage() {
                           setAdvancedFilters({ ...advancedFilters, level: "" });
                         }}
                       >
-                        <X className="h-3 w-3" />
+                        <X className="size-3" />
                       </button>
                     </Badge>
                   )}
@@ -563,7 +563,7 @@ export default function HistoryActivityPage() {
                           });
                         }}
                       >
-                        <X className="h-3 w-3" />
+                        <X className="size-3" />
                       </button>
                     </Badge>
                   )}
@@ -587,7 +587,7 @@ export default function HistoryActivityPage() {
                           });
                         }}
                       >
-                        <X className="h-3 w-3" />
+                        <X className="size-3" />
                       </button>
                     </Badge>
                   )}
@@ -611,7 +611,7 @@ export default function HistoryActivityPage() {
                           });
                         }}
                       >
-                        <X className="h-3 w-3" />
+                        <X className="size-3" />
                       </button>
                     </Badge>
                   )}
@@ -629,11 +629,20 @@ export default function HistoryActivityPage() {
                 setFilter("all");
                 setPage(1);
               }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setFilter("all");
+                  setPage(1);
+                }
+              }}
+              role="button"
+              tabIndex={0}
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="p-3 rounded-xl bg-primary/20 group-hover:bg-primary/30 transition-colors">
-                    <History className="h-6 w-6 text-primary" />
+                    <History className="size-6 text-primary" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">
@@ -653,7 +662,7 @@ export default function HistoryActivityPage() {
             {/* HTTP Methods Group */}
             <div className="md:col-span-2 rounded-2xl border bg-card p-6">
               <h3 className="text-sm font-semibold text-muted-foreground mb-4 flex items-center gap-2">
-                <Filter className="h-4 w-4" />
+                <Filter className="size-4" />
                 HTTP Methods
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -661,14 +670,14 @@ export default function HistoryActivityPage() {
                   {
                     method: "GET",
                     count: getCounts,
-                    icon: <MousePointerClick className="h-4 w-4" />,
+                    icon: <MousePointerClick className="size-4" />,
                     color: "from-blue-500/10 to-blue-500/5 border-blue-500/20",
                     textColor: "text-blue-600 dark:text-blue-400",
                   },
                   {
                     method: "POST",
                     count: postCounts,
-                    icon: <Link2 className="h-4 w-4" />,
+                    icon: <Link2 className="size-4" />,
                     color:
                       "from-green-500/10 to-green-500/5 border-green-500/20",
                     textColor: "text-green-600 dark:text-green-400",
@@ -676,7 +685,7 @@ export default function HistoryActivityPage() {
                   {
                     method: "PUT",
                     count: putCounts,
-                    icon: <Edit3 className="h-4 w-4" />,
+                    icon: <Edit3 className="size-4" />,
                     color:
                       "from-amber-500/10 to-amber-500/5 border-amber-500/20",
                     textColor: "text-amber-600 dark:text-amber-400",
@@ -684,7 +693,7 @@ export default function HistoryActivityPage() {
                   {
                     method: "PATCH",
                     count: patchCounts,
-                    icon: <Settings className="h-4 w-4" />,
+                    icon: <Settings className="size-4" />,
                     color:
                       "from-purple-500/10 to-purple-500/5 border-purple-500/20",
                     textColor: "text-purple-600 dark:text-purple-400",
@@ -692,7 +701,7 @@ export default function HistoryActivityPage() {
                   {
                     method: "DELETE",
                     count: deleteCounts,
-                    icon: <Trash2 className="h-4 w-4" />,
+                    icon: <Trash2 className="size-4" />,
                     color: "from-red-500/10 to-red-500/5 border-red-500/20",
                     textColor: "text-red-600 dark:text-red-400",
                   },
@@ -703,6 +712,15 @@ export default function HistoryActivityPage() {
                       setFilter(method as ActivityType);
                       setPage(1);
                     }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setFilter(method as ActivityType);
+                        setPage(1);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
                     className={`rounded-lg border bg-gradient-to-br ${color} p-3 hover:shadow-md transition-all cursor-pointer group`}
                   >
                     <div className="flex items-center gap-2 mb-2">
@@ -724,11 +742,11 @@ export default function HistoryActivityPage() {
           <div className="rounded-xl border bg-card overflow-hidden">
             {isLoading ? (
               <div className="flex items-center justify-center p-12">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <Loader2 className="size-8 animate-spin text-muted-foreground" />
               </div>
             ) : error ? (
               <div className="flex flex-col items-center justify-center p-12 text-destructive">
-                <AlertCircle className="h-12 w-12 mb-4" />
+                <AlertCircle className="size-12 mb-4" />
                 <p className="text-lg font-semibold">Failed to load logs</p>
                 <p className="text-sm text-muted-foreground">
                   Please try again later
@@ -736,7 +754,7 @@ export default function HistoryActivityPage() {
               </div>
             ) : logs.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-12 text-muted-foreground">
-                <History className="h-12 w-12 mb-4" />
+                <History className="size-12 mb-4" />
                 <p className="text-lg font-semibold">No activity logs found</p>
                 <p className="text-sm">Try adjusting your filters</p>
               </div>
@@ -769,6 +787,13 @@ export default function HistoryActivityPage() {
                           key={log.id}
                           className="border-b hover:bg-muted/30 transition-colors cursor-pointer"
                           onClick={() => setSelectedLogId(log.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setSelectedLogId(log.id);
+                            }
+                          }}
+                          tabIndex={0}
                         >
                           <td className="p-4">
                             <div className="flex items-center gap-3">
@@ -794,7 +819,7 @@ export default function HistoryActivityPage() {
                           <td className="p-4">
                             <div className="flex items-center gap-2">
                               <div className="p-1.5 rounded-full bg-primary/10">
-                                <User className="h-3 w-3 text-primary" />
+                                <User className="size-3 text-primary" />
                               </div>
                               <span className="text-sm">
                                 {log.username || "Anonymous"}
@@ -852,7 +877,7 @@ export default function HistoryActivityPage() {
                       onClick={() => setPage((p) => p - 1)}
                       disabled={!hasPrev || isLoading}
                     >
-                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      <ChevronLeft className="size-4 mr-1" />
                       Previous
                     </Button>
                     <span className="text-sm text-muted-foreground px-2">
@@ -865,7 +890,7 @@ export default function HistoryActivityPage() {
                       disabled={!hasNext || isLoading}
                     >
                       Next
-                      <ChevronRight className="h-4 w-4 ml-1" />
+                      <ChevronRight className="size-4 ml-1" />
                     </Button>
                   </div>
                 </div>

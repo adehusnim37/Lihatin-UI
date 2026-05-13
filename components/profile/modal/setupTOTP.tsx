@@ -171,14 +171,14 @@ export default function SetupTOTPModal({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
-          <IconShield className="h-4 w-4 mr-2" />
+          <IconShield className="size-4 mr-2" />
           Enable 2FA
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px] max-h-[100vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <IconShield className="h-5 w-5" />
+            <IconShield className="size-5" />
             Setup Two-Factor Authentication
           </DialogTitle>
           <DialogDescription>
@@ -191,8 +191,8 @@ export default function SetupTOTPModal({
           {step === "init" && (
             <div className="space-y-4 py-4">
               <div className="flex flex-col items-center text-center space-y-4">
-                <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center">
-                  <IconLock className="h-10 w-10 text-blue-600" />
+                <div className="size-20 rounded-full bg-blue-50 flex items-center justify-center">
+                  <IconLock className="size-10 text-blue-600" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg">Secure Your Account</h3>
@@ -235,7 +235,7 @@ export default function SetupTOTPModal({
                       />
                     ) : (
                       <div className="w-[200px] h-[200px] flex items-center justify-center bg-gray-100 rounded">
-                        <IconQrcode className="h-20 w-20 text-gray-400 animate-pulse" />
+                        <IconQrcode className="size-20 text-gray-400 animate-pulse" />
                       </div>
                     )}
                   </div>
@@ -256,9 +256,9 @@ export default function SetupTOTPModal({
                       className="shrink-0"
                     >
                       {copiedSecret ? (
-                        <IconCheck className="h-4 w-4" />
+                        <IconCheck className="size-4" />
                       ) : (
-                        <IconCopy className="h-4 w-4" />
+                        <IconCopy className="size-4" />
                       )}
                     </Button>
                   </div>
@@ -268,7 +268,7 @@ export default function SetupTOTPModal({
               {/* Recovery Codes */}
               <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg space-y-2">
                 <div className="flex items-start gap-2">
-                  <IconKey className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                  <IconKey className="size-5 text-amber-600 shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-amber-900">
                       Save Your Recovery Codes
@@ -302,12 +302,12 @@ export default function SetupTOTPModal({
                   >
                     {copiedCodes ? (
                       <>
-                        <IconCheck className="h-4 w-4 mr-2" />
+                        <IconCheck className="size-4 mr-2" />
                         Copied!
                       </>
                     ) : (
                       <>
-                        <IconCopy className="h-4 w-4 mr-2" />
+                        <IconCopy className="size-4 mr-2" />
                         Copy All Codes
                       </>
                     )}
@@ -347,7 +347,7 @@ export default function SetupTOTPModal({
 
               {error && (
                 <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
-                  <IconAlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                  <IconAlertCircle className="size-4 shrink-0 mt-0.5" />
                   <p>{error}</p>
                 </div>
               )}
@@ -358,8 +358,8 @@ export default function SetupTOTPModal({
           {step === "complete" && (
             <div className="space-y-4 py-6 text-center">
               <div className="flex justify-center">
-                <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center">
-                  <IconCheck className="h-10 w-10 text-green-600" />
+                <div className="size-20 rounded-full bg-green-50 flex items-center justify-center">
+                  <IconCheck className="size-10 text-green-600" />
                 </div>
               </div>
               <div>

@@ -40,7 +40,7 @@ export default function ShortCodePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <Loader2 className="size-8 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground text-sm">Checking link...</p>
         </div>
       </div>
@@ -83,9 +83,9 @@ export default function ShortCodePage() {
           </div>
           <div className="absolute bottom-4 left-4 animate-dust">
             <div className="flex gap-1">
-              <div className="w-1 h-1 bg-muted-foreground/40 rounded-full animate-pulse" />
-              <div className="w-1.5 h-1.5 bg-muted-foreground/30 rounded-full animate-pulse delay-100" />
-              <div className="w-1 h-1 bg-muted-foreground/20 rounded-full animate-pulse delay-200" />
+              <div className="size-1 bg-muted-foreground/40 rounded-full animate-pulse" />
+              <div className="size-1.5 bg-muted-foreground/30 rounded-full animate-pulse delay-100" />
+              <div className="size-1 bg-muted-foreground/20 rounded-full animate-pulse delay-200" />
             </div>
           </div>
         </div>

@@ -87,7 +87,7 @@ export default function AdminSecurityPolicyPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <ShieldAlert className="h-5 w-5" />
+                  <ShieldAlert className="size-5" />
                   Disposable Email Protection
                 </CardTitle>
                 <CardDescription>

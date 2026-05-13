@@ -157,7 +157,7 @@ export default function ShortLinkCard({
 
   return (
     <>
-      <Card className="flex flex-col h-full w-full overflow-hidden hover:shadow-lg transition-all duration-300 min-h-[210px] relative group border-transparent ring-1 ring-border hover:ring-primary/20">
+      <Card className="flex flex-col size-full overflow-hidden hover:shadow-lg transition-all duration-300 min-h-[210px] relative group border-transparent ring-1 ring-border hover:ring-primary/20">
         {/* Background Pattern */}
         <div
           className="absolute inset-0 z-0 opacity-[0.03]"
@@ -168,8 +168,8 @@ export default function ShortLinkCard({
         />
 
         {/* Decorative Stronger Blobs */}
-        <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-full blur-3xl pointer-events-none group-hover:from-primary/30 group-hover:to-purple-500/30 transition-all duration-500" />
-        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-gradient-to-tr from-blue-500/20 to-teal-500/20 rounded-full blur-3xl pointer-events-none group-hover:from-blue-500/30 group-hover:to-teal-500/30 transition-all duration-500" />
+        <div className="absolute -top-20 -right-20 size-40 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-full blur-3xl pointer-events-none group-hover:from-primary/30 group-hover:to-purple-500/30 transition-all duration-500" />
+        <div className="absolute -bottom-20 -left-20 size-40 bg-gradient-to-tr from-blue-500/20 to-teal-500/20 rounded-full blur-3xl pointer-events-none group-hover:from-blue-500/30 group-hover:to-teal-500/30 transition-all duration-500" />
 
         <CardHeader className="flex flex-row items-center justify-between py-3 px-4 relative z-10">
           <Item className="w-full p-0 gap-2.5">
@@ -179,7 +179,7 @@ export default function ShortLinkCard({
                 <TooltipTrigger asChild>
                   <div
                     className={cn(
-                      "h-2.5 w-2.5 rounded-full shrink-0 shadow-sm",
+                      "size-2.5 rounded-full shrink-0 shadow-sm",
                       getStatusColor()
                     )}
                   />
@@ -200,7 +200,7 @@ export default function ShortLinkCard({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <Lock className="size-3.5 text-muted-foreground shrink-0" />
                       </TooltipTrigger>
                       <TooltipContent>
                         <p className="text-xs">Passcode Protected</p>
@@ -212,7 +212,7 @@ export default function ShortLinkCard({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Clock className="h-3.5 w-3.5 text-destructive shrink-0" />
+                        <Clock className="size-3.5 text-destructive shrink-0" />
                       </TooltipTrigger>
                       <TooltipContent>
                         <p className="text-xs">Link Expired</p>
@@ -228,29 +228,29 @@ export default function ShortLinkCard({
             <ItemActions className="-me-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreHorizontal className="h-4 w-4" />
+                  <Button variant="ghost" size="icon" className="size-8">
+                    <MoreHorizontal className="size-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={handleNavigateToAnalytics}>
-                    <BarChart3 className="mr-2 h-4 w-4" />
+                    <BarChart3 className="mr-2 size-4" />
                     Analytics
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleNavigateToDetail}>
-                    <Edit className="mr-2 h-4 w-4" />
+                    <Edit className="mr-2 size-4" />
                     Edit
                   </DropdownMenuItem>
 
                   {/* New Menu Items */}
                   <DropdownMenuItem onClick={() => setShowPasscodeDialog(true)}>
-                    <Lock className="mr-2 h-4 w-4" />
+                    <Lock className="mr-2 size-4" />
                     {hasPasscode ? "Change Passcode" : "Set Passcode"}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => setShowExpirationDialog(true)}
                   >
-                    <Calendar className="mr-2 h-4 w-4" />
+                    <Calendar className="mr-2 size-4" />
                     {data.expires_at ? "Change Expiration" : "Set Expiration"}
                   </DropdownMenuItem>
 
@@ -264,7 +264,7 @@ export default function ShortLinkCard({
                       }
                     }}
                   >
-                    <Power className="mr-2 h-4 w-4" />
+                    <Power className="mr-2 size-4" />
                     {data.is_active ? "Deactivate" : "Activate"}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -272,7 +272,7 @@ export default function ShortLinkCard({
                     className="text-destructive"
                     onClick={() => onDelete?.(data.id)}
                   >
-                    <Trash2 className="mr-2 h-4 w-4" />
+                    <Trash2 className="mr-2 size-4" />
                     Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -290,13 +290,13 @@ export default function ShortLinkCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 shrink-0"
+              className="size-7 shrink-0"
               onClick={copyToClipboard}
             >
               {copied ? (
-                <Check className="h-3.5 w-3.5 text-green-500" />
+                <Check className="size-3.5 text-green-500" />
               ) : (
-                <Copy className="h-3.5 w-3.5" />
+                <Copy className="size-3.5" />
               )}
             </Button>
           </div>
@@ -338,21 +338,21 @@ export default function ShortLinkCard({
               rel="noopener noreferrer"
               className="text-xs font-medium text-muted-foreground hover:text-foreground flex w-full min-w-0 items-center gap-1.5 transition-colors"
             >
-              <ExternalLink className="h-3 w-3 shrink-0" />
+              <ExternalLink className="size-3 shrink-0" />
               <span className="min-w-0 flex-1 truncate">{data.original_url}</span>
             </a>
 
             {/* Metadata Row Pinned to Bottom */}
             <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1 mt-auto">
               <div className="flex items-center gap-1.5" title="Total Clicks">
-                <MousePointerClick className="h-3.5 w-3.5" />
+                <MousePointerClick className="size-3.5" />
                 <span>{data.detail?.current_clicks ?? 0} clicks</span>
               </div>
               <div
                 className="flex items-center gap-1.5"
                 title={`Created on ${formatDate(data.created_at)}`}
               >
-                <Calendar className="h-3.5 w-3.5" />
+                <Calendar className="size-3.5" />
                 <span>{formatDate(data.created_at)}</span>
               </div>
             </div>

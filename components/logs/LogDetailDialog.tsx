@@ -39,7 +39,7 @@ export function LogDetailDialog({ logId, onClose }: LogDetailDialogProps) {
       <DialogContent className="w-[96vw] max-w-[96vw] h-[94vh] p-0 gap-0 overflow-hidden flex flex-col xl:w-[92vw] xl:max-w-[92vw]">
         <DialogHeader className="px-6 py-4 border-b shrink-0">
           <DialogTitle className="flex items-center gap-2 pr-10">
-            <History className="h-5 w-5" />
+            <History className="size-5" />
             Log Details
             {logDetail?.data && (
               <>
@@ -60,7 +60,7 @@ export function LogDetailDialog({ logId, onClose }: LogDetailDialogProps) {
 
         {logDetailLoading ? (
           <div className="flex flex-1 items-center justify-center p-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <Loader2 className="size-8 animate-spin text-muted-foreground" />
           </div>
         ) : logDetail?.data ? (
           <ScrollArea className="flex-1 min-h-0">
@@ -68,7 +68,7 @@ export function LogDetailDialog({ logId, onClose }: LogDetailDialogProps) {
           </ScrollArea>
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center p-12 text-muted-foreground">
-            <AlertCircle className="h-12 w-12 mb-4" />
+            <AlertCircle className="size-12 mb-4" />
             <p>Failed to load log details</p>
           </div>
         )}

@@ -138,7 +138,7 @@ function ResetPasswordContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="size-8 animate-spin text-primary" />
           <p className="text-muted-foreground">Validating reset token...</p>
         </div>
       </div>
@@ -150,7 +150,7 @@ function ResetPasswordContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4 text-center max-w-md px-6">
-          <XCircle className="h-16 w-16 text-destructive" />
+          <XCircle className="size-16 text-destructive" />
           <h2 className="text-2xl font-bold">Invalid Reset Link</h2>
           <p className="text-muted-foreground">
             This password reset link is invalid or has expired. Please request a
@@ -219,9 +219,9 @@ function ResetPasswordContent() {
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                         >
                           {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
+                            <EyeOff className="size-4" />
                           ) : (
-                            <Eye className="h-4 w-4" />
+                            <Eye className="size-4" />
                           )}
                         </button>
                       </div>
@@ -256,9 +256,9 @@ function ResetPasswordContent() {
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                         >
                           {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4" />
+                            <EyeOff className="size-4" />
                           ) : (
-                            <Eye className="h-4 w-4" />
+                            <Eye className="size-4" />
                           )}
                         </button>
                       </div>
@@ -266,13 +266,13 @@ function ResetPasswordContent() {
                     {/* Visual match indicator */}
                     {confirmPassword && password !== confirmPassword && (
                       <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
-                        <XCircle className="h-3 w-3" />
+                        <XCircle className="size-3" />
                         Passwords do not match
                       </p>
                     )}
                     {confirmPassword && password === confirmPassword && (
                       <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-                        <CheckCircle2 className="h-3 w-3" />
+                        <CheckCircle2 className="size-3" />
                         Passwords match
                       </p>
                     )}
@@ -289,7 +289,7 @@ function ResetPasswordContent() {
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 size-4 animate-spin" />
                     Resetting Password...
                   </>
                 ) : (
@@ -327,7 +327,7 @@ export default function ResetPassword() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-background">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="size-8 animate-spin text-primary" />
         </div>
       }
     >

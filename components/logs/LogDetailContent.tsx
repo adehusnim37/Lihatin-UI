@@ -69,17 +69,17 @@ export function LogDetailContent({ log, className }: LogDetailContentProps) {
         <SectionCard
           title="Request"
           subtitle="Inbound request context"
-          icon={<Monitor className="h-4 w-4" />}
+          icon={<Monitor className="size-4" />}
         >
           <Field label="Route" value={displayValue(log.route)} mono />
           <div className="grid grid-cols-2 gap-2">
             <MiniStat
-              icon={<Terminal className="h-3.5 w-3.5" />}
+              icon={<Terminal className="size-3.5" />}
               label="Method"
               value={displayValue(log.method)}
             />
             <MiniStat
-              icon={<Clock3 className="h-3.5 w-3.5" />}
+              icon={<Clock3 className="size-3.5" />}
               label="Timestamp"
               value={formatDateValue(log.timestamp)}
             />
@@ -88,28 +88,28 @@ export function LogDetailContent({ log, className }: LogDetailContentProps) {
           {hasContent(routeParams) && (
             <ExpandableJson
               title="Route Params"
-              icon={<Terminal className="h-3.5 w-3.5" />}
+              icon={<Terminal className="size-3.5" />}
               data={routeParams}
             />
           )}
           {hasContent(queryParams) && (
             <ExpandableJson
               title="Query Params"
-              icon={<Info className="h-3.5 w-3.5" />}
+              icon={<Info className="size-3.5" />}
               data={queryParams}
             />
           )}
           {hasContent(requestBody) && (
             <ExpandableJson
               title="Request Body"
-              icon={<Server className="h-3.5 w-3.5" />}
+              icon={<Server className="size-3.5" />}
               data={requestBody}
             />
           )}
           {hasContent(headers) && (
             <ExpandableJson
               title="Request Headers"
-              icon={<Info className="h-3.5 w-3.5" />}
+              icon={<Info className="size-3.5" />}
               data={headers}
             />
           )}
@@ -118,16 +118,16 @@ export function LogDetailContent({ log, className }: LogDetailContentProps) {
         <SectionCard
           title="Client"
           subtitle="Visitor and device details"
-          icon={<Globe className="h-4 w-4" />}
+          icon={<Globe className="size-4" />}
         >
           <div className="grid grid-cols-2 gap-2">
             <MiniStat
-              icon={<Network className="h-3.5 w-3.5" />}
+              icon={<Network className="size-3.5" />}
               label="IP Address"
               value={displayValue(log.ip_address)}
             />
             <MiniStat
-              icon={<LaptopMinimal className="h-3.5 w-3.5" />}
+              icon={<LaptopMinimal className="size-3.5" />}
               label="Browser"
               value={displayValue(log.browser_info)}
             />
@@ -139,17 +139,17 @@ export function LogDetailContent({ log, className }: LogDetailContentProps) {
         <SectionCard
           title="Response"
           subtitle="Server response metadata"
-          icon={<Server className="h-4 w-4" />}
+          icon={<Server className="size-4" />}
           className="lg:col-span-2"
         >
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <MiniStat
-              icon={<Radar className="h-3.5 w-3.5" />}
+              icon={<Radar className="size-3.5" />}
               label="Status"
               value={displayValue(log.status_code)}
             />
             <MiniStat
-              icon={<Clock3 className="h-3.5 w-3.5" />}
+              icon={<Clock3 className="size-3.5" />}
               label="Response Time"
               value={
                 log.response_time === null || log.response_time === undefined
@@ -158,7 +158,7 @@ export function LogDetailContent({ log, className }: LogDetailContentProps) {
               }
             />
             <MiniStat
-              icon={<Info className="h-3.5 w-3.5" />}
+              icon={<Info className="size-3.5" />}
               label="Level"
               value={displayValue(log.level)}
             />
@@ -169,7 +169,7 @@ export function LogDetailContent({ log, className }: LogDetailContentProps) {
           {hasContent(responseBody) && (
             <ExpandableJson
               title="Response Body"
-              icon={<Server className="h-3.5 w-3.5" />}
+              icon={<Server className="size-3.5" />}
               data={responseBody}
               defaultOpen
             />

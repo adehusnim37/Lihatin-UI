@@ -66,9 +66,9 @@ export default function PasswordIndicator({
               className="flex items-center gap-2 text-xs transition-colors"
             >
               {req.met ? (
-                <IconCheck className="h-4 w-4 text-green-600 shrink-0" />
+                <IconCheck className="size-4 text-green-600 shrink-0" />
               ) : (
-                <IconX className="h-4 w-4 text-muted-foreground shrink-0" />
+                <IconX className="size-4 text-muted-foreground shrink-0" />
               )}
               <span className={cn(
                 "transition-colors",

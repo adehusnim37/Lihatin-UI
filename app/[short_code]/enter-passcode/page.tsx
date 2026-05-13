@@ -30,8 +30,8 @@ export default function EnterPasscodePage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/30">
       <div className="w-full max-w-sm p-8">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-            <Lock className="w-8 h-8 text-primary" />
+          <div className="inline-flex items-center justify-center size-16 rounded-full bg-primary/10 mb-4">
+            <Lock className="size-8 text-primary" />
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-2">
             Protected Link
@@ -75,7 +75,7 @@ export default function EnterPasscodePage() {
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 size-4 animate-spin" />
                 Verifying...
               </>
             ) : (

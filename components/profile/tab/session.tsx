@@ -233,8 +233,8 @@ export default function SessionTab() {
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <DeviceIcon className="h-4 w-4 text-muted-foreground" />
-                              <BrowserIcon className="h-4 w-4 text-muted-foreground" />
+                              <DeviceIcon className="size-4 text-muted-foreground" />
+                              <BrowserIcon className="size-4 text-muted-foreground" />
                               <span className="text-sm">
                                 {browser} {isMobile ? "(Mobile)" : "(Desktop)"}
                               </span>
@@ -274,7 +274,7 @@ export default function SessionTab() {
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={!attemptsData.has_prev}
                   >
-                    <IconChevronLeft className="h-4 w-4" />
+                    <IconChevronLeft className="size-4" />
                     <span className="hidden sm:inline">Previous</span>
                   </Button>
                   <span className="text-sm">
@@ -287,7 +287,7 @@ export default function SessionTab() {
                     disabled={!attemptsData.has_next}
                   >
                     <span className="hidden sm:inline">Next</span>
-                    <IconChevronRight className="h-4 w-4" />
+                    <IconChevronRight className="size-4" />
                   </Button>
                 </div>
               </div>

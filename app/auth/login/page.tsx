@@ -352,7 +352,7 @@ function LoginContent() {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 size-4 animate-spin" />
                   Signing in...
                 </>
               ) : (
@@ -368,7 +368,7 @@ function LoginContent() {
             >
               {isGoogleLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 size-4 animate-spin" />
                   Redirecting to Google...
                 </>
               ) : (
@@ -421,7 +421,7 @@ export default function Login() {
     <Suspense
       fallback={
         <div className="md:flex md:min-h-full bg-background md:p-6 py-6 gap-x-6 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <Loader2 className="size-8 animate-spin text-muted-foreground" />
         </div>
       }
     >

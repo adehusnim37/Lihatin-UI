@@ -62,7 +62,7 @@ function SupportChooserContent() {
           <CardHeader className="">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">New Request</p>
             <CardTitle className="flex items-center gap-2">
-              <IconLifebuoy className="h-5 w-5" />
+              <IconLifebuoy className="size-5" />
               Submit New Ticket
             </CardTitle>
             <CardDescription className="font-semibold text-foreground/80">
@@ -77,7 +77,7 @@ function SupportChooserContent() {
                 "No login needed.",
               ].map((point) => (
                 <div key={point} className="flex items-start gap-2.5 text-sm text-foreground/80">
-                  <IconPointFilled className="mt-1 h-3.5 w-3.5 shrink-0 text-primary" />
+                  <IconPointFilled className="mt-1 size-3.5 shrink-0 text-primary" />
                   <p className="leading-6">{point}</p>
                 </div>
               ))}
@@ -86,7 +86,7 @@ function SupportChooserContent() {
               <Button asChild className="w-full sm:w-auto">
                 <Link href="/support/new">
                   Start New Ticket
-                  <IconArrowRight className="ml-2 h-4 w-4" />
+                  <IconArrowRight className="ml-2 size-4" />
                 </Link>
               </Button>
             </div>
@@ -97,7 +97,7 @@ function SupportChooserContent() {
           <CardHeader className="">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Existing Request</p>
             <CardTitle className="flex items-center gap-2">
-              <IconKey className="h-5 w-5" />
+              <IconKey className="size-5" />
               Open Existing Ticket
             </CardTitle>
             <CardDescription className="font-semibold text-foreground/80">
@@ -112,7 +112,7 @@ function SupportChooserContent() {
                 "Best when support already emailed you.",
               ].map((point) => (
                 <div key={point} className="flex items-start gap-2.5 text-sm text-foreground/80">
-                  <IconPointFilled className="mt-1 h-3.5 w-3.5 shrink-0 text-primary" />
+                  <IconPointFilled className="mt-1 size-3.5 shrink-0 text-primary" />
                   <p className="leading-6">{point}</p>
                 </div>
               ))}
@@ -121,7 +121,7 @@ function SupportChooserContent() {
               <Button asChild variant="outline" className="w-full sm:w-auto">
                 <Link href="/support/access">
                   Open Existing Ticket
-                  <IconArrowRight className="ml-2 h-4 w-4" />
+                  <IconArrowRight className="ml-2 size-4" />
                 </Link>
               </Button>
             </div>

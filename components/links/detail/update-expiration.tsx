@@ -102,7 +102,7 @@ export function UpdateExpirationDialog({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
+            <Clock className="size-5" />
             Set Expiration Date
           </DialogTitle>
           <DialogDescription>
@@ -143,7 +143,7 @@ export function UpdateExpirationDialog({
                 </Button>
               )}
               <Button type="submit" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading && <Loader2 className="mr-2 size-4 animate-spin" />}
                 Save Expiration
               </Button>
             </DialogFooter>

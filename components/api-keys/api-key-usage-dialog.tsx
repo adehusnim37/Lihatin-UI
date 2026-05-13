@@ -73,7 +73,7 @@ export function APIKeyUsageDialog({
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-purple-500/10">
-              <Activity className="h-5 w-5 text-purple-500" />
+              <Activity className="size-5 text-purple-500" />
             </div>
             <DialogTitle>API Key Usage</DialogTitle>
           </div>
@@ -104,7 +104,7 @@ export function APIKeyUsageDialog({
         <div className="flex-1 overflow-y-auto min-h-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <Loader2 className="size-6 animate-spin text-muted-foreground" />
             </div>
           ) : error ? (
             <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
@@ -112,7 +112,7 @@ export function APIKeyUsageDialog({
             </div>
           ) : activityLogs.length === 0 ? (
             <div className="rounded-lg border border-dashed bg-muted/20 p-8 text-center">
-              <Activity className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+              <Activity className="size-10 text-muted-foreground mx-auto mb-3" />
               <p className="text-muted-foreground">No activity yet</p>
               <p className="text-sm text-muted-foreground">
                 API requests will appear here
@@ -136,18 +136,18 @@ export function APIKeyUsageDialog({
                   </div>
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
+                      <Clock className="size-3" />
                       {formatFullDate(log.activity_log.timestamp)}
                     </span>
                     {log.activity_log.ip_address && (
                       <span className="flex items-center gap-1">
-                        <Globe className="h-3 w-3" />
+                        <Globe className="size-3" />
                         {log.activity_log.ip_address}
                       </span>
                     )}
                     {log.activity_log.response_time && (
                       <span className="flex items-center gap-1">
-                        <ArrowUpRight className="h-3 w-3" />
+                        <ArrowUpRight className="size-3" />
                         {log.activity_log.response_time}ms
                       </span>
                     )}
@@ -171,7 +171,7 @@ export function APIKeyUsageDialog({
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={!usageData.has_prev}
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="size-4" />
               </Button>
               <Button
                 variant="outline"
@@ -179,7 +179,7 @@ export function APIKeyUsageDialog({
                 onClick={() => setPage((p) => p + 1)}
                 disabled={!usageData.has_next}
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="size-4" />
               </Button>
             </div>
           </div>

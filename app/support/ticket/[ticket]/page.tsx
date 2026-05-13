@@ -252,7 +252,7 @@ function PublicSupportConversationContent() {
                 <Link
                   href={`/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email)}`}
                 >
-                  <IconArrowLeft className="mr-2 h-4 w-4" />
+                  <IconArrowLeft className="mr-2 size-4" />
                   Back to Support Access
                 </Link>
               </Button>
@@ -306,7 +306,7 @@ function PublicSupportConversationContent() {
                         onClick={() => void conversationQuery.refetch()}
                         disabled={conversationQuery.isFetching}
                       >
-                        <IconRefresh className="mr-2 h-4 w-4" />
+                        <IconRefresh className="mr-2 size-4" />
                         {isRefreshingConversation ? "Refreshing..." : "Refresh"}
                       </Button>
                     </div>
@@ -341,7 +341,7 @@ function PublicSupportConversationContent() {
                       {conversation.status === "resolved" ||
                       conversation.status === "closed" ? (
                         <Alert className="mt-4 border-emerald-200 bg-emerald-50/50 text-emerald-900">
-                          <IconMessage2 className="h-4 w-4 stroke-emerald-600" />
+                          <IconMessage2 className="size-4 stroke-emerald-600" />
                           <AlertTitle>Conversation Closed</AlertTitle>
                           <AlertDescription className="text-emerald-800">
                             This ticket has been marked as {conversation.status}{" "}
@@ -382,14 +382,14 @@ function PublicSupportConversationContent() {
                                 attachmentInputRef.current?.click()
                               }
                             >
-                              <IconPaperclip className="mr-2 h-4 w-4" />
+                              <IconPaperclip className="mr-2 size-4" />
                               Attach Files
                             </Button>
                             <Button
                               type="submit"
                               disabled={sendMessageMutation.isPending}
                             >
-                              <IconSend className="mr-2 h-4 w-4" />
+                              <IconSend className="mr-2 size-4" />
                               {sendMessageMutation.isPending
                                 ? "Sending..."
                                 : "Send Reply"}
@@ -416,7 +416,7 @@ function PublicSupportConversationContent() {
                         <Link
                           href={`/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email)}`}
                         >
-                          <IconKey className="mr-2 h-4 w-4" />
+                          <IconKey className="mr-2 size-4" />
                           Verify Access on Support Page
                         </Link>
                       </Button>

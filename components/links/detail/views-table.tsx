@@ -73,8 +73,8 @@ export function ViewsTable({ code }: ViewsTableProps) {
   if (views.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-16 bg-muted/5 border border-dashed rounded-xl">
-        <div className="h-16 w-16 bg-muted/20 rounded-full flex items-center justify-center mb-4">
-          <Globe className="h-8 w-8 text-muted-foreground opacity-50" />
+        <div className="size-16 bg-muted/20 rounded-full flex items-center justify-center mb-4">
+          <Globe className="size-8 text-muted-foreground opacity-50" />
         </div>
         <h3 className="text-lg font-semibold text-foreground">
           No Traffic Yet
@@ -113,8 +113,8 @@ export function ViewsTable({ code }: ViewsTableProps) {
                 >
                   <TableCell className="pl-6">
                     <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 text-blue-600">
-                        <MapPin className="h-4 w-4" />
+                      <div className="size-9 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 text-blue-600">
+                        <MapPin className="size-4" />
                       </div>
                       <div className="flex flex-col min-w-0">
                         <span className="font-medium text-sm truncate">
@@ -138,7 +138,7 @@ export function ViewsTable({ code }: ViewsTableProps) {
                         <span>{ua.browser}</span>
                       </div>
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-muted-foreground/30" />
+                        <span className="inline-block size-1.5 rounded-full bg-muted-foreground/30" />
                         {ua.os}
                       </div>
                     </div>
@@ -158,7 +158,7 @@ export function ViewsTable({ code }: ViewsTableProps) {
                                 variant="outline"
                                 className="font-normal truncate max-w-full group-hover:border-primary/50 transition-colors"
                               >
-                                <ExternalLink className="h-3 w-3 mr-1.5 opacity-50" />
+                                <ExternalLink className="size-3 mr-1.5 opacity-50" />
                                 {getDomain(view.referer)}
                               </Badge>
                             </a>
@@ -206,18 +206,18 @@ export function ViewsTable({ code }: ViewsTableProps) {
               size="sm"
               onClick={handlePrev}
               disabled={page === 1}
-              className="h-8 w-8 p-0"
+              className="size-8 p-0"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="size-4" />
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleNext}
               disabled={page === meta.total_pages}
-              className="h-8 w-8 p-0"
+              className="size-8 p-0"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="size-4" />
             </Button>
           </div>
         </div>
@@ -233,7 +233,7 @@ function ViewsTableSkeleton() {
         {[1, 2, 3].map((i) => (
           <div key={i} className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 w-[30%]">
-              <Skeleton className="h-9 w-9 rounded-full" />
+              <Skeleton className="size-9 rounded-full" />
               <div className="space-y-1.5 flex-1">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-3 w-16" />
@@ -271,7 +271,7 @@ function getDomain(url: string) {
 function parseUserAgent(ua: string) {
   let browser = "Unknown Browser";
   let os = "Unknown OS";
-  let deviceIcon = <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />;
+  let deviceIcon = <HelpCircle className="size-3.5 text-muted-foreground" />;
 
   // Detect Browser
   if (ua.includes("Firefox")) browser = "Firefox";
@@ -295,11 +295,11 @@ function parseUserAgent(ua: string) {
     ua.includes("Android") ||
     ua.includes("iPhone")
   ) {
-    deviceIcon = <Smartphone className="h-3.5 w-3.5 text-purple-500" />;
+    deviceIcon = <Smartphone className="size-3.5 text-purple-500" />;
   } else if (ua.includes("Tablet") || ua.includes("iPad")) {
-    deviceIcon = <Tablet className="h-3.5 w-3.5 text-blue-500" />;
+    deviceIcon = <Tablet className="size-3.5 text-blue-500" />;
   } else {
-    deviceIcon = <Laptop className="h-3.5 w-3.5 text-slate-500" />; // Default to laptop/desktop
+    deviceIcon = <Laptop className="size-3.5 text-slate-500" />; // Default to laptop/desktop
   }
 
   // Refine OS for Mobile

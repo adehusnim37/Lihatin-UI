@@ -87,7 +87,7 @@ export function RefreshAPIKeyDialog({
           <DialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 rounded-lg bg-green-500/10">
-                <Key className="h-5 w-5 text-green-500" />
+                <Key className="size-5 text-green-500" />
               </div>
               <DialogTitle>New API Key Generated!</DialogTitle>
             </div>
@@ -99,7 +99,7 @@ export function RefreshAPIKeyDialog({
           <div className="space-y-4">
             {/* Warning */}
             <div className="flex items-start gap-3 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-              <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+              <AlertTriangle className="size-5 text-amber-500 mt-0.5 flex-shrink-0" />
               <div className="space-y-1">
                 <p className="text-sm font-medium text-amber-500">
                   {refreshedKey.secret.warning}
@@ -124,9 +124,9 @@ export function RefreshAPIKeyDialog({
                   className="flex-shrink-0"
                 >
                   {copied ? (
-                    <Check className="h-4 w-4 text-green-500" />
+                    <Check className="size-4 text-green-500" />
                   ) : (
-                    <Copy className="h-4 w-4" />
+                    <Copy className="size-4" />
                   )}
                 </Button>
               </div>
@@ -162,7 +162,7 @@ export function RefreshAPIKeyDialog({
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-amber-500/10">
-              <RefreshCw className="h-5 w-5 text-amber-500" />
+              <RefreshCw className="size-5 text-amber-500" />
             </div>
             <DialogTitle>Regenerate API Key</DialogTitle>
           </div>
@@ -174,7 +174,7 @@ export function RefreshAPIKeyDialog({
         <div className="space-y-4">
           {/* Warning */}
           <div className="flex items-start gap-3 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-            <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+            <AlertTriangle className="size-5 text-amber-500 mt-0.5 flex-shrink-0" />
             <div className="space-y-1">
               <p className="text-sm font-medium text-amber-500">
                 This will invalidate the current key
@@ -213,7 +213,7 @@ export function RefreshAPIKeyDialog({
             Cancel
           </Button>
           <Button onClick={handleRefresh} disabled={isLoading}>
-            {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            {isLoading && <Loader2 className="size-4 mr-2 animate-spin" />}
             Regenerate Key
           </Button>
         </DialogFooter>

@@ -53,7 +53,7 @@ export function APIKeyList() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -71,7 +71,7 @@ export function APIKeyList() {
   if (apiKeys.length === 0) {
     return (
       <div className="rounded-lg border border-dashed bg-muted/20 p-8 text-center">
-        <Key className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+        <Key className="size-10 text-muted-foreground mx-auto mb-3" />
         <p className="text-muted-foreground">No API keys yet</p>
         <p className="text-sm text-muted-foreground">
           Create your first API key to get started

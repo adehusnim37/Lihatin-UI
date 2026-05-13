@@ -34,16 +34,16 @@ export function RulesCard({
       <CardHeader className="pb-3 border-b">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ShieldAlert className="h-4 w-4 text-primary" />
+            <ShieldAlert className="size-4 text-primary" />
             <CardTitle className="text-base">Rules</CardTitle>
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-muted-foreground"
+            className="size-7 text-muted-foreground"
             onClick={() => setShowExpiryDialog(true)}
           >
-            <Settings className="h-3.5 w-3.5" />
+            <Settings className="size-3.5" />
           </Button>
         </div>
       </CardHeader>
@@ -51,7 +51,7 @@ export function RulesCard({
         {/* Expiration Status */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="h-4 w-4" /> Expiration
+            <Clock className="size-4" /> Expiration
           </div>
           <div className="text-right">
             {expiresAt ? (
@@ -77,7 +77,7 @@ export function RulesCard({
         {/* Custom Domain */}
         <div className="flex items-center justify-between border-t border-dashed pt-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Globe className="h-4 w-4" /> Domain
+            <Globe className="size-4" /> Domain
           </div>
           {detail?.custom_domain ? (
             <span

@@ -70,14 +70,14 @@ export default function ApiIntegrationsPage() {
           <Tabs defaultValue="api-keys" className="space-y-6 w-full">
             <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
               <TabsTrigger value="api-keys" className="flex items-center gap-2">
-                <Key className="h-4 w-4" />
+                <Key className="size-4" />
                 API Keys
               </TabsTrigger>
               <TabsTrigger
                 value="documentation"
                 className="flex items-center gap-2"
               >
-                <BookOpen className="h-4 w-4" />
+                <BookOpen className="size-4" />
                 Documentation
               </TabsTrigger>
             </TabsList>
@@ -90,7 +90,7 @@ export default function ApiIntegrationsPage() {
                   <div className="flex items-center justify-between flex-wrap gap-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-amber-500/10">
-                        <Key className="h-5 w-5 text-amber-500" />
+                        <Key className="size-5 text-amber-500" />
                       </div>
                       <div>
                         <h2 className="font-semibold">API Keys</h2>
@@ -100,7 +100,7 @@ export default function ApiIntegrationsPage() {
                       </div>
                     </div>
                     <Button onClick={() => setCreateDialogOpen(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
+                      <Plus className="size-4 mr-2" />
                       Generate New Key
                     </Button>
                   </div>
@@ -123,7 +123,7 @@ export default function ApiIntegrationsPage() {
                 <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-blue-500/10">
-                      <BookOpen className="h-5 w-5 text-blue-500" />
+                      <BookOpen className="size-5 text-blue-500" />
                     </div>
                     <div>
                       <h2 className="font-semibold">API Reference</h2>
@@ -138,7 +138,7 @@ export default function ApiIntegrationsPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <ExternalLink className="h-4 w-4 mr-2" />
+                      <ExternalLink className="size-4 mr-2" />
                       Open Postman Collection
                     </a>
                   </Button>

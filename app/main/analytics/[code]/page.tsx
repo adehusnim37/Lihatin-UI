@@ -97,7 +97,7 @@ export default function AnalyticsDetailPage() {
                   <ActiveInactiveBadge isActive={link.is_active} />
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                  <LinkIcon className="h-3 w-3 shrink-0" />
+                  <LinkIcon className="size-3 shrink-0" />
                   <a
                     href={link.original_url}
                     target="_blank"
@@ -114,13 +114,13 @@ export default function AnalyticsDetailPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 ml-1 hover:bg-background/80"
+                    className="size-6 ml-1 hover:bg-background/80"
                     onClick={handleCopy}
                   >
                     {copied ? (
-                      <Check className="h-3 w-3 text-green-500" />
+                      <Check className="size-3 text-green-500" />
                     ) : (
-                      <Copy className="h-3 w-3" />
+                      <Copy className="size-3" />
                     )}
                   </Button>
                 </div>
@@ -140,13 +140,13 @@ export default function AnalyticsDetailPage() {
           <Tabs defaultValue="overview" className="w-full">
             <TabsList>
               <TabsTrigger value="overview">
-                <BarChart2 className="mr-2 h-4 w-4" /> Overview
+                <BarChart2 className="mr-2 size-4" /> Overview
               </TabsTrigger>
               <TabsTrigger value="views">
-                <Users className="mr-2 h-4 w-4" /> Traffic Logs
+                <Users className="mr-2 size-4" /> Traffic Logs
               </TabsTrigger>
               <TabsTrigger value="activity">
-                <Activity className="mr-2 h-4 w-4" /> Activity Log
+                <Activity className="mr-2 size-4" /> Activity Log
               </TabsTrigger>
             </TabsList>
 

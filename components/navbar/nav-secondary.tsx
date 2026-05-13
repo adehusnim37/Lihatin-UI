@@ -42,7 +42,7 @@ export function NavSecondary({
                   size="sm"
                 >
                   <Link href={item.url}>
-                    <item.icon className="h-4 w-4" />
+                    <item.icon className="size-4" />
                     <span>{item.title}</span>
                   </Link>
                 </SidebarMenuButton>

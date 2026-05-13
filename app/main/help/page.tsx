@@ -77,7 +77,7 @@ export default function HelpPage() {
           <div className="text-center space-y-4 py-8">
             <div className="flex justify-center">
               <div className="p-4 rounded-full bg-primary/10">
-                <HelpCircle className="h-10 w-10 text-primary" />
+                <HelpCircle className="size-10 text-primary" />
               </div>
             </div>
             <h1 className="text-3xl font-bold">How can we help you?</h1>
@@ -87,7 +87,7 @@ export default function HelpPage() {
 
             {/* Search Bar */}
             <div className="relative max-w-lg mx-auto mt-6">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search for help articles..."
@@ -105,7 +105,7 @@ export default function HelpPage() {
               >
                 <div className="flex items-start gap-4">
                   <div className={`p-3 rounded-lg ${category.color}`}>
-                    <category.icon className="h-6 w-6" />
+                    <category.icon className="size-6" />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold group-hover:text-primary transition-colors">
@@ -120,7 +120,7 @@ export default function HelpPage() {
                           key={article}
                           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                         >
-                          <ChevronRight className="h-3 w-3" />
+                          <ChevronRight className="size-3" />
                           {article}
                         </li>
                       ))}
@@ -134,7 +134,7 @@ export default function HelpPage() {
           {/* Popular Articles */}
           <div className="rounded-xl border bg-card p-6">
             <h2 className="font-semibold mb-4 flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
+              <FileText className="size-5 text-primary" />
               Popular Articles
             </h2>
             <ul className="space-y-3">
@@ -146,7 +146,7 @@ export default function HelpPage() {
                   <span className="group-hover:text-primary transition-colors">
                     {article}
                   </span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <ChevronRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
                 </li>
               ))}
             </ul>
@@ -157,7 +157,7 @@ export default function HelpPage() {
             <div className="rounded-xl border bg-card p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
               <div className="flex justify-center mb-3">
                 <div className="p-3 rounded-full bg-blue-500/10">
-                  <MessageCircle className="h-6 w-6 text-blue-500" />
+                  <MessageCircle className="size-6 text-blue-500" />
                 </div>
               </div>
               <h3 className="font-semibold">Live Chat</h3>
@@ -172,7 +172,7 @@ export default function HelpPage() {
             <div className="rounded-xl border bg-card p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
               <div className="flex justify-center mb-3">
                 <div className="p-3 rounded-full bg-green-500/10">
-                  <Mail className="h-6 w-6 text-green-500" />
+                  <Mail className="size-6 text-green-500" />
                 </div>
               </div>
               <h3 className="font-semibold">Email Support</h3>
@@ -187,7 +187,7 @@ export default function HelpPage() {
             <div className="rounded-xl border bg-card p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
               <div className="flex justify-center mb-3">
                 <div className="p-3 rounded-full bg-purple-500/10">
-                  <Video className="h-6 w-6 text-purple-500" />
+                  <Video className="size-6 text-purple-500" />
                 </div>
               </div>
               <h3 className="font-semibold">Video Tutorials</h3>
@@ -204,7 +204,7 @@ export default function HelpPage() {
           <div className="rounded-xl border bg-gradient-to-r from-primary/5 to-primary/10 p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Book className="h-6 w-6 text-primary" />
+                <Book className="size-6 text-primary" />
                 <div>
                   <h3 className="font-semibold">Developer Documentation</h3>
                   <p className="text-sm text-muted-foreground">
@@ -214,7 +214,7 @@ export default function HelpPage() {
               </div>
               <button className="flex items-center gap-2 px-4 py-2 rounded-lg border hover:bg-background transition-colors">
                 View Docs
-                <ExternalLink className="h-4 w-4" />
+                <ExternalLink className="size-4" />
               </button>
             </div>
           </div>

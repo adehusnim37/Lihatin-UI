@@ -78,7 +78,7 @@ export function APIKeyCard({
             className={`p-2 rounded-lg ${apiKey.is_active ? "bg-green-500/10" : "bg-muted"}`}
           >
             <Key
-              className={`h-4 w-4 ${apiKey.is_active ? "text-green-500" : "text-muted-foreground"}`}
+              className={`size-4 ${apiKey.is_active ? "text-green-500" : "text-muted-foreground"}`}
             />
           </div>
           <div>
@@ -95,9 +95,9 @@ export function APIKeyCard({
                 className="p-1 rounded hover:bg-muted transition-colors"
               >
                 {copied ? (
-                  <Check className="h-3 w-3 text-green-500" />
+                  <Check className="size-3 text-green-500" />
                 ) : (
-                  <Copy className="h-3 w-3 text-muted-foreground" />
+                  <Copy className="size-3 text-muted-foreground" />
                 )}
               </button>
             </div>
@@ -106,33 +106,33 @@ export function APIKeyCard({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreVertical className="h-4 w-4" />
+            <Button variant="ghost" size="icon" className="size-8">
+              <MoreVertical className="size-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => onEdit(apiKey)}>
-              <Pencil className="h-4 w-4 mr-2" />
+              <Pencil className="size-4 mr-2" />
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onViewUsage(apiKey)}>
-              <Activity className="h-4 w-4 mr-2" />
+              <Activity className="size-4 mr-2" />
               View Usage
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onRefresh(apiKey)}>
-              <RefreshCw className="h-4 w-4 mr-2" />
+              <RefreshCw className="size-4 mr-2" />
               Regenerate Key
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => onToggleStatus(apiKey)}>
               {apiKey.is_active ? (
                 <>
-                  <PowerOff className="h-4 w-4 mr-2" />
+                  <PowerOff className="size-4 mr-2" />
                   Deactivate
                 </>
               ) : (
                 <>
-                  <Power className="h-4 w-4 mr-2" />
+                  <Power className="size-4 mr-2" />
                   Activate
                 </>
               )}
@@ -142,7 +142,7 @@ export function APIKeyCard({
               onClick={() => onDelete(apiKey)}
               className="text-destructive focus:text-destructive"
             >
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Trash2 className="size-4 mr-2" />
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>

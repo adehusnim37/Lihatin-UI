@@ -23,7 +23,7 @@ export default function SettingsPage() {
             <div className="text-center space-y-4">
               <div className="flex justify-center mb-6">
                 <div className="p-4 rounded-full bg-primary/10">
-                  <Settings className="h-12 w-12 text-primary" />
+                  <Settings className="size-12 text-primary" />
                 </div>
               </div>
               <h1 className="text-3xl font-bold">Settings</h1>
@@ -34,28 +34,28 @@ export default function SettingsPage() {
               {/* Preview Settings Categories */}
               <div className="grid grid-cols-2 gap-4 mt-8 max-w-md mx-auto">
                 <div className="p-4 rounded-lg bg-muted/50 border text-left">
-                  <User className="h-5 w-5 text-muted-foreground mb-2" />
+                  <User className="size-5 text-muted-foreground mb-2" />
                   <p className="font-medium">Profile</p>
                   <p className="text-xs text-muted-foreground">
                     Account details
                   </p>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50 border text-left">
-                  <Bell className="h-5 w-5 text-muted-foreground mb-2" />
+                  <Bell className="size-5 text-muted-foreground mb-2" />
                   <p className="font-medium">Notifications</p>
                   <p className="text-xs text-muted-foreground">
                     Email & alerts
                   </p>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50 border text-left">
-                  <Shield className="h-5 w-5 text-muted-foreground mb-2" />
+                  <Shield className="size-5 text-muted-foreground mb-2" />
                   <p className="font-medium">Security</p>
                   <p className="text-xs text-muted-foreground">
                     Password & 2FA
                   </p>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50 border text-left">
-                  <Palette className="h-5 w-5 text-muted-foreground mb-2" />
+                  <Palette className="size-5 text-muted-foreground mb-2" />
                   <p className="font-medium">Appearance</p>
                   <p className="text-xs text-muted-foreground">
                     Theme & display

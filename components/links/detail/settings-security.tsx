@@ -176,7 +176,7 @@ function PasscodeSection({
             {hasPasscode ? (
               <>
                 <div className="bg-primary/10 p-2 rounded-full mb-0.5">
-                  <Lock className="h-4 w-4 text-primary" />
+                  <Lock className="size-4 text-primary" />
                 </div>
                 <div className="text-center space-y-1.5 w-full">
                   <div className="flex items-center justify-center gap-1.5">
@@ -186,7 +186,7 @@ function PasscodeSection({
                     {[1, 2, 3, 4, 5, 6].map((i) => (
                       <div
                         key={i}
-                        className="w-1.5 h-1.5 rounded-full bg-foreground"
+                        className="size-1.5 rounded-full bg-foreground"
                       />
                     ))}
                   </div>
@@ -203,7 +203,7 @@ function PasscodeSection({
             ) : (
               <>
                 <div className="bg-muted p-2 rounded-full mb-0.5">
-                  <Unlock className="h-4 w-4 text-muted-foreground" />
+                  <Unlock className="size-4 text-muted-foreground" />
                 </div>
                 <div className="text-center space-y-0.5 w-full">
                   <p className="text-sm font-medium">Public Access</p>
@@ -234,7 +234,7 @@ function PasscodeSection({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0"
+                className="size-8 p-0"
                 onClick={() => setIsEditing(false)}
               >
                 X
@@ -305,7 +305,7 @@ function PasscodeSection({
                     className="min-w-20"
                   >
                     {updateMutation.isPending && (
-                      <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                      <Loader2 className="mr-2 size-3 animate-spin" />
                     )}
                     Save
                   </Button>

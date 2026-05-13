@@ -88,14 +88,14 @@ export default function DisableTOTPModal({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
-          <IconShieldOff className="h-4 w-4 mr-2" />
+          <IconShieldOff className="size-4 mr-2" />
           Disable 2FA
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <IconShieldOff className="h-5 w-5 text-orange-600" />
+            <IconShieldOff className="size-5 text-orange-600" />
             Disable Two-Factor Authentication
           </DialogTitle>
           <DialogDescription>
@@ -107,7 +107,7 @@ export default function DisableTOTPModal({
           {/* Warning */}
           <div className="bg-orange-50 border border-orange-200 p-4 rounded-lg">
             <div className="flex items-start gap-2">
-              <IconAlertTriangle className="h-5 w-5 text-orange-600 shrink-0 mt-0.5" />
+              <IconAlertTriangle className="size-5 text-orange-600 shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-orange-900">
                   Security Warning
@@ -124,11 +124,11 @@ export default function DisableTOTPModal({
           <Tabs value={method} onValueChange={(v) => setMethod(v as "password" | "totp")}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="password">
-                <IconLock className="h-4 w-4 mr-2" />
+                <IconLock className="size-4 mr-2" />
                 Password
               </TabsTrigger>
               <TabsTrigger value="totp">
-                <IconKey className="h-4 w-4 mr-2" />
+                <IconKey className="size-4 mr-2" />
                 2FA Code
               </TabsTrigger>
             </TabsList>

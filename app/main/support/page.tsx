@@ -148,7 +148,7 @@ export default function UserSupportPage() {
               onClick={() => void Promise.all([ticketsQuery.refetch(), conversationQuery.refetch()])}
               disabled={ticketsQuery.isFetching}
             >
-              <IconRefresh className="mr-2 h-4 w-4" />
+              <IconRefresh className="mr-2 size-4" />
               Refresh
             </Button>
           </div>
@@ -157,7 +157,7 @@ export default function UserSupportPage() {
             <Card className="min-w-0">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <IconTicket className="h-5 w-5" />
+                  <IconTicket className="size-5" />
                   My Tickets
                 </CardTitle>
                 <CardDescription>{ticketCountText}</CardDescription>
@@ -198,7 +198,7 @@ export default function UserSupportPage() {
             <Card className="min-w-0">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <IconMessage2 className="h-5 w-5" />
+                  <IconMessage2 className="size-5" />
                   Conversation
                 </CardTitle>
                 <CardDescription>
@@ -243,7 +243,7 @@ export default function UserSupportPage() {
 
                     {conversation?.status === "resolved" || conversation?.status === "closed" ? (
                       <Alert className="mt-4 border-emerald-200 bg-emerald-50/50 text-emerald-900">
-                        <IconMessage2 className="h-4 w-4 stroke-emerald-600" />
+                        <IconMessage2 className="size-4 stroke-emerald-600" />
                         <AlertTitle>Conversation Closed</AlertTitle>
                         <AlertDescription className="text-emerald-800">
                           This ticket has been marked as {conversation.status} on {formatDate(conversation.updated_at)} and cannot receive or send new messages.
@@ -271,11 +271,11 @@ export default function UserSupportPage() {
                             variant="outline"
                             onClick={() => fileInputRef.current?.click()}
                           >
-                            <IconPaperclip className="mr-2 h-4 w-4" />
+                            <IconPaperclip className="mr-2 size-4" />
                             Attach Files
                           </Button>
                           <Button type="button" onClick={() => void handleSend()} disabled={sendMessageMutation.isPending}>
-                            <IconSend className="mr-2 h-4 w-4" />
+                            <IconSend className="mr-2 size-4" />
                             {sendMessageMutation.isPending ? "Sending..." : "Send"}
                           </Button>
                         </div>

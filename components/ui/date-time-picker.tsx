@@ -65,7 +65,7 @@ export function DateTimePicker({
           ) : (
             <span>MM/DD/YYYY HH:mm</span>
           )}
-          <IconCalendarClock className="ml-auto h-4 w-4 opacity-50" />
+          <IconCalendarClock className="ml-auto size-4 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">

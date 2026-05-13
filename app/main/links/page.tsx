@@ -101,7 +101,7 @@ export default function LinksPage() {
                 disabled={isFetching}
               >
                 <RefreshCw
-                  className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+                  className={`size-4 ${isFetching ? "animate-spin" : ""}`}
                 />
               </Button>
               <CreateLink />
@@ -114,7 +114,7 @@ export default function LinksPage() {
             suppressHydrationWarning
           >
             <div className="relative flex-1">
-              <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+              <Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
               <Input
                 placeholder="Search links..."
                 value={searchQuery}
@@ -126,7 +126,7 @@ export default function LinksPage() {
             <div className="flex gap-2">
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-[140px]" suppressHydrationWarning>
-                  <Filter className="mr-2 h-4 w-4" />
+                  <Filter className="mr-2 size-4" />
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -149,7 +149,7 @@ export default function LinksPage() {
           {/* Content */}
           {isLoading ? (
             <div className="flex flex-1 items-center justify-center py-20">
-              <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
+              <Loader2 className="text-muted-foreground size-8 animate-spin" />
             </div>
           ) : error ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-4 py-20">
@@ -159,14 +159,14 @@ export default function LinksPage() {
                   : "Failed to load links"}
               </p>
               <Button variant="outline" onClick={() => refetch()}>
-                <RefreshCw className="mr-2 h-4 w-4" />
+                <RefreshCw className="mr-2 size-4" />
                 Try Again
               </Button>
             </div>
           ) : filteredLinks.length === 0 ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-4 py-20">
               <div className="bg-muted rounded-full p-4">
-                <LinkIcon className="text-muted-foreground h-8 w-8" />
+                <LinkIcon className="text-muted-foreground size-8" />
               </div>
               <div className="text-center">
                 <h3 className="font-semibold">No links found</h3>

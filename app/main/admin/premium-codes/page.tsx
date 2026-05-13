@@ -258,14 +258,14 @@ export default function AdminPremiumCodesPage() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-7 w-7"
+                                  className="size-7"
                                   onClick={(event) => {
                                     event.stopPropagation();
                                     void copyText(code.secret_code);
                                   }}
                                   title="Copy secret code"
                                 >
-                                  <IconCopy className="h-3.5 w-3.5" />
+                                  <IconCopy className="size-3.5" />
                                 </Button>
                               </div>
                             </TableCell>
@@ -352,10 +352,10 @@ export default function AdminPremiumCodesPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8"
+                      className="size-8"
                       onClick={() => void copyText(activeCode.secret_code)}
                     >
-                      <IconCopy className="h-4 w-4" />
+                      <IconCopy className="size-4" />
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -390,7 +390,7 @@ export default function AdminPremiumCodesPage() {
 
               <div className="rounded-lg border p-4 space-y-4">
                 <div className="flex items-center gap-2">
-                  <IconMailForward className="h-4 w-4" />
+                  <IconMailForward className="size-4" />
                   <p className="text-sm font-medium">Send Secret Code via Email</p>
                 </div>
 

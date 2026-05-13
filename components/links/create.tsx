@@ -241,7 +241,7 @@ export default function CreateLink() {
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerTrigger asChild>
           <Button>
-            <Plus className="mr-1/2 h-4 w-4" />
+            <Plus className="mr-1/2 size-4" />
             Create New Link
           </Button>
         </DrawerTrigger>
@@ -301,7 +301,7 @@ export default function CreateLink() {
                                 size="sm"
                                 onClick={() => remove(index)}
                               >
-                                <Trash2 className="h-4 w-4 text-destructive" />
+                                <Trash2 className="size-4 text-destructive" />
                               </Button>
                             )}
                           </div>
@@ -386,7 +386,7 @@ export default function CreateLink() {
                             <FieldLabel>
                               Click Limit (Optional)
                               <TooltipTrigger asChild>
-                                <IconInfoCircle className="h-4 w-4 ml-1 inline-block" />
+                                <IconInfoCircle className="size-4 ml-1 inline-block" />
                               </TooltipTrigger>
                             </FieldLabel>
                             <TooltipContent sideOffset={4} align="start">
@@ -460,7 +460,7 @@ export default function CreateLink() {
                               <FieldLabel>
                                 Enable Statistics
                                 <TooltipTrigger asChild>
-                                  <IconInfoCircle className="h-4 w-4" />
+                                  <IconInfoCircle className="size-4" />
                                 </TooltipTrigger>
                               </FieldLabel>
                               <TooltipContent sideOffset={1} align="start">
@@ -493,7 +493,7 @@ export default function CreateLink() {
                                 size="sm"
                                 className="w-9 p-0"
                               >
-                                <ChevronDown className="h-4 w-4 transition-transform duration-200 data-[state=open]:rotate-180" />
+                                <ChevronDown className="size-4 transition-transform duration-200 data-[state=open]:rotate-180" />
                                 <span className="sr-only">Toggle</span>
                               </Button>
                             </CollapsibleTrigger>
@@ -597,7 +597,7 @@ export default function CreateLink() {
                     })
                   }
                 >
-                  <Plus className="mr-2 h-4 w-4" />
+                  <Plus className="mr-2 size-4" />
                   Add Another Link
                 </Button>
               )}

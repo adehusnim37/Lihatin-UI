@@ -365,7 +365,7 @@ export default function AdminSupportTicketsPage() {
               onClick={() => void ticketsQuery.refetch()}
               disabled={state === "loading" || ticketsQuery.isFetching}
             >
-              <IconRefresh className="mr-2 h-4 w-4" />
+              <IconRefresh className="mr-2 size-4" />
               Refresh
             </Button>
           </div>
@@ -396,7 +396,7 @@ export default function AdminSupportTicketsPage() {
                       }}
                       disabled={!hasActiveFilters}
                     >
-                      <IconX className="mr-1.5 h-3.5 w-3.5" />
+                      <IconX className="mr-1.5 size-3.5" />
                       Clear filters
                     </Button>
                   </div>
@@ -479,7 +479,7 @@ export default function AdminSupportTicketsPage() {
                     <div className="space-y-2">
                       <Label htmlFor="ticket-search-filter">Search</Label>
                       <div className="relative">
-                        <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                           id="ticket-search-filter"
                           value={search}
@@ -687,7 +687,7 @@ export default function AdminSupportTicketsPage() {
                           <div className="flex items-center justify-between gap-3">
                             <div className="space-y-1">
                               <p className="flex items-center gap-2 text-sm font-semibold">
-                                <IconMessage2 className="h-4 w-4" />
+                                <IconMessage2 className="size-4" />
                                 Conversation
                               </p>
                               <p className="text-sm text-muted-foreground">
@@ -703,7 +703,7 @@ export default function AdminSupportTicketsPage() {
                               className="rounded-full"
                               aria-label="Refresh conversation"
                             >
-                              <IconRefresh className="h-4 w-4" />
+                              <IconRefresh className="size-4" />
                             </Button>
                           </div>
 
@@ -731,7 +731,7 @@ export default function AdminSupportTicketsPage() {
                           {activeTicket.status === "resolved" ||
                           activeTicket.status === "closed" ? (
                             <Alert className="mt-4 border-emerald-200 bg-emerald-50/50 text-emerald-900">
-                              <IconMessage2 className="h-4 w-4 stroke-emerald-600" />
+                              <IconMessage2 className="size-4 stroke-emerald-600" />
                               <AlertTitle>Conversation Closed</AlertTitle>
                               <AlertDescription className="text-emerald-800">
                                 This ticket has been marked as {activeTicket.status} on {formatDate(activeTicket.updated_at)}. Cannot receive or send new messages.
@@ -766,7 +766,7 @@ export default function AdminSupportTicketsPage() {
                                 onClick={() => attachmentInputRef.current?.click()}
                                 className="rounded-xl"
                               >
-                                <IconPaperclip className="mr-2 h-4 w-4" />
+                                <IconPaperclip className="mr-2 size-4" />
                                 Attach Files
                               </Button>
 
@@ -776,7 +776,7 @@ export default function AdminSupportTicketsPage() {
                                   disabled={sendMessageMutation.isPending}
                                   className="rounded-xl"
                                 >
-                                  <IconSend className="mr-2 h-4 w-4" />
+                                  <IconSend className="mr-2 size-4" />
                                   {sendMessageMutation.isPending ? "Sending..." : "Send Reply"}
                                 </Button>
                             </div>
@@ -928,7 +928,7 @@ export default function AdminSupportTicketsPage() {
                                     disabled={updateTicketMutation.isPending}
                                     className="h-10 justify-start rounded-xl px-3"
                                   >
-                                    <IconShieldLock className="mr-2 h-4 w-4" />
+                                    <IconShieldLock className="mr-2 size-4" />
                                     Unlock User
                                   </Button>
 
@@ -938,7 +938,7 @@ export default function AdminSupportTicketsPage() {
                                     disabled={updateTicketMutation.isPending}
                                     className="h-10 justify-start rounded-xl px-3"
                                   >
-                                    <IconUserCheck className="mr-2 h-4 w-4" />
+                                    <IconUserCheck className="mr-2 size-4" />
                                     Activate Account
                                   </Button>
 
@@ -948,7 +948,7 @@ export default function AdminSupportTicketsPage() {
                                     disabled={updateTicketMutation.isPending}
                                     className="h-10 justify-start rounded-xl px-3"
                                   >
-                                    <IconSend className="mr-2 h-4 w-4" />
+                                    <IconSend className="mr-2 size-4" />
                                     Resend Verification
                                   </Button>
                                 </div>

@@ -55,7 +55,7 @@ export function LinkQRCode({ url, title }: LinkQRCodeProps) {
   };
 
   return (
-    <Card className="w-full h-full flex flex-col">
+    <Card className="size-full flex flex-col">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           QR Code
@@ -63,7 +63,7 @@ export function LinkQRCode({ url, title }: LinkQRCodeProps) {
       </CardHeader>
       <CardContent className="flex-1 flex items-center justify-center p-6 bg-white/5 rounded-lg mx-6 my-2 border border-dashed border-gray-200/20">
         {loading ? (
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <Loader2 className="size-8 animate-spin text-muted-foreground" />
         ) : (
           qrDataUrl && (
             <Image
@@ -84,7 +84,7 @@ export function LinkQRCode({ url, title }: LinkQRCodeProps) {
           onClick={downloadQR}
           disabled={loading || !qrDataUrl}
         >
-          <Download className="mr-2 h-4 w-4" /> Download PNG
+          <Download className="mr-2 size-4" /> Download PNG
         </Button>
       </CardFooter>
     </Card>

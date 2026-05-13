@@ -120,7 +120,7 @@ export default function ProfileSecurityTab() {
             <Label>Password</Label>
             <div className="flex items-center justify-between p-3 rounded-lg border">
               <div className="flex items-center gap-3">
-                <IconKey className="h-5 w-5 text-muted-foreground" />
+                <IconKey className="size-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Change Password</p>
                   <p className="text-xs text-muted-foreground">
@@ -143,7 +143,7 @@ export default function ProfileSecurityTab() {
             >
               <div className="flex items-center justify-between p-3 rounded-lg border">
                 <div className="flex items-center gap-3 flex-1">
-                  <IconBoxMultiple className="h-5 w-5 text-muted-foreground" />
+                  <IconBoxMultiple className="size-5 text-muted-foreground" />
                   <div className="flex-1">
                     <p className="text-sm font-medium">Session Information</p>
                     {!isSessionOpen && (
@@ -156,7 +156,7 @@ export default function ProfileSecurityTab() {
                 <CollapsibleTrigger asChild>
                   <Button variant="ghost" size="sm">
                     <IconChevronDown
-                      className={`h-4 w-4 transition-transform ${
+                      className={`size-4 transition-transform ${
                         isSessionOpen ? "rotate-180" : ""
                       }`}
                     />
@@ -203,7 +203,7 @@ export default function ProfileSecurityTab() {
             <Label>Device ID</Label>
             <div className="flex items-center justify-between p-3 rounded-lg border">
               <div className="flex items-center gap-3">
-                <IconDeviceDesktopCode className="h-5 w-5 text-muted-foreground" />
+                <IconDeviceDesktopCode className="size-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Device Identifier</p>
                 </div>
@@ -218,7 +218,7 @@ export default function ProfileSecurityTab() {
             <Label>Failed Login Attempts</Label>
             <div className="flex items-center justify-between p-3 rounded-lg border">
               <div className="flex items-center gap-3">
-                <IconLock className="h-5 w-5 text-muted-foreground" />
+                <IconLock className="size-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Account Security</p>
                 </div>
@@ -234,7 +234,7 @@ export default function ProfileSecurityTab() {
             <Label>Two-Factor Authentication</Label>
             <div className="flex items-center justify-between p-3 rounded-lg border">
               <div className="flex items-center gap-3">
-                <IconShield className={`h-5 w-5 ${profileData?.auth.is_totp_enabled ? 'text-green-600' : 'text-muted-foreground'}`} />
+                <IconShield className={`size-5 ${profileData?.auth.is_totp_enabled ? 'text-green-600' : 'text-muted-foreground'}`} />
                 <div>
                   <p className="text-sm font-medium">2FA Status</p>
                   <p className="text-xs text-muted-foreground">

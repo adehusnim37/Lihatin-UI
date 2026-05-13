@@ -196,7 +196,7 @@ export default function ChangePasswordDialog({
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <IconLock className="h-5 w-5" />
+              <IconLock className="size-5" />
               Change Password
             </DialogTitle>
             <DialogDescription>
@@ -207,7 +207,7 @@ export default function ChangePasswordDialog({
             {/* Success Message */}
             {successMessage && (
               <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
-                <IconCheck className="h-4 w-4 shrink-0" />
+                <IconCheck className="size-4 shrink-0" />
                 <span>{successMessage}</span>
               </div>
             )}
@@ -215,7 +215,7 @@ export default function ChangePasswordDialog({
             {/* Error Message */}
             {errorMessage && (
               <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
-                <IconAlertCircle className="h-4 w-4 shrink-0" />
+                <IconAlertCircle className="size-4 shrink-0" />
                 <span>{errorMessage}</span>
               </div>
             )}
@@ -243,9 +243,9 @@ export default function ChangePasswordDialog({
                   tabIndex={-1}
                 >
                   {showPassword.current ? (
-                    <IconEyeOff className="h-4 w-4" />
+                    <IconEyeOff className="size-4" />
                   ) : (
-                    <IconEye className="h-4 w-4" />
+                    <IconEye className="size-4" />
                   )}
                 </button>
               </div>
@@ -277,9 +277,9 @@ export default function ChangePasswordDialog({
                   tabIndex={-1}
                 >
                   {showPassword.new ? (
-                    <IconEyeOff className="h-4 w-4" />
+                    <IconEyeOff className="size-4" />
                   ) : (
-                    <IconEye className="h-4 w-4" />
+                    <IconEye className="size-4" />
                   )}
                 </button>
               </div>
@@ -315,9 +315,9 @@ export default function ChangePasswordDialog({
                   tabIndex={-1}
                 >
                   {showPassword.confirm ? (
-                    <IconEyeOff className="h-4 w-4" />
+                    <IconEyeOff className="size-4" />
                   ) : (
-                    <IconEye className="h-4 w-4" />
+                    <IconEye className="size-4" />
                   )}
                 </button>
               </div>

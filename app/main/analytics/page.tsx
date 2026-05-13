@@ -130,7 +130,7 @@ export default function AnalyticsPage() {
                       !date && "text-muted-foreground"
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <CalendarIcon className="mr-2 size-4" />
                     {date?.from ? (
                       date.to ? (
                         <>
@@ -165,7 +165,7 @@ export default function AnalyticsPage() {
                 <CardTitle className="text-sm font-medium">
                   Total Clicks
                 </CardTitle>
-                <MousePointerClick className="h-4 w-4 text-muted-foreground" />
+                <MousePointerClick className="size-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
@@ -182,7 +182,7 @@ export default function AnalyticsPage() {
                 <CardTitle className="text-sm font-medium">
                   Unique Visitors
                 </CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <Users className="size-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
@@ -199,7 +199,7 @@ export default function AnalyticsPage() {
                 <CardTitle className="text-sm font-medium">
                   Active Links
                 </CardTitle>
-                <LinkIcon className="h-4 w-4 text-muted-foreground" />
+                <LinkIcon className="size-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
@@ -216,7 +216,7 @@ export default function AnalyticsPage() {
                 <CardTitle className="text-sm font-medium">
                   Engagement Rate
                 </CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                <TrendingUp className="size-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
@@ -308,7 +308,7 @@ export default function AnalyticsPage() {
             <Card className="flex flex-col">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Globe className="h-4 w-4 text-muted-foreground" /> Top
+                  <Globe className="size-4 text-muted-foreground" /> Top
                   Countries
                 </CardTitle>
                 <CardDescription>Top locations by clicks</CardDescription>
@@ -376,7 +376,7 @@ export default function AnalyticsPage() {
             <Card className="flex flex-col">
               <CardHeader className="items-center pb-0">
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Smartphone className="h-4 w-4 text-muted-foreground" /> Top
+                  <Smartphone className="size-4 text-muted-foreground" /> Top
                   Devices
                 </CardTitle>
                 <CardDescription>Device distribution</CardDescription>
@@ -427,7 +427,7 @@ export default function AnalyticsPage() {
             <Card className="flex flex-col">
               <CardHeader className="items-center pb-0">
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Layout className="h-4 w-4 text-muted-foreground" /> Top
+                  <Layout className="size-4 text-muted-foreground" /> Top
                   Referrers
                 </CardTitle>
                 <CardDescription>Traffic sources</CardDescription>
@@ -488,7 +488,7 @@ export default function AnalyticsPage() {
                 size="sm"
                 onClick={() => router.push("/main/links")}
               >
-                View All Matches <ArrowRight className="ml-2 h-4 w-4" />
+                View All Matches <ArrowRight className="ml-2 size-4" />
               </Button>
             </CardHeader>
             <CardContent>
@@ -519,7 +519,7 @@ export default function AnalyticsPage() {
                           <Skeleton className="h-6 w-16" />
                         </TableCell>
                         <TableCell>
-                          <Skeleton className="h-8 w-8 ml-auto" />
+                          <Skeleton className="size-8 ml-auto" />
                         </TableCell>
                       </TableRow>
                     ))
@@ -550,7 +550,7 @@ export default function AnalyticsPage() {
                               className="text-xs text-muted-foreground hover:underline truncate max-w-[200px] flex items-center gap-1"
                             >
                               {link.original_url}{" "}
-                              <ExternalLink className="h-3 w-3" />
+                              <ExternalLink className="size-3" />
                             </a>
                           </div>
                         </TableCell>
@@ -561,7 +561,7 @@ export default function AnalyticsPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1 font-medium">
-                            <MousePointerClick className="h-3 w-3 text-muted-foreground" />
+                            <MousePointerClick className="size-3 text-muted-foreground" />
                             {link.detail?.current_clicks || 0}
                           </div>
                         </TableCell>

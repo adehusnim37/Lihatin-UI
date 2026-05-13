@@ -266,7 +266,7 @@ function ProfilePageContent() {
                   <Card className="md:col-span-1 mx-auto w-full max-w-md">
                     <CardHeader className="text-center">
                       <div className="flex justify-center mb-4">
-                        <Skeleton className="h-32 w-32 rounded-full" />
+                        <Skeleton className="size-32 rounded-full" />
                       </div>
                       <Skeleton className="h-8 w-48 mx-auto mb-2" />
                       <Skeleton className="h-5 w-32 mx-auto" />
@@ -376,7 +376,7 @@ function ProfilePageContent() {
                             onMouseEnter={openPopover}
                             onMouseLeave={closePopoverWithDelay}
                           >
-                            <Avatar className="h-32 w-32">
+                            <Avatar className="size-32">
                               <AvatarImage
                                 src={avatarURL}
                                 alt={`${user.first_name} ${user.last_name}`}
@@ -388,7 +388,7 @@ function ProfilePageContent() {
 
                             {isUploadingAvatar && (
                               <div className="absolute inset-0 rounded-full backdrop-blur-[2px] bg-black/50 flex flex-col items-center justify-center text-white">
-                                <Loader2 className="h-6 w-6 animate-spin" />
+                                <Loader2 className="size-6 animate-spin" />
                                 <span className="text-[11px] font-semibold tracking-wide">Uploading…</span>
                               </div>
                             )}
@@ -418,7 +418,7 @@ function ProfilePageContent() {
                                 className="flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors duration-150 w-full text-left"
                                 aria-label="View profile photo"
                               >
-                                <IconEye className="h-4 w-4" />
+                                <IconEye className="size-4" />
                                 <span>View Photo</span>
                               </button>
                             )}
@@ -428,7 +428,7 @@ function ProfilePageContent() {
                               className="flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors duration-150 w-full text-left"
                               aria-label={user.avatar ? "Change profile photo" : "Upload profile photo"}
                             >
-                              <IconCamera className="h-4 w-4" />
+                              <IconCamera className="size-4" />
                               <span>{user.avatar ? "Change Photo" : "Upload Photo"}</span>
                             </button>
                           </div>
@@ -494,7 +494,7 @@ function ProfilePageContent() {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span className="inline-flex">
-                                <BadgeCheckIcon className="h-5 w-5 text-green-600" />
+                                <BadgeCheckIcon className="size-5 text-green-600" />
                               </span>
                             </TooltipTrigger>
                             <TooltipContent>
@@ -508,7 +508,7 @@ function ProfilePageContent() {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span className="inline-flex">
-                                <IconUserQuestion className="h-5 w-5" />
+                                <IconUserQuestion className="size-5" />
                               </span>
                             </TooltipTrigger>
                             <TooltipContent>
@@ -527,7 +527,7 @@ function ProfilePageContent() {
                       </ItemContent>
                       {user.is_premium ? (
                         <StatusBadge tone="success" withIcon={false} className="gap-1">
-                          <IconCrown className="h-3 w-3" />
+                          <IconCrown className="size-3" />
                           Premium
                         </StatusBadge>
                       ) : (
@@ -574,7 +574,7 @@ function ProfilePageContent() {
                               <Button onClick={handleRedeemPremium} disabled={isRedeeming}>
                                 {isRedeeming ? (
                                   <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    <Loader2 className="mr-2 size-4 animate-spin" />
                                     Redeeming...
                                   </>
                                 ) : (
@@ -642,7 +642,7 @@ function ProfilePageContent() {
                         <CardContent className="space-y-4">
                           <div className="flex items-center justify-between p-3 rounded-lg border">
                             <div className="flex items-center gap-3">
-                              <IconBell className="h-5 w-5 text-muted-foreground" />
+                              <IconBell className="size-5 text-muted-foreground" />
                               <div>
                                 <p className="text-sm font-medium">
                                   Email Notifications
@@ -715,7 +715,7 @@ function ProfilePageSkeleton() {
               <div className="grid gap-6 md:grid-cols-1">
                 <Card className="md:col-span-1 mx-auto w-full max-w-md">
                   <CardHeader className="items-center text-center">
-                    <Skeleton className="h-24 w-24 rounded-full" />
+                    <Skeleton className="size-24 rounded-full" />
                     <Skeleton className="h-6 w-32 mt-4" />
                     <Skeleton className="h-4 w-48" />
                   </CardHeader>

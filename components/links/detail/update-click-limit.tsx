@@ -86,7 +86,7 @@ export function UpdateClickLimitDialog({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <MousePointerClick className="h-5 w-5" />
+            <MousePointerClick className="size-5" />
             Set Click Limit
           </DialogTitle>
           <DialogDescription>
@@ -155,7 +155,7 @@ export function UpdateClickLimitDialog({
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading && <Loader2 className="mr-2 size-4 animate-spin" />}
                 Save Changes
               </Button>
             </DialogFooter>

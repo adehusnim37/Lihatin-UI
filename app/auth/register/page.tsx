@@ -255,7 +255,7 @@ export default function RegisterPage() {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 size-4 animate-spin" />
                   Sending code...
                 </>
               ) : (
@@ -271,7 +271,7 @@ export default function RegisterPage() {
             >
               {isGoogleLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 size-4 animate-spin" />
                   Redirecting to Google...
                 </>
               ) : (

@@ -11,7 +11,7 @@ export default function TermsPage() {
         <div className="mb-8">
           <Button asChild variant="ghost" className="-ml-4 text-muted-foreground hover:text-foreground">
             <Link href="/">
-              <IconArrowLeft className="mr-2 h-4 w-4" />
+              <IconArrowLeft className="mr-2 size-4" />
               Back to Home
             </Link>
           </Button>
@@ -21,8 +21,8 @@ export default function TermsPage() {
         <div className="rounded-2xl border bg-card p-6 sm:p-10 shadow-sm">
           {/* Header */}
           <div className="mb-10 flex items-center gap-4 border-b pb-8">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <IconScale className="h-6 w-6 text-primary" />
+            <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10">
+              <IconScale className="size-6 text-primary" />
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">Terms of Service</h1>

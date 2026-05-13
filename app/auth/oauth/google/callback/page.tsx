@@ -127,7 +127,7 @@ function GoogleOAuthCallbackContent() {
   return (
     <div className="bg-background flex min-h-full flex-col items-center justify-center p-6">
       <div className="flex items-center gap-3 text-sm text-muted-foreground">
-        <Loader2 className="h-5 w-5 animate-spin" />
+        <Loader2 className="size-5 animate-spin" />
         Completing Google sign-in...
       </div>
     </div>
@@ -139,7 +139,7 @@ export default function GoogleOAuthCallbackPage() {
     <Suspense
       fallback={
         <div className="bg-background flex min-h-full flex-col items-center justify-center p-6">
-          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          <Loader2 className="size-5 animate-spin text-muted-foreground" />
         </div>
       }
     >

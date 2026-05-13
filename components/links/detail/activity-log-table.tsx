@@ -67,7 +67,7 @@ export function ActivityLogTable({ code }: ActivityLogTableProps) {
   if (logs.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-12 bg-muted/10 border-2 border-dashed rounded-lg">
-        <Server className="h-10 w-10 text-muted-foreground mb-4 opacity-50" />
+        <Server className="size-10 text-muted-foreground mb-4 opacity-50" />
         <h3 className="text-lg font-medium">No Activity Yet</h3>
         <p className="text-muted-foreground text-sm mt-1">
           Access logs will appear here once the link is visited.
@@ -114,7 +114,7 @@ export function ActivityLogTable({ code }: ActivityLogTableProps) {
                 <TableCell>
                   <div className="flex flex-col text-xs">
                     <span className="font-medium flex items-center gap-1">
-                      <Globe className="h-3 w-3 text-muted-foreground" />
+                      <Globe className="size-3 text-muted-foreground" />
                       {log.ip_address}
                     </span>
                     <span
@@ -150,18 +150,18 @@ export function ActivityLogTable({ code }: ActivityLogTableProps) {
               size="sm"
               onClick={handlePrev}
               disabled={page === 1}
-              className="h-8 w-8 p-0"
+              className="size-8 p-0"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="size-4" />
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleNext}
               disabled={page === paginationData.total_pages}
-              className="h-8 w-8 p-0"
+              className="size-8 p-0"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="size-4" />
             </Button>
           </div>
         </div>
@@ -174,8 +174,8 @@ function LogDetailSheet({ log }: { log: ActivityLog }) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted">
-          <Search className="h-4 w-4 text-muted-foreground" />
+        <Button variant="ghost" size="icon" className="size-8 hover:bg-muted">
+          <Search className="size-4 text-muted-foreground" />
         </Button>
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-2xl p-0 gap-0 overflow-hidden flex flex-col">

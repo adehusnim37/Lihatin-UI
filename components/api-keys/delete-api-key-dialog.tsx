@@ -55,7 +55,7 @@ export function DeleteAPIKeyDialog({
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-destructive/10">
-              <Trash2 className="h-5 w-5 text-destructive" />
+              <Trash2 className="size-5 text-destructive" />
             </div>
             <DialogTitle>Delete API Key</DialogTitle>
           </div>
@@ -67,7 +67,7 @@ export function DeleteAPIKeyDialog({
         <div className="space-y-4">
           {/* Warning */}
           <div className="flex items-start gap-3 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
-            <AlertTriangle className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
+            <AlertTriangle className="size-5 text-destructive mt-0.5 flex-shrink-0" />
             <div className="space-y-1">
               <p className="text-sm font-medium text-destructive">
                 This action cannot be undone
@@ -108,7 +108,7 @@ export function DeleteAPIKeyDialog({
             onClick={handleDelete}
             disabled={isLoading}
           >
-            {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            {isLoading && <Loader2 className="size-4 mr-2 animate-spin" />}
             Delete API Key
           </Button>
         </DialogFooter>

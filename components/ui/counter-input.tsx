@@ -50,7 +50,7 @@ export function CounterInput({
       <Button
         variant="outline"
         size="icon"
-        className="h-8 w-8 shrink-0"
+        className="size-8 shrink-0"
         onClick={(e) => {
           e.preventDefault();
           handleDecrement();
@@ -58,7 +58,7 @@ export function CounterInput({
         disabled={value <= min}
         type="button"
       >
-        <Minus className="h-4 w-4" />
+        <Minus className="size-4" />
         <span className="sr-only">Decrease</span>
       </Button>
       <div className="flex-1">
@@ -74,7 +74,7 @@ export function CounterInput({
       <Button
         variant="outline"
         size="icon"
-        className="h-8 w-8 shrink-0"
+        className="size-8 shrink-0"
         onClick={(e) => {
           e.preventDefault();
           handleIncrement();
@@ -82,7 +82,7 @@ export function CounterInput({
         disabled={value >= max}
         type="button"
       >
-        <Plus className="h-4 w-4" />
+        <Plus className="size-4" />
         <span className="sr-only">Increase</span>
       </Button>
     </div>

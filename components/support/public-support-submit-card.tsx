@@ -89,7 +89,7 @@ export function PublicSupportSubmitCard() {
       <CardHeader>
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">New Request Form</p>
         <CardTitle className="flex items-center gap-2">
-          <IconLifebuoy className="h-5 w-5" />
+          <IconLifebuoy className="size-5" />
           Submit Support Ticket
         </CardTitle>
         <CardDescription>Public form. No login required.</CardDescription>

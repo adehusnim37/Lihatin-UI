@@ -52,7 +52,7 @@ export default function NotFound() {
               src="/404.svg"
               alt="404 illustration"
               fill
-              className="rounded-xl object-cover w-full h-full"
+              className="rounded-xl object-cover size-full"
               priority
             />
           </AspectRatio>

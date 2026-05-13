@@ -66,7 +66,7 @@ export function ProfileGeneralTab({
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="first_name" className="flex items-center gap-1.5">
-                  <IconUser className="h-3.5 w-3.5 text-muted-foreground" />
+                  <IconUser className="size-3.5 text-muted-foreground" />
                   First Name
                 </Label>
                 <Input
@@ -77,7 +77,7 @@ export function ProfileGeneralTab({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="last_name" className="flex items-center gap-1.5">
-                  <IconUser className="h-3.5 w-3.5 text-muted-foreground" />
+                  <IconUser className="size-3.5 text-muted-foreground" />
                   Last Name
                 </Label>
                 <Input
@@ -92,26 +92,26 @@ export function ProfileGeneralTab({
 
             <div className="space-y-2">
               <Label className="flex items-center gap-1.5">
-                <IconAt className="h-3.5 w-3.5 text-muted-foreground" />
+                <IconAt className="size-3.5 text-muted-foreground" />
                 Username
               </Label>
               <div className="flex items-center gap-2">
                 <Input value={user.username} disabled readOnly className="flex-1" />
                 <Button variant="outline" size="icon" className="shrink-0" onClick={() => setIsChangeUsernameOpen(true)}>
-                  <IconPencil className="h-4 w-4" />
+                  <IconPencil className="size-4" />
                 </Button>
               </div>
             </div>
 
             <div className="space-y-2">
               <Label className="flex items-center gap-1.5">
-                <IconMail className="h-3.5 w-3.5 text-muted-foreground" />
+                <IconMail className="size-3.5 text-muted-foreground" />
                 Email Address
               </Label>
               <div className="flex items-center gap-2">
                 <Input value={user.email} disabled readOnly className="flex-1" />
                 <Button variant="outline" size="icon" className="shrink-0" onClick={() => setIsChangeEmailOpen(true)}>
-                  <IconPencil className="h-4 w-4" />
+                  <IconPencil className="size-4" />
                 </Button>
               </div>
             </div>
@@ -128,11 +128,11 @@ export function ProfileGeneralTab({
                       setLastName(user?.last_name || "");
                     }}
                   >
-                    <IconX className="mr-1.5 h-4 w-4" />
+                    <IconX className="mr-1.5 size-4" />
                     Cancel
                   </Button>
                   <Button size="sm" onClick={handleSaveName} disabled={isSavingNames}>
-                    <IconCheck className="mr-1.5 h-4 w-4" />
+                    <IconCheck className="mr-1.5 size-4" />
                     {isSavingNames ? "Saving..." : "Save Changes"}
                   </Button>
                 </div>
@@ -149,14 +149,14 @@ export function ProfileGeneralTab({
           <CardContent>
             <div className="space-y-3">
               <div className="flex items-center gap-3 rounded-lg border px-4 py-3">
-                <IconCalendar className="h-5 w-5 shrink-0 text-muted-foreground" />
+                <IconCalendar className="size-5 shrink-0 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Joined</p>
                   <p className="text-xs text-muted-foreground">{formatDate(user.created_at)}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 rounded-lg border px-4 py-3">
-                <IconShield className="h-5 w-5 shrink-0 text-muted-foreground" />
+                <IconShield className="size-5 shrink-0 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Account ID</p>
                   <p className="text-xs text-muted-foreground font-mono">{user.id}</p>

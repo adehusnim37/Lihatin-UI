@@ -209,7 +209,7 @@ export default function LinkDetailPage() {
         <SidebarInset>
           <SiteHeader />
           <div className="flex flex-1 flex-col items-center justify-center p-10 space-y-4">
-            <TriangleAlert className="h-12 w-12 text-destructive opacity-50" />
+            <TriangleAlert className="size-12 text-destructive opacity-50" />
             <h2 className="text-xl font-bold text-foreground">
               Link Not Found
             </h2>
@@ -261,7 +261,7 @@ export default function LinkDetailPage() {
               variant="destructive"
               className="border-destructive/20 bg-destructive/10"
             >
-              <TriangleAlert className="h-5 w-5" />
+              <TriangleAlert className="size-5" />
               <AlertTitle className="text-lg font-semibold ml-2">
                 Link Banned
               </AlertTitle>
@@ -296,18 +296,18 @@ export default function LinkDetailPage() {
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-9 w-9 text-green-600"
+                      className="size-9 text-green-600"
                       onClick={handleSaveTitle}
                     >
-                      <Check className="h-5 w-5" />
+                      <Check className="size-5" />
                     </Button>
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-9 w-9 text-red-500"
+                      className="size-9 text-red-500"
                       onClick={() => setIsEditingTitle(false)}
                     >
-                      <X className="h-5 w-5" />
+                      <X className="size-5" />
                     </Button>
                   </div>
                 ) : (
@@ -319,41 +319,41 @@ export default function LinkDetailPage() {
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="size-8 opacity-0 group-hover:opacity-100 transition-opacity"
                       onClick={() => {
                         setTitleInput(link.title || link.short_code);
                         setIsEditingTitle(true);
                       }}
                     >
-                      <Pencil className="h-4 w-4 text-muted-foreground" />
+                      <Pencil className="size-4 text-muted-foreground" />
                     </Button>
                   </div>
                 )}
               </div>
               <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground mt-1">
                 <span className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5" /> Created{" "}
+                  <Calendar className="size-3.5" /> Created{" "}
                   {format(new Date(link.created_at), "MMM d, yyyy HH:mm")}
                 </span>
                 {link.updated_at && (
                   <>
                     <Separator orientation="vertical" className="h-3" />
                     <span className="flex items-center gap-1.5">
-                      <History className="h-3.5 w-3.5" /> Updated{" "}
+                      <History className="size-3.5" /> Updated{" "}
                       {format(new Date(link.updated_at), "MMM d, yyyy HH:mm")}
                     </span>
                   </>
                 )}
                 <Separator orientation="vertical" className="h-3" />
                 <span className="flex items-center gap-1.5">
-                  <MousePointerClick className="h-3.5 w-3.5" />{" "}
+                  <MousePointerClick className="size-3.5" />{" "}
                   {link.detail?.current_clicks || 0} clicks
                 </span>
                 {link.detail?.custom_domain && (
                   <>
                     <Separator orientation="vertical" className="h-3" />
                     <span className="flex items-center gap-1.5 text-blue-500">
-                      <Globe className="h-3.5 w-3.5" />{" "}
+                      <Globe className="size-3.5" />{" "}
                       {link.detail.custom_domain}
                     </span>
                   </>
@@ -365,7 +365,7 @@ export default function LinkDetailPage() {
               <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="outline" className="bg-background">
-                    <QrCode className="mr-2 h-4 w-4" /> QR Code
+                    <QrCode className="mr-2 size-4" /> QR Code
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
@@ -383,10 +383,10 @@ export default function LinkDetailPage() {
                 onClick={() => window.open(link.original_url, "_blank")}
                 className="bg-background"
               >
-                <ExternalLink className="mr-2 h-4 w-4" /> Visit
+                <ExternalLink className="mr-2 size-4" /> Visit
               </Button>
               <Button onClick={() => router.push(`/main/analytics/${code}`)}>
-                <BarChart3 className="mr-2 h-4 w-4" /> Analytics
+                <BarChart3 className="mr-2 size-4" /> Analytics
               </Button>
             </div>
           </div>
@@ -399,11 +399,11 @@ export default function LinkDetailPage() {
                 {/* Hero Link Card */}
                 <Card className="md:col-span-2 border-primary/20 shadow-sm overflow-hidden bg-gradient-to-br from-primary/5 via-background to-background relative h-full">
                   <div className="absolute top-0 right-0 p-3 opacity-10">
-                    <Globe className="h-24 w-24 text-primary" />
+                    <Globe className="size-24 text-primary" />
                   </div>
                   <CardHeader className="pb-3 border-b bg-background/50">
                     <CardTitle className="text-base font-medium text-foreground flex items-center gap-2">
-                      <Globe className="h-4 w-4 text-primary" /> Short Link
+                      <Globe className="size-4 text-primary" /> Short Link
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6 pt-6 flex flex-col justify-between h-[calc(100%-3.5rem)]">
@@ -432,27 +432,27 @@ export default function LinkDetailPage() {
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                              className="size-8 text-green-600 hover:text-green-700 hover:bg-green-50"
                               onClick={handleSaveSlug}
                               disabled={isCheckingSlug}
                             >
                               {isCheckingSlug ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <Loader2 className="size-4 animate-spin" />
                               ) : (
-                                <Check className="h-4 w-4" />
+                                <Check className="size-4" />
                               )}
                             </Button>
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                              className="size-8 text-red-500 hover:text-red-600 hover:bg-red-50"
                               disabled={isCheckingSlug}
                               onClick={() => {
                                 setIsEditing(false);
                                 setSlugInput(code);
                               }}
                             >
-                              <X className="h-4 w-4" />
+                              <X className="size-4" />
                             </Button>
                           </div>
                         </div>
@@ -461,6 +461,14 @@ export default function LinkDetailPage() {
                           <div
                             className="flex items-center gap-1 cursor-pointer"
                             onClick={() => window.open(fullUrl, "_blank")}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                window.open(fullUrl, "_blank");
+                              }
+                            }}
+                            role="button"
+                            tabIndex={0}
                           >
                             <span className="text-2xl sm:text-3xl font-bold tracking-tighter text-primary break-all hover:underline decoration-primary/30 underline-offset-4 transition-all">
                               {host}/
@@ -473,24 +481,24 @@ export default function LinkDetailPage() {
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="h-8 w-8 hover:bg-primary/10 hover:text-primary transition-colors"
+                              className="size-8 hover:bg-primary/10 hover:text-primary transition-colors"
                               onClick={() => {
                                 setSlugInput(code);
                                 setIsEditing(true);
                               }}
                             >
-                              <Pencil className="h-3.5 w-3.5" />
+                              <Pencil className="size-3.5" />
                             </Button>
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="h-8 w-8 hover:bg-primary/10 hover:text-primary transition-colors"
+                              className="size-8 hover:bg-primary/10 hover:text-primary transition-colors"
                               onClick={handleCopy}
                             >
                               {copied ? (
-                                <Check className="h-3.5 w-3.5 text-green-500" />
+                                <Check className="size-3.5 text-green-500" />
                               ) : (
-                                <Copy className="h-3.5 w-3.5" />
+                                <Copy className="size-3.5" />
                               )}
                             </Button>
                           </div>
@@ -501,19 +509,19 @@ export default function LinkDetailPage() {
                     <div className="bg-background/50 p-3 rounded-lg border border-border/50 backdrop-blur-sm mt-auto group relative">
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          <LinkIcon className="h-3 w-3" /> Target Destination
+                          <LinkIcon className="size-3" /> Target Destination
                         </div>
                         {!isEditingUrl && (
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="size-6 opacity-0 group-hover:opacity-100 transition-opacity"
                             onClick={() => {
                               setUrlInput(link.original_url);
                               setIsEditingUrl(true);
                             }}
                           >
-                            <Pencil className="h-3 w-3" />
+                            <Pencil className="size-3" />
                           </Button>
                         )}
                       </div>
@@ -557,6 +565,14 @@ export default function LinkDetailPage() {
                           onClick={() =>
                             window.open(link.original_url, "_blank")
                           }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              window.open(link.original_url, "_blank");
+                            }
+                          }}
+                          role="button"
+                          tabIndex={0}
                         >
                           {link.original_url}
                         </p>
@@ -593,16 +609,16 @@ export default function LinkDetailPage() {
                   <CardHeader className="pb-3 border-b relative z-10">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base font-medium text-foreground flex items-center gap-2">
-                        <MousePointerClick className="h-4 w-4 text-primary" />{" "}
+                        <MousePointerClick className="size-4 text-primary" />{" "}
                         Activity
                       </CardTitle>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 text-muted-foreground"
+                        className="size-7 text-muted-foreground"
                         onClick={() => setShowLimitDialog(true)}
                       >
-                        <Settings className="h-3.5 w-3.5" />
+                        <Settings className="size-3.5" />
                       </Button>
                     </div>
                   </CardHeader>
@@ -610,7 +626,7 @@ export default function LinkDetailPage() {
                     <div className="mx-auto relative h-[250px] w-full max-w-[250px]">
                       <svg
                         viewBox="0 0 220 220"
-                        className="h-full w-full overflow-visible"
+                        className="size-full overflow-visible"
                         role="img"
                         aria-label="Click activity progress"
                       >
@@ -657,7 +673,7 @@ export default function LinkDetailPage() {
                         </span>
                       ) : (
                         <span className="flex items-center justify-center gap-2">
-                          <Infinity className="h-4 w-4" /> No click limit
+                          <Infinity className="size-4" /> No click limit
                         </span>
                       )}
                     </div>
@@ -720,13 +736,13 @@ export default function LinkDetailPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="size-7 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={() => {
                             setDescriptionInput(link.description || "");
                             setIsEditingDescription(true);
                           }}
                         >
-                          <Pencil className="h-3.5 w-3.5" />
+                          <Pencil className="size-3.5" />
                         </Button>
                       )}
                     </div>
@@ -811,13 +827,13 @@ export default function LinkDetailPage() {
                   <CardHeader className="pb-3 border-b relative z-10">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base font-medium text-foreground flex items-center gap-2">
-                        <Tag className="h-4 w-4 text-primary" /> Tags
+                        <Tag className="size-4 text-primary" /> Tags
                       </CardTitle>
                       {!isEditingTags && (
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="size-7 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={() => {
                             setTagsInput({
                               utm_source: link.detail?.utm_source || "",
@@ -828,7 +844,7 @@ export default function LinkDetailPage() {
                             setIsEditingTags(true);
                           }}
                         >
-                          <Pencil className="h-3.5 w-3.5" />
+                          <Pencil className="size-3.5" />
                         </Button>
                       )}
                     </div>

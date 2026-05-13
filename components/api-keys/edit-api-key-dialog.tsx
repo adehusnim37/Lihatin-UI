@@ -105,7 +105,7 @@ export function EditAPIKeyDialog({
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-blue-500/10">
-              <Pencil className="h-5 w-5 text-blue-500" />
+              <Pencil className="size-5 text-blue-500" />
             </div>
             <DialogTitle>Edit API Key</DialogTitle>
           </div>
@@ -199,7 +199,7 @@ export function EditAPIKeyDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {isLoading && <Loader2 className="size-4 mr-2 animate-spin" />}
               Save Changes
             </Button>
           </DialogFooter>

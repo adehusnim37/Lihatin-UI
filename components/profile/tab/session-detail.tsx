@@ -103,9 +103,9 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
               )}
             >
               {attempt.success ? (
-                <IconCheck className="w-8 h-8" />
+                <IconCheck className="size-8" />
               ) : (
-                <IconX className="w-8 h-8" />
+                <IconX className="size-8" />
               )}
             </div>
             <div>
@@ -113,7 +113,7 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
                 {attempt.success ? "Login Successful" : "Login Failed"}
               </h3>
               <p className="text-sm text-muted-foreground flex items-center justify-center gap-1.5 mt-1">
-                <IconClock className="w-3.5 h-3.5" />
+                <IconClock className="size-3.5" />
                 {format(new Date(attempt.created_at), "PPP 'at' pp")}
               </p>
             </div>
@@ -122,20 +122,20 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
           {/* Device Information */}
           <div className="space-y-3">
             <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <IconDeviceDesktop className="h-4 w-4" /> Device Details
+              <IconDeviceDesktop className="size-4" /> Device Details
             </h4>
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 border rounded-lg bg-card space-y-1">
                 <div className="text-xs text-muted-foreground">Browser</div>
                 <div className="text-sm font-medium flex items-center gap-2">
-                  <BrowserIcon className="h-4 w-4 text-primary" />
+                  <BrowserIcon className="size-4 text-primary" />
                   {browser}
                 </div>
               </div>
               <div className="p-3 border rounded-lg bg-card space-y-1">
                 <div className="text-xs text-muted-foreground">OS & Device</div>
                 <div className="text-sm font-medium flex items-center gap-2">
-                  <DeviceIcon className="h-4 w-4 text-primary" />
+                  <DeviceIcon className="size-4 text-primary" />
                   {os}
                 </div>
               </div>
@@ -145,7 +145,7 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
           {/* Network Information */}
           <div className="space-y-3">
             <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <IconMapPin className="h-4 w-4" /> Network
+              <IconMapPin className="size-4" /> Network
             </h4>
             <div className="p-3 border rounded-lg bg-card flex items-center justify-between group">
               <div className="space-y-1">
@@ -155,15 +155,15 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="size-8 opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={() =>
                   copyToClipboard(attempt.ip_address, "IP Address")
                 }
               >
                 {copiedField === "IP Address" ? (
-                  <IconCheckCopied className="h-4 w-4 text-green-600" />
+                  <IconCheckCopied className="size-4 text-green-600" />
                 ) : (
-                  <IconCopy className="h-4 w-4" />
+                  <IconCopy className="size-4" />
                 )}
                 <span className="sr-only">Copy IP</span>
               </Button>
@@ -173,7 +173,7 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
           {/* Security Context */}
           <div className="space-y-3">
             <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <IconShield className="h-4 w-4" /> Security Context
+              <IconShield className="size-4" /> Security Context
             </h4>
             <div className="space-y-3">
               <div className="p-3 border rounded-lg bg-card space-y-1">
@@ -181,7 +181,7 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
                   Account Identifier
                 </div>
                 <div className="text-sm font-medium flex items-center gap-2">
-                  <IconUser className="h-4 w-4 text-primary" />
+                  <IconUser className="size-4 text-primary" />
                   {attempt.email_or_username}
                 </div>
               </div>
@@ -189,7 +189,7 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
               {!attempt.success && attempt.fail_reason && (
                 <div className="p-4 border border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-900/20 rounded-lg space-y-1">
                   <div className="text-xs font-semibold text-red-600 dark:text-red-400 flex items-center gap-1.5">
-                    <IconAlertCircle className="h-3.5 w-3.5" />
+                    <IconAlertCircle className="size-3.5" />
                     Failure Reason
                   </div>
                   <div className="text-sm text-red-800 dark:text-red-300">
@@ -203,7 +203,7 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
           {/* Technical Details Collapsible */}
           <div className="space-y-3">
             <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <IconShield className="h-4 w-4" /> Detailed Information
+              <IconShield className="size-4" /> Detailed Information
             </h4>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -219,9 +219,9 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
                   }
                 >
                   {copiedField === "User Agent" ? (
-                    <IconCheckCopied className="h-3 w-3 text-green-600" />
+                    <IconCheckCopied className="size-3 text-green-600" />
                   ) : (
-                    <IconCopy className="h-3 w-3" />
+                    <IconCopy className="size-3" />
                   )}
                 </Button>
               </div>
@@ -238,13 +238,13 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6"
+                  className="size-6"
                   onClick={() => copyToClipboard(attempt.id, "Attempt ID")}
                 >
                   {copiedField === "Attempt ID" ? (
-                    <IconCheckCopied className="h-3 w-3 text-green-600" />
+                    <IconCheckCopied className="size-3 text-green-600" />
                   ) : (
-                    <IconCopy className="h-3 w-3" />
+                    <IconCopy className="size-3" />
                   )}
                 </Button>
               </div>

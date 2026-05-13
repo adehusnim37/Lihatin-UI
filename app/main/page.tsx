@@ -194,7 +194,7 @@ export default function Page() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <div className="mb-3 inline-flex w-fit items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
-              <IconSparkles className="h-3.5 w-3.5" />
+              <IconSparkles className="size-3.5" />
               Security Upgrade
             </div>
             <DialogTitle className="text-xl leading-tight">
@@ -208,11 +208,11 @@ export default function Page() {
 
           <div className="space-y-2 rounded-lg border bg-muted/30 p-4 text-sm">
             <div className="flex items-start gap-2">
-              <IconShieldCheck className="mt-0.5 h-4 w-4 text-green-600" />
+              <IconShieldCheck className="mt-0.5 size-4 text-green-600" />
               <p>Kode dari app authenticator, bukan dari email.</p>
             </div>
             <div className="flex items-start gap-2">
-              <IconLock className="mt-0.5 h-4 w-4 text-green-600" />
+              <IconLock className="mt-0.5 size-4 text-green-600" />
               <p>Lebih sulit dibajak walau email kena compromise.</p>
             </div>
           </div>

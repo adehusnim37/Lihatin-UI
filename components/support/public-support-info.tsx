@@ -53,7 +53,7 @@ export function PublicSupportInfoCard({
               <div className="mt-4 space-y-2.5">
                 {introPoints.map((point) => (
                   <div key={point} className="flex items-start gap-2.5 text-sm text-foreground/80">
-                    <IconPointFilled className="mt-1 h-3.5 w-3.5 shrink-0 text-primary" />
+                    <IconPointFilled className="mt-1 size-3.5 shrink-0 text-primary" />
                     <p className="leading-6">{point}</p>
                   </div>
                 ))}
@@ -63,7 +63,7 @@ export function PublicSupportInfoCard({
               <Button asChild variant="outline" className="mt-4 w-full sm:w-auto">
                 <Link href={ctaHref}>
                   {ctaLabel}
-                  <IconArrowRight className="ml-2 h-4 w-4" />
+                  <IconArrowRight className="ml-2 size-4" />
                 </Link>
               </Button>
             ) : null}
@@ -74,7 +74,7 @@ export function PublicSupportInfoCard({
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Support Info</p>
           <div className="grid gap-3">
             <div className="flex items-start gap-3 rounded-xl border bg-background px-4 py-3.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                 <IconClock className="h-[18px] w-[18px]" />
               </div>
               <div>
@@ -84,7 +84,7 @@ export function PublicSupportInfoCard({
             </div>
 
             <div className="flex items-start gap-3 rounded-xl border bg-background px-4 py-3.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
                 <IconTicket className="h-[18px] w-[18px]" />
               </div>
               <div>
@@ -94,7 +94,7 @@ export function PublicSupportInfoCard({
             </div>
 
             <div className="flex items-start gap-3 rounded-xl border bg-background px-4 py-3.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
                 <IconMail className="h-[18px] w-[18px]" />
               </div>
               <div>
@@ -107,7 +107,7 @@ export function PublicSupportInfoCard({
 
         <div className="mt-auto rounded-2xl border bg-muted/20 px-4 py-3.5">
           <div className="flex items-start gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <IconShieldLock className="h-[18px] w-[18px]" />
             </div>
             <div>

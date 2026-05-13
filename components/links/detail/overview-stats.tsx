@@ -140,14 +140,14 @@ export function OverviewStats({ link }: OverviewStatsProps) {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Clicks
             </CardTitle>
-            <MousePointerClick className="h-4 w-4 text-primary" />
+            <MousePointerClick className="size-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-medium -mt-4">{total_clicks}</div>
             <p className="text-xs text-muted-foreground flex items-center mt-4">
               {last_24h > 0 && (
                 <span className="text-green-500 flex items-center mr-1">
-                  <TrendingUp className="h-3 w-3 mr-1" />+{last_24h}
+                  <TrendingUp className="size-3 mr-1" />+{last_24h}
                 </span>
               )}
               Last 24 hours
@@ -159,7 +159,7 @@ export function OverviewStats({ link }: OverviewStatsProps) {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Unique Visitors
             </CardTitle>
-            <Users className="h-4 w-4 text-blue-500" />
+            <Users className="size-4 text-blue-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-medium -mt-4">{unique_visitors}</div>
@@ -173,7 +173,7 @@ export function OverviewStats({ link }: OverviewStatsProps) {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Top Location
             </CardTitle>
-            <MapPin className="h-4 w-4 text-red-500" />
+            <MapPin className="size-4 text-red-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-medium truncate -mt-4">
@@ -197,7 +197,7 @@ export function OverviewStats({ link }: OverviewStatsProps) {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Top Device
             </CardTitle>
-            <MonitorSmartphone className="h-4 w-4 text-purple-500" />
+            <MonitorSmartphone className="size-4 text-purple-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-medium truncate -mt-4">
@@ -424,7 +424,7 @@ export function OverviewStats({ link }: OverviewStatsProps) {
                     className="flex items-center justify-between border-b pb-2 last:border-0 last:pb-0"
                   >
                     <div className="flex items-center gap-2 overflow-hidden">
-                      <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <Globe className="size-4 text-muted-foreground shrink-0" />
                       <span
                         className="text-sm font-medium truncate"
                         title={item.host}
