@@ -21,6 +21,7 @@ import {
   RoleBadge,
 } from "@/components/ui/app-status-badges";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -144,7 +145,6 @@ export default function AdminUserDetailPage() {
                       isPremium={user.is_premium}
                       isRevoked={isUserCurrentlyRevoked(user)}
                     />
-                    <RevokeTypeBadge revokeType={user.premium_revoke_type} />
                   </CardTitle>
                   <CardDescription>{user.email}</CardDescription>
                 </CardHeader>
@@ -287,10 +287,16 @@ export default function AdminUserDetailPage() {
                             <div className="flex flex-wrap items-center justify-between gap-2">
                               <div className="flex flex-wrap items-center gap-2">
                                 <PremiumEventActionBadge action={event.action} />
-                                <Badge variant="outline">
-                                  {event.old_status} {"->"} {event.new_status}
-                                </Badge>
-                                <RevokeTypeBadge revokeType={event.revoke_type} />
+                                <div className="flex items-center gap-1.5 rounded-md border border-dashed bg-muted/10 p-1">
+                                  <StatusBadge tone={getStatusTone(event.old_status)} className="text-muted-foreground">
+                                    {event.old_status.toLocaleUpperCase()}
+                                  </StatusBadge>
+                                  <IconArrowRight className="size-3 text-muted-foreground" />
+                                  <StatusBadge tone={getStatusTone(event.new_status)}>
+                                    {event.new_status.toLocaleUpperCase()}
+                                  </StatusBadge>
+                                </div>
+                                <RevokeTypeBadge revokeType={event.revoke_type?.toUpperCase()} />
                               </div>
                               <p className="text-xs text-muted-foreground">{formatDateTime(event.created_at)}</p>
                             </div>
@@ -459,4 +465,12 @@ function isAdminRole(role: string | null | undefined): boolean {
   if (!role) return false;
   const normalized = role.trim().toLowerCase();
   return normalized === "admin" || normalized === "super_admin";
+}
+
+function getStatusTone(status: string) {
+  const s = status.toLowerCase();
+  if (s === "premium" || s === "active") return "success";
+  if (s === "revoked" || s === "banned" || s === "inactive") return "danger";
+  if (s === "free") return "neutral";
+  return "warning";
 }

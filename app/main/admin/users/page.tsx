@@ -405,7 +405,6 @@ export default function AdminUsersPage() {
                         <TableHead>Premium</TableHead>
                         <TableHead>Created At</TableHead>
                         <TableHead>Last Changed</TableHead>
-                        <TableHead>Revoke Type</TableHead>
                         <TableHead className="text-center">Action</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -434,11 +433,6 @@ export default function AdminUsersPage() {
                             {formatDateTime(
                               user.premium_reactivated_at || user.premium_revoked_at || user.updated_at
                             )}
-                          </TableCell>
-                           <TableCell className="align-top">
-                            <span className="text-xs text-muted-foreground">
-                              {(user.premium_revoke_type || "-").toString()}
-                            </span>
                           </TableCell>
                           <TableCell className="align-top text-center">
                             <DropdownMenu>

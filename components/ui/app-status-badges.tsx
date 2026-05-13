@@ -180,14 +180,14 @@ export function PremiumEventActionBadge({
   if (normalized === "revoke") {
     return (
       <StatusBadge tone="danger" className={className}>
-        Revoke
+        REVOKED
       </StatusBadge>
     );
   }
   if (normalized === "reactivate") {
     return (
       <StatusBadge tone="success" className={className}>
-        Reactivate
+        REACTIVATE
       </StatusBadge>
     );
   }
