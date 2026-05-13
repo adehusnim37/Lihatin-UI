@@ -57,7 +57,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         router.push('/main')
       }
     } catch (error) {
-      console.error('Auth check failed:', error)
+      const message = error instanceof Error ? error.message : 'Authentication check failed'
+
+      if (message !== 'unauthenticated') {
+        console.error('Auth check failed:', error)
+      }
+
       setIsAuthenticated(false)
       setUser(null)
       setAuth(null)
@@ -65,10 +70,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const protectedRoutes = ['/main', '/dashboard', '/profile']
       const isProtected = protectedRoutes.some(route => currentPathname?.startsWith(route))
-      const message = error instanceof Error ? error.message : 'Authentication check failed'
 
-      toast.error(message)
       if (isProtected) {
+        toast.error('Please log in to access this page')
         router.push(`/auth/login?redirect=${currentPathname}`)
       }
     } finally {

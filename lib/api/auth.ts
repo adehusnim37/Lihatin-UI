@@ -896,7 +896,10 @@ export async function getUserData(): Promise<APIResponse<AuthProfileData>> {
   const data: APIResponse<AuthProfileData> = await response.json();
 
   if (!response.ok) {
-    throw new Error("Failed to fetch user data");
+    if (response.status === 401) {
+      throw new Error("unauthenticated");
+    }
+    throw new Error(data.message || "Failed to fetch user data");
   }
 
   return data;
