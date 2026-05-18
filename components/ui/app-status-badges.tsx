@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 
 import { StatusBadge, type StatusBadgeTone } from "@/components/ui/status-badge";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | string;
 
@@ -51,10 +53,10 @@ export function ActiveInactiveBadge({
 }) {
   return (
     <StatusBadge
-      tone={isActive ? "success" : "neutral"}
+      tone={isActive ? "success" : "danger"}
       className={className}
     >
-      {isActive ? activeLabel : inactiveLabel}
+      {isActive ? activeLabel.toLocaleUpperCase() : inactiveLabel.toLocaleUpperCase()}
     </StatusBadge>
   );
 }
@@ -163,7 +165,7 @@ export function PremiumStateBadge({
   }
 
   return (
-    <StatusBadge tone="neutral" className={className}>
+    <StatusBadge tone="sky" className={className}>
       FREE
     </StatusBadge>
   );
@@ -268,6 +270,72 @@ export function RoleBadge({
   return (
     <StatusBadge tone="info" className={className}>
       USER
+    </StatusBadge>
+  );
+}
+
+export function SkyBadge({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <Badge className={cn("bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300", className)}>
+      {children}
+    </Badge>
+  );
+}
+
+export function PurpleBadge({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <Badge className={cn("bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300", className)}>
+      {children}
+    </Badge>
+  );
+}
+
+export function AccountHistoryActionBadge({
+  action,
+  className,
+}: {
+  action: string;
+  className?: string;
+}) {
+  const normalized = (action || "").toLowerCase();
+  if (normalized === "account_unlock") {
+    return (
+      <StatusBadge tone="success" className={className}>
+        UNLOCKED
+      </StatusBadge>
+    );
+  }
+  if (normalized === "account_lock") {
+    return (
+      <StatusBadge tone="danger" className={className}>
+        LOCKED
+      </StatusBadge>
+    );
+  }
+  if (normalized.includes("unlock")) {
+    return (
+      <StatusBadge tone="success" className={className}>
+        {action.toUpperCase()}
+      </StatusBadge>
+    );
+  }
+  if (normalized.includes("lock")) {
+    return (
+      <StatusBadge tone="danger" className={className}>
+        {action.toUpperCase()}
+      </StatusBadge>
+    );
+  }
+  if (normalized.includes("verification") || normalized.includes("change")) {
+    return (
+      <StatusBadge tone="warning" className={className}>
+        {action.toUpperCase()}
+      </StatusBadge>
+    );
+  }
+  return (
+    <StatusBadge tone="neutral" className={className}>
+      {action.toUpperCase()}
     </StatusBadge>
   );
 }

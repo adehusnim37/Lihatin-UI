@@ -8,6 +8,8 @@ import {
   updateAdminDisposableEmailPolicy,
   getAdminPremiumCodes,
   sendAdminPremiumCodeEmail,
+  lockAdminUser,
+  unlockAdminUser,
   revokeAdminUserPremiumAccess,
   reactivateAdminUserPremiumAccess,
   getAdminUserPremiumStatusEvents,
@@ -20,6 +22,8 @@ import {
   type AdminPremiumStatusEventsListResponse,
   type AdminPremiumStatusMutationResponse,
   type UpdateAdminDisposableEmailPolicyRequest,
+  type AdminLockUserRequest,
+  type AdminUnlockUserRequest,
   type AdminRevokePremiumAccessRequest,
   type AdminReactivatePremiumAccessRequest,
   type AdminSendPremiumCodeEmailRequest,
@@ -93,6 +97,62 @@ export function useUpdateAdminUserMutation() {
     },
     onError: (error) => {
       toast.error("Failed to update user", {
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
+    },
+  });
+}
+
+export function useLockAdminUserMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      payload,
+    }: {
+      userId: string;
+      payload: AdminLockUserRequest;
+    }) => {
+      const response = await lockAdminUser(userId, payload);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.users.all() });
+      toast.success("User locked", {
+        description: "User account has been locked.",
+      });
+    },
+    onError: (error) => {
+      toast.error("Failed to lock user", {
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
+    },
+  });
+}
+
+export function useUnlockAdminUserMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      payload,
+    }: {
+      userId: string;
+      payload?: AdminUnlockUserRequest;
+    }) => {
+      const response = await unlockAdminUser(userId, payload);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.users.all() });
+      toast.success("User unlocked", {
+        description: "User account has been unlocked.",
+      });
+    },
+    onError: (error) => {
+      toast.error("Failed to unlock user", {
         description: error instanceof Error ? error.message : "Please try again.",
       });
     },

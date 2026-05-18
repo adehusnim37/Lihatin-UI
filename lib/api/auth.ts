@@ -364,6 +364,14 @@ export interface AdminUpdateUserRequest {
   role?: "user" | "admin" | "super_admin";
 }
 
+export interface AdminLockUserRequest {
+  reason: string;
+}
+
+export interface AdminUnlockUserRequest {
+  reason?: string;
+}
+
 export interface AdminRevokePremiumAccessRequest {
   reason: string;
   revoke_type: "temporary" | "permanent";
@@ -1302,6 +1310,58 @@ export async function updateAdminUser(
   const result: APIResponse<AdminUserResponse> = await response.json();
   if (!response.ok) {
     throw new Error(getErrorMessage(result) || "Failed to update user");
+  }
+
+  return result;
+}
+
+/**
+ * Lock user account (admin only).
+ */
+export async function lockAdminUser(
+  userId: string,
+  payload: AdminLockUserRequest
+): Promise<APIResponse<null>> {
+  const response = await fetchProtected(
+    `${API_URL}/auth/admin/users/${encodeURIComponent(userId)}/lock`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  const result: APIResponse<null> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to lock user");
+  }
+
+  return result;
+}
+
+/**
+ * Unlock user account (admin only).
+ */
+export async function unlockAdminUser(
+  userId: string,
+  payload?: AdminUnlockUserRequest
+): Promise<APIResponse<null>> {
+  const response = await fetchProtected(
+    `${API_URL}/auth/admin/users/${encodeURIComponent(userId)}/unlock`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload ?? {}),
+    }
+  );
+
+  const result: APIResponse<null> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to unlock user");
   }
 
   return result;

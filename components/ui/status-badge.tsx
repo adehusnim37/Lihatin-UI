@@ -3,7 +3,14 @@ import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-export type StatusBadgeTone = "success" | "info" | "warning" | "neutral" | "danger";
+export type StatusBadgeTone =
+  | "success"
+  | "info"
+  | "warning"
+  | "neutral"
+  | "danger"
+  | "sky"
+  | "purple";
 
 const toneClassNameMap: Record<StatusBadgeTone, string> = {
   success:
@@ -15,6 +22,10 @@ const toneClassNameMap: Record<StatusBadgeTone, string> = {
     "border-none bg-slate-500/10 text-slate-500 focus-visible:ring-slate-500/20 focus-visible:outline-none dark:bg-slate-400/10 dark:text-slate-400 dark:focus-visible:ring-slate-400/40 [a&]:hover:bg-slate-500/5 dark:[a&]:hover:bg-slate-400/5",
   danger:
     "border-none bg-red-600/10 text-red-600 focus-visible:ring-red-600/20 focus-visible:outline-none dark:bg-red-400/10 dark:text-red-400 dark:focus-visible:ring-red-400/40 [a&]:hover:bg-red-600/5 dark:[a&]:hover:bg-red-400/5",
+  sky:
+    "border-none bg-sky-600/10 text-sky-600 focus-visible:ring-sky-600/20 focus-visible:outline-none dark:bg-sky-400/10 dark:text-sky-400 dark:focus-visible:ring-sky-400/40 [a&]:hover:bg-sky-600/5 dark:[a&]:hover:bg-sky-400/5",
+  purple:
+    "border-none bg-purple-600/10 text-purple-600 focus-visible:ring-purple-600/20 focus-visible:outline-none dark:bg-purple-400/10 dark:text-purple-400 dark:focus-visible:ring-purple-400/40 [a&]:hover:bg-purple-600/5 dark:[a&]:hover:bg-purple-400/5",
 };
 
 const toneDotClassMap: Record<StatusBadgeTone, string> = {
@@ -23,6 +34,8 @@ const toneDotClassMap: Record<StatusBadgeTone, string> = {
   warning: "bg-amber-600 dark:bg-amber-400",
   neutral: "bg-slate-500 dark:bg-slate-400",
   danger: "bg-red-600 dark:bg-red-400",
+  sky: "bg-sky-600 dark:bg-sky-400",
+  purple: "bg-purple-600 dark:bg-purple-400",
 };
 
 type BadgeProps = React.ComponentProps<typeof Badge>;

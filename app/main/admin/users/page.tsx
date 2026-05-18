@@ -7,9 +7,9 @@ import {
   IconClockHour4,
   IconCrown,
   IconDotsVertical,
-  IconEye,
   IconExternalLink,
   IconFilter,
+  IconLock,
   IconPencil,
   IconRefresh,
   IconUserCircle,
@@ -20,6 +20,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
 import {
+  ActiveInactiveBadge,
   PremiumEventActionBadge,
   PremiumStateBadge,
   RevokeTypeBadge,
@@ -64,6 +65,8 @@ import {
   useAdminUsersQuery,
   useAdminPremiumStatusEventsQuery,
   useUpdateAdminUserMutation,
+  useLockAdminUserMutation,
+  useUnlockAdminUserMutation,
   useRevokeAdminUserPremiumMutation,
   useReactivateAdminUserPremiumMutation,
 } from "@/lib/hooks/queries/useAdminQuery";
@@ -132,6 +135,8 @@ export default function AdminUsersPage() {
   const revokeMutation = useRevokeAdminUserPremiumMutation();
   const reactivateMutation = useReactivateAdminUserPremiumMutation();
   const updateUserMutation = useUpdateAdminUserMutation();
+  const lockUserMutation = useLockAdminUserMutation();
+  const unlockUserMutation = useUnlockAdminUserMutation();
 
   const hasPrevious = page > 1;
   const totalPages = useMemo(() => {
@@ -325,6 +330,38 @@ export default function AdminUsersPage() {
     );
   };
 
+  const handleToggleUserLock = (targetUser: AdminUserResponse) => {
+    if (!targetUser) return;
+    if (lockUserMutation.isPending || unlockUserMutation.isPending) return;
+
+    if (targetUser.is_locked) {
+      unlockUserMutation.mutate(
+        {
+          userId: targetUser.id,
+          payload: { reason: "Unlocked via admin users action" },
+        },
+        {
+          onSuccess: () => {
+            void refetch();
+          },
+        },
+      );
+      return;
+    }
+
+    lockUserMutation.mutate(
+      {
+        userId: targetUser.id,
+        payload: { reason: "Locked via admin users action" },
+      },
+      {
+        onSuccess: () => {
+          void refetch();
+        },
+      },
+    );
+  };
+
   return (
     <SidebarProvider
       style={
@@ -403,6 +440,7 @@ export default function AdminUsersPage() {
                         <TableHead>User</TableHead>
                         <TableHead>Role</TableHead>
                         <TableHead>Premium</TableHead>
+                        <TableHead>Lock Status</TableHead>
                         <TableHead>Created At</TableHead>
                         <TableHead>Last Changed</TableHead>
                         <TableHead className="text-center">Action</TableHead>
@@ -427,6 +465,13 @@ export default function AdminUsersPage() {
                             />
                           </TableCell>
                           <TableCell className="align-top">
+                            <ActiveInactiveBadge
+                              isActive={!user.is_locked}
+                              activeLabel="Unlocked"
+                              inactiveLabel="Locked"
+                            />
+                          </TableCell>
+                          <TableCell className="align-top">
                             {formatDateTime(user.created_at)}
                           </TableCell>
                           <TableCell className="align-top text-xs">
@@ -442,10 +487,6 @@ export default function AdminUsersPage() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => void openUserDetail(user)}>
-                                  <IconEye className="mr-2 size-4" />
-                                  Open Audit
-                                </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => void openUserDetail(user, "profile")}>
                                   <IconPencil className="mr-2 size-4" />
                                   Edit User
@@ -455,6 +496,14 @@ export default function AdminUsersPage() {
                                   Open Full Detail
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className={user.is_locked ? "" : "text-destructive"}
+                                  disabled={lockUserMutation.isPending || unlockUserMutation.isPending}
+                                  onClick={() => handleToggleUserLock(user)}
+                                >
+                                  <IconLock className="mr-2 size-4" />
+                                  {user.is_locked ? "Unlock User" : "Lock User"}
+                                </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className={isUserCurrentlyRevoked(user) ? "" : user.is_premium ? "text-destructive" : ""}
                                   onClick={() => void openUserDetail(user, "premium")}
