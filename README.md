@@ -2,7 +2,21 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+Create local env first:
+
+```bash
+cp .env.example .env.local
+```
+
+Main variables:
+
+- `NEXT_PUBLIC_API_URL` (required, include `/v1`)
+- `NEXT_PUBLIC_FRONTEND_URL` (used for generated links)
+- `NEXT_PUBLIC_BRAND_URL` (auth pages brand/home link)
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (optional captcha key)
+- `JWT_SECRET` (optional server-side auth guard verification)
+
+Then run the development server:
 
 ```bash
 npm run dev
