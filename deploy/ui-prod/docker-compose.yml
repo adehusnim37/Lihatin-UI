@@ -9,6 +9,7 @@ services:
         NEXT_PUBLIC_BRAND_URL: ${NEXT_PUBLIC_BRAND_URL}
         NEXT_PUBLIC_API_DOCS_URL: ${NEXT_PUBLIC_API_DOCS_URL}
         NEXT_PUBLIC_POSTMAN_COLLECTION_URL: ${NEXT_PUBLIC_POSTMAN_COLLECTION_URL}
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY}
     image: lihatin-ui:prod
     container_name: lihatin-web
     restart: unless-stopped
