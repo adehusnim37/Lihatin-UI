@@ -414,6 +414,47 @@ export interface AdminPremiumStatusEventsListResponse {
   items: AdminPremiumStatusEventResponse[];
 }
 
+export interface AdminShortLinkDetailResponse {
+  id: string;
+  passcode?: number | null;
+  click_limit?: number | null;
+  current_clicks?: number;
+  enable_stats?: boolean;
+  custom_domain?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_term?: string;
+  utm_content?: string;
+  is_banned?: boolean;
+  banned_reason?: string;
+  banned_by?: string | null;
+}
+
+export interface AdminUserShortLinkResponse {
+  id: string;
+  user_id?: string | null;
+  short_code: string;
+  original_url: string;
+  title?: string;
+  description?: string;
+  is_active: boolean;
+  expires_at?: string | null;
+  created_at: string;
+  updated_at?: string;
+  detail?: AdminShortLinkDetailResponse | null;
+}
+
+export interface AdminUserShortLinksResponse {
+  short_links: AdminUserShortLinkResponse[];
+  total_count: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+  sort: string;
+  order_by: string;
+}
+
 export interface EmailChangeEligibilityResponse {
   eligible: boolean;
   days_remaining: number;
@@ -1447,6 +1488,48 @@ export async function getAdminUserPremiumStatusEvents(
     await response.json();
   if (!response.ok) {
     throw new Error(getErrorMessage(result) || "Failed to get premium status events");
+  }
+
+  return result;
+}
+
+/**
+ * Get short links created by a specific user (admin only).
+ */
+export async function getAdminUserShortLinks(
+  userId: string,
+  params?: {
+    page?: number;
+    limit?: number;
+    sort?: string;
+    order_by?: "asc" | "desc";
+    detail?: boolean;
+    search?: string;
+  }
+): Promise<APIResponse<AdminUserShortLinksResponse>> {
+  const query = new URLSearchParams();
+  if (params?.page) query.set("page", String(params.page));
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.sort) query.set("sort", params.sort);
+  if (params?.order_by) query.set("order_by", params.order_by);
+  if (params?.search) query.set("search", params.search);
+  query.set("detail", String(params?.detail ?? true));
+
+  const suffix = query.toString();
+  const response = await fetch(
+    `${API_URL}/admin/shorts/users/${encodeURIComponent(userId)}${suffix ? `?${suffix}` : ""}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    }
+  );
+
+  const result: APIResponse<AdminUserShortLinksResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(getErrorMessage(result) || "Failed to get user short links");
   }
 
   return result;

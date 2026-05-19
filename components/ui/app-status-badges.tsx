@@ -326,9 +326,17 @@ export function AccountHistoryActionBadge({
       </StatusBadge>
     );
   }
-  if (normalized.includes("verification") || normalized.includes("change")) {
+  if (normalized.includes("verification")) {
     return (
-      <StatusBadge tone="warning" className={className}>
+      <StatusBadge tone="success" className={className}>
+        {action.toUpperCase()}
+      </StatusBadge>
+    );
+  }
+
+  if (normalized.includes("change")) {
+    return (
+      <StatusBadge tone="info" className={className}>
         {action.toUpperCase()}
       </StatusBadge>
     );

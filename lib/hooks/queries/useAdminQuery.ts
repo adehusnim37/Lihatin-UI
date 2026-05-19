@@ -13,6 +13,7 @@ import {
   revokeAdminUserPremiumAccess,
   reactivateAdminUserPremiumAccess,
   getAdminUserPremiumStatusEvents,
+  getAdminUserShortLinks,
   validateResetToken,
   type AdminUsersListResponse,
   type AdminUserResponse,
@@ -21,6 +22,7 @@ import {
   type AdminPremiumCodesResponse,
   type AdminPremiumStatusEventsListResponse,
   type AdminPremiumStatusMutationResponse,
+  type AdminUserShortLinksResponse,
   type UpdateAdminDisposableEmailPolicyRequest,
   type AdminLockUserRequest,
   type AdminUnlockUserRequest,
@@ -48,6 +50,16 @@ export const adminKeys = {
   },
   premiumStatusEvents: (userId: string) =>
     [...adminKeys.all, "premium-status-events", userId] as const,
+  userShortLinks: (
+    userId: string,
+    page?: number,
+    limit?: number,
+    sort?: string,
+    orderBy?: "asc" | "desc",
+    detail?: boolean,
+    search?: string,
+  ) =>
+    [...adminKeys.all, "user-short-links", userId, page, limit, sort, orderBy, detail, search] as const,
 };
 
 export function useAdminUsersQuery(page = 1, limit = 20) {
@@ -213,6 +225,42 @@ export function useAdminPremiumStatusEventsQuery(userId: string, enabled: boolea
       return response.data as AdminPremiumStatusEventsListResponse;
     },
     enabled,
+  });
+}
+
+export function useAdminUserShortLinksQuery({
+  userId,
+  enabled,
+  page = 1,
+  limit = 10,
+  sort = "created_at",
+  orderBy = "desc",
+  detail = true,
+  search,
+}: {
+  userId: string;
+  enabled: boolean;
+  page?: number;
+  limit?: number;
+  sort?: string;
+  orderBy?: "asc" | "desc";
+  detail?: boolean;
+  search?: string;
+}) {
+  return useQuery({
+    queryKey: adminKeys.userShortLinks(userId, page, limit, sort, orderBy, detail, search),
+    queryFn: async () => {
+      const response = await getAdminUserShortLinks(userId, {
+        page,
+        limit,
+        sort,
+        order_by: orderBy,
+        detail,
+        search,
+      });
+      return response.data as AdminUserShortLinksResponse;
+    },
+    enabled: enabled && Boolean(userId),
   });
 }
 

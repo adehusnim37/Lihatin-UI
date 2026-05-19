@@ -5,11 +5,16 @@ import { useParams, useRouter } from "next/navigation";
 import {
   IconArrowLeft,
   IconArrowRight,
+  IconChevronDown,
+  IconChevronUp,
   IconClockHour4,
   IconCrown,
   IconFilter,
   IconRefresh,
+  IconSearch,
   IconUserCircle,
+  IconCopy,
+  IconCheck,
 } from "@tabler/icons-react";
 
 import { AppSidebar } from "@/components/app-sidebar";
@@ -42,6 +47,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -50,10 +56,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { type AdminUserShortLinkResponse } from "@/lib/api/auth";
 import {
   useAdminPremiumStatusEventsQuery,
   useAdminUserDetailQuery,
+  useAdminUserShortLinksQuery,
 } from "@/lib/hooks/queries/useAdminQuery";
+import { toast } from "sonner";
 
 type AuditHistoryView = "premium" | "account" | "login";
 
@@ -65,6 +74,12 @@ export default function AdminUserDetailPage() {
   const [roleFromStorage, setRoleFromStorage] = useState<
     string | null | undefined
   >(undefined);
+  const [copiedId, setCopiedId] = useState(false);
+  const [shortsPage, setShortsPage] = useState(1);
+  const [shortsLimit, setShortsLimit] = useState(10);
+  const [shortsSearchInput, setShortsSearchInput] = useState("");
+  const [shortsSearch, setShortsSearch] = useState("");
+  const [isShortsSectionOpen, setIsShortsSectionOpen] = useState(true);
   const isAdmin = roleFromStorage && isAdminRole(roleFromStorage);
 
   useEffect(() => {
@@ -74,13 +89,45 @@ export default function AdminUserDetailPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    setCopiedId(false);
+  }, [userId]);
+
+  useEffect(() => {
+    setShortsPage(1);
+    setShortsSearchInput("");
+    setShortsSearch("");
+  }, [userId]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShortsSearch(shortsSearchInput.trim());
+      setShortsPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [shortsSearchInput]);
+
   const detailQuery = useAdminUserDetailQuery(userId, Boolean(userId));
   const eventsQuery = useAdminPremiumStatusEventsQuery(userId, Boolean(userId));
+  const userShortsQuery = useAdminUserShortLinksQuery({
+    userId,
+    enabled: Boolean(userId),
+    page: shortsPage,
+    limit: shortsLimit,
+    sort: "created_at",
+    orderBy: "desc",
+    detail: true,
+    search: shortsSearch || undefined,
+  });
 
   const user = detailQuery.data;
   const events = useMemo(
     () => eventsQuery.data?.items ?? [],
     [eventsQuery.data?.items],
+  );
+  const userShorts = useMemo(
+    () => userShortsQuery.data?.short_links ?? [],
+    [userShortsQuery.data?.short_links],
   );
   const recentHistory = useMemo(
     () => user?.recent_history ?? [],
@@ -102,6 +149,23 @@ export default function AdminUserDetailPage() {
     ).length;
     return { total, revoked, reactivated, permanent };
   }, [events]);
+
+  const shortPagination = useMemo(() => {
+    const totalPages = userShortsQuery.data?.total_pages ?? 1;
+    const safeTotalPages = totalPages > 0 ? totalPages : 1;
+    return {
+      totalCount: userShortsQuery.data?.total_count ?? 0,
+      totalPages: safeTotalPages,
+      hasPrevious: shortsPage > 1,
+      hasNext: shortsPage < safeTotalPages,
+    };
+  }, [userShortsQuery.data?.total_count, userShortsQuery.data?.total_pages, shortsPage]);
+
+  const shouldHideShortLinksSection =
+    !userShortsQuery.isLoading &&
+    !userShortsQuery.isError &&
+    !shortsSearch &&
+    (userShortsQuery.data?.total_count ?? 0) === 0;
 
   return (
     <SidebarProvider
@@ -139,6 +203,7 @@ export default function AdminUserDetailPage() {
                 onClick={() => {
                   void detailQuery.refetch();
                   void eventsQuery.refetch();
+                  void userShortsQuery.refetch();
                 }}
                 disabled={detailQuery.isLoading || detailQuery.isFetching}
               >
@@ -203,8 +268,39 @@ export default function AdminUserDetailPage() {
                       <p>{user.email}</p>
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-4 text-sm">
-                    <InfoLine label="User ID" value={user.id} truncate />
+                    <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-4 text-sm">
+                    <InfoLine
+                      label="User ID"
+                      truncate
+                      valueNode={
+                        <div className="inline-flex items-center gap-2">
+                          <span className="font-mono break-all">{user.id}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={async () => {
+                              if (!user?.id) return;
+                              try {
+                                await navigator.clipboard.writeText(user.id);
+                                setCopiedId(true);
+                                toast.success("User ID copied to clipboard");
+                                  setTimeout(() => setCopiedId(false), 2000);
+                              } catch (err) {
+                                toast.error("Failed to copy User ID");
+                              }
+                            }}
+                            aria-label="Copy user id"
+                          >
+                              {copiedId ? (
+                                <IconCheck className="size-3" />
+                              ) : (
+                                <IconCopy className="size-3" />
+                              )}
+                          </Button>
+                        </div>
+                      }
+                    />
                     <InfoLine
                       label="Created At"
                       value={formatDateTime(user.created_at)}
@@ -251,16 +347,7 @@ export default function AdminUserDetailPage() {
                   </CardHeader>
                   <CardContent className="grid gap-6 lg:grid-cols-2">
                     <div className="rounded-lg border bg-gradient-to-b from-muted/20 to-background p-4 sm:p-5">
-                      <div className="space-y-1">
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                          User Auth
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Security posture and latest authentication signals.
-                        </p>
-                      </div>
-
-                      <div className="mt-4 flex flex-wrap gap-2">
+                      <div className="mt-3 flex flex-wrap gap-2">
                         <EnabledDisabledBadge
                           enabled={Boolean(user.user_auth?.is_email_verified)}
                           enabledLabel="Email Verified"
@@ -389,6 +476,197 @@ export default function AdminUserDetailPage() {
                     )}
                   </CardContent>
                 </Card>
+
+                {!shouldHideShortLinksSection ? (
+                  <Card>
+                    <CardHeader className="space-y-3">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="space-y-1">
+                          <CardTitle className="text-xl font-semibold tracking-tight">
+                            User Short Links
+                          </CardTitle>
+                          <CardDescription>
+                            Browse and search short links created by this user.
+                          </CardDescription>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            setIsShortsSectionOpen((previous) => !previous)
+                          }
+                        >
+                          {isShortsSectionOpen ? (
+                            <IconChevronUp className="mr-2 size-4" />
+                          ) : (
+                            <IconChevronDown className="mr-2 size-4" />
+                          )}
+                          {isShortsSectionOpen ? "Collapse" : "Expand"}
+                        </Button>
+                      </div>
+                    </CardHeader>
+
+                    {isShortsSectionOpen ? (
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                          <StatBox
+                            label="Total Links"
+                            value={shortPagination.totalCount}
+                          />
+                          <StatBox label="Showing" value={userShorts.length} />
+                          <StatBox
+                            label="Active"
+                            value={userShorts.filter((item) => item.is_active).length}
+                          />
+                          <StatBox
+                            label="Banned"
+                            value={userShorts.filter((item) => item.detail?.is_banned).length}
+                          />
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="relative w-full max-w-sm">
+                            <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                              value={shortsSearchInput}
+                              onChange={(event) =>
+                                setShortsSearchInput(event.target.value)
+                              }
+                              placeholder="Search short code, title, description, or URL..."
+                              className="pl-9"
+                            />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant={shortsLimit === 10 ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => {
+                                setShortsLimit(10);
+                                setShortsPage(1);
+                              }}
+                            >
+                              10
+                            </Button>
+                            <Button
+                              variant={shortsLimit === 25 ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => {
+                                setShortsLimit(25);
+                                setShortsPage(1);
+                              }}
+                            >
+                              25
+                            </Button>
+                          </div>
+                        </div>
+
+                        {userShortsQuery.isLoading ? (
+                          <div className="space-y-2">
+                            <Skeleton className="h-16 w-full" />
+                            <Skeleton className="h-16 w-full" />
+                          </div>
+                        ) : userShortsQuery.isError ? (
+                          <p className="text-sm text-muted-foreground">
+                            Failed to load user short links.
+                          </p>
+                        ) : userShorts.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">
+                            {shortsSearch
+                              ? "No short links match your search."
+                              : "No short links found for this user."}
+                          </p>
+                        ) : (
+                          <div className="overflow-x-auto rounded-md border">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Short Code</TableHead>
+                                  <TableHead>Original URL</TableHead>
+                                  <TableHead>Status</TableHead>
+                                  <TableHead>Clicks</TableHead>
+                                  <TableHead>Created</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {userShorts.map((short) => (
+                                  <TableRow key={short.id}>
+                                    <TableCell className="align-top">
+                                      <div className="space-y-1">
+                                        <p className="font-mono text-[15px] font-semibold leading-tight">
+                                          /{short.short_code}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground line-clamp-1">
+                                          {short.title || short.description || "-"}
+                                        </p>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="align-top max-w-[360px]">
+                                      <a
+                                        href={short.original_url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-sm text-foreground hover:text-primary hover:underline break-all line-clamp-2"
+                                        title={short.original_url}
+                                      >
+                                        {short.original_url}
+                                      </a>
+                                    </TableCell>
+                                    <TableCell className="align-top">
+                                      {renderShortLinkStatusBadge(short)}
+                                    </TableCell>
+                                    <TableCell className="align-top">
+                                      <div className="space-y-1">
+                                        <p className="text-sm font-semibold">
+                                          {short.detail?.current_clicks ?? 0}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                          Limit: {short.detail?.click_limit ?? "Unlimited"}
+                                        </p>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="align-top text-xs text-muted-foreground">
+                                      {formatDateTime(short.created_at)}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        )}
+
+                        <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+                          <p className="text-muted-foreground">
+                            Page {shortsPage} of {shortPagination.totalPages}
+                          </p>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={!shortPagination.hasPrevious}
+                              onClick={() =>
+                                setShortsPage((previous) => Math.max(1, previous - 1))
+                              }
+                            >
+                              Previous
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={!shortPagination.hasNext}
+                              onClick={() =>
+                                setShortsPage((previous) =>
+                                  Math.min(shortPagination.totalPages, previous + 1),
+                                )
+                              }
+                            >
+                              Next
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    ) : null}
+                  </Card>
+                ) : null}
 
                 <Card>
                   <CardHeader className="space-y-3">
@@ -728,6 +1006,18 @@ function getStatusTone(status: string) {
   if (s === "revoked" || s === "banned" || s === "inactive") return "danger";
   if (s === "free") return "sky";
   return "warning";
+}
+
+function renderShortLinkStatusBadge(short: AdminUserShortLinkResponse) {
+  if (short.detail?.is_banned) {
+    return <StatusBadge tone="danger">BANNED</StatusBadge>;
+  }
+
+  if (short.is_active) {
+    return <StatusBadge tone="success">ACTIVE</StatusBadge>;
+  }
+
+  return <StatusBadge tone="neutral">INACTIVE</StatusBadge>;
 }
 
 function isLockoutActive(lockoutUntil?: string | null): boolean {
