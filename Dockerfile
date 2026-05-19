@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1.7
 
-FROM node:22-alpine AS deps
+FROM oven/bun:1 AS deps
 WORKDIR /app
 ARG NPM_REGISTRY=https://registry.npmjs.org
-COPY package.json package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm \
-  sh -lc 'npm config set registry "${NPM_REGISTRY}" && npm ci'
+COPY package.json bun.lock ./
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+  sh -lc 'for i in 1 2 3; do bun install --frozen-lockfile --registry "${NPM_REGISTRY}" && exit 0; echo "bun install failed, retry $i/3"; sleep $((i*5)); done; exit 1'
 
-FROM node:22-alpine AS builder
+FROM oven/bun:1 AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_API_URL
@@ -24,9 +24,9 @@ ENV NEXT_PUBLIC_POSTMAN_COLLECTION_URL=${NEXT_PUBLIC_POSTMAN_COLLECTION_URL}
 ENV NEXT_PUBLIC_TURNSTILE_SITE_KEY=${NEXT_PUBLIC_TURNSTILE_SITE_KEY}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+RUN bun run build
 
-FROM node:22-alpine AS runner
+FROM node:25-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
