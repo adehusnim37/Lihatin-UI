@@ -2,9 +2,10 @@
 
 FROM oven/bun:1 AS deps
 WORKDIR /app
+ARG NPM_REGISTRY=https://registry.npmjs.org
 COPY package.json bun.lock ./
 RUN --mount=type=cache,target=/root/.bun/install/cache \
-  bun install --frozen-lockfile
+  sh -lc 'for i in 1 2 3; do bun install --frozen-lockfile --registry "${NPM_REGISTRY}" && exit 0; echo "bun install failed, retry $i/3"; sleep $((i*5)); done; exit 1'
 
 FROM oven/bun:1 AS builder
 WORKDIR /app

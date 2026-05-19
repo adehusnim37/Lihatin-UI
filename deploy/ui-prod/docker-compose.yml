@@ -4,6 +4,7 @@ services:
       context: ../..
       dockerfile: Dockerfile
       args:
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org}
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
         NEXT_PUBLIC_FRONTEND_URL: ${NEXT_PUBLIC_FRONTEND_URL}
         NEXT_PUBLIC_BRAND_URL: ${NEXT_PUBLIC_BRAND_URL}
