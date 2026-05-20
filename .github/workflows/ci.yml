@@ -1,0 +1,53 @@
+name: Frontend CI
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  lint-build-image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        continue-on-error: true
+        run: bun run lint
+
+      - name: Build Next.js app
+        env:
+          NEXT_PUBLIC_API_URL: https://api.example.com/v1
+          NEXT_PUBLIC_FRONTEND_URL: https://example.com
+          NEXT_PUBLIC_BRAND_URL: https://example.com
+          NEXT_PUBLIC_API_DOCS_URL: https://api.example.com/docs
+          NEXT_PUBLIC_POSTMAN_COLLECTION_URL: https://example.com/postman
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: test-site-key
+        run: bun run build
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f Dockerfile \
+            --build-arg NPM_REGISTRY=https://registry.npmjs.org \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.example.com/v1 \
+            --build-arg NEXT_PUBLIC_FRONTEND_URL=https://example.com \
+            --build-arg NEXT_PUBLIC_BRAND_URL=https://example.com \
+            --build-arg NEXT_PUBLIC_API_DOCS_URL=https://api.example.com/docs \
+            --build-arg NEXT_PUBLIC_POSTMAN_COLLECTION_URL=https://example.com/postman \
+            --build-arg NEXT_PUBLIC_TURNSTILE_SITE_KEY=test-site-key \
+            -t lihatin-ui:ci .

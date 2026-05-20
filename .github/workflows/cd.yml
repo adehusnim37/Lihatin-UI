@@ -1,0 +1,60 @@
+name: Frontend CD
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-prod-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Add server to known_hosts
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ vars.DEPLOY_SSH_PORT }}
+        run: |
+          set -euo pipefail
+          PORT="${DEPLOY_PORT:-22}"
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "$PORT" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy with Docker Compose
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PORT: ${{ vars.DEPLOY_SSH_PORT }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          PORT="${DEPLOY_PORT:-22}"
+
+          ssh -p "$PORT" "${DEPLOY_USER}@${DEPLOY_HOST}" "DEPLOY_PATH='$DEPLOY_PATH' BRANCH='$BRANCH' bash -se" <<'EOF'
+            set -euo pipefail
+            APP_DIR="${DEPLOY_PATH:-~/apps/Lihatin-UI}"
+            cd "$APP_DIR"
+            git fetch --all --prune
+            git checkout "$BRANCH"
+            git pull --ff-only origin "$BRANCH"
+
+            cd deploy/ui-prod
+            docker compose up -d --build
+            docker compose ps
+            docker compose exec -T web sh -lc 'wget -qO- http://127.0.0.1:3000/ > /dev/null'
+          EOF
