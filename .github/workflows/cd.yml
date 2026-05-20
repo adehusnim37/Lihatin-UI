@@ -56,5 +56,16 @@ jobs:
             cd deploy/ui-prod
             docker compose up -d --build
             docker compose ps
-            docker compose exec -T web sh -lc 'wget -qO- http://127.0.0.1:3000/ > /dev/null'
+            # Wait until web is reachable (container can be Up while app is still booting)
+            for i in $(seq 1 30); do
+              if docker compose exec -T web sh -lc 'wget -qO- http://127.0.0.1:3000/ > /dev/null'; then
+                echo "Web healthcheck passed"
+                exit 0
+              fi
+              echo "Waiting web to be ready... attempt $i/30"
+              sleep 3
+            done
+            echo "Web failed to become ready in time"
+            docker compose logs --tail=200 web || true
+            exit 1
           EOF
