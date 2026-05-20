@@ -580,11 +580,12 @@ export async function startGoogleOAuth(
 }
 
 /**
- * Complete Google OAuth callback and continue with existing login step-2 flow.
+ * Complete Google OAuth callback with find-or-create behavior.
+ * Google sign-in always finishes as full authenticated session.
  */
 export async function completeGoogleOAuthCallback(
   request: GoogleOAuthCallbackRequest
-): Promise<APIResponse<LoginResult>> {
+): Promise<APIResponse<LoginResponse>> {
   const response = await fetch(`${API_URL}/auth/oauth/google/callback`, {
     method: "POST",
     headers: {
@@ -594,14 +595,14 @@ export async function completeGoogleOAuthCallback(
     body: JSON.stringify(request),
   });
 
-  const data: APIResponse<LoginResult> = await response.json();
+  const data: APIResponse<LoginResponse> = await response.json();
   if (!response.ok) {
     throw new Error(
       getErrorMessage(data) || "Google OAuth callback verification failed"
     );
   }
 
-  if (data.data && !requiresTOTP(data.data) && !requiresEmailOTP(data.data)) {
+  if (data.data) {
     const { refreshCSRFToken } = await import("./fetch-wrapper");
     await refreshCSRFToken();
   }

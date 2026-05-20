@@ -6,8 +6,6 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   completeGoogleOAuthCallback,
-  requiresEmailOTP,
-  requiresTOTP,
   saveUserData,
 } from "@/lib/api/auth";
 import { useAuth } from "@/app/context/AuthContext";
@@ -62,41 +60,6 @@ function GoogleOAuthCallbackContent() {
 
         if (!response.success || !response.data) {
           throw new Error("Invalid OAuth callback response");
-        }
-
-        if (requiresTOTP(response.data)) {
-          sessionStorage.setItem(
-            "pending_auth_token",
-            response.data.pending_auth_token
-          );
-          sessionStorage.setItem(
-            "pending_user",
-            JSON.stringify(response.data.user)
-          );
-
-          toast.success("Verification Required", {
-            description: "Please enter your authenticator code",
-            duration: 2500,
-          });
-          router.replace("/auth/verify-login");
-          return;
-        }
-
-        if (requiresEmailOTP(response.data)) {
-          sessionStorage.setItem(
-            "pending_email_otp_challenge",
-            response.data.challenge_token
-          );
-          sessionStorage.setItem("pending_email_otp_email", response.data.email);
-
-          toast.success("Verification Required", {
-            description: "We sent a 6-digit code to your email",
-            duration: 2500,
-          });
-          router.replace(
-            `/auth/verify-email-otp?redirect=${encodeURIComponent(redirectTo)}`
-          );
-          return;
         }
 
         saveUserData(response.data.user);

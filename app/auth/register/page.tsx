@@ -8,7 +8,7 @@ import Image from "next/image";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import { TermsDialog } from "@/components/auth/terms-dialog";
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { signupStart, startGoogleOAuth } from "@/lib/api/auth";
@@ -48,6 +48,10 @@ export default function RegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  // Ensure Google-loading flag is cleared when returning from external OAuth flow
+  useEffect(() => {
+    setIsGoogleLoading(false);
+  }, []);
   const [formData, setFormData] = useState({
     email: "",
     agree_terms: false,

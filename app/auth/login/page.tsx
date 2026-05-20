@@ -61,6 +61,10 @@ function LoginContent() {
   const auth = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  // Ensure Google-loading flag is cleared when returning from external OAuth flow
+  useEffect(() => {
+    setIsGoogleLoading(false);
+  }, []);
   const [supportLink, setSupportLink] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email_or_username: "",
