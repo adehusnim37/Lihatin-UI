@@ -48,9 +48,32 @@ export default function RegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  // Ensure Google-loading flag is cleared when returning from external OAuth flow
+  // Ensure loading flags are cleared when returning from external OAuth flow.
   useEffect(() => {
-    setIsGoogleLoading(false);
+    const resetLoadingState = () => {
+      setIsLoading(false);
+      setIsGoogleLoading(false);
+    };
+
+    // pageshow covers browser back/forward (including bfcache restore)
+    const handlePageShow = () => {
+      resetLoadingState();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        resetLoadingState();
+      }
+    };
+
+    resetLoadingState();
+    window.addEventListener("pageshow", handlePageShow);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
   const [formData, setFormData] = useState({
     email: "",

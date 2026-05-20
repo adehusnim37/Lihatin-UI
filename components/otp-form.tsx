@@ -113,25 +113,27 @@ export function OTPForm({
             <FieldLabel htmlFor="otp" className="sr-only">
               Verification code
             </FieldLabel>
-            <InputOTP
-              value={otpValue}
-              onChange={(value) => setOtpValue(value)}
-              maxLength={6}
-              id="otp"
-              containerClassName="gap-4 justify-center"
-            >
-              <InputOTPGroup className="gap-2.5 *:data-[slot=input-otp-slot]:h-16 *:data-[slot=input-otp-slot]:w-12 *:data-[slot=input-otp-slot]:rounded-md *:data-[slot=input-otp-slot]:border *:data-[slot=input-otp-slot]:text-xl">
-                <InputOTPSlot index={0} />
-                <InputOTPSlot index={1} />
-                <InputOTPSlot index={2} />
-              </InputOTPGroup>
-              <InputOTPSeparator />
-              <InputOTPGroup className="gap-2.5 *:data-[slot=input-otp-slot]:h-16 *:data-[slot=input-otp-slot]:w-12 *:data-[slot=input-otp-slot]:rounded-md *:data-[slot=input-otp-slot]:border *:data-[slot=input-otp-slot]:text-xl">
-                <InputOTPSlot index={3} />
-                <InputOTPSlot index={4} />
-                <InputOTPSlot index={5} />
-              </InputOTPGroup>
-            </InputOTP>
+            <div className="w-full flex justify-center">
+              <InputOTP
+                value={otpValue}
+                onChange={(value) => setOtpValue(value)}
+                maxLength={6}
+                id="otp"
+                containerClassName="justify-center gap-1 sm:gap-2"
+              >
+                <InputOTPGroup className="gap-1 sm:gap-1.5 *:data-[slot=input-otp-slot]:h-10 *:data-[slot=input-otp-slot]:w-8 *:data-[slot=input-otp-slot]:rounded-md *:data-[slot=input-otp-slot]:border *:data-[slot=input-otp-slot]:text-sm sm:*:data-[slot=input-otp-slot]:h-12 sm:*:data-[slot=input-otp-slot]:w-9 sm:*:data-[slot=input-otp-slot]:text-base md:*:data-[slot=input-otp-slot]:h-14 md:*:data-[slot=input-otp-slot]:w-10 md:*:data-[slot=input-otp-slot]:text-lg lg:*:data-[slot=input-otp-slot]:h-16 lg:*:data-[slot=input-otp-slot]:w-12 lg:*:data-[slot=input-otp-slot]:text-xl">
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                </InputOTPGroup>
+                <InputOTPSeparator />
+                <InputOTPGroup className="gap-1 sm:gap-1.5 *:data-[slot=input-otp-slot]:h-10 *:data-[slot=input-otp-slot]:w-8 *:data-[slot=input-otp-slot]:rounded-md *:data-[slot=input-otp-slot]:border *:data-[slot=input-otp-slot]:text-sm sm:*:data-[slot=input-otp-slot]:h-12 sm:*:data-[slot=input-otp-slot]:w-9 sm:*:data-[slot=input-otp-slot]:text-base md:*:data-[slot=input-otp-slot]:h-14 md:*:data-[slot=input-otp-slot]:w-10 md:*:data-[slot=input-otp-slot]:text-lg lg:*:data-[slot=input-otp-slot]:h-16 lg:*:data-[slot=input-otp-slot]:w-12 lg:*:data-[slot=input-otp-slot]:text-xl">
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
 
             {error && (
               <p className="mt-2 text-sm text-destructive text-center">
