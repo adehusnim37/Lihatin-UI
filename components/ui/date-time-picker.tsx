@@ -75,7 +75,7 @@ export function DateTimePicker({
             selected={date}
             onSelect={handleDateSelect}
             disabled={disablePast ? { before: startOfDay(now) } : undefined}
-            initialFocus
+            autoFocus
           />
           <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
             <ScrollArea className="w-64 sm:w-auto h-72 sm:h-full">

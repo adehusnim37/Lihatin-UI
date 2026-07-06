@@ -6,7 +6,12 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "lucide-react"
-import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker"
+import {
+  DayButton,
+  DayPicker,
+  MonthGrid,
+  getDefaultClassNames,
+} from "react-day-picker"
 
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -84,7 +89,6 @@ function Calendar({
             : "rounded-md pl-2 pr-1 flex items-center gap-1 text-sm h-8 [&>svg]:text-muted-foreground [&>svg]:size-3.5",
           defaultClassNames.caption_label
         ),
-        table: "w-full border-collapse",
         weekdays: cn("flex", defaultClassNames.weekdays),
         weekday: cn(
           "text-muted-foreground rounded-md flex-1 font-normal text-[0.8rem] select-none",
@@ -137,6 +141,9 @@ function Calendar({
               {...props}
             />
           )
+        },
+        MonthGrid: ({ className, ...props }) => {
+          return <MonthGrid className={cn("w-full border-collapse", className)} {...props} />
         },
         Chevron: ({ className, orientation, ...props }) => {
           if (orientation === "left") {
