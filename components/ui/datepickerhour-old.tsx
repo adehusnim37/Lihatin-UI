@@ -114,7 +114,7 @@ export function DateTimePicker24hForm({
                       disabled={
                         disablePast ? { before: startOfDay(now) } : undefined
                       }
-                      initialFocus
+                      autoFocus
                     />
                     <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
                       <ScrollArea className="w-64 h-[200px] sm:w-auto sm:h-[300px] overflow-y-auto">
