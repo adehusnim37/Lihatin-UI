@@ -72,7 +72,7 @@ import {
 } from "@/lib/hooks/queries/useAdminQuery";
 
 type RevokeType = "temporary" | "permanent";
-type AdminRole = "user" | "admin" | "super_admin";
+type Role = "user";
 type DetailFocus = "profile" | "premium" | null;
 type AuditHistoryView = "premium" | "account" | "login";
 
@@ -98,7 +98,7 @@ export default function AdminUsersPage() {
     last_name: "",
     username: "",
     email: "",
-    role: "user" as AdminRole,
+    role: "user" as Role,
   });
 
   const [roleFromStorage, setRoleFromStorage] = useState<string | null | undefined>(undefined);
@@ -290,7 +290,7 @@ export default function AdminUsersPage() {
       last_name?: string;
       username?: string;
       email?: string;
-      role?: AdminRole;
+      role?: Role;
     } = {};
 
     const nextFirstName = profileForm.first_name.trim();
@@ -617,8 +617,6 @@ export default function AdminUsersPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="user">user</SelectItem>
-                      <SelectItem value="admin">admin</SelectItem>
-                      <SelectItem value="super_admin">super_admin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1140,8 +1138,6 @@ function isAdminRole(role: string): boolean {
   return role === "admin" || role === "super_admin";
 }
 
-function normalizeRoleValue(value?: string | null): AdminRole {
-  if (value === "admin") return "admin";
-  if (value === "super_admin") return "super_admin";
+function normalizeRoleValue(value?: string | null): Role {
   return "user";
 }
