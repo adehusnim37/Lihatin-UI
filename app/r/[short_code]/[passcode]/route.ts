@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
-const PUBLIC_FRONTEND_ORIGIN =
-  process.env.NEXT_PUBLIC_FRONTEND_URL?.replace(/\/+$/, "") || "";
+import {
+  createRedirectResponse,
+  getRequestOrigin,
+  resolveBackendBaseUrl,
+} from "@/lib/security/response";
 
 interface BackendErrorResponse {
   success: boolean;
@@ -11,24 +12,6 @@ interface BackendErrorResponse {
   error?: Record<string, string> | null;
 }
 export const dynamic = "force-dynamic";
-
-function getRedirectOrigin(request: NextRequest): string {
-  if (PUBLIC_FRONTEND_ORIGIN) return PUBLIC_FRONTEND_ORIGIN;
-
-  const forwardedHost = request.headers
-    .get("x-forwarded-host")
-    ?.split(",")[0]
-    .trim();
-  const host = forwardedHost || request.headers.get("host");
-  const forwardedProto = request.headers
-    .get("x-forwarded-proto")
-    ?.split(",")[0]
-    .trim();
-  const protocol =
-    forwardedProto || request.nextUrl.protocol.replace(":", "") || "https";
-
-  return host ? `${protocol}://${host}` : request.nextUrl.origin;
-}
 
 function isClickLimitError(errorData: BackendErrorResponse): boolean {
   const message = (errorData.message || "").toLowerCase();
@@ -48,12 +31,13 @@ export async function GET(
   { params }: { params: Promise<{ short_code: string; passcode: string }> }
 ) {
   const { short_code, passcode } = await params;
-  const redirectOrigin = getRedirectOrigin(request);
+  const backendBaseUrl = resolveBackendBaseUrl(request);
+  const redirectOrigin = getRequestOrigin(request);
 
   try {
     // Fetch from backend with passcode
     const response = await fetch(
-      `${BACKEND_URL}/short/${short_code}?passcode=${passcode}`,
+      `${backendBaseUrl}/short/${short_code}?passcode=${passcode}`,
       {
         method: "GET",
         redirect: "manual",
@@ -82,16 +66,7 @@ export async function GET(
     ) {
       const location = response.headers.get("location");
       if (location) {
-        const res = NextResponse.redirect(location, {
-          status: response.status,
-        });
-        res.headers.set(
-          "Cache-Control",
-          "no-store, no-cache, must-revalidate, proxy-revalidate"
-        );
-        res.headers.set("Pragma", "no-cache");
-        res.headers.set("Expires", "0");
-        return res;
+        return createRedirectResponse(location, response.status);
       }
     }
 
@@ -135,7 +110,7 @@ export async function GET(
         errorUrl.searchParams.set("type", "error");
     }
 
-    return NextResponse.redirect(errorUrl.toString());
+    return createRedirectResponse(errorUrl.toString());
   } catch {
     const errorUrl = new URL("/link-error", redirectOrigin);
     errorUrl.searchParams.set("code", short_code);
@@ -145,6 +120,6 @@ export async function GET(
       "Unable to reach the server. Please try again."
     );
 
-    return NextResponse.redirect(errorUrl.toString());
+    return createRedirectResponse(errorUrl.toString());
   }
 }

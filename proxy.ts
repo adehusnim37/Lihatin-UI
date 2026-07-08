@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+import {
+  createRedirectResponse,
+  getRequestProtocol,
+} from "@/lib/security/response";
+import { isLocalHostname } from "@/lib/security/headers";
+
 /**
  * Next.js Middleware for Route Protection
  * 🔐 Checks for access_token cookie to protect routes
@@ -12,6 +18,17 @@ import type { NextRequest } from "next/server";
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const search = request.nextUrl.search;
+  const protocol = getRequestProtocol(request);
+
+  if (
+    process.env.NODE_ENV === "production" &&
+    protocol === "http" &&
+    !isLocalHostname(request.nextUrl.hostname)
+  ) {
+    const secureUrl = request.nextUrl.clone();
+    secureUrl.protocol = "https";
+    return createRedirectResponse(secureUrl, 308);
+  }
 
   // Get access_token from cookies
   const accessToken = request.cookies.get("access_token")?.value;
@@ -51,12 +68,12 @@ export function proxy(request: NextRequest) {
   if (isProtectedRoute && !accessToken) {
     const loginUrl = new URL("/auth/login", request.url);
     loginUrl.searchParams.set("redirect", `${pathname}${search}`);
-    return NextResponse.redirect(loginUrl);
+    return createRedirectResponse(loginUrl);
   }
 
   // If accessing auth routes with valid token, redirect to main
   if (isAuthRoute && accessToken) {
-    return NextResponse.redirect(new URL("/main", request.url));
+    return createRedirectResponse(new URL("/main", request.url));
   }
 
   // If this is NOT a known route and it looks like a short code (single path segment),
