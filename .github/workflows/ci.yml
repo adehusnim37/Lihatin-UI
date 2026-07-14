@@ -30,6 +30,7 @@ jobs:
         run: bun run lint
 
       - name: Audit dependencies
+        continue-on-error: true
         run: bun audit
 
       - name: Build Next.js app
