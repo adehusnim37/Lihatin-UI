@@ -118,7 +118,7 @@ export default function AdminPremiumCodesPage() {
     return activeCode.usage_count >= activeCode.limit_usage;
   }, [activeCode]);
   const isActiveCodeDeliveryDisabled = activeCode
-    ? isValidUntilAfterCurrentDate(activeCode.valid_until)
+    ? isValidUntilAfterCurrentDate(activeCode.valid_until) && (activeCode?.key_usage?.length ?? 0) == 0
     : false;
 
   const activeCodeLastRedeemedAt = useMemo(() => {
@@ -260,6 +260,7 @@ export default function AdminPremiumCodesPage() {
                         const usedBy = getUsedByLabels(code, userLabelById);
                         const usageLimit = code.limit_usage ?? 0;
                         const isCopyDisabled = (isValidUntilAfterCurrentDate(code.valid_until) && (code?.key_usage?.length ?? 0) == 0);
+                        const isLimitReached = usageLimit > 0 && code.usage_count >= usageLimit;
                         return (
                           <TableRow
                             key={code.id}
@@ -280,6 +281,12 @@ export default function AdminPremiumCodesPage() {
                                     <Badge variant="destructive" className="text-[11px]">
                                       <IconClipboardOff />
                                       Expired
+                                    </Badge>
+                                  )}
+                                  {isLimitReached && (
+                                    <Badge variant="outline" className="text-[11px]">
+                                      <IconClipboardOff />
+                                      Limit Reached
                                     </Badge>
                                   )}
                                 </div>
