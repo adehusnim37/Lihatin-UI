@@ -493,7 +493,6 @@ function ProfilePageContent() {
                           </DialogHeader>
                           {avatarURL ? (
                             <div className="relative">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
                               <Image
                                 src={avatarURL}
                                 alt={`${user.first_name} ${user.last_name}`}

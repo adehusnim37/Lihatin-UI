@@ -50,7 +50,7 @@ export default function TermsPage() {
               <p className="mb-3">You agree not to use the Service to:</p>
               <ul className="list-disc pl-5 space-y-2">
                 <li>Create short links to any websites containing malware, phishing, or spam.</li>
-                <li>Link to content that is illegal, abusive, harassing, or violates any third party's rights.</li>
+                <li>Link to content that is illegal, abusive, harassing, or violates any third party&apos;s rights.</li>
                 <li>Attempt to bypass any limitations or security measures of the Service.</li>
                 <li>Use the Service for any automated scraping or mass link creation without explicit permission or API access.</li>
               </ul>

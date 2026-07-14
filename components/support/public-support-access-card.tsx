@@ -409,7 +409,7 @@ export function PublicSupportAccessCard() {
 
                   <div className="space-y-4 pt-4 border-t border-border/50">
                     <div className="text-center">
-                      <p className="text-sm text-muted-foreground mb-3">Didn't receive the code?</p>
+                      <p className="text-sm text-muted-foreground mb-3">Didn&apos;t receive the code?</p>
                       
                       {otpCooldownRemaining <= 0 ? (
                         <div className="flex flex-col items-center gap-3">

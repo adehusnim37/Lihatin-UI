@@ -56,8 +56,10 @@ export default function AdminPremiumCodesPage() {
   const [roleFromStorage, setRoleFromStorage] = useState<string | null | undefined>(undefined);
   useEffect(() => {
     // Read localStorage on client only to avoid SSR/client HTML mismatch
-    const r = getStoredRole();
-    setRoleFromStorage(r);
+    const timer = setTimeout(() => {
+      setRoleFromStorage(getStoredRole());
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const isAdmin = roleFromStorage ? isAdminRole(roleFromStorage) : false;
@@ -257,7 +259,7 @@ export default function AdminPremiumCodesPage() {
                       {codes.map((code) => {
                         const usedBy = getUsedByLabels(code, userLabelById);
                         const usageLimit = code.limit_usage ?? 0;
-                        const isCopyDisabled = isValidUntilAfterCurrentDate(code.valid_until);
+                        const isCopyDisabled = (isValidUntilAfterCurrentDate(code.valid_until) && (code?.key_usage?.length ?? 0) == 0);
                         return (
                           <TableRow
                             key={code.id}
@@ -277,7 +279,7 @@ export default function AdminPremiumCodesPage() {
                                   {isCopyDisabled && (
                                     <Badge variant="destructive" className="text-[11px]">
                                       <IconClipboardOff />
-                                      Copy disabled
+                                      Expired
                                     </Badge>
                                   )}
                                 </div>
@@ -290,7 +292,7 @@ export default function AdminPremiumCodesPage() {
                                     event.stopPropagation();
                                     void copyText(code.secret_code);
                                   }}
-                                  title={isCopyDisabled ? "Copy is disabled by valid_until" : "Copy secret code"}
+                                  title={isCopyDisabled ? "Expired" : "Copy secret code"}
                                 >
                                   {isCopyDisabled ? (
                                     <IconClipboardOff className="size-3.5" />
@@ -394,7 +396,7 @@ export default function AdminPremiumCodesPage() {
                       {isActiveCodeDeliveryDisabled && (
                         <Badge variant="destructive" className="mt-2 text-[11px]">
                           <IconClipboardOff />
-                          Copy disabled
+                          Expired
                         </Badge>
                       )}
                     </div>
@@ -406,7 +408,7 @@ export default function AdminPremiumCodesPage() {
                       onClick={() => void copyText(activeCode.secret_code)}
                       title={
                         isActiveCodeDeliveryDisabled
-                          ? "Copy is disabled by valid_until"
+                          ? "Expired"
                           : "Copy secret code"
                       }
                     >

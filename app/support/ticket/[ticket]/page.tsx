@@ -85,15 +85,17 @@ function PublicSupportConversationContent() {
     [searchParams],
   );
 
-  const [supportAccessToken, setSupportAccessToken] = useState("");
-  const [tokenFromVerify, setTokenFromVerify] = useState("");
   const [draftMessage, setDraftMessage] = useState("");
   const [draftFiles, setDraftFiles] = useState<File[]>([]);
-  const [accessError, setAccessError] = useState("");
 
-  const hasToken = Boolean(supportAccessToken.trim() || tokenFromVerify.trim());
+  const storedSupportAccessToken = useMemo(() => {
+    if (!ticketCode || !email) return "";
+    return getStoredPublicSupportAccessToken(ticketCode, email);
+  }, [ticketCode, email]);
+
+  const hasStoredToken = Boolean(storedSupportAccessToken.trim());
   const shouldVerifyLinkCode =
-    !hasToken && Boolean(linkCode) && Boolean(ticketCode) && Boolean(email);
+    !hasStoredToken && Boolean(linkCode) && Boolean(ticketCode) && Boolean(email);
 
   const verifyCodeQuery = useVerifySupportAccessCodeQuery(
     { ticket: ticketCode, email, code: linkCode },
@@ -101,11 +103,17 @@ function PublicSupportConversationContent() {
   );
 
   const sendMessageMutation = useSendPublicSupportMessageMutation();
+  const verifiedToken =
+    verifyCodeQuery.status === "success"
+      ? (verifyCodeQuery.data?.access_token ?? "")
+      : "";
+  const activeToken = verifiedToken || storedSupportAccessToken;
+  const hasToken = Boolean(activeToken.trim());
   const conversationQuery = usePublicSupportConversationQuery(
     {
       ticket: ticketCode,
       email,
-      accessToken: supportAccessToken || tokenFromVerify,
+      accessToken: activeToken,
     },
     Boolean(ticketCode && email && hasToken),
   );
@@ -115,18 +123,9 @@ function PublicSupportConversationContent() {
     conversationQuery.isFetching && Boolean(conversation);
 
   useEffect(() => {
-    if (ticketCode && email) {
-      const stored = getStoredPublicSupportAccessToken(ticketCode, email);
-      if (stored) setSupportAccessToken(stored);
-    }
-  }, [ticketCode, email]);
-
-  useEffect(() => {
     if (verifyCodeQuery.status === "success" && verifyCodeQuery.data?.access_token) {
       const token = verifyCodeQuery.data.access_token;
-      setSupportAccessToken(token);
       storePublicSupportAccessToken(ticketCode, email, token);
-      setAccessError("");
 
       const url = new URL(window.location.href);
       url.searchParams.delete("code");
@@ -145,7 +144,6 @@ function PublicSupportConversationContent() {
         verifyCodeQuery.error instanceof Error
           ? verifyCodeQuery.error.message
           : "Please verify access again.";
-      setAccessError(message);
       toast.error("Failed to verify access code", {
         description: message,
       });
@@ -161,11 +159,35 @@ function PublicSupportConversationContent() {
       conversationQuery.error instanceof Error
         ? conversationQuery.error.message
         : "Please verify access again.";
-    setAccessError(message);
     toast.error("Failed to load conversation", {
       description: message,
     });
   }, [conversationQuery.error]);
+
+  const accessError = useMemo(() => {
+    if (
+      verifyCodeQuery.status === "error" &&
+      verifyCodeQuery.error &&
+      shouldVerifyLinkCode
+    ) {
+      return verifyCodeQuery.error instanceof Error
+        ? verifyCodeQuery.error.message
+        : "Please verify access again.";
+    }
+
+    if (conversationQuery.error) {
+      return conversationQuery.error instanceof Error
+        ? conversationQuery.error.message
+        : "Please verify access again.";
+    }
+
+    return "";
+  }, [
+    verifyCodeQuery.status,
+    verifyCodeQuery.error,
+    shouldVerifyLinkCode,
+    conversationQuery.error,
+  ]);
 
   const handleSendMessage = async (event: FormEvent) => {
     event.preventDefault();
@@ -210,8 +232,6 @@ function PublicSupportConversationContent() {
 
   const handleResetAccess = () => {
     clearStoredPublicSupportAccessToken(ticketCode, email);
-    setSupportAccessToken("");
-    setTokenFromVerify("");
     router.push(
       `/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email)}`,
     );
@@ -220,7 +240,6 @@ function PublicSupportConversationContent() {
   const categoryLabel = conversation
     ? categoryLabelMap[conversation.category]
     : null;
-  const activeToken = supportAccessToken || tokenFromVerify;
   const isVerifyingFromLink = verifyCodeQuery.isPending && shouldVerifyLinkCode;
   const needsAccess = !activeToken && !isVerifyingFromLink;
   const conversationDescription = isVerifyingFromLink

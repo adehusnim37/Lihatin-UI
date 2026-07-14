@@ -90,13 +90,19 @@ export default function AdminUserDetailPage() {
   }, []);
 
   useEffect(() => {
-    setCopiedId(false);
+    const timer = setTimeout(() => {
+      setCopiedId(false);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [userId]);
 
   useEffect(() => {
-    setShortsPage(1);
-    setShortsSearchInput("");
-    setShortsSearch("");
+    const timer = setTimeout(() => {
+      setShortsPage(1);
+      setShortsSearchInput("");
+      setShortsSearch("");
+    }, 0);
+    return () => clearTimeout(timer);
   }, [userId]);
 
   useEffect(() => {
