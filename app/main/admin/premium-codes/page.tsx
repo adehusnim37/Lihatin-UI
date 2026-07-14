@@ -1,11 +1,12 @@
 "use client";
 
 import { useMemo, useState, useEffect, type CSSProperties } from "react";
-import { IconCopy, IconMailForward } from "@tabler/icons-react";
+import { IconClipboardOff, IconCopy, IconMailForward } from "@tabler/icons-react";
 import { toast } from "sonner";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -114,6 +115,9 @@ export default function AdminPremiumCodesPage() {
     if (!activeCode.limit_usage || activeCode.limit_usage <= 0) return false;
     return activeCode.usage_count >= activeCode.limit_usage;
   }, [activeCode]);
+  const isActiveCodeDeliveryDisabled = activeCode
+    ? isValidUntilAfterCurrentDate(activeCode.valid_until)
+    : false;
 
   const activeCodeLastRedeemedAt = useMemo(() => {
     if (!activeCode?.key_usage?.length) return null;
@@ -142,6 +146,13 @@ export default function AdminPremiumCodesPage() {
 
   const handleSendSecretCode = () => {
     if (!activeCode || sendEmailMutation.isPending) return;
+
+    if (isActiveCodeDeliveryDisabled) {
+      toast.error("Code cannot be sent", {
+        description: "This secret code is unavailable because its valid-until date is after the current date.",
+      });
+      return;
+    }
 
     if (recipientMode === "used_user" && !selectedUserID) {
       toast.error("Recipient user required", {
@@ -236,6 +247,8 @@ export default function AdminPremiumCodesPage() {
                       <TableRow>
                         <TableHead>Secret Code</TableHead>
                         <TableHead>Usage</TableHead>
+                        <TableHead>Created At</TableHead>
+                        <TableHead>Updated At</TableHead>
                         <TableHead>Valid Until</TableHead>
                         <TableHead>Used By</TableHead>
                       </TableRow>
@@ -244,6 +257,7 @@ export default function AdminPremiumCodesPage() {
                       {codes.map((code) => {
                         const usedBy = getUsedByLabels(code, userLabelById);
                         const usageLimit = code.limit_usage ?? 0;
+                        const isCopyDisabled = isValidUntilAfterCurrentDate(code.valid_until);
                         return (
                           <TableRow
                             key={code.id}
@@ -252,28 +266,51 @@ export default function AdminPremiumCodesPage() {
                           >
                             <TableCell className="align-top whitespace-normal">
                               <div className="flex items-start gap-2">
-                                <code className="max-w-[340px] break-all rounded bg-muted/40 px-2 py-1 text-[11px]">
-                                  {code.secret_code}
-                                </code>
+                                <div className="space-y-1">
+                                  <code
+                                    className={`max-w-[340px] break-all rounded bg-muted/40 px-2 py-1 ${
+                                      isCopyDisabled ? "line-through decoration-destructive decoration-2" : ""
+                                    }`}
+                                  >
+                                    {code.secret_code}
+                                  </code>
+                                  {isCopyDisabled && (
+                                    <Badge variant="destructive" className="text-[11px]">
+                                      <IconClipboardOff />
+                                      Copy disabled
+                                    </Badge>
+                                  )}
+                                </div>
                                 <Button
                                   variant="ghost"
                                   size="icon"
                                   className="size-7"
+                                  disabled={isCopyDisabled}
                                   onClick={(event) => {
                                     event.stopPropagation();
                                     void copyText(code.secret_code);
                                   }}
-                                  title="Copy secret code"
+                                  title={isCopyDisabled ? "Copy is disabled by valid_until" : "Copy secret code"}
                                 >
-                                  <IconCopy className="size-3.5" />
+                                  {isCopyDisabled ? (
+                                    <IconClipboardOff className="size-3.5" />
+                                  ) : (
+                                    <IconCopy className="size-3.5" />
+                                  )}
                                 </Button>
                               </div>
                             </TableCell>
-                            <TableCell className="align-top">
+                            <TableCell className="align-top whitespace-normal">
                               {code.usage_count}
                               {usageLimit > 0 ? ` / ${usageLimit}` : ""}
                             </TableCell>
-                            <TableCell className="align-top text-xs">
+                            <TableCell className="align-top whitespace-normal">
+                              {formatDateTime(code.created_at)}
+                            </TableCell>
+                            <TableCell className="align-top whitespace-normal">
+                              {formatDateTime(code.updated_at)}
+                            </TableCell>
+                            <TableCell className="align-top whitespace-normal">
                               {formatDateTime(code.valid_until)}
                             </TableCell>
                             <TableCell className="align-top whitespace-normal">
@@ -345,23 +382,51 @@ export default function AdminPremiumCodesPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">Secret Code</p>
-                      <code className="block break-all rounded bg-muted/40 px-2 py-1 text-[11px]">
+                      <code
+                        className={`block break-all rounded bg-muted/40 px-2 py-1 text-[11px] ${
+                          isValidUntilAfterCurrentDate(activeCode.valid_until)
+                            ? "line-through decoration-destructive decoration-2"
+                            : ""
+                        }`}
+                      >
                         {activeCode.secret_code}
                       </code>
+                      {isActiveCodeDeliveryDisabled && (
+                        <Badge variant="destructive" className="mt-2 text-[11px]">
+                          <IconClipboardOff />
+                          Copy disabled
+                        </Badge>
+                      )}
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="size-8"
+                      disabled={isActiveCodeDeliveryDisabled}
                       onClick={() => void copyText(activeCode.secret_code)}
+                      title={
+                        isActiveCodeDeliveryDisabled
+                          ? "Copy is disabled by valid_until"
+                          : "Copy secret code"
+                      }
                     >
-                      <IconCopy className="size-4" />
+                      {isActiveCodeDeliveryDisabled ? (
+                        <IconClipboardOff className="size-4" />
+                      ) : (
+                        <IconCopy className="size-4" />
+                      )}
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline">
                       Usage: {activeCode.usage_count}
                       {activeCode.limit_usage ? ` / ${activeCode.limit_usage}` : ""}
+                    </Badge>
+                    <Badge variant="outline">
+                      Created At: {formatDateTime(activeCode.created_at)}
+                    </Badge>
+                    <Badge variant="outline">
+                      Updated At: {formatDateTime(activeCode.updated_at)}
                     </Badge>
                     <Badge variant="outline">
                       Valid Until: {formatDateTime(activeCode.valid_until)}
@@ -394,7 +459,15 @@ export default function AdminPremiumCodesPage() {
                   <p className="text-sm font-medium">Send Secret Code via Email</p>
                 </div>
 
-                {isActiveCodeLimitReached ? (
+                {isActiveCodeDeliveryDisabled ? (
+                  <Alert variant="destructive">
+                    <IconClipboardOff />
+                    <AlertTitle>This code cannot be sent</AlertTitle>
+                    <AlertDescription>
+                      The secret code is unavailable because its expiration date has passed.
+                    </AlertDescription>
+                  </Alert>
+                ) : isActiveCodeLimitReached ? (
                   <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
                     <p className="font-medium">Oops, you can&apos;t send it again.</p>
                     <p className="mt-1">
@@ -497,7 +570,12 @@ export default function AdminPremiumCodesPage() {
             </Button>
             <Button
               onClick={handleSendSecretCode}
-              disabled={!activeCode || sendEmailMutation.isPending || isActiveCodeLimitReached}
+              disabled={
+                !activeCode ||
+                sendEmailMutation.isPending ||
+                isActiveCodeLimitReached ||
+                isActiveCodeDeliveryDisabled
+              }
             >
               {sendEmailMutation.isPending ? "Sending..." : "Send Secret Code"}
             </Button>
@@ -527,6 +605,17 @@ function PageSkeleton() {
 function getUsedByLabels(code: AdminPremiumCode, userLabelById: Record<string, string>): string[] {
   const labels = (code.key_usage ?? []).map((usage) => userLabelById[usage.user_id] || usage.user_id);
   return Array.from(new Set(labels));
+}
+
+function isValidUntilAfterCurrentDate(value?: string | null): boolean {
+  if (!value) {
+    return false;
+  }
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return false;
+  }
+  return parsed.getTime() < Date.now();
 }
 
 function formatDateTime(value?: string | null): string {

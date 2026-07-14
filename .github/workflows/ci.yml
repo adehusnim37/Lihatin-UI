@@ -29,6 +29,9 @@ jobs:
         continue-on-error: true
         run: bun run lint
 
+      - name: Audit dependencies
+        run: bun audit
+
       - name: Build Next.js app
         env:
           NEXT_PUBLIC_API_URL: https://api.example.com/v1
