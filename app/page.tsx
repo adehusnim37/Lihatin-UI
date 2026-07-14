@@ -140,7 +140,7 @@ export default function Index() {
       {/* Hero Section */}
       <section className="py-12 sm:py-16 md:py-20 lg:py-24">
         <div className="container mx-auto flex max-w-5xl flex-col items-center gap-4 px-4 text-center sm:px-6">
-          <Badge variant="outline" className="">
+          <Badge variant="outline" className="gap-1.5">
             🚀 Free & Open Source
           </Badge>
           <h1 className="text-3xl font-bold leading-tight tracking-tight min-[380px]:text-4xl sm:text-5xl md:text-6xl lg:text-7xl">
@@ -200,22 +200,25 @@ export default function Index() {
       </section>
 
       {/* Try Create Link Section */}
-      <section className="pb-20 md:pb-24">
-        <div className="container mx-auto max-w-5xl px-4">
+      <section className="pb-12 sm:pb-16 md:pb-24">
+        <div className="container mx-auto max-w-5xl px-4 sm:px-6">
           <Card className="border-primary/20 bg-gradient-to-br from-primary/10 via-background to-primary/5 shadow-sm">
-            <CardHeader>
+            <CardHeader className="px-4 sm:px-6">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="secondary">Try Feature</Badge>
                 <Badge variant="outline">No credit card</Badge>
               </div>
-              <CardTitle className="text-2xl sm:text-3xl">Create Your First Short Link</CardTitle>
-              <CardDescription className="text-base">
+              <CardTitle className="text-xl sm:text-2xl md:text-3xl">Create Your First Short Link</CardTitle>
+              <CardDescription className="text-sm leading-6 sm:text-base">
                 This form sends a real request to create a short link using your account session.
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <form className="grid gap-4 md:grid-cols-[1fr_220px_auto] md:items-end" onSubmit={handleTryCreateLink}>
-                <div className="space-y-2">
+            <CardContent className="px-4 sm:px-6">
+              <form
+                className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_220px_auto] lg:items-end"
+                onSubmit={handleTryCreateLink}
+              >
+                <div className="min-w-0 space-y-2 sm:col-span-2 lg:col-span-1">
                   <label htmlFor="demo-url" className="text-sm font-medium">
                     Destination URL
                   </label>
@@ -229,7 +232,7 @@ export default function Index() {
                     required
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="min-w-0 space-y-2">
                   <label htmlFor="demo-alias" className="text-sm font-medium">
                     Custom alias
                   </label>
@@ -242,21 +245,25 @@ export default function Index() {
                     className="bg-background"
                   />
                 </div>
-                <Button type="submit" className="w-full md:w-auto" disabled={!demoUrl.trim() || isCreating}>
+                <Button
+                  type="submit"
+                  className="w-full sm:self-end lg:w-auto"
+                  disabled={!demoUrl.trim() || isCreating}
+                >
                   {isCreating ? "Creating..." : "Create Link"}
                   <IconArrowRight className="ml-2 size-4" />
                 </Button>
               </form>
 
-              <div className="mt-4 flex flex-col items-center justify-center rounded-md border bg-background/80 px-3 py-3 text-center text-sm">
+              <div className="mt-4 flex min-w-0 flex-col items-center justify-center rounded-md border bg-background/80 px-3 py-3 text-center text-sm">
                 <span className="text-muted-foreground">Preview</span>
-                <span className="font-medium">{previewShortURL}</span>
+                <span className="max-w-full break-all font-medium">{previewShortURL}</span>
               </div>
 
               {createdShortURL && (
                 <div className="mt-3 flex flex-col items-center justify-center gap-2 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-3 text-center text-sm text-emerald-900">
                   <Badge variant="secondary">Created</Badge>
-                  <span className="font-medium">{createdShortURL}</span>
+                  <span className="max-w-full break-all font-medium">{createdShortURL}</span>
                   <Button
                     type="button"
                     size="sm"
@@ -275,18 +282,18 @@ export default function Index() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 md:py-24">
-        <div className="container mx-auto max-w-5xl px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl mb-4">
+      <section className="py-12 sm:py-16 md:py-24">
+        <div className="container mx-auto max-w-5xl px-4 sm:px-6">
+          <div className="mb-10 text-center sm:mb-12 md:mb-16">
+            <h2 className="mb-3 text-2xl font-bold tracking-tight sm:mb-4 sm:text-3xl md:text-5xl">
               Everything you need
             </h2>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-base leading-7 text-muted-foreground sm:text-lg">
               Powerful features to manage and analyze your short links
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
             {/* Feature 1 */}
             <Card>
               <CardHeader>
@@ -465,25 +472,25 @@ export default function Index() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 md:py-24">
-        <div className="container mx-auto max-w-4xl px-4">
+      <section className="py-12 sm:py-16 md:py-24">
+        <div className="container mx-auto max-w-4xl px-4 sm:px-6">
           <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
-            <CardHeader className="pb-8 text-center">
-              <CardTitle className="text-3xl font-bold sm:text-4xl">
+            <CardHeader className="px-4 pb-4 text-center sm:px-6 sm:pb-6 md:pb-8">
+              <CardTitle className="text-2xl font-bold sm:text-3xl md:text-4xl">
                 Ready to get started?
               </CardTitle>
               <CardDescription className="text-base">
                 Join thousands of users who trust Lihat.in for their link management
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex justify-center gap-4">
-              <Button size="lg" asChild>
+            <CardContent className="flex flex-col justify-center gap-3 px-4 sm:flex-row sm:gap-4 sm:px-6">
+              <Button size="lg" className="w-full sm:w-auto" asChild>
                 <Link href="/auth/register">
                   Create Free Account
                   <IconArrowRight className="ml-2 size-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" asChild>
+              <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
                 <Link href="/main">View Dashboard</Link>
               </Button>
             </CardContent>
@@ -493,14 +500,14 @@ export default function Index() {
 
       {/* Footer */}
       <footer className="border-t py-6 md:py-0">
-        <div className="container mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 md:h-16 md:flex-row">
+        <div className="container mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-center sm:px-6 md:min-h-16 md:flex-row md:text-left">
           <div className="flex items-center gap-2">
             <IconLink className="size-5" />
             <p className="text-sm text-muted-foreground">
               Built With Go & shadcn/ui
             </p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
             <Link href="/terms" className="text-sm text-muted-foreground hover:underline">Terms</Link>
             <Link href="/privacy" className="text-sm text-muted-foreground hover:underline">Privacy</Link>
           </div>
