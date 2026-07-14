@@ -74,6 +74,7 @@ function ProfilePageContent() {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isViewPhotoOpen, setIsViewPhotoOpen] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [hasAppliedRedeemCodeParam, setHasAppliedRedeemCodeParam] = useState(false);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -104,6 +105,23 @@ function ProfilePageContent() {
       saveUserData(user);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!user || hasAppliedRedeemCodeParam || user.is_premium) {
+      return;
+    }
+
+    const redeemCodeParam = searchParams.get("redeem_code");
+    const normalizedRedeemCode = redeemCodeParam?.trim();
+    if (!normalizedRedeemCode) {
+      setHasAppliedRedeemCodeParam(true);
+      return;
+    }
+
+    setSecretCode(normalizedRedeemCode);
+    setIsRedeemOpen(true);
+    setHasAppliedRedeemCodeParam(true);
+  }, [hasAppliedRedeemCodeParam, searchParams, user]);
 
   const handleSaveName = async (firstName: string, lastName: string) => {
     if (!user) return;
