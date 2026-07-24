@@ -199,6 +199,8 @@ export interface AdminPremiumCodeUsage {
   id: number;
   premium_key_id: number;
   user_id: string;
+  username?: string;
+  email?: string;
   created_at: string;
   updated_at: string;
 }
@@ -222,6 +224,20 @@ export interface AdminPremiumCodesResponse {
   total_pages: number;
   sort: string;
   order_by: string;
+}
+
+export interface AdminUserEmailOption {
+  id: string;
+  username: string;
+  email: string;
+}
+
+export interface AdminUserEmailOptionsResponse {
+  users: AdminUserEmailOption[];
+  total_count: number;
+  page: number;
+  limit: number;
+  total_pages: number;
 }
 
 export interface AdminGeneratePremiumCodeRequest {
@@ -1326,6 +1342,46 @@ export async function getAdminUsers(params?: {
   const result: APIResponse<AdminUsersListResponse> = await response.json();
   if (!response.ok) {
     throw new Error(getErrorMessage(result) || "Failed to get admin users");
+  }
+
+  return result;
+}
+
+/**
+ * Get lightweight, paginated non-premium users for recipient pickers.
+ */
+export async function getAdminUserEmailOptions(params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sort?: "created_at" | "updated_at";
+  order_by?: "asc" | "desc";
+}): Promise<APIResponse<AdminUserEmailOptionsResponse>> {
+  const query = new URLSearchParams();
+  if (params?.page) query.set("page", String(params.page));
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.search) query.set("search", params.search);
+  if (params?.sort) query.set("sort", params.sort);
+  if (params?.order_by) query.set("order_by", params.order_by);
+
+  const suffix = query.toString();
+  const response = await fetch(
+    `${API_URL}/auth/admin/users/email-options${suffix ? `?${suffix}` : ""}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    }
+  );
+
+  const result: APIResponse<AdminUserEmailOptionsResponse> =
+    await response.json();
+  if (!response.ok) {
+    throw new Error(
+      getErrorMessage(result) || "Failed to get eligible premium recipients"
+    );
   }
 
   return result;

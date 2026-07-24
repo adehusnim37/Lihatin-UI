@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   getAdminUsers,
+  getAdminUserEmailOptions,
   getAdminUserById,
   updateAdminUser,
   getAdminDisposableEmailPolicy,
@@ -16,6 +17,7 @@ import {
   getAdminUserShortLinks,
   validateResetToken,
   type AdminUsersListResponse,
+  type AdminUserEmailOptionsResponse,
   type AdminUserResponse,
   type AdminUpdateUserRequest,
   type AdminDisposableEmailPolicyResponse,
@@ -40,6 +42,15 @@ export const adminKeys = {
       [...adminKeys.all, "users", "list", page, limit] as const,
     detail: (userId: string) =>
       [...adminKeys.all, "users", "detail", userId] as const,
+    emailOptions: (page: number, limit: number, search: string) =>
+      [
+        ...adminKeys.all,
+        "users",
+        "email-options",
+        page,
+        limit,
+        search,
+      ] as const,
   },
   disposableEmailPolicy: () =>
     [...adminKeys.all, "disposable-email-policy"] as const,
@@ -70,6 +81,32 @@ export function useAdminUsersQuery(page = 1, limit = 20) {
       if (!response.success) throw new Error(response.message || "Failed to load users");
       return response.data as AdminUsersListResponse;
     },
+    placeholderData: (previousData) => previousData,
+  });
+}
+
+export function useAdminUserEmailOptionsQuery(
+  page = 1,
+  limit = 20,
+  search = "",
+  enabled = true
+) {
+  return useQuery({
+    queryKey: adminKeys.users.emailOptions(page, limit, search),
+    queryFn: async () => {
+      const response = await getAdminUserEmailOptions({
+        page,
+        limit,
+        search,
+        sort: "created_at",
+        order_by: "desc",
+      });
+      if (!response.success) {
+        throw new Error(response.message || "Failed to load eligible recipients");
+      }
+      return response.data as AdminUserEmailOptionsResponse;
+    },
+    enabled,
     placeholderData: (previousData) => previousData,
   });
 }
