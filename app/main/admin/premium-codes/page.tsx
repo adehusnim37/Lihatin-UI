@@ -299,9 +299,9 @@ export default function AdminPremiumCodesPage() {
                                     event.stopPropagation();
                                     void copyText(code.secret_code);
                                   }}
-                                  title={isCopyDisabled ? "Expired" : "Copy secret code"}
+                                  title={isCopyDisabled ? "Expired" : isLimitReached ? "Limit Reached" : "Copy secret code"}
                                 >
-                                  {isCopyDisabled ? (
+                                  {isCopyDisabled || isLimitReached ? (
                                     <IconClipboardOff className="size-3.5" />
                                   ) : (
                                     <IconCopy className="size-3.5" />
