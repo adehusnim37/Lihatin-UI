@@ -56,3 +56,6 @@ next-env.d.ts
 
 # bunlock
 .bun.lock
+
+# Graphify generated artifacts
+/graphify-out/
