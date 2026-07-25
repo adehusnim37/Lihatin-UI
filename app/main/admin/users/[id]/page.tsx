@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   IconArrowLeft,
@@ -10,15 +16,25 @@ import {
   IconClockHour4,
   IconCrown,
   IconFilter,
+  IconFingerprint,
+  IconLink,
+  IconMail,
   IconRefresh,
   IconSearch,
+  IconShieldCheck,
   IconUserCircle,
   IconCopy,
   IconCheck,
 } from "@tabler/icons-react";
 
 import { AppSidebar } from "@/components/app-sidebar";
+import { ChartAreaInteractive } from "@/components/chart-area-interactive";
 import { SiteHeader } from "@/components/site-header";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
 import {
   PremiumEventActionBadge,
   PremiumStateBadge,
@@ -49,6 +65,13 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -56,7 +79,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { type AdminUserShortLinkResponse } from "@/lib/api/auth";
+import {
+  type AdminUserShortLinkResponse,
+  type AdminUserShortLinkSort,
+} from "@/lib/api/auth";
 import {
   useAdminPremiumStatusEventsQuery,
   useAdminUserDetailQuery,
@@ -77,6 +103,9 @@ export default function AdminUserDetailPage() {
   const [copiedId, setCopiedId] = useState(false);
   const [shortsPage, setShortsPage] = useState(1);
   const [shortsLimit, setShortsLimit] = useState(10);
+  const [shortsSort, setShortsSort] =
+    useState<AdminUserShortLinkSort>("created_at");
+  const [shortsOrder, setShortsOrder] = useState<"asc" | "desc">("desc");
   const [shortsSearchInput, setShortsSearchInput] = useState("");
   const [shortsSearch, setShortsSearch] = useState("");
   const [isShortsSectionOpen, setIsShortsSectionOpen] = useState(true);
@@ -120,8 +149,8 @@ export default function AdminUserDetailPage() {
     enabled: Boolean(userId),
     page: shortsPage,
     limit: shortsLimit,
-    sort: "created_at",
-    orderBy: "desc",
+    sort: shortsSort,
+    orderBy: shortsOrder,
     detail: true,
     search: shortsSearch || undefined,
   });
@@ -142,6 +171,15 @@ export default function AdminUserDetailPage() {
   const recentLoginAttempts = useMemo(
     () => user?.recent_login_attempts ?? [],
     [user?.recent_login_attempts],
+  );
+  const activityGraphData = useMemo(
+    () =>
+      buildUserActivityGraphData(
+        events.map((event) => event.created_at),
+        recentHistory.map((item) => item.changed_at),
+        recentLoginAttempts.map((item) => item.created_at),
+      ),
+    [events, recentHistory, recentLoginAttempts],
   );
 
   const eventStats = useMemo(() => {
@@ -167,12 +205,6 @@ export default function AdminUserDetailPage() {
     };
   }, [userShortsQuery.data?.total_count, userShortsQuery.data?.total_pages, shortsPage]);
 
-  const shouldHideShortLinksSection =
-    !userShortsQuery.isLoading &&
-    !userShortsQuery.isError &&
-    !shortsSearch &&
-    (userShortsQuery.data?.total_count ?? 0) === 0;
-
   return (
     <SidebarProvider
       style={
@@ -185,24 +217,34 @@ export default function AdminUserDetailPage() {
       <AppSidebar />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1 flex-col gap-6 p-6">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="space-y-2">
-              <h1 className="text-2xl font-semibold tracking-tight">
-                User Detail
+        <main className="flex flex-1 flex-col gap-6 p-4 md:p-6">
+          <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-2xl">
+              <div className="mb-2 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                <IconFingerprint className="size-3.5" />
+                Account file
+              </div>
+              <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
+                User detail
               </h1>
-              <p className="text-sm text-muted-foreground">
-                Detail profile, authentication, and audit trail for admin
-                operations.
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                Identity, access posture, owned links, and the audit record in
+                one operational view.
               </p>
             </div>
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                onClick={() => router.push("/main/admin/users")}
+                onClick={() => {
+                  if (window.history.length > 1) {
+                    router.back();
+                  } else {
+                    router.push("/main/admin/users");
+                  }
+                }}
               >
-                <IconArrowLeft className="mr-2 size-4" />
-                Back to Users
+                <IconArrowLeft />
+                Back to users
               </Button>
               <Button
                 variant="outline"
@@ -213,11 +255,15 @@ export default function AdminUserDetailPage() {
                 }}
                 disabled={detailQuery.isLoading || detailQuery.isFetching}
               >
-                <IconRefresh className="mr-2 size-4" />
+                <IconRefresh
+                  className={
+                    detailQuery.isFetching ? "animate-spin" : ""
+                  }
+                />
                 Refresh
               </Button>
             </div>
-          </div>
+          </header>
 
           {(typeof roleFromStorage === "undefined" ||
             detailQuery.isLoading) && <PageSkeleton />}
@@ -225,7 +271,7 @@ export default function AdminUserDetailPage() {
           {typeof roleFromStorage !== "undefined" && !isAdmin && (
             <Card>
               <CardHeader>
-                <CardTitle>Access Denied</CardTitle>
+                <CardTitle>Access denied</CardTitle>
                 <CardDescription>
                   This page is available only for admin and super admin roles.
                 </CardDescription>
@@ -236,9 +282,9 @@ export default function AdminUserDetailPage() {
           {typeof roleFromStorage !== "undefined" && detailQuery.isError && (
             <Card>
               <CardHeader>
-                <CardTitle>Failed to Load User</CardTitle>
+                <CardTitle>User could not be loaded</CardTitle>
                 <CardDescription>
-                  Please refresh page or try again later.
+                  Refresh this account file or return to the directory.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -250,124 +296,176 @@ export default function AdminUserDetailPage() {
             isAdmin &&
             user && (
               <>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex flex-wrap items-center gap-2">
-                      <span>
-                        {user.first_name} {user.last_name}
-                      </span>
-                      <RoleBadge role={user.role} />
-                      <PremiumStateBadge
-                        isPremium={user.is_premium}
-                        isRevoked={isUserCurrentlyRevoked(user)}
-                      />
-                      <ActiveInactiveBadge
-                        isActive={!user.is_locked}
-                        activeLabel="Unlocked"
-                        inactiveLabel="Locked"
-                      />
-                    </CardTitle>
-                    <CardDescription className="space-y-1">
-                      <p className="font-medium text-foreground">
-                        {user.username}
-                      </p>
-                      <p>{user.email}</p>
-                    </CardDescription>
-                  </CardHeader>
-                    <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-4 text-sm">
-                    <InfoLine
-                      label="User ID"
-                      truncate
-                      valueNode={
-                        <div className="inline-flex items-center gap-2">
-                          <span className="font-mono break-all">{user.id}</span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={async () => {
-                              if (!user?.id) return;
-                              try {
-                                await navigator.clipboard.writeText(user.id);
-                                setCopiedId(true);
-                                toast.success("User ID copied to clipboard");
-                                  setTimeout(() => setCopiedId(false), 2000);
-                              } catch (err) {
-                                toast.error("Failed to copy User ID");
-                              }
-                            }}
-                            aria-label="Copy user id"
-                          >
+                <Card className="overflow-hidden py-0">
+                  <CardContent className="p-0">
+                    <div className="grid gap-6 px-5 py-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start md:px-6">
+                      <div className="flex min-w-0 items-start gap-4">
+                        <Avatar className="size-14 border">
+                          {user.avatar ? (
+                            <AvatarImage
+                              src={user.avatar}
+                              alt={`${user.first_name} ${user.last_name}`}
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
+                            {getInitials(
+                              `${user.first_name} ${user.last_name}`.trim() ||
+                                user.username,
+                            )}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h2 className="truncate text-xl font-semibold tracking-tight">
+                              {[user.first_name, user.last_name]
+                                .filter(Boolean)
+                                .join(" ") || user.username}
+                            </h2>
+                            <RoleBadge role={user.role} />
+                          </div>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            @{user.username}
+                          </p>
+                          <div className="mt-3 flex min-w-0 items-center gap-2 text-sm">
+                            <IconMail className="size-4 shrink-0 text-muted-foreground" />
+                            <span className="truncate">{user.email}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 lg:max-w-72 lg:justify-end">
+                        <PremiumStateBadge
+                          isPremium={user.is_premium}
+                          isRevoked={isUserCurrentlyRevoked(user)}
+                        />
+                        <ActiveInactiveBadge
+                          isActive={!user.is_locked}
+                          activeLabel="Unlocked"
+                          inactiveLabel="Locked"
+                        />
+                        <EnabledDisabledBadge
+                          enabled={Boolean(user.user_auth?.is_email_verified)}
+                          enabledLabel="Email verified"
+                          disabledLabel="Email unverified"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid border-t bg-muted/15 sm:grid-cols-2 xl:grid-cols-4">
+                      <CaseFileField
+                        label="User ID"
+                        valueNode={
+                          <div className="flex min-w-0 items-center gap-1.5">
+                            <span className="truncate font-mono text-xs">
+                              {user.id}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-6 shrink-0"
+                              onClick={async () => {
+                                try {
+                                  await navigator.clipboard.writeText(user.id);
+                                  setCopiedId(true);
+                                  toast.success("User ID copied");
+                                  window.setTimeout(
+                                    () => setCopiedId(false),
+                                    2000,
+                                  );
+                                } catch {
+                                  toast.error("User ID could not be copied");
+                                }
+                              }}
+                              aria-label="Copy user ID"
+                            >
                               {copiedId ? (
                                 <IconCheck className="size-3" />
                               ) : (
                                 <IconCopy className="size-3" />
                               )}
-                          </Button>
-                        </div>
-                      }
-                    />
-                    <InfoLine
-                      label="Created At"
-                      value={formatDateTime(user.created_at)}
-                    />
-                    <InfoLine
-                      label="Updated At"
-                      value={formatDateTime(user.updated_at)}
-                    />
-                    <InfoLine
-                      label="Username Changed"
-                      valueNode={
-                        <EnabledDisabledBadge
-                          enabled={Boolean(user.username_changed)}
-                          enabledLabel="Changed"
-                          disabledLabel="Original"
+                            </Button>
+                          </div>
+                        }
+                      />
+                      <CaseFileField
+                        label="Account created"
+                        value={formatDateTime(user.created_at)}
+                      />
+                      <CaseFileField
+                        label="Last profile update"
+                        value={formatDateTime(user.updated_at)}
+                      />
+                      <CaseFileField
+                        label="Latest access change"
+                        value={formatDateTime(
+                          getLatestTimestamp([
+                            user.locked_at,
+                            user.premium_revoked_at,
+                            user.premium_reactivated_at,
+                          ]),
+                        )}
+                      />
+                    </div>
+
+                    {(user.is_locked ||
+                      isUserCurrentlyRevoked(user) ||
+                      user.locked_reason) && (
+                      <div className="grid gap-3 border-t px-5 py-4 text-sm md:grid-cols-2 md:px-6">
+                        <InfoLine
+                          label="Lock reason"
+                          value={user.locked_reason || "No lock reason recorded"}
                         />
-                      }
-                    />
-                    <InfoLine
-                      label="Locked At"
-                      value={formatDateTime(user.locked_at)}
-                    />
-                    <InfoLine
-                      label="Locked Reason"
-                      value={user.locked_reason || "-"}
-                    />
-                    <InfoLine
-                      label="Revoked At"
-                      value={formatDateTime(user.premium_revoked_at)}
-                    />
-                    <InfoLine
-                      label="Reactivated At"
-                      value={formatDateTime(user.premium_reactivated_at)}
-                    />
+                        <InfoLine
+                          label="Premium status reason"
+                          value={
+                            user.premium_revoked_reason ||
+                            user.premium_reactivated_reason ||
+                            "No premium status reason recorded"
+                          }
+                        />
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Auth & Stats</CardTitle>
-                    <CardDescription>
-                      Current authentication configuration and counters.
-                    </CardDescription>
+                <ChartAreaInteractive
+                  data={activityGraphData}
+                  isLoading={eventsQuery.isLoading}
+                  title="Account activity"
+                  description="Combined login, account-change, and premium lifecycle events over time."
+                  mobileDescription="Account event trend"
+                  valueLabel="Events"
+                  emptyMessage="No recent account activity is available."
+                  curveType="step"
+                />
+
+                <Card className="overflow-hidden py-0">
+                  <CardHeader className="border-b bg-muted/20 px-5 py-5 md:px-6">
+                    <div className="flex items-start gap-3">
+                      <div className="grid size-9 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
+                        <IconShieldCheck className="size-4.5" />
+                      </div>
+                      <div>
+                        <CardTitle>Authentication posture</CardTitle>
+                        <CardDescription className="mt-1">
+                          Current controls, recent login state, and account
+                          counters.
+                        </CardDescription>
+                      </div>
+                    </div>
                   </CardHeader>
-                  <CardContent className="grid gap-6 lg:grid-cols-2">
-                    <div className="rounded-lg border bg-gradient-to-b from-muted/20 to-background p-4 sm:p-5">
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <EnabledDisabledBadge
-                          enabled={Boolean(user.user_auth?.is_email_verified)}
-                          enabledLabel="Email Verified"
-                          disabledLabel="Email Unverified"
-                        />
+                  <CardContent className="grid gap-6 px-5 py-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] md:px-6">
+                    <div className="rounded-xl border bg-muted/15 p-4 sm:p-5">
+                      <div className="flex flex-wrap gap-2">
                         <EnabledDisabledBadge
                           enabled={Boolean(user.user_auth?.is_totp_enabled)}
-                          enabledLabel="TOTP Enabled"
-                          disabledLabel="TOTP Disabled"
+                          enabledLabel="TOTP enabled"
+                          disabledLabel="TOTP disabled"
                         />
                         <ActiveInactiveBadge
                           isActive={Boolean(user.user_auth?.is_active)}
-                          activeLabel="Auth Active"
-                          inactiveLabel="Auth Inactive"
+                          activeLabel="Auth active"
+                          inactiveLabel="Auth inactive"
                         />
                         {isLockoutActive(user.user_auth?.lockout_until) ? (
                           <StatusBadge tone="danger">LOCKOUT ACTIVE</StatusBadge>
@@ -378,17 +476,25 @@ export default function AdminUserDetailPage() {
 
                       <div className="mt-4 grid gap-2 sm:grid-cols-2">
                         <AuthMetricItem
-                          label="Failed Attempts"
-                          value={String(user.user_auth?.failed_login_attempts ?? 0)}
-                          emphasize={Boolean((user.user_auth?.failed_login_attempts ?? 0) > 0)}
+                          label="Failed attempts"
+                          value={String(
+                            user.user_auth?.failed_login_attempts ?? 0,
+                          )}
+                          emphasize={Boolean(
+                            (user.user_auth?.failed_login_attempts ?? 0) > 0,
+                          )}
                         />
                         <AuthMetricItem
-                          label="Last Login"
-                          value={formatDateTime(user.user_auth?.last_login_at)}
+                          label="Last login"
+                          value={formatDateTime(
+                            user.user_auth?.last_login_at,
+                          )}
                         />
                         <AuthMetricItem
-                          label="Lockout Until"
-                          value={formatDateTime(user.user_auth?.lockout_until)}
+                          label="Lockout until"
+                          value={formatDateTime(
+                            user.user_auth?.lockout_until,
+                          )}
                         />
                         <AuthMetricItem
                           label="Last IP"
@@ -399,27 +505,27 @@ export default function AdminUserDetailPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <StatBox
-                        label="API Keys"
+                        label="API keys"
                         value={user.stats?.api_keys_total ?? 0}
                       />
                       <StatBox
-                        label="Active API Keys"
+                        label="Active keys"
                         value={user.stats?.api_keys_active ?? 0}
                       />
                       <StatBox
-                        label="History Events"
+                        label="Account events"
                         value={user.stats?.history_events_total ?? 0}
                       />
                       <StatBox
-                        label="Premium Events"
+                        label="Premium events"
                         value={user.stats?.premium_status_events_total ?? 0}
                       />
                       <StatBox
-                        label="Login 24h"
+                        label="Login attempts · 24h"
                         value={user.stats?.login_attempts_24h ?? 0}
                       />
                       <StatBox
-                        label="Login 7d"
+                        label="Login attempts · 7d"
                         value={user.stats?.login_attempts_7d ?? 0}
                       />
                     </div>
@@ -483,13 +589,13 @@ export default function AdminUserDetailPage() {
                   </CardContent>
                 </Card>
 
-                {!shouldHideShortLinksSection ? (
-                  <Card>
+                <Card>
                     <CardHeader className="space-y-3">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="space-y-1">
-                          <CardTitle className="text-xl font-semibold tracking-tight">
-                            User Short Links
+                          <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-tight">
+                            <IconLink className="size-5 text-primary" />
+                            User short links
                           </CardTitle>
                           <CardDescription>
                             Browse and search short links created by this user.
@@ -530,40 +636,69 @@ export default function AdminUserDetailPage() {
                           />
                         </div>
 
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div className="relative w-full max-w-sm">
+                        <div className="grid gap-3 lg:grid-cols-[minmax(260px,1fr)_220px_140px]">
+                          <div className="relative">
                             <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
                               value={shortsSearchInput}
+                              maxLength={100}
                               onChange={(event) =>
                                 setShortsSearchInput(event.target.value)
                               }
                               placeholder="Search short code, title, description, or URL..."
-                              className="pl-9"
+                              className="h-9 pl-9"
                             />
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant={shortsLimit === 10 ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => {
-                                setShortsLimit(10);
-                                setShortsPage(1);
-                              }}
-                            >
-                              10
-                            </Button>
-                            <Button
-                              variant={shortsLimit === 25 ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => {
-                                setShortsLimit(25);
-                                setShortsPage(1);
-                              }}
-                            >
-                              25
-                            </Button>
-                          </div>
+
+                          <Select
+                            value={`${shortsSort}:${shortsOrder}`}
+                            onValueChange={(value) => {
+                              const [nextSort, nextOrder] = value.split(":");
+                              setShortsSort(
+                                nextSort as AdminUserShortLinkSort,
+                              );
+                              setShortsOrder(nextOrder as "asc" | "desc");
+                              setShortsPage(1);
+                            }}
+                          >
+                            <SelectTrigger className="h-9 w-full">
+                              <SelectValue placeholder="Sort links" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="created_at:desc">
+                                Newest links
+                              </SelectItem>
+                              <SelectItem value="created_at:asc">
+                                Oldest links
+                              </SelectItem>
+                              <SelectItem value="short_code:asc">
+                                Short code A–Z
+                              </SelectItem>
+                              <SelectItem value="title:asc">
+                                Title A–Z
+                              </SelectItem>
+                              <SelectItem value="is_active:desc">
+                                Active first
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+
+                          <Select
+                            value={String(shortsLimit)}
+                            onValueChange={(value) => {
+                              setShortsLimit(Number(value));
+                              setShortsPage(1);
+                            }}
+                          >
+                            <SelectTrigger className="h-9 w-full">
+                              <SelectValue placeholder="Page size" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="10">10 per page</SelectItem>
+                              <SelectItem value="25">25 per page</SelectItem>
+                              <SelectItem value="50">50 per page</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
 
                         {userShortsQuery.isLoading ? (
@@ -648,7 +783,10 @@ export default function AdminUserDetailPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              disabled={!shortPagination.hasPrevious}
+                              disabled={
+                                !shortPagination.hasPrevious ||
+                                userShortsQuery.isFetching
+                              }
                               onClick={() =>
                                 setShortsPage((previous) => Math.max(1, previous - 1))
                               }
@@ -658,7 +796,10 @@ export default function AdminUserDetailPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              disabled={!shortPagination.hasNext}
+                              disabled={
+                                !shortPagination.hasNext ||
+                                userShortsQuery.isFetching
+                              }
                               onClick={() =>
                                 setShortsPage((previous) =>
                                   Math.min(shortPagination.totalPages, previous + 1),
@@ -671,8 +812,7 @@ export default function AdminUserDetailPage() {
                         </div>
                       </CardContent>
                     ) : null}
-                  </Card>
-                ) : null}
+                </Card>
 
                 <Card>
                   <CardHeader className="space-y-3">
@@ -851,10 +991,88 @@ export default function AdminUserDetailPage() {
                 </Card>
               </>
             )}
-        </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );
+}
+
+function CaseFileField({
+  label,
+  value,
+  valueNode,
+}: {
+  label: string;
+  value?: string;
+  valueNode?: ReactNode;
+}) {
+  return (
+    <div className="min-w-0 border-b px-5 py-4 last:border-b-0 sm:odd:border-r sm:[&:nth-last-child(-n+2)]:border-b-0 xl:border-b-0 xl:border-r xl:last:border-r-0 md:px-6">
+      <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+        {label}
+      </p>
+      <div className="mt-1 min-w-0 text-sm font-medium">
+        {valueNode ?? value ?? "-"}
+      </div>
+    </div>
+  );
+}
+
+function getInitials(value: string): string {
+  return (
+    value
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase() || "U"
+  );
+}
+
+function getLatestTimestamp(
+  values: Array<string | null | undefined>,
+): string | null {
+  const validValues = values.filter((value): value is string => {
+    if (!value) return false;
+    return !Number.isNaN(new Date(value).getTime());
+  });
+  if (validValues.length === 0) return null;
+  return validValues.reduce((latest, value) =>
+    new Date(value).getTime() > new Date(latest).getTime() ? value : latest,
+  );
+}
+
+function buildUserActivityGraphData(...dateGroups: string[][]) {
+  const timestamps = dateGroups
+    .flat()
+    .map((value) => new Date(value))
+    .filter((value) => !Number.isNaN(value.getTime()));
+
+  if (timestamps.length === 0) return [];
+
+  const referenceDate = new Date(
+    Math.max(...timestamps.map((value) => value.getTime())),
+  );
+  referenceDate.setUTCHours(0, 0, 0, 0);
+  const startDate = new Date(referenceDate);
+  startDate.setUTCDate(startDate.getUTCDate() - 89);
+
+  const counts = new Map<string, number>();
+  timestamps.forEach((value) => {
+    const key = value.toISOString().slice(0, 10);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  });
+
+  return Array.from({ length: 90 }, (_, index) => {
+    const date = new Date(startDate);
+    date.setUTCDate(startDate.getUTCDate() + index);
+    const key = date.toISOString().slice(0, 10);
+    return {
+      date: key,
+      count: counts.get(key) ?? 0,
+    };
+  });
 }
 
 function InfoLine({
@@ -866,7 +1084,7 @@ function InfoLine({
 }: {
   label: string;
   value?: string;
-  valueNode?: React.ReactNode;
+  valueNode?: ReactNode;
   truncate?: boolean;
   inline?: boolean;
 }) {

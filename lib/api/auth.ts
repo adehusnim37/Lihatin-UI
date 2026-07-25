@@ -370,6 +370,28 @@ export interface AdminUsersListResponse {
   page: number;
   limit: number;
   total_pages: number;
+  sort: AdminUserSort;
+  order_by: "asc" | "desc";
+  search?: string;
+  role?: AdminUserRoleFilter;
+  premium_status?: AdminUserPremiumFilter;
+  lock_status?: AdminUserLockFilter;
+}
+
+export type AdminUserSort = "created_at" | "updated_at" | "username" | "email";
+export type AdminUserRoleFilter = "user" | "admin" | "super_admin";
+export type AdminUserPremiumFilter = "free" | "premium" | "revoked";
+export type AdminUserLockFilter = "locked" | "unlocked";
+
+export interface AdminUsersQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sort?: AdminUserSort;
+  order_by?: "asc" | "desc";
+  role?: AdminUserRoleFilter;
+  premium_status?: AdminUserPremiumFilter;
+  lock_status?: AdminUserLockFilter;
 }
 
 export interface AdminUpdateUserRequest {
@@ -470,6 +492,14 @@ export interface AdminUserShortLinksResponse {
   sort: string;
   order_by: string;
 }
+
+export type AdminUserShortLinkSort =
+  | "created_at"
+  | "updated_at"
+  | "short_code"
+  | "title"
+  | "original_url"
+  | "is_active";
 
 export interface EmailChangeEligibilityResponse {
   eligible: boolean;
@@ -1315,17 +1345,20 @@ export async function getAdminUserById(userId: string): Promise<APIResponse<Admi
 /**
  * Get paginated admin users list.
  */
-export async function getAdminUsers(params?: {
-  page?: number;
-  limit?: number;
-  sort?: string;
-  order_by?: "asc" | "desc";
-}): Promise<APIResponse<AdminUsersListResponse>> {
+export async function getAdminUsers(
+  params?: AdminUsersQueryParams
+): Promise<APIResponse<AdminUsersListResponse>> {
   const query = new URLSearchParams();
   if (params?.page) query.set("page", String(params.page));
   if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.search) query.set("search", params.search);
   if (params?.sort) query.set("sort", params.sort);
   if (params?.order_by) query.set("order_by", params.order_by);
+  if (params?.role) query.set("role", params.role);
+  if (params?.premium_status) {
+    query.set("premium_status", params.premium_status);
+  }
+  if (params?.lock_status) query.set("lock_status", params.lock_status);
 
   const suffix = query.toString();
   const response = await fetch(
@@ -1558,7 +1591,7 @@ export async function getAdminUserShortLinks(
   params?: {
     page?: number;
     limit?: number;
-    sort?: string;
+    sort?: AdminUserShortLinkSort;
     order_by?: "asc" | "desc";
     detail?: boolean;
     search?: string;

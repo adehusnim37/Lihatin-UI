@@ -43,23 +43,34 @@ interface ChartAreaInteractiveProps {
   isLoading?: boolean;
   title?: string;
   description?: string;
+  valueLabel?: string;
+  mobileDescription?: string;
+  emptyMessage?: string;
+  curveType?: React.ComponentProps<typeof Area>["type"];
 }
-
-const chartConfig = {
-  clicks: {
-    label: "Clicks",
-    color: "var(--primary)",
-  },
-} satisfies ChartConfig
 
 export function ChartAreaInteractive({ 
   data = [], 
   isLoading = false,
   title = "Click History",
-  description: desc = "Total clicks over time"
+  description: desc = "Total clicks over time",
+  valueLabel = "Clicks",
+  mobileDescription = "Click trends",
+  emptyMessage = "No data available for the selected period",
+  curveType = "natural",
 }: ChartAreaInteractiveProps) {
   const isMobile = useIsMobile()
   const [timeRange, setTimeRange] = React.useState("90d")
+  const chartConfig = React.useMemo(
+    () =>
+      ({
+        clicks: {
+          label: valueLabel,
+          color: "var(--primary)",
+        },
+      }) satisfies ChartConfig,
+    [valueLabel]
+  )
 
   React.useEffect(() => {
     if (isMobile) {
@@ -117,13 +128,15 @@ export function ChartAreaInteractive({
         <CardTitle>{title}</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">{desc}</span>
-          <span className="@[540px]/card:hidden">Click trends</span>
+          <span className="@[540px]/card:hidden">{mobileDescription}</span>
         </CardDescription>
         <CardAction>
           <ToggleGroup
             type="single"
             value={timeRange}
-            onValueChange={setTimeRange}
+            onValueChange={(value) => {
+              if (value) setTimeRange(value)
+            }}
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
           >
@@ -156,7 +169,7 @@ export function ChartAreaInteractive({
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6 min-w-0">
         {filteredData.length === 0 ? (
           <div className="flex h-[250px] items-center justify-center text-muted-foreground">
-            No data available for the selected period
+            {emptyMessage}
           </div>
         ) : (
           <ChartContainer
@@ -213,7 +226,7 @@ export function ChartAreaInteractive({
               />
               <Area
                 dataKey="clicks"
-                type="natural"
+                type={curveType}
                 fill="url(#fillClicks)"
                 stroke="var(--color-clicks)"
                 strokeWidth={2}

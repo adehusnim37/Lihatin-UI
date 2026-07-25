@@ -17,6 +17,7 @@ import {
   getAdminUserShortLinks,
   validateResetToken,
   type AdminUsersListResponse,
+  type AdminUsersQueryParams,
   type AdminUserEmailOptionsResponse,
   type AdminUserResponse,
   type AdminUpdateUserRequest,
@@ -25,6 +26,7 @@ import {
   type AdminPremiumStatusEventsListResponse,
   type AdminPremiumStatusMutationResponse,
   type AdminUserShortLinksResponse,
+  type AdminUserShortLinkSort,
   type UpdateAdminDisposableEmailPolicyRequest,
   type AdminLockUserRequest,
   type AdminUnlockUserRequest,
@@ -38,8 +40,8 @@ export const adminKeys = {
   all: ["admin"] as const,
   users: {
     all: () => [...adminKeys.all, "users"] as const,
-    list: (page?: number, limit?: number) =>
-      [...adminKeys.all, "users", "list", page, limit] as const,
+    list: (params: AdminUsersQueryParams) =>
+      [...adminKeys.all, "users", "list", params] as const,
     detail: (userId: string) =>
       [...adminKeys.all, "users", "detail", userId] as const,
     emailOptions: (page: number, limit: number, search: string) =>
@@ -65,7 +67,7 @@ export const adminKeys = {
     userId: string,
     page?: number,
     limit?: number,
-    sort?: string,
+    sort?: AdminUserShortLinkSort,
     orderBy?: "asc" | "desc",
     detail?: boolean,
     search?: string,
@@ -73,11 +75,22 @@ export const adminKeys = {
     [...adminKeys.all, "user-short-links", userId, page, limit, sort, orderBy, detail, search] as const,
 };
 
-export function useAdminUsersQuery(page = 1, limit = 20) {
+export function useAdminUsersQuery(params: AdminUsersQueryParams = {}) {
+  const normalizedParams: AdminUsersQueryParams = {
+    page: params.page ?? 1,
+    limit: params.limit ?? 20,
+    search: params.search?.trim() || undefined,
+    sort: params.sort ?? "created_at",
+    order_by: params.order_by ?? "desc",
+    role: params.role,
+    premium_status: params.premium_status,
+    lock_status: params.lock_status,
+  };
+
   return useQuery({
-    queryKey: adminKeys.users.list(page, limit),
+    queryKey: adminKeys.users.list(normalizedParams),
     queryFn: async () => {
-      const response = await getAdminUsers({ page, limit, sort: "created_at", order_by: "desc" });
+      const response = await getAdminUsers(normalizedParams);
       if (!response.success) throw new Error(response.message || "Failed to load users");
       return response.data as AdminUsersListResponse;
     },
@@ -279,7 +292,7 @@ export function useAdminUserShortLinksQuery({
   enabled: boolean;
   page?: number;
   limit?: number;
-  sort?: string;
+  sort?: AdminUserShortLinkSort;
   orderBy?: "asc" | "desc";
   detail?: boolean;
   search?: string;
@@ -298,6 +311,7 @@ export function useAdminUserShortLinksQuery({
       return response.data as AdminUserShortLinksResponse;
     },
     enabled: enabled && Boolean(userId),
+    placeholderData: (previousData) => previousData,
   });
 }
 

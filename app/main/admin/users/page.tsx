@@ -1,9 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { useRouter } from "next/navigation";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   IconArrowRight,
+  IconChevronRight,
   IconClockHour4,
   IconCrown,
   IconDotsVertical,
@@ -12,7 +21,10 @@ import {
   IconLock,
   IconPencil,
   IconRefresh,
+  IconSearch,
   IconUserCircle,
+  IconUsers,
+  IconX,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 
@@ -59,6 +71,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   type AdminUserResponse,
+  type AdminUserLockFilter,
+  type AdminUserPremiumFilter,
+  type AdminUserRoleFilter,
+  type AdminUserSort,
 } from "@/lib/api/auth";
 import {
   useAdminUserDetailQuery,
@@ -79,9 +95,29 @@ type AuditHistoryView = "premium" | "account" | "login";
 const PAGE_LIMIT = 20;
 
 export default function AdminUsersPage() {
+  return (
+    <Suspense fallback={<UsersRouteFallback />}>
+      <AdminUsersPageContent />
+    </Suspense>
+  );
+}
+
+function AdminUsersPageContent() {
   const router = useRouter();
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchFromURL = searchParams.get("search")?.trim() ?? "";
+  const page = parsePositiveInteger(searchParams.get("page"), 1);
+  const sort = parseUserSort(searchParams.get("sort"));
+  const orderBy = parseOrder(searchParams.get("order_by"));
+  const roleFilter = parseRoleFilter(searchParams.get("role"));
+  const premiumFilter = parsePremiumFilter(
+    searchParams.get("premium_status"),
+  );
+  const lockFilter = parseLockFilter(searchParams.get("lock_status"));
+  const [searchInput, setSearchInput] = useState(searchFromURL);
+  const debouncedSearch = useDebouncedValue(searchInput, 350);
+  const isResettingQueryRef = useRef(false);
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
@@ -111,14 +147,59 @@ export default function AdminUsersPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const { data: usersData, isLoading, isError, isFetching, refetch } = useAdminUsersQuery(page, PAGE_LIMIT);
-  const users = useMemo(() => (usersData?.users ?? [])
-    .filter((user) => {
-      const term = search.trim().toLowerCase();
-      if (!term) return true;
-      const target = `${user.username} ${user.email} ${user.first_name} ${user.last_name}`.toLowerCase();
-      return target.includes(term);
-    }), [usersData, search]);
+  const updateListQuery = useCallback(
+    (updates: Record<string, string | null>) => {
+      const next = new URLSearchParams(searchParams.toString());
+      Object.entries(updates).forEach(([key, value]) => {
+        if (!value) {
+          next.delete(key);
+        } else {
+          next.set(key, value);
+        }
+      });
+      const suffix = next.toString();
+      router.replace(`${pathname}${suffix ? `?${suffix}` : ""}`, {
+        scroll: false,
+      });
+    },
+    [pathname, router, searchParams],
+  );
+
+  useEffect(() => {
+    if (isResettingQueryRef.current) {
+      if (debouncedSearch === searchFromURL) {
+        isResettingQueryRef.current = false;
+      }
+      return;
+    }
+    if (debouncedSearch === searchFromURL) return;
+    updateListQuery({
+      search: debouncedSearch || null,
+      page: null,
+    });
+  }, [debouncedSearch, searchFromURL, updateListQuery]);
+
+  useEffect(() => {
+    setSearchInput(searchFromURL);
+  }, [searchFromURL]);
+
+  const {
+    data: usersData,
+    isLoading,
+    isError,
+    isFetching,
+    refetch,
+  } = useAdminUsersQuery({
+    page,
+    limit: PAGE_LIMIT,
+    search: searchFromURL || undefined,
+    sort,
+    order_by: orderBy,
+    role: roleFilter,
+    premium_status: premiumFilter,
+    lock_status: lockFilter,
+  });
+  const users = useMemo(() => usersData?.users ?? [], [usersData?.users]);
 
   const pagination = usersData ?? null;
   const userDetailQuery = useAdminUserDetailQuery(
@@ -139,15 +220,28 @@ export default function AdminUsersPage() {
   const unlockUserMutation = useUnlockAdminUserMutation();
 
   const hasPrevious = page > 1;
-  const totalPages = useMemo(() => {
-    if (!pagination) return 1;
-    if (pagination.total_count <= 0) return 1;
-    return Math.ceil(pagination.total_count / pagination.limit);
-  }, [pagination]);
-  const hasNext = useMemo(() => {
-    if (!pagination) return false;
-    return pagination.page * pagination.limit < pagination.total_count;
-  }, [pagination]);
+  const totalPages = Math.max(1, pagination?.total_pages ?? 1);
+  const hasNext = page < totalPages;
+  const activeFilterCount = [
+    searchFromURL,
+    roleFilter,
+    premiumFilter,
+    lockFilter,
+    sort !== "created_at" || orderBy !== "desc" ? "sort" : "",
+  ].filter(Boolean).length;
+  const firstVisible =
+    (pagination?.total_count ?? 0) === 0 ? 0 : (page - 1) * PAGE_LIMIT + 1;
+  const lastVisible = Math.min(
+    page * PAGE_LIMIT,
+    pagination?.total_count ?? 0,
+  );
+
+  useEffect(() => {
+    if (!pagination || page <= totalPages) return;
+    updateListQuery({
+      page: totalPages > 1 ? String(totalPages) : null,
+    });
+  }, [page, pagination, totalPages, updateListQuery]);
 
   const activeUserStatus = useMemo(() => {
     if (!activeUser) return "free";
@@ -248,6 +342,7 @@ export default function AdminUsersPage() {
       {
         onSuccess: () => {
           setReason("");
+          setIsPremiumOpen(false);
           void refetchEvents();
         },
       },
@@ -276,6 +371,7 @@ export default function AdminUsersPage() {
         onSuccess: () => {
           setReason("");
           setOverridePermanent(false);
+          setIsPremiumOpen(false);
           void refetchEvents();
         },
       },
@@ -325,6 +421,7 @@ export default function AdminUsersPage() {
       {
         onSuccess: (updatedUser) => {
           setActiveUser(updatedUser);
+          setIsProfileOpen(false);
         },
       },
     );
@@ -374,12 +471,19 @@ export default function AdminUsersPage() {
       <AppSidebar />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1 flex-col gap-6 p-6">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="space-y-2">
-              <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
-              <p className="text-sm text-muted-foreground">
-                List users and manage profile, premium lifecycle, and audit history.
+        <main className="flex flex-1 flex-col gap-6 p-4 md:p-6">
+          <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-2xl">
+              <div className="mb-2 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                <IconUsers className="size-3.5" />
+                Account operations
+              </div>
+              <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
+                User directory
+              </h1>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                Find an account, inspect its current state, and move directly
+                into profile, access, or audit work.
               </p>
             </div>
             <Button
@@ -387,18 +491,25 @@ export default function AdminUsersPage() {
               onClick={() => refetch()}
               disabled={isLoading || isFetching}
             >
-              <IconRefresh className="mr-2 size-4" />
+              <IconRefresh
+                className={isFetching && !isLoading ? "animate-spin" : ""}
+              />
               Refresh
             </Button>
-          </div>
+          </header>
 
-          {(typeof roleFromStorage === "undefined" || isLoading || isFetching) && <PageSkeleton />}
+          {(typeof roleFromStorage === "undefined" || isLoading) && (
+            <PageSkeleton />
+          )}
 
           {typeof roleFromStorage !== "undefined" && !isAdmin && (
             <Card>
               <CardHeader>
-                <CardTitle>Access Denied</CardTitle>
-                <CardDescription>This page is available only for admin and super admin roles.</CardDescription>
+                <CardTitle>Access denied</CardTitle>
+                <CardDescription>
+                  The user directory is available only to admins and super
+                  admins.
+                </CardDescription>
               </CardHeader>
             </Card>
           )}
@@ -406,142 +517,397 @@ export default function AdminUsersPage() {
           {typeof roleFromStorage !== "undefined" && isError && (
             <Card>
               <CardHeader>
-                <CardTitle>Failed to Load Users</CardTitle>
-                <CardDescription>Please refresh page or try again later.</CardDescription>
+                <CardTitle>Users could not be loaded</CardTitle>
+                <CardDescription>
+                  Check the API connection, then retry this query.
+                </CardDescription>
               </CardHeader>
+              <CardContent>
+                <Button variant="outline" onClick={() => refetch()}>
+                  <IconRefresh />
+                  Retry
+                </Button>
+              </CardContent>
             </Card>
           )}
 
-          {typeof roleFromStorage !== "undefined" && !isLoading && !isError && isAdmin && (
-            <Card>
-              <CardHeader className="space-y-4">
-                <div className="space-y-1">
-                  <CardTitle>List Users</CardTitle>
-                  <CardDescription>
-                    Total {pagination?.total_count ?? 0} user(s), page {pagination?.page ?? 1}.
-                  </CardDescription>
+          {typeof roleFromStorage !== "undefined" &&
+            !isLoading &&
+            !isError &&
+            isAdmin && (
+              <Card className="overflow-hidden py-0">
+                <CardHeader className="border-b bg-muted/20 px-5 py-5 md:px-6">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                      <CardTitle>Operations index</CardTitle>
+                      <CardDescription className="mt-1">
+                        {pagination?.total_count ?? 0} matching account
+                        {(pagination?.total_count ?? 0) === 1 ? "" : "s"}
+                      </CardDescription>
+                    </div>
+                    <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                      Showing {firstVisible}–{lastVisible}
+                    </p>
+                  </div>
+                </CardHeader>
+
+                <div className="border-b px-5 py-4 md:px-6">
+                  <div className="grid gap-3 xl:grid-cols-[minmax(260px,1.4fr)_repeat(3,minmax(150px,0.65fr))_minmax(190px,0.8fr)_auto]">
+                    <div className="relative">
+                      <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        aria-label="Search users"
+                        className="h-9 pl-9"
+                        maxLength={100}
+                        placeholder="Search name, username, or email"
+                        value={searchInput}
+                        onChange={(event) => setSearchInput(event.target.value)}
+                      />
+                    </div>
+
+                    <Select
+                      value={roleFilter ?? "all"}
+                      onValueChange={(value) =>
+                        updateListQuery({
+                          role: value === "all" ? null : value,
+                          page: null,
+                        })
+                      }
+                    >
+                      <SelectTrigger className="h-9 w-full">
+                        <SelectValue placeholder="All roles" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All roles</SelectItem>
+                        <SelectItem value="user">User</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="super_admin">
+                          Super admin
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select
+                      value={premiumFilter ?? "all"}
+                      onValueChange={(value) =>
+                        updateListQuery({
+                          premium_status:
+                            value === "all" ? null : value,
+                          page: null,
+                        })
+                      }
+                    >
+                      <SelectTrigger className="h-9 w-full">
+                        <SelectValue placeholder="All plans" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All plans</SelectItem>
+                        <SelectItem value="free">Free</SelectItem>
+                        <SelectItem value="premium">Premium</SelectItem>
+                        <SelectItem value="revoked">Revoked</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select
+                      value={lockFilter ?? "all"}
+                      onValueChange={(value) =>
+                        updateListQuery({
+                          lock_status: value === "all" ? null : value,
+                          page: null,
+                        })
+                      }
+                    >
+                      <SelectTrigger className="h-9 w-full">
+                        <SelectValue placeholder="All access" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All access</SelectItem>
+                        <SelectItem value="unlocked">Unlocked</SelectItem>
+                        <SelectItem value="locked">Locked</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select
+                      value={`${sort}:${orderBy}`}
+                      onValueChange={(value) => {
+                        const [nextSort, nextOrder] = value.split(":");
+                        updateListQuery({
+                          sort: nextSort === "created_at" ? null : nextSort,
+                          order_by:
+                            nextOrder === "desc" ? null : nextOrder,
+                          page: null,
+                        });
+                      }}
+                    >
+                      <SelectTrigger className="h-9 w-full">
+                        <SelectValue placeholder="Sort users" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="created_at:desc">
+                          Newest accounts
+                        </SelectItem>
+                        <SelectItem value="created_at:asc">
+                          Oldest accounts
+                        </SelectItem>
+                        <SelectItem value="updated_at:desc">
+                          Recently changed
+                        </SelectItem>
+                        <SelectItem value="username:asc">
+                          Username A–Z
+                        </SelectItem>
+                        <SelectItem value="username:desc">
+                          Username Z–A
+                        </SelectItem>
+                        <SelectItem value="email:asc">Email A–Z</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Button
+                      variant="ghost"
+                      className="h-9"
+                      disabled={activeFilterCount === 0}
+                      onClick={() => {
+                        isResettingQueryRef.current = true;
+                        setSearchInput("");
+                        router.replace(pathname, { scroll: false });
+                      }}
+                    >
+                      <IconX />
+                      Reset
+                    </Button>
+                  </div>
+                  <div className="mt-3 flex min-h-5 items-center justify-between gap-3">
+                    <p className="text-xs text-muted-foreground">
+                      Search and filters run across the full directory.
+                    </p>
+                    {isFetching && (
+                      <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-primary">
+                        Updating results
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Input
-                    className="max-w-md"
-                    placeholder="Search by username, email, or name..."
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                  />
-                </div>
-              </CardHeader>
-              <CardContent>
+
+                <CardContent className="p-0">
                 {users.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No users found on this page.</p>
+                  <div className="flex min-h-64 flex-col items-center justify-center px-6 text-center">
+                    <div className="grid size-11 place-items-center rounded-full bg-muted">
+                      <IconUserCircle className="size-5 text-muted-foreground" />
+                    </div>
+                    <p className="mt-3 text-sm font-medium">
+                      No accounts match this query
+                    </p>
+                    <p className="mt-1 max-w-sm text-xs leading-5 text-muted-foreground">
+                      Change the search term or clear one of the account-state
+                      filters.
+                    </p>
+                    {activeFilterCount > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-4"
+                        onClick={() => {
+                          isResettingQueryRef.current = true;
+                          setSearchInput("");
+                          router.replace(pathname, { scroll: false });
+                        }}
+                      >
+                        Clear query
+                      </Button>
+                    )}
+                  </div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Premium</TableHead>
-                        <TableHead>Lock Status</TableHead>
-                        <TableHead>Created At</TableHead>
-                        <TableHead>Last Changed</TableHead>
-                        <TableHead className="text-center">Action</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {users.map((user) => (
-                        <TableRow key={user.id}>
-                          <TableCell className="align-top">
-                            <div className="space-y-1">
-                              <p className="text-sm font-medium">{user.username}</p>
-                              <p className="text-xs text-muted-foreground">{user.email}</p>
-                            </div>
-                          </TableCell>
-                          <TableCell className="align-top">
-                            <RoleBadge role={user.role} />
-                          </TableCell>
-                          <TableCell className="align-top">
-                            <PremiumStateBadge
-                              isPremium={user.is_premium}
-                              isRevoked={isUserCurrentlyRevoked(user)}
-                            />
-                          </TableCell>
-                          <TableCell className="align-top">
-                            <ActiveInactiveBadge
-                              isActive={!user.is_locked}
-                              activeLabel="Unlocked"
-                              inactiveLabel="Locked"
-                            />
-                          </TableCell>
-                          <TableCell className="align-top">
-                            {formatDateTime(user.created_at)}
-                          </TableCell>
-                          <TableCell className="align-top text-xs">
-                            {formatDateTime(
-                              user.premium_reactivated_at || user.premium_revoked_at || user.updated_at
-                            )}
-                          </TableCell>
-                          <TableCell className="align-top text-center">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="size-8">
-                                  <IconDotsVertical className="size-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => void openUserDetail(user, "profile")}>
-                                  <IconPencil className="mr-2 size-4" />
-                                  Edit User
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => openUserDetailPage(user.id)}>
-                                  <IconExternalLink className="mr-2 size-4" />
-                                  Open Full Detail
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  className={user.is_locked ? "" : "text-destructive"}
-                                  disabled={lockUserMutation.isPending || unlockUserMutation.isPending}
-                                  onClick={() => handleToggleUserLock(user)}
-                                >
-                                  <IconLock className="mr-2 size-4" />
-                                  {user.is_locked ? "Unlock User" : "Lock User"}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  className={isUserCurrentlyRevoked(user) ? "" : user.is_premium ? "text-destructive" : ""}
-                                  onClick={() => void openUserDetail(user, "premium")}
-                                >
-                                  <IconCrown className="mr-2 size-4" />
-                                  {isUserCurrentlyRevoked(user)
-                                    ? "Restore Premium"
-                                    : user.is_premium
-                                      ? "Revoke Premium"
-                                      : "Manage Premium"}
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
+                  <div className="overflow-x-auto">
+                    <Table className="min-w-[980px]">
+                      <TableHeader>
+                        <TableRow className="hover:bg-transparent">
+                          <TableHead className="pl-5 md:pl-6">Account</TableHead>
+                          <TableHead>Role</TableHead>
+                          <TableHead>Account state</TableHead>
+                          <TableHead>Joined</TableHead>
+                          <TableHead>Last change</TableHead>
+                          <TableHead className="w-12 pr-5 text-right md:pr-6">
+                            <span className="sr-only">Actions</span>
+                          </TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {users.map((user) => {
+                          const displayName =
+                            [user.first_name, user.last_name]
+                              .filter(Boolean)
+                              .join(" ") || user.username;
+                          return (
+                            <TableRow
+                              key={user.id}
+                              className="group cursor-pointer"
+                              onClick={() => openUserDetailPage(user.id)}
+                            >
+                              <TableCell className="pl-5 md:pl-6">
+                                <div className="flex items-center gap-3">
+                                  <div className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                                    {getInitials(displayName)}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                      <p className="max-w-52 truncate text-sm font-medium">
+                                        {displayName}
+                                      </p>
+                                      <IconChevronRight className="size-3.5 opacity-0 transition-opacity group-hover:opacity-60" />
+                                    </div>
+                                    <p className="max-w-64 truncate text-xs text-muted-foreground">
+                                      @{user.username} · {user.email}
+                                    </p>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <RoleBadge role={user.role} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-wrap gap-1.5">
+                                  <PremiumStateBadge
+                                    isPremium={user.is_premium}
+                                    isRevoked={isUserCurrentlyRevoked(user)}
+                                  />
+                                  <ActiveInactiveBadge
+                                    isActive={!user.is_locked}
+                                    activeLabel="Unlocked"
+                                    inactiveLabel="Locked"
+                                  />
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <p className="text-sm">
+                                  {formatDate(user.created_at)}
+                                </p>
+                                <p className="text-[11px] text-muted-foreground">
+                                  {formatTime(user.created_at)}
+                                </p>
+                              </TableCell>
+                              <TableCell>
+                                <p className="text-sm">
+                                  {formatDate(getLastAccountChange(user))}
+                                </p>
+                                <p className="text-[11px] text-muted-foreground">
+                                  {formatRelativeTime(
+                                    getLastAccountChange(user),
+                                  )}
+                                </p>
+                              </TableCell>
+                              <TableCell
+                                className="pr-5 text-right md:pr-6"
+                                onClick={(event) => event.stopPropagation()}
+                              >
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="size-8"
+                                      aria-label={`Actions for ${user.username}`}
+                                    >
+                                      <IconDotsVertical className="size-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        openUserDetailPage(user.id)
+                                      }
+                                    >
+                                      <IconExternalLink />
+                                      Open account file
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        openUserDetail(user, "profile")
+                                      }
+                                    >
+                                      <IconPencil />
+                                      Edit profile
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => openUserDetail(user)}
+                                    >
+                                      <IconClockHour4 />
+                                      View audit history
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                      className={
+                                        user.is_locked
+                                          ? ""
+                                          : "text-destructive"
+                                      }
+                                      disabled={
+                                        lockUserMutation.isPending ||
+                                        unlockUserMutation.isPending
+                                      }
+                                      onClick={() =>
+                                        handleToggleUserLock(user)
+                                      }
+                                    >
+                                      <IconLock />
+                                      {user.is_locked
+                                        ? "Unlock account"
+                                        : "Lock account"}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      className={
+                                        isUserCurrentlyRevoked(user)
+                                          ? ""
+                                          : user.is_premium
+                                            ? "text-destructive"
+                                            : ""
+                                      }
+                                      onClick={() =>
+                                        openUserDetail(user, "premium")
+                                      }
+                                    >
+                                      <IconCrown />
+                                      {isUserCurrentlyRevoked(user)
+                                        ? "Restore premium"
+                                        : user.is_premium
+                                          ? "Revoke premium"
+                                          : "Review premium"}
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
                 )}
 
-                <div className="flex items-center justify-between pt-4 text-sm">
+                <div className="flex flex-col gap-3 border-t px-5 py-4 text-sm sm:flex-row sm:items-center sm:justify-between md:px-6">
                   <p className="text-muted-foreground">
-                    Page {page} of {totalPages}
+                    Page {page} of {totalPages} · {pagination?.total_count ?? 0}{" "}
+                    total
                   </p>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                      disabled={!hasPrevious}
+                      onClick={() =>
+                        updateListQuery({
+                          page: page > 2 ? String(page - 1) : null,
+                        })
+                      }
+                      disabled={!hasPrevious || isFetching}
                     >
                       Previous
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-                      disabled={!hasNext}
+                      onClick={() =>
+                        updateListQuery({ page: String(page + 1) })
+                      }
+                      disabled={!hasNext || isFetching}
                     >
                       Next
                     </Button>
@@ -550,7 +916,7 @@ export default function AdminUsersPage() {
               </CardContent>
             </Card>
           )}
-        </div>
+        </main>
       </SidebarInset>
 
       {/* Profile Edit Dialog */}
@@ -628,10 +994,7 @@ export default function AdminUsersPage() {
               Cancel
             </Button>
             <Button
-              onClick={() => {
-                handleSaveProfile();
-                setIsProfileOpen(false);
-              }}
+              onClick={handleSaveProfile}
               disabled={updateUserMutation.isPending || userDetailQuery.isLoading}
             >
               {updateUserMutation.isPending ? "Saving..." : "Save Changes"}
@@ -734,20 +1097,14 @@ export default function AdminUsersPage() {
             </Button>
             {activeUserStatus === "revoked" ? (
               <Button 
-                onClick={() => {
-                  handleReactivate();
-                  if (reason.trim().length >= 5) setIsPremiumOpen(false);
-                }} 
+                onClick={handleReactivate}
                 disabled={!activeUser || reactivateMutation.isPending}
               >
                 {reactivateMutation.isPending ? "Submitting..." : "Reactivate Premium"}
               </Button>
             ) : activeUserStatus === "premium" ? (
               <Button 
-                onClick={() => {
-                  handleRevoke();
-                  if (reason.trim().length >= 10) setIsPremiumOpen(false);
-                }} 
+                onClick={handleRevoke}
                 disabled={!activeUser || revokeMutation.isPending} 
                 variant="destructive"
               >
@@ -1011,6 +1368,99 @@ export default function AdminUsersPage() {
   );
 }
 
+function UsersRouteFallback() {
+  return (
+    <div className="p-6">
+      <Skeleton className="h-9 w-48" />
+      <Skeleton className="mt-3 h-4 w-80" />
+      <Skeleton className="mt-8 h-[480px] w-full" />
+    </div>
+  );
+}
+
+function parsePositiveInteger(value: string | null, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function parseUserSort(value: string | null): AdminUserSort {
+  if (
+    value === "updated_at" ||
+    value === "username" ||
+    value === "email"
+  ) {
+    return value;
+  }
+  return "created_at";
+}
+
+function parseOrder(value: string | null): "asc" | "desc" {
+  return value === "asc" ? "asc" : "desc";
+}
+
+function parseRoleFilter(value: string | null): AdminUserRoleFilter | undefined {
+  if (value === "user" || value === "admin" || value === "super_admin") {
+    return value;
+  }
+  return undefined;
+}
+
+function parsePremiumFilter(
+  value: string | null,
+): AdminUserPremiumFilter | undefined {
+  if (value === "free" || value === "premium" || value === "revoked") {
+    return value;
+  }
+  return undefined;
+}
+
+function parseLockFilter(value: string | null): AdminUserLockFilter | undefined {
+  if (value === "locked" || value === "unlocked") {
+    return value;
+  }
+  return undefined;
+}
+
+function useDebouncedValue<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedValue(value), delay);
+    return () => window.clearTimeout(timer);
+  }, [delay, value]);
+
+  return debouncedValue;
+}
+
+function getInitials(value: string): string {
+  return (
+    value
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase() || "U"
+  );
+}
+
+function getLastAccountChange(user: AdminUserResponse): string {
+  const candidates = [
+    user.updated_at,
+    user.premium_revoked_at,
+    user.premium_reactivated_at,
+    user.locked_at,
+  ].filter((value): value is string => Boolean(value));
+
+  return candidates.reduce((latest, value) => {
+    const valueTime = new Date(value).getTime();
+    const latestTime = new Date(latest).getTime();
+    if (Number.isNaN(valueTime)) return latest;
+    if (Number.isNaN(latestTime) || valueTime > latestTime) return value;
+    return latest;
+  }, user.updated_at);
+}
+
 function isUserCurrentlyRevoked(user: { is_premium: boolean; premium_revoked_at?: string | null; premium_reactivated_at?: string | null }): boolean {
   if (user.is_premium) {
     return false;
@@ -1049,6 +1499,27 @@ function formatDateTime(value?: string | null): string {
     year: "numeric",
     month: "short",
     day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function formatDate(value?: string | null): string {
+  if (!value) return "-";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "-";
+  return parsed.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  });
+}
+
+function formatTime(value?: string | null): string {
+  if (!value) return "-";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "-";
+  return parsed.toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
   });
