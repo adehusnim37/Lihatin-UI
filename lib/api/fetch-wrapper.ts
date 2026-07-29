@@ -87,6 +87,25 @@ function requiresCSRF(method: string): boolean {
   return mutatingMethods.includes(method.toUpperCase());
 }
 
+function isCSRFErrorPayload(payload: unknown): boolean {
+  if (!payload || typeof payload !== "object") return false;
+
+  const response = payload as {
+    message?: unknown;
+    error?: unknown;
+  };
+  const errorText =
+    typeof response.error === "string"
+      ? response.error
+      : response.error && typeof response.error === "object"
+        ? Object.values(response.error).join(" ")
+        : "";
+
+  return `${String(response.message || "")} ${errorText}`
+    .toLowerCase()
+    .includes("csrf");
+}
+
 /**
  * Wrapper around fetch that handles 401 errors with automatic token refresh
  * and CSRF token attachment for mutating requests
@@ -105,7 +124,6 @@ export async function fetchWithAuth(
   const headers = new Headers(init?.headers);
 
   // Attach CSRF token for mutating requests.
-  // This is safe even when backend CSRF middleware is disabled.
   if (requiresCSRF(method)) {
     const token = await getCSRFToken();
     if (token) {
@@ -130,10 +148,7 @@ export async function fetchWithAuth(
     const clonedResponse = response.clone();
     try {
       const errorData = await clonedResponse.json();
-      if (
-        errorData.error?.includes("CSRF") ||
-        errorData.message?.includes("CSRF")
-      ) {
+      if (isCSRFErrorPayload(errorData)) {
         console.log("CSRF token expired, refreshing...");
         await refreshCSRFToken();
 
