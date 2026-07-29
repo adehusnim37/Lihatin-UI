@@ -60,6 +60,9 @@ export interface SignupCompleteRequest {
   username: string;
   password: string;
   secret_code?: string;
+  opt_in_promotional_emails: boolean;
+  opt_in_weekly_summary_emails: boolean;
+  consent_source: string;
 }
 
 // 1. Interface for the 'auth' object (Authentication details)
