@@ -72,15 +72,35 @@ export interface AuthData {
   is_email_verified: boolean;
   totp_enabled: boolean;
   account_status: "active" | "disabled" | "locked";
-  device_id: string;
-  last_ip: string;
-  last_login_at: string; // ISO 8601 or similar timestamp string
+  // Account-level snapshot of the most recently completed login.
+  device_id?: string | null;
+  last_ip?: string | null;
+  last_login_at?: string | null;
   failed_login_attempts: number;
   login_blocked_until?: string | null;
-  password_changed_at: string;
-  last_logout_at: string;
+  password_changed_at?: string | null;
+  last_logout_at?: string | null;
   created_at: string;
   updated_at: string;
+  previous_login?: LoginEventData | null;
+  current_session?: CurrentSessionData | null;
+}
+
+export interface LoginEventData {
+  method: "email_otp" | "totp" | "google_oauth" | string;
+  device_id?: string;
+  ip_address?: string;
+  user_agent?: string;
+  authenticated_at: string;
+}
+
+export interface CurrentSessionData {
+  ip_address: string;
+  user_agent: string;
+  device_id?: string;
+  created_at: string;
+  last_seen: string;
+  expires_at: string;
 }
 
 export interface PremiumAccess {

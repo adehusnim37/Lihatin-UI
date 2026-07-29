@@ -110,10 +110,6 @@ export async function fetchWithAuth(
     const token = await getCSRFToken();
     if (token) {
       headers.set("X-CSRF-Token", token);
-      console.log(
-        `[CSRF] Attached token to ${method} request:`,
-        token.substring(0, 20) + "...",
-      );
     } else {
       console.warn(`[CSRF] No token available for ${method} request`);
     }

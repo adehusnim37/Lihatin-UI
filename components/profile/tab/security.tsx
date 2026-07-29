@@ -47,7 +47,7 @@ export default function ProfileSecurityTab() {
     void refetch();
   };
 
-  const formatDateTime = (dateString?: string) => {
+  const formatDateTime = (dateString?: string | null) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-US", {
@@ -59,7 +59,7 @@ export default function ProfileSecurityTab() {
     }).format(date);
   };
 
-  const formatRelativeTime = (dateString?: string) => {
+  const formatRelativeTime = (dateString?: string | null) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
     const now = new Date();
@@ -142,9 +142,9 @@ export default function ProfileSecurityTab() {
             </div>
           </div>
 
-          {/* Collapsible Last Login Session */}
+          {/* Current session metadata is session-scoped; previous login is immutable history. */}
           <div className="space-y-2">
-            <Label>Last Login Session</Label>
+            <Label>Session Security</Label>
             <Collapsible
               open={isSessionOpen}
               onOpenChange={setIsSessionOpen}
@@ -180,15 +180,35 @@ export default function ProfileSecurityTab() {
                       Current IP Address
                     </span>
                     <span className="text-sm font-medium font-mono">
-                      {profileData?.auth.last_ip || "N/A"}
+                      {profileData?.auth.current_session?.ip_address || "N/A"}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">
-                      Last Login Time
+                      Current Session Started
                     </span>
                     <span className="text-sm font-medium">
-                      {formatDateTime(profileData?.auth.last_login_at)}
+                      {formatDateTime(
+                        profileData?.auth.current_session?.created_at,
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
+                      Previous Login
+                    </span>
+                    <span className="text-sm font-medium">
+                      {formatDateTime(
+                        profileData?.auth.previous_login?.authenticated_at,
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
+                      Previous Login IP
+                    </span>
+                    <span className="text-sm font-medium font-mono">
+                      {profileData?.auth.previous_login?.ip_address || "N/A"}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -218,16 +238,18 @@ export default function ProfileSecurityTab() {
           </div>
 
           <div className="space-y-2">
-            <Label>Device ID</Label>
+            <Label>Current Device</Label>
             <div className="flex items-center justify-between p-3 rounded-lg border">
               <div className="flex items-center gap-3">
                 <IconDeviceDesktopCode className="size-5 text-muted-foreground" />
                 <div>
-                  <p className="text-sm font-medium">Device Identifier</p>
+                  <p className="text-sm font-medium">
+                    Session Device Identifier
+                  </p>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground font-mono font-medium">
-                {profileData?.auth.device_id || "N/A"}
+                {profileData?.auth.current_session?.device_id || "N/A"}
               </p>
             </div>
           </div>
