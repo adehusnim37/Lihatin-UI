@@ -13,7 +13,7 @@ import {
   unlockAdminUser,
   revokeAdminUserPremiumAccess,
   reactivateAdminUserPremiumAccess,
-  getAdminUserPremiumStatusEvents,
+  getAdminUserPremiumAccessEvents,
   getAdminUserShortLinks,
   validateResetToken,
   type AdminUsersListResponse,
@@ -23,8 +23,8 @@ import {
   type AdminUpdateUserRequest,
   type AdminDisposableEmailPolicyResponse,
   type AdminPremiumCodesResponse,
-  type AdminPremiumStatusEventsListResponse,
-  type AdminPremiumStatusMutationResponse,
+  type AdminPremiumAccessEventsListResponse,
+  type AdminPremiumAccessMutationResponse,
   type AdminUserShortLinksResponse,
   type AdminUserShortLinkSort,
   type UpdateAdminDisposableEmailPolicyRequest,
@@ -61,8 +61,8 @@ export const adminKeys = {
     list: (page?: number, limit?: number) =>
       [...adminKeys.all, "premium-codes", "list", page, limit] as const,
   },
-  premiumStatusEvents: (userId: string) =>
-    [...adminKeys.all, "premium-status-events", userId] as const,
+  premiumAccessEvents: (userId: string) =>
+    [...adminKeys.all, "premium-access-events", userId] as const,
   userShortLinks: (
     userId: string,
     page?: number,
@@ -83,7 +83,7 @@ export function useAdminUsersQuery(params: AdminUsersQueryParams = {}) {
     sort: params.sort ?? "created_at",
     order_by: params.order_by ?? "desc",
     role: params.role,
-    premium_status: params.premium_status,
+    premium_access_status: params.premium_access_status,
     lock_status: params.lock_status,
   };
 
@@ -267,12 +267,12 @@ export function useAdminPremiumCodesQuery(page = 1, limit = 10) {
   });
 }
 
-export function useAdminPremiumStatusEventsQuery(userId: string, enabled: boolean) {
+export function useAdminPremiumAccessEventsQuery(userId: string, enabled: boolean) {
   return useQuery({
-    queryKey: adminKeys.premiumStatusEvents(userId),
+    queryKey: adminKeys.premiumAccessEvents(userId),
     queryFn: async () => {
-      const response = await getAdminUserPremiumStatusEvents(userId, { limit: 25 });
-      return response.data as AdminPremiumStatusEventsListResponse;
+      const response = await getAdminUserPremiumAccessEvents(userId, { limit: 25 });
+      return response.data as AdminPremiumAccessEventsListResponse;
     },
     enabled,
   });
@@ -327,7 +327,7 @@ export function useRevokeAdminUserPremiumMutation() {
       payload: AdminRevokePremiumAccessRequest;
     }) => {
       const response = await revokeAdminUserPremiumAccess(userId, payload);
-      return response.data as AdminPremiumStatusMutationResponse;
+      return response.data as AdminPremiumAccessMutationResponse;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.users.all() });
@@ -355,7 +355,7 @@ export function useReactivateAdminUserPremiumMutation() {
       payload: AdminReactivatePremiumAccessRequest;
     }) => {
       const response = await reactivateAdminUserPremiumAccess(userId, payload);
-      return response.data as AdminPremiumStatusMutationResponse;
+      return response.data as AdminPremiumAccessMutationResponse;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.users.all() });

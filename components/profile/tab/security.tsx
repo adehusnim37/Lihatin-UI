@@ -41,7 +41,7 @@ export default function ProfileSecurityTab() {
   const profileData = profileResponse?.data ?? null;
   const shouldAutoOpenTOTP =
     searchParams.get("openSetupTOTP") === "1" &&
-    !profileData?.auth.is_totp_enabled;
+    !profileData?.auth.totp_enabled;
 
   const handlePasswordChanged = () => {
     void refetch();
@@ -205,7 +205,7 @@ export default function ProfileSecurityTab() {
                       Account Status
                     </span>
                     <span className="text-sm font-medium">
-                      {profileData?.auth.is_active ? (
+                      {profileData?.auth.account_status === "active" ? (
                         <span className="text-green-600">Active</span>
                       ) : (
                         <span className="text-red-600">Inactive</span>
@@ -253,18 +253,18 @@ export default function ProfileSecurityTab() {
             <div className="flex items-center justify-between p-3 rounded-lg border">
               <div className="flex items-center gap-3">
                 <IconShield
-                  className={`size-5 ${profileData?.auth.is_totp_enabled ? "text-green-600" : "text-muted-foreground"}`}
+                  className={`size-5 ${profileData?.auth.totp_enabled ? "text-green-600" : "text-muted-foreground"}`}
                 />
                 <div>
                   <p className="text-sm font-medium">2FA Status</p>
                   <p className="text-xs text-muted-foreground">
-                    {profileData?.auth.is_totp_enabled
+                    {profileData?.auth.totp_enabled
                       ? "Enabled - Your account is protected"
                       : "Not enabled - Add extra security"}
                   </p>
                 </div>
               </div>
-              {profileData?.auth.is_totp_enabled ? (
+              {profileData?.auth.totp_enabled ? (
                 <DisableTOTPModal onDisableComplete={() => refetch()} />
               ) : (
                 <SetupTOTPModal

@@ -24,6 +24,7 @@ import {
 import { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import {
+  hasActivePremiumAccess,
   redeemPremiumCode,
   saveUserData,
   uploadProfileAvatar,
@@ -99,6 +100,7 @@ function ProfilePageContent() {
   const profile = profileResponse?.data;
   const user = profile?.user;
   const userAuth = profile?.auth;
+  const premiumAccessActive = hasActivePremiumAccess(user?.premium_access);
 
   useEffect(() => {
     if (user) {
@@ -107,7 +109,7 @@ function ProfilePageContent() {
   }, [user]);
 
   useEffect(() => {
-    if (!user || hasAppliedRedeemCodeParam || user.is_premium) {
+    if (!user || hasAppliedRedeemCodeParam || premiumAccessActive) {
       return;
     }
 
@@ -121,7 +123,7 @@ function ProfilePageContent() {
     setSecretCode(normalizedRedeemCode);
     setIsRedeemOpen(true);
     setHasAppliedRedeemCodeParam(true);
-  }, [hasAppliedRedeemCodeParam, searchParams, user]);
+  }, [hasAppliedRedeemCodeParam, premiumAccessActive, searchParams, user]);
 
   const handleSaveName = async (firstName: string, lastName: string) => {
     if (!user) return;
@@ -578,7 +580,7 @@ function ProfilePageContent() {
                           Account Tier
                         </ItemTitle>
                       </ItemContent>
-                      {user.is_premium ? (
+                      {premiumAccessActive ? (
                         <StatusBadge
                           tone="success"
                           withIcon={false}

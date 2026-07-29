@@ -110,14 +110,19 @@ Response:
       "last_name": "string",
       "email": "string",
       "avatar": "string",
-      "is_premium": boolean,
+      "premium_access": {
+        "status": "active" | "revoked",
+        "tier": "premium",
+        "expires_at": "string" | null
+      } | null,
       "created_at": "string"
     },
     "auth": {
       "id": "uuid",
       "user_id": "uuid",
       "is_email_verified": boolean,
-      "is_totp_enabled": boolean,
+      "totp_enabled": boolean,
+      "account_status": "active" | "disabled" | "locked",
       "last_login_at": "string"
     }
   },
@@ -149,7 +154,7 @@ Response:
       "first_name": "string",
       "last_name": "string",
       "email": "string",
-      "is_premium": boolean,
+      "premium_access": null,
       "created_at": "string"
     },
     "message": "string"

@@ -80,11 +80,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  hasActivePremiumAccess,
+  type AdminUserResponse,
   type AdminUserShortLinkResponse,
   type AdminUserShortLinkSort,
 } from "@/lib/api/auth";
 import {
-  useAdminPremiumStatusEventsQuery,
+  useAdminPremiumAccessEventsQuery,
   useAdminUserDetailQuery,
   useAdminUserShortLinksQuery,
 } from "@/lib/hooks/queries/useAdminQuery";
@@ -143,7 +145,7 @@ export default function AdminUserDetailPage() {
   }, [shortsSearchInput]);
 
   const detailQuery = useAdminUserDetailQuery(userId, Boolean(userId));
-  const eventsQuery = useAdminPremiumStatusEventsQuery(userId, Boolean(userId));
+  const eventsQuery = useAdminPremiumAccessEventsQuery(userId, Boolean(userId));
   const userShortsQuery = useAdminUserShortLinksQuery({
     userId,
     enabled: Boolean(userId),
@@ -335,13 +337,19 @@ export default function AdminUserDetailPage() {
 
                       <div className="flex flex-wrap gap-2 lg:max-w-72 lg:justify-end">
                         <PremiumStateBadge
-                          isPremium={user.is_premium}
+                          isPremium={hasActivePremiumAccess(
+                            user.premium_access,
+                          )}
                           isRevoked={isUserCurrentlyRevoked(user)}
                         />
                         <ActiveInactiveBadge
-                          isActive={!user.is_locked}
-                          activeLabel="Unlocked"
-                          inactiveLabel="Locked"
+                          isActive={user.account_status === "active"}
+                          activeLabel="Account active"
+                          inactiveLabel={
+                            user.account_status === "locked"
+                              ? "Admin locked"
+                              : "Account disabled"
+                          }
                         />
                         <EnabledDisabledBadge
                           enabled={Boolean(user.user_auth?.is_email_verified)}
@@ -399,28 +407,29 @@ export default function AdminUserDetailPage() {
                         label="Latest access change"
                         value={formatDateTime(
                           getLatestTimestamp([
-                            user.locked_at,
-                            user.premium_revoked_at,
-                            user.premium_reactivated_at,
+                            user.account_status_changed_at,
+                            user.premium_access?.status_changed_at,
                           ]),
                         )}
                       />
                     </div>
 
-                    {(user.is_locked ||
+                    {(user.account_status === "locked" ||
                       isUserCurrentlyRevoked(user) ||
-                      user.locked_reason) && (
+                      user.account_status_reason) && (
                       <div className="grid gap-3 border-t px-5 py-4 text-sm md:grid-cols-2 md:px-6">
                         <InfoLine
                           label="Lock reason"
-                          value={user.locked_reason || "No lock reason recorded"}
+                          value={
+                            user.account_status_reason ||
+                            "No lock reason recorded"
+                          }
                         />
                         <InfoLine
-                          label="Premium status reason"
+                          label="Premium access reason"
                           value={
-                            user.premium_revoked_reason ||
-                            user.premium_reactivated_reason ||
-                            "No premium status reason recorded"
+                            user.premium_access?.status_reason ||
+                            "No premium access reason recorded"
                           }
                         />
                       </div>
@@ -458,19 +467,31 @@ export default function AdminUserDetailPage() {
                     <div className="rounded-xl border bg-muted/15 p-4 sm:p-5">
                       <div className="flex flex-wrap gap-2">
                         <EnabledDisabledBadge
-                          enabled={Boolean(user.user_auth?.is_totp_enabled)}
+                          enabled={Boolean(user.user_auth?.totp_enabled)}
                           enabledLabel="TOTP enabled"
                           disabledLabel="TOTP disabled"
                         />
                         <ActiveInactiveBadge
-                          isActive={Boolean(user.user_auth?.is_active)}
-                          activeLabel="Auth active"
-                          inactiveLabel="Auth inactive"
+                          isActive={
+                            user.user_auth?.account_status === "active"
+                          }
+                          activeLabel="Account active"
+                          inactiveLabel={
+                            user.user_auth?.account_status === "locked"
+                              ? "Admin locked"
+                              : "Account disabled"
+                          }
                         />
-                        {isLockoutActive(user.user_auth?.lockout_until) ? (
-                          <StatusBadge tone="danger">LOCKOUT ACTIVE</StatusBadge>
+                        {isLockoutActive(
+                          user.user_auth?.login_blocked_until,
+                        ) ? (
+                          <StatusBadge tone="danger">
+                            TEMP LOGIN BLOCK ACTIVE
+                          </StatusBadge>
                         ) : (
-                          <StatusBadge tone="neutral">LOCKOUT CLEAR</StatusBadge>
+                          <StatusBadge tone="neutral">
+                            TEMP LOGIN BLOCK CLEAR
+                          </StatusBadge>
                         )}
                       </div>
 
@@ -491,9 +512,9 @@ export default function AdminUserDetailPage() {
                           )}
                         />
                         <AuthMetricItem
-                          label="Lockout until"
+                          label="Temporary login block until"
                           value={formatDateTime(
-                            user.user_auth?.lockout_until,
+                            user.user_auth?.login_blocked_until,
                           )}
                         />
                         <AuthMetricItem
@@ -518,7 +539,7 @@ export default function AdminUserDetailPage() {
                       />
                       <StatBox
                         label="Premium events"
-                        value={user.stats?.premium_status_events_total ?? 0}
+                        value={user.stats?.premium_access_events_total ?? 0}
                       />
                       <StatBox
                         label="Login attempts · 24h"
@@ -1149,19 +1170,8 @@ function AuthMetricItem({
   );
 }
 
-function isUserCurrentlyRevoked(user: {
-  is_premium: boolean;
-  premium_revoked_at?: string | null;
-  premium_reactivated_at?: string | null;
-}): boolean {
-  if (user.is_premium) return false;
-  if (!user.premium_revoked_at) return false;
-  if (!user.premium_reactivated_at) return true;
-  const revokedAt = new Date(user.premium_revoked_at).getTime();
-  const reactivatedAt = new Date(user.premium_reactivated_at).getTime();
-  if (Number.isNaN(revokedAt)) return false;
-  if (Number.isNaN(reactivatedAt)) return true;
-  return revokedAt > reactivatedAt;
+function isUserCurrentlyRevoked(user: AdminUserResponse): boolean {
+  return user.premium_access?.status === "revoked";
 }
 
 function formatDateTime(value?: string | null): string {

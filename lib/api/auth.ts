@@ -70,16 +70,41 @@ export interface AuthData {
   id: string; // ID of the authentication session or record
   user_id: string; // Foreign key to the user profile
   is_email_verified: boolean;
-  is_totp_enabled: boolean;
+  totp_enabled: boolean;
+  account_status: "active" | "disabled" | "locked";
   device_id: string;
   last_ip: string;
   last_login_at: string; // ISO 8601 or similar timestamp string
   failed_login_attempts: number;
+  login_blocked_until?: string | null;
   password_changed_at: string;
   last_logout_at: string;
-  is_active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface PremiumAccess {
+  status: "active" | "revoked";
+  tier: string;
+  source: string;
+  granted_at: string;
+  expires_at?: string | null;
+  revoke_type?: "temporary" | "permanent" | string;
+  status_changed_at?: string | null;
+  status_changed_by?: string | null;
+  status_reason?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export function hasActivePremiumAccess(
+  access?: PremiumAccess | null,
+  now = Date.now(),
+): boolean {
+  if (!access || access.status !== "active") return false;
+  if (!access.expires_at) return true;
+  const expiresAt = new Date(access.expires_at).getTime();
+  return Number.isFinite(expiresAt) && expiresAt > now;
 }
 
 // 2. Interface for the 'user' object (Profile details)
@@ -91,7 +116,7 @@ export interface UserProfile {
   email: string;
   avatar: string; // Assuming an empty string if no avatar
   role: string; // "user" | "admin" | "super_admin"
-  is_premium: boolean;
+  premium_access: PremiumAccess | null;
   created_at: string; // ISO 8601 or similar timestamp string
 }
 
@@ -283,19 +308,11 @@ export interface AdminUserResponse {
   updated_at: string;
   deleted_at?: string | null;
   username_changed?: boolean;
-  is_premium: boolean;
-  is_locked: boolean;
-  locked_at?: string | null;
-  locked_reason?: string;
+  account_status: "active" | "disabled" | "locked";
+  account_status_changed_at?: string | null;
+  account_status_reason?: string;
   role: string;
-  premium_status?: string;
-  premium_revoke_type?: string;
-  premium_revoked_at?: string | null;
-  premium_revoked_by?: string | null;
-  premium_revoked_reason?: string;
-  premium_reactivated_at?: string | null;
-  premium_reactivated_by?: string | null;
-  premium_reactivated_reason?: string;
+  premium_access: PremiumAccess | null;
   user_auth?: AdminUserAuthDetailResponse | null;
   auth_methods?: AdminAuthMethodDetailResponse[];
   stats?: AdminUserDetailStatsResponse;
@@ -314,9 +331,9 @@ export interface AdminUserAuthDetailResponse {
   last_login_at?: string | null;
   last_logout_at?: string | null;
   failed_login_attempts: number;
-  lockout_until?: string | null;
-  is_active: boolean;
-  is_totp_enabled: boolean;
+  login_blocked_until?: string | null;
+  account_status: "active" | "disabled" | "locked";
+  totp_enabled: boolean;
   created_at: string;
   updated_at: string;
   deleted_at?: string | null;
@@ -343,7 +360,7 @@ export interface AdminUserDetailStatsResponse {
   api_keys_active: number;
   history_events_total: number;
   premium_key_usage_total: number;
-  premium_status_events_total: number;
+  premium_access_events_total: number;
   login_attempts_24h: number;
   login_attempts_7d: number;
 }
@@ -378,13 +395,13 @@ export interface AdminUsersListResponse {
   order_by: "asc" | "desc";
   search?: string;
   role?: AdminUserRoleFilter;
-  premium_status?: AdminUserPremiumFilter;
+  premium_access_status?: AdminUserPremiumAccessFilter;
   lock_status?: AdminUserLockFilter;
 }
 
 export type AdminUserSort = "created_at" | "updated_at" | "username" | "email";
 export type AdminUserRoleFilter = "user" | "admin" | "super_admin";
-export type AdminUserPremiumFilter = "free" | "premium" | "revoked";
+export type AdminUserPremiumAccessFilter = "free" | "premium" | "revoked";
 export type AdminUserLockFilter = "locked" | "unlocked";
 
 export interface AdminUsersQueryParams {
@@ -394,7 +411,7 @@ export interface AdminUsersQueryParams {
   sort?: AdminUserSort;
   order_by?: "asc" | "desc";
   role?: AdminUserRoleFilter;
-  premium_status?: AdminUserPremiumFilter;
+  premium_access_status?: AdminUserPremiumAccessFilter;
   lock_status?: AdminUserLockFilter;
 }
 
@@ -424,36 +441,28 @@ export interface AdminReactivatePremiumAccessRequest {
   override_permanent?: boolean;
 }
 
-export interface AdminPremiumStatusMutationResponse {
+export interface AdminPremiumAccessMutationResponse {
   user_id: string;
-  is_premium: boolean;
-  role: string;
-  premium_revoke_type?: string;
-  premium_revoked_at?: string | null;
-  premium_reactivated_at?: string | null;
-  premium_revoked_reason?: string;
-  premium_reactivated_reason?: string;
+  premium_access: PremiumAccess;
 }
 
-export interface AdminPremiumStatusEventResponse {
+export interface AdminPremiumAccessEventResponse {
   id: number;
   user_id: string;
   action: "revoke" | "reactivate" | string;
   old_status: string;
   new_status: string;
-  old_role: string;
-  new_role: string;
   revoke_type?: string;
   reason: string;
-  changed_by?: string | null;
-  changed_role: string;
+  actor_id?: string | null;
+  actor_role: string;
   created_at: string;
 }
 
-export interface AdminPremiumStatusEventsListResponse {
+export interface AdminPremiumAccessEventsListResponse {
   user_id: string;
   total: number;
-  items: AdminPremiumStatusEventResponse[];
+  items: AdminPremiumAccessEventResponse[];
 }
 
 export interface AdminShortLinkDetailResponse {
@@ -518,8 +527,8 @@ export interface RedeemPremiumCodeRequest {
 }
 
 export interface RedeemPremiumCodeResponse {
-  user_id: string;
-  is_premium: boolean;
+  secret_code: string;
+  updated_at: string;
 }
 
 export interface ForgotPasswordRequest {
@@ -1359,8 +1368,8 @@ export async function getAdminUsers(
   if (params?.sort) query.set("sort", params.sort);
   if (params?.order_by) query.set("order_by", params.order_by);
   if (params?.role) query.set("role", params.role);
-  if (params?.premium_status) {
-    query.set("premium_status", params.premium_status);
+  if (params?.premium_access_status) {
+    query.set("premium_access_status", params.premium_access_status);
   }
   if (params?.lock_status) query.set("lock_status", params.lock_status);
 
@@ -1508,7 +1517,7 @@ export async function unlockAdminUser(
 export async function revokeAdminUserPremiumAccess(
   userId: string,
   payload: AdminRevokePremiumAccessRequest
-): Promise<APIResponse<AdminPremiumStatusMutationResponse>> {
+): Promise<APIResponse<AdminPremiumAccessMutationResponse>> {
   const response = await fetchProtected(
     `${API_URL}/auth/admin/users/${encodeURIComponent(userId)}/revoke-premium`,
     {
@@ -1520,7 +1529,7 @@ export async function revokeAdminUserPremiumAccess(
     }
   );
 
-  const result: APIResponse<AdminPremiumStatusMutationResponse> =
+  const result: APIResponse<AdminPremiumAccessMutationResponse> =
     await response.json();
   if (!response.ok) {
     throw new Error(getErrorMessage(result) || "Failed to revoke premium access");
@@ -1535,7 +1544,7 @@ export async function revokeAdminUserPremiumAccess(
 export async function reactivateAdminUserPremiumAccess(
   userId: string,
   payload: AdminReactivatePremiumAccessRequest
-): Promise<APIResponse<AdminPremiumStatusMutationResponse>> {
+): Promise<APIResponse<AdminPremiumAccessMutationResponse>> {
   const response = await fetchProtected(
     `${API_URL}/auth/admin/users/${encodeURIComponent(userId)}/reactivate-premium`,
     {
@@ -1547,7 +1556,7 @@ export async function reactivateAdminUserPremiumAccess(
     }
   );
 
-  const result: APIResponse<AdminPremiumStatusMutationResponse> =
+  const result: APIResponse<AdminPremiumAccessMutationResponse> =
     await response.json();
   if (!response.ok) {
     throw new Error(getErrorMessage(result) || "Failed to reactivate premium access");
@@ -1557,18 +1566,18 @@ export async function reactivateAdminUserPremiumAccess(
 }
 
 /**
- * Get premium status events for user (admin only).
+ * Get premium access events for user (admin only).
  */
-export async function getAdminUserPremiumStatusEvents(
+export async function getAdminUserPremiumAccessEvents(
   userId: string,
   params?: { limit?: number }
-): Promise<APIResponse<AdminPremiumStatusEventsListResponse>> {
+): Promise<APIResponse<AdminPremiumAccessEventsListResponse>> {
   const query = new URLSearchParams();
   if (params?.limit) query.set("limit", String(params.limit));
 
   const suffix = query.toString();
   const response = await fetch(
-    `${API_URL}/auth/admin/users/${encodeURIComponent(userId)}/premium-status-events${suffix ? `?${suffix}` : ""}`,
+    `${API_URL}/auth/admin/users/${encodeURIComponent(userId)}/premium-access-events${suffix ? `?${suffix}` : ""}`,
     {
       method: "GET",
       headers: {
@@ -1578,10 +1587,10 @@ export async function getAdminUserPremiumStatusEvents(
     }
   );
 
-  const result: APIResponse<AdminPremiumStatusEventsListResponse> =
+  const result: APIResponse<AdminPremiumAccessEventsListResponse> =
     await response.json();
   if (!response.ok) {
-    throw new Error(getErrorMessage(result) || "Failed to get premium status events");
+    throw new Error(getErrorMessage(result) || "Failed to get premium access events");
   }
 
   return result;

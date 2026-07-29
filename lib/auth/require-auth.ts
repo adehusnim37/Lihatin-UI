@@ -17,7 +17,6 @@ type LocalJWTClaims = {
   username: string;
   email: string;
   role: string;
-  is_premium: boolean;
   is_verified: boolean;
   session_id?: string;
   device_id?: string;

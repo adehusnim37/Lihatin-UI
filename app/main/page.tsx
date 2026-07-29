@@ -82,7 +82,7 @@ export default function Page() {
       return;
     }
 
-    if (auth?.is_totp_enabled) {
+    if (auth?.totp_enabled) {
       sessionStorage.removeItem(TOTP_PROMPT_PENDING_KEY);
       return;
     }

@@ -70,16 +70,17 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
+  hasActivePremiumAccess,
   type AdminUserResponse,
   type AdminUserLockFilter,
-  type AdminUserPremiumFilter,
+  type AdminUserPremiumAccessFilter,
   type AdminUserRoleFilter,
   type AdminUserSort,
 } from "@/lib/api/auth";
 import {
   useAdminUserDetailQuery,
   useAdminUsersQuery,
-  useAdminPremiumStatusEventsQuery,
+  useAdminPremiumAccessEventsQuery,
   useUpdateAdminUserMutation,
   useLockAdminUserMutation,
   useUnlockAdminUserMutation,
@@ -112,7 +113,7 @@ function AdminUsersPageContent() {
   const orderBy = parseOrder(searchParams.get("order_by"));
   const roleFilter = parseRoleFilter(searchParams.get("role"));
   const premiumFilter = parsePremiumFilter(
-    searchParams.get("premium_status"),
+    searchParams.get("premium_access_status"),
   );
   const lockFilter = parseLockFilter(searchParams.get("lock_status"));
   const [searchInput, setSearchInput] = useState(searchFromURL);
@@ -196,7 +197,7 @@ function AdminUsersPageContent() {
     sort,
     order_by: orderBy,
     role: roleFilter,
-    premium_status: premiumFilter,
+    premium_access_status: premiumFilter,
     lock_status: lockFilter,
   });
   const users = useMemo(() => usersData?.users ?? [], [usersData?.users]);
@@ -207,7 +208,7 @@ function AdminUsersPageContent() {
     Boolean(activeUserId) && (isProfileOpen || isPremiumOpen || isHistoryOpen),
   );
 
-  const { data: eventsData, isLoading: eventsLoading, refetch: refetchEvents } = useAdminPremiumStatusEventsQuery(
+  const { data: eventsData, isLoading: eventsLoading, refetch: refetchEvents } = useAdminPremiumAccessEventsQuery(
     activeUserId ?? "",
     Boolean(activeUserId) && isHistoryOpen,
   );
@@ -246,13 +247,13 @@ function AdminUsersPageContent() {
   const activeUserStatus = useMemo(() => {
     if (!activeUser) return "free";
     if (isUserCurrentlyRevoked(activeUser)) return "revoked";
-    if (activeUser.is_premium) return "premium";
+    if (hasActivePremiumAccess(activeUser.premium_access)) return "premium";
     return "free";
   }, [activeUser]);
 
   const activeUserRevokeType = useMemo(() => {
     if (!activeUser) return "";
-    return (activeUser.premium_revoke_type || "").toLowerCase();
+    return (activeUser.premium_access?.revoke_type || "").toLowerCase();
   }, [activeUser]);
 
   const eventStats = useMemo(() => {
@@ -323,7 +324,7 @@ function AdminUsersPageContent() {
 
   const handleRevoke = () => {
     if (!activeUser || revokeMutation.isPending) return;
-    if (!activeUser.is_premium) {
+    if (!hasActivePremiumAccess(activeUser.premium_access)) {
       toast.error("User is not premium", {
         description: "Revoke is only available for premium users.",
       });
@@ -431,7 +432,7 @@ function AdminUsersPageContent() {
     if (!targetUser) return;
     if (lockUserMutation.isPending || unlockUserMutation.isPending) return;
 
-    if (targetUser.is_locked) {
+    if (targetUser.account_status === "locked") {
       unlockUserMutation.mutate(
         {
           userId: targetUser.id,
@@ -591,7 +592,7 @@ function AdminUsersPageContent() {
                       value={premiumFilter ?? "all"}
                       onValueChange={(value) =>
                         updateListQuery({
-                          premium_status:
+                          premium_access_status:
                             value === "all" ? null : value,
                           page: null,
                         })
@@ -767,13 +768,19 @@ function AdminUsersPageContent() {
                               <TableCell>
                                 <div className="flex flex-wrap gap-1.5">
                                   <PremiumStateBadge
-                                    isPremium={user.is_premium}
+                                    isPremium={hasActivePremiumAccess(
+                                      user.premium_access,
+                                    )}
                                     isRevoked={isUserCurrentlyRevoked(user)}
                                   />
                                   <ActiveInactiveBadge
-                                    isActive={!user.is_locked}
-                                    activeLabel="Unlocked"
-                                    inactiveLabel="Locked"
+                                    isActive={user.account_status === "active"}
+                                    activeLabel="Account active"
+                                    inactiveLabel={
+                                      user.account_status === "locked"
+                                        ? "Admin locked"
+                                        : "Account disabled"
+                                    }
                                   />
                                 </div>
                               </TableCell>
@@ -836,7 +843,7 @@ function AdminUsersPageContent() {
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
                                       className={
-                                        user.is_locked
+                                        user.account_status === "locked"
                                           ? ""
                                           : "text-destructive"
                                       }
@@ -849,7 +856,7 @@ function AdminUsersPageContent() {
                                       }
                                     >
                                       <IconLock />
-                                      {user.is_locked
+                                      {user.account_status === "locked"
                                         ? "Unlock account"
                                         : "Lock account"}
                                     </DropdownMenuItem>
@@ -857,7 +864,9 @@ function AdminUsersPageContent() {
                                       className={
                                         isUserCurrentlyRevoked(user)
                                           ? ""
-                                          : user.is_premium
+                                          : hasActivePremiumAccess(
+                                                user.premium_access,
+                                              )
                                             ? "text-destructive"
                                             : ""
                                       }
@@ -868,7 +877,9 @@ function AdminUsersPageContent() {
                                       <IconCrown />
                                       {isUserCurrentlyRevoked(user)
                                         ? "Restore premium"
-                                        : user.is_premium
+                                        : hasActivePremiumAccess(
+                                              user.premium_access,
+                                            )
                                           ? "Revoke premium"
                                           : "Review premium"}
                                     </DropdownMenuItem>
@@ -1022,7 +1033,9 @@ function AdminUsersPageContent() {
                     <p className="text-xs text-muted-foreground">{activeUser.email}</p>
                   </div>
                   <PremiumStateBadge
-                    isPremium={activeUser.is_premium}
+                    isPremium={hasActivePremiumAccess(
+                      activeUser.premium_access,
+                    )}
                     isRevoked={isUserCurrentlyRevoked(activeUser)}
                   />
                 </div>
@@ -1247,11 +1260,6 @@ function AdminUsersPageContent() {
                             <IconArrowRight className="size-3" />
                             <span>{event.new_status}</span>
                           </Badge>
-                          <Badge variant="outline" className="gap-1">
-                            <span className="text-muted-foreground">{event.old_role}</span>
-                            <IconArrowRight className="size-3" />
-                            <span>{event.new_role}</span>
-                          </Badge>
                           <RevokeTypeBadge revokeType={event.revoke_type} />
                         </div>
                         <div className="text-xs text-muted-foreground text-right">
@@ -1275,11 +1283,11 @@ function AdminUsersPageContent() {
                             <IconUserCircle className="size-3.5" />
                             Actor
                           </div>
-                          <p className="mt-1 text-sm font-medium break-all" title={event.changed_by || "system"}>
-                            {event.changed_by ? shortenID(event.changed_by) : "system"}
+                          <p className="mt-1 text-sm font-medium break-all" title={event.actor_id || "system"}>
+                            {event.actor_id ? shortenID(event.actor_id) : "system"}
                           </p>
                           <p className="mt-1 text-xs text-muted-foreground">
-                            Role: {event.changed_role || "-"}
+                            Role: {event.actor_role || "-"}
                           </p>
                           <p className="mt-1 text-xs text-muted-foreground">
                             Event ID: #{event.id}
@@ -1407,7 +1415,7 @@ function parseRoleFilter(value: string | null): AdminUserRoleFilter | undefined 
 
 function parsePremiumFilter(
   value: string | null,
-): AdminUserPremiumFilter | undefined {
+): AdminUserPremiumAccessFilter | undefined {
   if (value === "free" || value === "premium" || value === "revoked") {
     return value;
   }
@@ -1447,9 +1455,8 @@ function getInitials(value: string): string {
 function getLastAccountChange(user: AdminUserResponse): string {
   const candidates = [
     user.updated_at,
-    user.premium_revoked_at,
-    user.premium_reactivated_at,
-    user.locked_at,
+    user.premium_access?.status_changed_at,
+    user.account_status_changed_at,
   ].filter((value): value is string => Boolean(value));
 
   return candidates.reduce((latest, value) => {
@@ -1461,30 +1468,8 @@ function getLastAccountChange(user: AdminUserResponse): string {
   }, user.updated_at);
 }
 
-function isUserCurrentlyRevoked(user: { is_premium: boolean; premium_revoked_at?: string | null; premium_reactivated_at?: string | null }): boolean {
-  if (user.is_premium) {
-    return false;
-  }
-
-  if (!user.premium_revoked_at) {
-    return false;
-  }
-
-  if (!user.premium_reactivated_at) {
-    return true;
-  }
-
-  const revokedAt = new Date(user.premium_revoked_at).getTime();
-  const reactivatedAt = new Date(user.premium_reactivated_at).getTime();
-
-  if (Number.isNaN(revokedAt)) {
-    return false;
-  }
-  if (Number.isNaN(reactivatedAt)) {
-    return true;
-  }
-
-  return revokedAt > reactivatedAt;
+function isUserCurrentlyRevoked(user: AdminUserResponse): boolean {
+  return user.premium_access?.status === "revoked";
 }
 
 function formatDateTime(value?: string | null): string {
