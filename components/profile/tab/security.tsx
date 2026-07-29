@@ -32,7 +32,12 @@ import { useProfileQuery } from "@/lib/hooks/queries/useProfileQuery";
 export default function ProfileSecurityTab() {
   const searchParams = useSearchParams();
   const [isSessionOpen, setIsSessionOpen] = useState(false);
-  const { data: profileResponse, isLoading, error: profileError, refetch } = useProfileQuery();
+  const {
+    data: profileResponse,
+    isLoading,
+    error: profileError,
+    refetch,
+  } = useProfileQuery();
   const profileData = profileResponse?.data ?? null;
   const shouldAutoOpenTOTP =
     searchParams.get("openSetupTOTP") === "1" &&
@@ -59,7 +64,7 @@ export default function ProfileSecurityTab() {
     const date = new Date(dateString);
     const now = new Date();
     const diffInDays = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
     );
 
     if (diffInDays === 0) return "Today";
@@ -99,7 +104,11 @@ export default function ProfileSecurityTab() {
             <CardDescription>Failed to load security settings</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-destructive">{profileError instanceof Error ? profileError.message : "Failed to load security settings"}</p>
+            <p className="text-sm text-destructive">
+              {profileError instanceof Error
+                ? profileError.message
+                : "Failed to load security settings"}
+            </p>
           </CardContent>
         </Card>
       </TabsContent>
@@ -168,7 +177,7 @@ export default function ProfileSecurityTab() {
                 <div className="rounded-lg border p-4 space-y-3 bg-muted/50">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">
-                      Last IP Address
+                      Current IP Address
                     </span>
                     <span className="text-sm font-medium font-mono">
                       {profileData?.auth.last_ip || "N/A"}
@@ -176,11 +185,20 @@ export default function ProfileSecurityTab() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">
-                      Last Login
+                      Last Login Time
                     </span>
                     <span className="text-sm font-medium">
                       {formatDateTime(profileData?.auth.last_login_at)}
                     </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
+                      Last Logout at
+                    </span>
+                    <p className="text-sm font-medium">
+                      {formatDateTime(profileData?.auth.last_logout_at) ||
+                        "N/A"}
+                    </p>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">
@@ -234,7 +252,9 @@ export default function ProfileSecurityTab() {
             <Label>Two-Factor Authentication</Label>
             <div className="flex items-center justify-between p-3 rounded-lg border">
               <div className="flex items-center gap-3">
-                <IconShield className={`size-5 ${profileData?.auth.is_totp_enabled ? 'text-green-600' : 'text-muted-foreground'}`} />
+                <IconShield
+                  className={`size-5 ${profileData?.auth.is_totp_enabled ? "text-green-600" : "text-muted-foreground"}`}
+                />
                 <div>
                   <p className="text-sm font-medium">2FA Status</p>
                   <p className="text-xs text-muted-foreground">

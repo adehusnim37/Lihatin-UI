@@ -396,20 +396,77 @@ export function useSendAdminPremiumCodeEmailMutation() {
   });
 }
 
-export function useCheckShortCodeQuery(shortCode: string) {
-  return useQuery({
-    queryKey: ["short-code", "check", shortCode] as const,
-    queryFn: async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
-      const response = await fetch(`${apiUrl}/short/check/${shortCode}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
+interface ShortLinkCheckAPIResponse {
+  data?: {
+    short_code?: string;
+    destination_host?: string;
+    destination_scheme?: string;
+    title?: string;
+    description?: string;
+    requires_passcode?: boolean;
+  } | null;
+}
 
-      if (response.ok) return "valid" as const;
-      if (response.status === 404) return "not_found" as const;
-      if (response.status === 401) return "needs_passcode" as const;
-      return "valid" as const;
+export type ShortLinkCheckResult =
+  | {
+      status: "valid";
+      preview: {
+        shortCode: string;
+        destinationHost: string;
+        destinationScheme: string;
+        title?: string;
+        description?: string;
+        requiresPasscode: boolean;
+      };
+    }
+  | { status: "not_found" }
+  | { status: "needs_passcode" };
+
+export function useCheckShortCodeQuery(shortCode: string, passcode?: string) {
+  return useQuery({
+    queryKey: ["short-code", "check", shortCode, passcode] as const,
+    queryFn: async (): Promise<ShortLinkCheckResult> => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
+      const passcodePath = passcode ? `/${encodeURIComponent(passcode)}` : "";
+      const response = await fetch(
+        `${apiUrl}/short/check/${encodeURIComponent(shortCode)}${passcodePath}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+
+      if (response.ok) {
+        const payload = (await response.json()) as ShortLinkCheckAPIResponse;
+        if (payload.data?.requires_passcode && !passcode) {
+          return { status: "needs_passcode" };
+        }
+        return {
+          status: "valid",
+          preview: {
+            shortCode: payload.data?.short_code || shortCode,
+            destinationHost: payload.data?.destination_host || "",
+            destinationScheme: payload.data?.destination_scheme || "",
+            title: payload.data?.title,
+            description: payload.data?.description,
+            requiresPasscode: Boolean(payload.data?.requires_passcode),
+          },
+        };
+      }
+      if (response.status === 404) return { status: "not_found" };
+      if (response.status === 401) return { status: "needs_passcode" };
+
+      // Keep the link usable if preview metadata is temporarily unavailable,
+      // but make the redirect screen require an explicit visitor action.
+      return {
+        status: "valid",
+        preview: {
+          shortCode,
+          destinationHost: "",
+          destinationScheme: "",
+          requiresPasscode: Boolean(passcode),
+        },
+      };
     },
     enabled: Boolean(shortCode),
     retry: false,

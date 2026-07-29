@@ -73,6 +73,7 @@ export interface AuthData {
   last_login_at: string; // ISO 8601 or similar timestamp string
   failed_login_attempts: number;
   password_changed_at: string;
+  last_logout_at: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;

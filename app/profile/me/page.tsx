@@ -14,9 +14,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  IconBell,
   IconCrown,
   IconUserQuestion,
   IconCamera,
@@ -58,6 +57,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
+import ProfileNotificationsTab from "@/components/profile/tab/notifications";
 
 /**
  * Profile Page Content Component
@@ -695,34 +695,7 @@ function ProfilePageContent() {
                     <SessionTab />
 
                     {/* Notifications Tab */}
-                    <TabsContent value="notifications" className="space-y-4">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Notification Preferences</CardTitle>
-                          <CardDescription>
-                            Choose what notifications you want to receive
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="flex items-center justify-between p-3 rounded-lg border">
-                            <div className="flex items-center gap-3">
-                              <IconBell className="size-5 text-muted-foreground" />
-                              <div>
-                                <p className="text-sm font-medium">
-                                  Email Notifications
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  Receive updates via email
-                                </p>
-                              </div>
-                            </div>
-                            <Button variant="outline" size="sm">
-                              Configure
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </TabsContent>
+                    <ProfileNotificationsTab />
                   </Tabs>
                 </div>
               </div>

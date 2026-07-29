@@ -42,6 +42,7 @@ export function proxy(request: NextRequest) {
     "/dashboard",
     "/r",
     "/support",
+    "/email-preferences",
     "/link-error",
     "/not-found",
     "/api",

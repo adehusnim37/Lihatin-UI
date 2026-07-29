@@ -6,6 +6,7 @@ import {
   IconHelp,
   IconHistoryToggle,
   IconLifebuoy,
+  IconMail,
   IconReceipt,
   IconShield,
   IconTicket,
@@ -76,16 +77,22 @@ export const SidebarData = {
         },
       ],
     },
-    {
-      title: "Admin Security Policy",
-      url: "/main/admin/security-policy",
-      icon: IconShield,
+     {
+      title: "Email Campaigns",
+      url: "/main/admin/email-campaigns",
+      icon: IconMail,
     },
     {
       title: "Support Tickets",
       url: "/main/admin/support-tickets",
       icon: IconLifebuoy,
     },
+     {
+      title: "Admin Security Policy",
+      url: "/main/admin/security-policy",
+      icon: IconShield,
+    },
+   
   ],
   navSecondary: [
     {
