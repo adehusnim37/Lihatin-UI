@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthTransitionLink } from "@/components/auth/auth-transition-link";
+import { ShortLinkCutTransition } from "@/components/links/short-link-cut-transition";
 import { createShortLink } from "@/lib/api/shortlinks";
 
 gsap.registerPlugin(ScrollTrigger, MorphSVGPlugin);
@@ -430,6 +431,11 @@ export default function Index() {
   const [demoAlias, setDemoAlias] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [createdShortCode, setCreatedShortCode] = useState<string | null>(null);
+  const [cutTransition, setCutTransition] = useState<{
+    phase: "cutting" | "success";
+    resultUrl?: string;
+    sourceUrl: string;
+  } | null>(null);
 
   const sanitizedAlias = demoAlias
     .trim()
@@ -585,6 +591,10 @@ export default function Index() {
 
     setIsCreating(true);
     setCreatedShortCode(null);
+    setCutTransition({
+      phase: "cutting",
+      sourceUrl: trimmedURL,
+    });
 
     try {
       const response = await createShortLink({
@@ -603,10 +613,20 @@ export default function Index() {
       }
 
       setCreatedShortCode(response.data.short_code);
+      setCutTransition((current) =>
+        current
+          ? {
+              phase: "success",
+              resultUrl: `lihat.in/${response.data.short_code}`,
+              sourceUrl: trimmedURL,
+            }
+          : null,
+      );
       toast.success("Short link created", {
         description: `Your link is ready: lihat.in/${response.data.short_code}`,
       });
     } catch (error) {
+      setCutTransition(null);
       const message =
         error instanceof Error ? error.message : "Unable to create short link.";
       const lowered = message.toLowerCase();
@@ -972,6 +992,15 @@ export default function Index() {
       </main>
 
       <BouncyFooter />
+      {cutTransition && (
+        <ShortLinkCutTransition
+          onFinish={() => setCutTransition(null)}
+          open
+          phase={cutTransition.phase}
+          resultUrl={cutTransition.resultUrl}
+          sourceUrl={cutTransition.sourceUrl}
+        />
+      )}
     </div>
   );
 }

@@ -14,6 +14,10 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useCreateLink } from "@/lib/hooks/queries/useLinksQuery";
 import { hasRepeatedConsecutiveDigits } from "@/lib/validators/passcode";
+import { ShortLinkCutTransition } from "@/components/links/short-link-cut-transition";
+
+const FRONTEND_BASE_URL =
+  process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
 
 interface QuickCreateLinkDialogProps {
   open: boolean;
@@ -27,6 +31,11 @@ export default function QuickCreateLinkDialog({
   const [linkName, setLinkName] = useState("");
   const [linkURL, setLinkURL] = useState("");
   const [passcode, setPasscode] = useState<string>("");
+  const [cutTransition, setCutTransition] = useState<{
+    phase: "cutting" | "success";
+    resultUrl?: string;
+    sourceUrl: string;
+  } | null>(null);
 
   const createLinkMutation = useCreateLink();
 
@@ -64,78 +73,113 @@ export default function QuickCreateLinkDialog({
       ],
     };
 
-    createLinkMutation.mutate(requestData);
+    const sourceUrl = linkURL;
+    setCutTransition({
+      phase: "cutting",
+      sourceUrl,
+    });
+
+    createLinkMutation.mutate(requestData, {
+      onSuccess: (createdLink) => {
+        setCutTransition((current) =>
+          current
+            ? {
+                phase: "success",
+                resultUrl: createdLink?.short_code
+                  ? `${FRONTEND_BASE_URL}/${createdLink.short_code}`
+                  : undefined,
+                sourceUrl,
+              }
+            : null,
+        );
+      },
+      onError: () => {
+        setCutTransition(null);
+      },
+    });
     handleOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create Quick Link</DialogTitle>
-          <DialogDescription>
-            Fill in the details below to create a new quick link.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 w-full mt-4">
-          <div className="flex flex-col space-y-1">
-            <Label htmlFor="link-name">Link Name</Label>
-            <Input
-              id="link-name"
-              value={linkName}
-              onChange={(e) => setLinkName(e.target.value)}
-              placeholder="Enter link name"
-            />
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Quick Link</DialogTitle>
+            <DialogDescription>
+              Fill in the details below to create a new quick link.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 w-full mt-4">
+            <div className="flex flex-col space-y-1">
+              <Label htmlFor="link-name">Link Name</Label>
+              <Input
+                id="link-name"
+                value={linkName}
+                onChange={(e) => setLinkName(e.target.value)}
+                placeholder="Enter link name"
+              />
+            </div>
+            <div className="flex flex-col space-y-1">
+              <Label htmlFor="link-url">Link URL</Label>
+              <Input
+                id="link-url"
+                value={linkURL}
+                onChange={(e) => setLinkURL(e.target.value)}
+                placeholder="Enter link URL"
+              />
+            </div>
+            <div className="flex flex-col space-y-1">
+              <Label>Passcode (Optional)</Label>
+              <Input
+                id="link-passcode"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder="123456"
+                value={passcode}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, "").slice(0, 6);
+                  setPasscode(value);
+                }}
+                maxLength={6}
+              />
+            </div>
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm text-muted-foreground">
+                Note: Quick links are created instantly but can be edited or
+                deleted later from your links dashboard.
+              </p>
+            </div>
           </div>
-          <div className="flex flex-col space-y-1">
-            <Label htmlFor="link-url">Link URL</Label>
-            <Input
-              id="link-url"
-              value={linkURL}
-              onChange={(e) => setLinkURL(e.target.value)}
-              placeholder="Enter link URL"
-            />
-          </div>
-          <div className="flex flex-col space-y-1">
-            <Label>Passcode (Optional)</Label>
-            <Input
-              id="link-passcode"
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              placeholder="123456"
-              value={passcode}
-              onChange={(e) => {
-                const value = e.target.value.replace(/\D/g, "").slice(0, 6);
-                setPasscode(value);
-              }}
-              maxLength={6}
-            />
-          </div>
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm text-muted-foreground">
-              Note: Quick links are created instantly but can be edited or
-              deleted later from your links dashboard.
-            </p>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button
-            onClick={handleCreateLink}
-            disabled={
-              createLinkMutation.isPending ||
-              !linkName ||
-              !linkURL ||
-              !isPasscodeValid
-            }
-          >
-            {createLinkMutation.isPending ? (
-              <Loader2 className="animate-spin mr-2" />
-            ) : null}
-            Create Link
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DialogFooter>
+            <Button
+              onClick={handleCreateLink}
+              disabled={
+                createLinkMutation.isPending ||
+                !linkName ||
+                !linkURL ||
+                !isPasscodeValid
+              }
+            >
+              {createLinkMutation.isPending ? (
+                <Loader2 className="animate-spin mr-2" />
+              ) : null}
+              Create Link
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {cutTransition && (
+        <ShortLinkCutTransition
+          onFinish={() => setCutTransition(null)}
+          open
+          phase={cutTransition.phase}
+          resultUrl={cutTransition.resultUrl}
+          sourceUrl={cutTransition.sourceUrl}
+        />
+      )}
+    </>
   );
 }

@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { gsap } from "gsap";
 import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
+import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import {
   ArrowLeft,
   ArrowRight,
@@ -29,7 +30,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 
-gsap.registerPlugin(MorphSVGPlugin);
+gsap.registerPlugin(MorphSVGPlugin, MotionPathPlugin);
 
 interface ErrorConfig {
   description: string;
@@ -112,6 +113,9 @@ const morphPaths = [
   "M101 331C72 235 128 156 220 130C310 104 370 164 451 137C541 107 615 189 603 284C591 378 528 444 430 429C344 416 286 463 193 433C111 406 122 399 101 331Z",
 ];
 
+const crashFlightPath =
+  "M-80 156C35 132 164 141 287 170C308 175 323 179 334 182C346 186 349 195 341 204C332 214 335 226 350 236C401 270 455 314 491 364C518 401 540 423 556 428";
+
 function ErrorVisual({
   code,
   config,
@@ -135,6 +139,18 @@ function ErrorVisual({
 
     media.add("(prefers-reduced-motion: no-preference)", () => {
       const context = gsap.context(() => {
+        const plane = visual.querySelector<SVGGElement>("[data-error-plane]");
+        const planeBody = visual.querySelector<SVGGElement>(
+          "[data-error-plane-body]",
+        );
+        const planePath = visual.querySelector<SVGPathElement>(
+          "[data-error-plane-path]",
+        );
+
+        if (!plane || !planeBody || !planePath) {
+          return;
+        }
+
         const morph = gsap.timeline({
           repeat: -1,
           yoyo: true,
@@ -162,7 +178,7 @@ function ErrorVisual({
           rotation: -360,
           transformOrigin: "center",
         });
-        gsap.to("[data-error-signal]", {
+        gsap.to("[data-error-signal], [data-error-flight-path]", {
           duration: 1.8,
           ease: "none",
           repeat: -1,
@@ -212,18 +228,30 @@ function ErrorVisual({
           scale: 0.65,
         });
 
+        const flight = gsap.to(plane, {
+          duration: 1,
+          ease: "none",
+          paused: true,
+          motionPath: {
+            align: planePath,
+            alignOrigin: [0.5, 0.5],
+            autoRotate: true,
+            path: planePath,
+          },
+        });
+
         const crash = gsap.timeline({
           repeat: -1,
-          repeatDelay: 0.9,
+          repeatDelay: 1.25,
         });
 
         crash
-          .set("[data-error-plane]", {
+          .call(() => {
+            flight.progress(0).pause();
+          })
+          .set(plane, {
             autoAlpha: 0,
-            rotation: 3,
             scale: 0.36,
-            x: -70,
-            y: 155,
           })
           .set("[data-error-impact]", {
             autoAlpha: 0,
@@ -243,6 +271,29 @@ function ErrorVisual({
             x: 0,
             y: 0,
           })
+          .set(planeBody, {
+            rotation: 0,
+            transformOrigin: "center",
+            x: 0,
+            y: 0,
+          })
+          .set("[data-error-collision-ring]", {
+            autoAlpha: 0,
+            scale: 0.2,
+            transformOrigin: "center",
+          })
+          .set("[data-error-collision-spark]", {
+            autoAlpha: 0,
+            scale: 0,
+            transformOrigin: "center",
+            x: 0,
+            y: 0,
+          })
+          .set("[data-error-obstacle]", {
+            rotation: 0,
+            transformOrigin: "center",
+            x: 0,
+          })
           .set("[data-error-debris]", {
             autoAlpha: 0,
             scale: 0,
@@ -250,32 +301,145 @@ function ErrorVisual({
             x: 0,
             y: 0,
           })
-          .to("[data-error-plane]", {
-            autoAlpha: 1,
-            duration: 0.16,
-          })
-          .to("[data-error-plane]", {
-            duration: 1.25,
+          .to(flight, {
+            duration: 1.65,
             ease: "sine.inOut",
-            rotation: -3,
-            x: 245,
-            y: 164,
+            progress: 0.56,
           })
-          .to("[data-error-plane]", {
-            duration: 0.46,
-            ease: "power1.in",
-            rotation: 14,
-            x: 370,
-            y: 220,
-          })
-          .to("[data-error-plane]", {
-            duration: 0.82,
-            ease: "power2.in",
-            rotation: 58,
-            scale: 0.32,
-            x: 536,
-            y: 407,
-          })
+          .to(
+            plane,
+            {
+              autoAlpha: 1,
+              duration: 0.16,
+              ease: "power1.out",
+            },
+            "<0.64",
+          )
+          .add("collision")
+          .to(
+            flight,
+            {
+              duration: 0.28,
+              ease: "power2.out",
+              progress: 0.64,
+            },
+            "collision",
+          )
+          .to(
+            planeBody,
+            {
+              duration: 0.1,
+              ease: "power3.out",
+              rotation: -9,
+              x: -5,
+              y: 2,
+            },
+            "collision",
+          )
+          .to(
+            "[data-error-obstacle]",
+            {
+              duration: 0.09,
+              ease: "power3.out",
+              rotation: 8,
+              x: 4,
+            },
+            "collision",
+          )
+          .to(
+            "[data-error-obstacle]",
+            {
+              duration: 0.42,
+              ease: "elastic.out(1, 0.35)",
+              rotation: 0,
+              x: 0,
+            },
+            "collision+=0.09",
+          )
+          .to(
+            "[data-error-collision-ring]",
+            {
+              autoAlpha: 0.75,
+              duration: 0.14,
+              ease: "power2.out",
+              scale: 0.75,
+            },
+            "collision",
+          )
+          .to(
+            "[data-error-collision-ring]",
+            {
+              autoAlpha: 0,
+              duration: 0.42,
+              ease: "power2.out",
+              scale: 2.1,
+            },
+            "collision+=0.14",
+          )
+          .to(
+            "[data-error-collision-spark]",
+            {
+              autoAlpha: 0.9,
+              duration: 0.12,
+              ease: "back.out(2.2)",
+              scale: 1,
+            },
+            "collision",
+          )
+          .to(
+            "[data-error-collision-spark]",
+            {
+              autoAlpha: 0,
+              duration: 0.34,
+              ease: "power2.out",
+              scale: 0.45,
+              x: -11,
+              y: 7,
+            },
+            "collision+=0.11",
+          )
+          .add("fall", "collision+=0.22")
+          .to(
+            flight,
+            {
+              duration: 1.46,
+              ease: "power2.in",
+              progress: 1,
+            },
+            "fall",
+          )
+          .to(
+            plane,
+            {
+              duration: 1.46,
+              ease: "sine.in",
+              scale: 0.33,
+            },
+            "fall",
+          )
+          .to(
+            planeBody,
+            {
+              duration: 0.13,
+              ease: "sine.inOut",
+              repeat: 8,
+              rotation: 3,
+              x: 1.5,
+              y: 2.5,
+              yoyo: true,
+            },
+            "fall",
+          )
+          .to(
+            plane,
+            {
+              duration: 0.1,
+              ease: "power3.in",
+              scaleX: 0.37,
+              scaleY: 0.25,
+            },
+            "fall+=1.36",
+          )
           .to(
             "[data-error-impact]",
             {
@@ -319,7 +483,7 @@ function ErrorVisual({
             },
             "<0.04",
           )
-          .to("[data-error-plane]", {
+          .to(plane, {
             autoAlpha: 0,
             duration: 0.1,
           })
@@ -378,10 +542,10 @@ function ErrorVisual({
       const context = gsap.context(() => {
         gsap.set("[data-error-plane]", {
           autoAlpha: 0.72,
-          rotation: 42,
+          rotation: 49,
           scale: 0.32,
-          x: 500,
-          y: 375,
+          x: 515,
+          y: 385,
         });
         gsap.set("[data-error-impact]", {
           autoAlpha: 0.32,
@@ -524,6 +688,17 @@ function ErrorVisual({
           <circle cx="340" cy="280" r="150" fill="url(#error-mark-glow)" />
 
           <path
+            data-error-flight-path
+            d={crashFlightPath}
+            fill="none"
+            opacity="0.24"
+            stroke="var(--primary)"
+            strokeDasharray="3 13"
+            strokeLinecap="round"
+            strokeWidth="3"
+          />
+
+          <path
             data-error-signal
             d="M84 280C166 280 198 242 264 269C302 284 314 280 322 280M358 280C400 279 421 293 450 324C484 360 510 400 578 426"
             fill="none"
@@ -542,6 +717,28 @@ function ErrorVisual({
             <circle data-error-particle cx="442" cy="94" r="4" />
             <circle data-error-particle cx="265" cy="468" r="5" />
           </g>
+
+          <path
+            d="M390 479C424 449 469 451 500 438C535 423 565 426 596 440C622 452 648 451 680 439V560H390Z"
+            fill="var(--third)"
+            opacity="0.34"
+          />
+          <path
+            d="M390 479C424 449 469 451 500 438C535 423 565 426 596 440C622 452 648 451 680 439"
+            fill="none"
+            opacity="0.55"
+            stroke="var(--third)"
+            strokeLinecap="round"
+            strokeWidth="4"
+          />
+          <ellipse
+            cx="556"
+            cy="438"
+            rx="66"
+            ry="13"
+            fill="var(--foreground)"
+            opacity="0.07"
+          />
 
           <g
             fill="none"
@@ -635,8 +832,30 @@ function ErrorVisual({
             </filter>
           </defs>
 
+          <path data-error-plane-path d={crashFlightPath} fill="none" />
+
+          <g transform="translate(383 184)">
+            <g data-error-obstacle>
+              <path
+                d="M0-18L16 0L0 18L-16 0Z"
+                fill="var(--card)"
+                stroke="var(--foreground)"
+                strokeLinejoin="round"
+                strokeWidth="3"
+              />
+              <path
+                d="M0-8V3M0 9V10"
+                fill="none"
+                stroke="var(--primary)"
+                strokeLinecap="round"
+                strokeWidth="3.5"
+              />
+            </g>
+          </g>
+
           <g data-error-plane filter="url(#crash-plane-shadow)" opacity="0">
-            <g transform="translate(-105 -75)">
+            <g data-error-plane-body>
+              <g transform="translate(-105 -75)">
               <path
                 d="M12 64C12 51 23 40 36 40H123C143 40 161 46 176 57L198 73L176 89C161 100 143 106 123 106H36C23 106 12 95 12 82Z"
                 fill="var(--card)"
@@ -669,22 +888,50 @@ function ErrorVisual({
                 <circle cx="88" cy="70" r="7" />
                 <circle cx="114" cy="70" r="7" />
               </g>
-              <g data-error-propeller transform="translate(199 73)">
-                <circle
-                  cx="0"
-                  cy="0"
-                  r="7"
-                  fill="var(--third)"
-                  stroke="var(--foreground)"
-                  strokeWidth="4"
-                />
-                <path
-                  d="M0-38C10-38 12-25 7-6L0 0L-7-6C-12-25-10-38 0-38ZM0 38C-10 38-12 25-7 6L0 0L7 6C12 25 10 38 0 38Z"
-                  fill="var(--card)"
-                  stroke="var(--foreground)"
-                  strokeWidth="4"
-                />
+                <g data-error-propeller transform="translate(199 73)">
+                  <circle
+                    cx="0"
+                    cy="0"
+                    r="7"
+                    fill="var(--third)"
+                    stroke="var(--foreground)"
+                    strokeWidth="4"
+                  />
+                  <path
+                    d="M0-38C10-38 12-25 7-6L0 0L-7-6C-12-25-10-38 0-38ZM0 38C-10 38-12 25-7 6L0 0L7 6C12 25 10 38 0 38Z"
+                    fill="var(--card)"
+                    stroke="var(--foreground)"
+                    strokeWidth="4"
+                  />
+                </g>
               </g>
+            </g>
+          </g>
+
+          <g transform="translate(367 184)">
+            <circle
+              data-error-collision-ring
+              cx="0"
+              cy="0"
+              r="15"
+              fill="none"
+              opacity="0"
+              stroke="var(--primary)"
+              strokeWidth="3"
+            />
+            <g
+              data-error-collision-spark
+              fill="none"
+              opacity="0"
+              stroke="var(--foreground)"
+              strokeLinecap="round"
+              strokeWidth="3"
+            >
+              <path d="M-3-7L-10-15" />
+              <path d="M-7 0L-18-1" />
+              <path d="M-3 7L-11 14" />
+              <path d="M4-7L10-15" />
+              <path d="M6 5L15 11" />
             </g>
           </g>
 

@@ -55,6 +55,7 @@ import { useEffect } from "react";
 import { useCreateLink } from "@/lib/hooks/queries/useLinksQuery";
 import { hasRepeatedConsecutiveDigits } from "@/lib/validators/passcode";
 import { IconInfoCircle } from "@tabler/icons-react";
+import { ShortLinkCutTransition } from "./short-link-cut-transition";
 
 const FRONTEND_BASE_URL =
   process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
@@ -128,6 +129,12 @@ export default function CreateLink() {
   const [open, setOpen] = React.useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
   const [pendingData, setPendingData] = React.useState<FormValues | null>(null);
+  const [cutTransition, setCutTransition] = React.useState<{
+    count: number;
+    phase: "cutting" | "success";
+    resultUrl?: string;
+    sourceUrl: string;
+  } | null>(null);
 
   const createLinkMutation = useCreateLink();
 
@@ -205,11 +212,36 @@ export default function CreateLink() {
       })),
     };
 
-    createLinkMutation.mutate(requestData);
+    setCutTransition({
+      count: data.links.length,
+      phase: "cutting",
+      sourceUrl: data.links[0]?.original_url || "",
+    });
+
+    createLinkMutation.mutate(requestData, {
+      onSuccess: (createdLink) => {
+        setCutTransition((current) =>
+          current
+            ? {
+                count: data.links.length,
+                phase: "success",
+                resultUrl:
+                  data.links.length === 1 && createdLink?.short_code
+                    ? `${FRONTEND_BASE_URL}/${createdLink.short_code}`
+                    : undefined,
+                sourceUrl: data.links[0]?.original_url || "",
+              }
+            : null,
+        );
+        reset();
+      },
+      onError: () => {
+        setCutTransition(null);
+      },
+    });
     setOpen(false);
     setShowConfirmDialog(false);
     setPendingData(null);
-    reset();
   }
 
   // Reset links array when toggling bulk mode to ensure clean state if needed,
@@ -669,6 +701,17 @@ export default function CreateLink() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {cutTransition && (
+        <ShortLinkCutTransition
+          count={cutTransition.count}
+          onFinish={() => setCutTransition(null)}
+          open
+          phase={cutTransition.phase}
+          resultUrl={cutTransition.resultUrl}
+          sourceUrl={cutTransition.sourceUrl}
+        />
+      )}
     </>
   );
 }
