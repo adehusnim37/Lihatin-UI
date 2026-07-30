@@ -9,8 +9,6 @@ import {
   IconShield,
   IconUserCircle,
 } from "@tabler/icons-react"
-import { toast } from "sonner"
-
 import {
   Avatar,
   AvatarFallback,
@@ -32,6 +30,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/app/context/AuthContext"
+import { LogoutTransition } from "@/components/auth/logout-transition"
 
 interface UserData {
   id: string
@@ -94,6 +93,7 @@ const subscribeToUserStorage = (onStoreChange: () => void) => {
 export function NavUser() {
   const { isMobile } = useSidebar()
   const [isLoading, setIsLoading] = useState(false)
+  const [showLogoutTransition, setShowLogoutTransition] = useState(false)
   const user = useSyncExternalStore(
     subscribeToUserStorage,
     readUserFromStorage,
@@ -109,19 +109,15 @@ export function NavUser() {
     ? `${user.first_name?.[0] || ""}${user.last_name?.[0] || ""}`.toUpperCase() 
     : "U"
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
+    if (isLoading) return
+
     setIsLoading(true)
-    try {
-      await auth.logout()
-      // Toast will show before page reload
-      toast.success('Logged out', { description: 'You have been logged out.' })
-      // AuthContext.logout will force reload to /auth/login
-    } catch (err) {
-      console.error('Logout error:', err)
-      toast.error('Logout failed', { description: 'Please try again.' })
-      // AuthContext.logout handles fallback reload
-    }
-    // No finally block needed - page will reload
+    setShowLogoutTransition(true)
+  }
+
+  const completeLogout = async () => {
+    await auth.logout()
   }
 
   const handleProfilePage = () => {
@@ -193,6 +189,10 @@ export function NavUser() {
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
+      <LogoutTransition
+        active={showLogoutTransition}
+        onComplete={completeLogout}
+      />
     </SidebarMenu>
   )
 }

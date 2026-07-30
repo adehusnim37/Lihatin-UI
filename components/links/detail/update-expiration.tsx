@@ -61,9 +61,7 @@ export function UpdateExpirationDialog({
   const onSubmit = async (data: ExpirationFormValues) => {
     setIsLoading(true);
     try {
-      // If date is valid, convert to ISO string. If null/undefined, send null to remove expiration
       const isoDate = data.expires_at ? data.expires_at.toISOString() : null;
-      // We might need to handle the "remove" explicitly if the API expects something else, or use a separate button.
       await onUpdate(shortCode, { expires_at: isoDate });
       onOpenChange(false);
     } catch (error) {
@@ -76,17 +74,6 @@ export function UpdateExpirationDialog({
   const handleRemoveExpiration = async () => {
     setIsLoading(true);
     try {
-      // Send specific indicator to remove if API supports it, or just null/nil logic
-      // Assuming sending null or specific structure handles it.
-      // Based on typical Go generic handling: if pointer is nil, it ignores.
-      // BUT if we want to SET it to NULL in DB, we often need a specific way or "null" value.
-      // Let's assume for now the onUpdate wrapper handles the complexity or sending a far future date?
-      // No, proper way is usually sending a signal.
-      // Let's try sending null and see if the frontend API wrapper handles it.
-      // Re-reading dto: ExpiresAt *time.Time.
-      // If we send null in JSON, GORM might set it to NULL if using updates map, but if using Struct it might ignore nil pointer?
-      // However, we are likely sending a map or struct.
-      // Let's invoke update with null.
       await onUpdate(shortCode, { expires_at: null });
       onOpenChange(false);
       form.reset({ expires_at: undefined });

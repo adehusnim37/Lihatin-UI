@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import BlobDefault from "@/components/blob/blob-default";
 import { OTPForm } from "@/components/otp-form";
+import { AuthenticatedTransition } from "@/components/auth/authenticated-transition";
 import {
   signupResendOTP,
   signupVerifyOTP,
@@ -18,6 +19,7 @@ function VerifySignupOTPContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [completionUrl, setCompletionUrl] = useState<string | null>(null);
 
   const challengeFromQuery = useMemo(
     () => searchParams.get("challenge_token")?.trim() || "",
@@ -65,10 +67,10 @@ function VerifySignupOTPContent() {
           duration: 2500,
         });
 
-        router.push(
+        setCompletionUrl(
           `/auth/complete-profile?signup_token=${encodeURIComponent(
-            response.data.signup_token
-          )}`
+            response.data.signup_token,
+          )}`,
         );
       }
     } catch (err: unknown) {
@@ -138,6 +140,16 @@ function VerifySignupOTPContent() {
           error={error}
         />
       </div>
+      <AuthenticatedTransition
+        active={Boolean(completionUrl)}
+        statusLabel="Email confirmed"
+        finalTitle="Email verified"
+        finalDescription="Preparing your profile"
+        prepareMainEntry={false}
+        onComplete={() => {
+          if (completionUrl) router.push(completionUrl);
+        }}
+      />
     </div>
   );
 }

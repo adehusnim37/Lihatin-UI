@@ -6,6 +6,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import BlobDefault from "@/components/blob/blob-default";
 import { OTPForm } from "@/components/otp-form";
+import { AuthenticatedTransition } from "@/components/auth/authenticated-transition";
 import {
   type LoginResponse,
   resendLoginEmailOTP,
@@ -32,6 +33,8 @@ function VerifyEmailOTPContent() {
   const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [supportLink, setSupportLink] = useState<string | null>(null);
+  const [isAuthenticatedTransitioning, setIsAuthenticatedTransitioning] =
+    useState(false);
 
   const redirectTo = useMemo(
     () => searchParams.get("redirect") || "/main",
@@ -60,10 +63,6 @@ function VerifyEmailOTPContent() {
   const cleanupPendingOTP = () => {
     sessionStorage.removeItem("pending_email_otp_challenge");
     sessionStorage.removeItem("pending_email_otp_email");
-  };
-
-  const continueAfterLogin = () => {
-    router.push(redirectTo);
   };
 
   const handleVerify = async (otp: string) => {
@@ -110,7 +109,7 @@ function VerifyEmailOTPContent() {
           description: `Welcome back, ${loginData.user.first_name}!`,
           duration: 2500,
         });
-        continueAfterLogin();
+        setIsAuthenticatedTransitioning(true);
       }
     } catch (err: unknown) {
       const message =
@@ -197,6 +196,10 @@ function VerifyEmailOTPContent() {
           </div>
         )}
       </div>
+      <AuthenticatedTransition
+        active={isAuthenticatedTransitioning}
+        onComplete={() => router.push(redirectTo)}
+      />
     </div>
   );
 }

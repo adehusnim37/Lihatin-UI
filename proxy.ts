@@ -7,6 +7,10 @@ import {
 } from "@/lib/security/response";
 import { isLocalHostname } from "@/lib/security/headers";
 
+function matchesRouteNamespace(pathname: string, route: string) {
+  return pathname === route || pathname.startsWith(`${route}/`);
+}
+
 /**
  * Next.js Middleware for Route Protection
  * 🔐 Checks for access_token cookie to protect routes
@@ -33,8 +37,9 @@ export function proxy(request: NextRequest) {
   // Get access_token from cookies
   const accessToken = request.cookies.get("access_token")?.value;
 
-  // Define known app routes (these should NOT be treated as short codes)
-  // This prevents /main, /auth, /profile, etc. from being caught by [short_code]
+  // These namespaces bypass the proxy's generic unknown-route rewrite.
+  // Filesystem catch-all routes, such as /main/[...notFound], prevent their
+  // unknown children from falling through to /[short_code]/[passcode].
   const knownAppRoutes = [
     "/main",
     "/auth",
@@ -53,12 +58,12 @@ export function proxy(request: NextRequest) {
   // Check if this is a known app route
   const isKnownRoute =
     pathname === "/" ||
-    knownAppRoutes.some((route) => pathname.startsWith(route));
+    knownAppRoutes.some((route) => matchesRouteNamespace(pathname, route));
 
   // Define protected routes
   const protectedRoutes = ["/main", "/dashboard", "/profile"];
   const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
+    matchesRouteNamespace(pathname, route)
   );
 
   // Define auth routes

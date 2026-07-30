@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import Image from "next/image";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import { TermsDialog } from "@/components/auth/terms-dialog";
@@ -12,8 +11,7 @@ import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { signupStart, startGoogleOAuth } from "@/lib/api/auth";
-
-const BRAND_URL = process.env.NEXT_PUBLIC_BRAND_URL || "https://lihat.in";
+import { AuthShell } from "@/components/auth/auth-shell";
 
 function GoogleIcon() {
   return (
@@ -220,112 +218,99 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="md:flex md:min-h-full bg-background md:p-6 py-6 gap-x-6">
-      <div className="md:w-1/2 flex items-center justify-center">
-        <div className="max-w-sm px-6 py-16 md:p-0 w-full">
-          <div className="space-y-6 mb-6">
-            <Link href={BRAND_URL} target="_blank">
-              <Image
-                src="/logo.svg"
-                alt="Logo"
-                width={100}
-                height={100}
-                className="mx-auto mb-4 rounded"
-              />
-            </Link>
-            <div className="flex flex-col gap-y-3">
-              <h1 className="text-2xl md:text-3xl font-bold">Create an account</h1>
-              <p className="text-muted-foreground text-sm">
-                Start with your email. We&apos;ll send a one-time verification code.
-              </p>
-            </div>
-          </div>
-
-          <form onSubmit={handleStartSignup} className="space-y-4 mb-6">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                placeholder="you@example.com"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                disabled={isAnyLoading}
-                required
-              />
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="agree_terms"
-                checked={formData.agree_terms}
-                onCheckedChange={(checked) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    agree_terms: checked as boolean,
-                  }))
-                }
-                disabled={isAnyLoading}
-              />
-              <Label htmlFor="agree_terms" className="text-sm font-normal">
-                I agree to the <TermsDialog>Terms & Conditions</TermsDialog>
-              </Label>
-            </div>
-          </form>
-
-          <div className="flex flex-col space-y-4">
-            <Button
-              className="w-full"
-              onClick={handleStartSignup}
-              disabled={isAnyLoading}
-              type="submit"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  Sending code...
-                </>
-              ) : (
-                "Continue"
-              )}
-            </Button>
-            <Button
-              className="w-full"
-              variant="outline"
-              onClick={handleGoogleSignup}
-              disabled={isAnyLoading}
-              type="button"
-            >
-              {isGoogleLoading ? (
-                <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  Redirecting to Google...
-                </>
-              ) : (
-                <>
-                  <GoogleIcon />
-                  Sign up with Google
-                </>
-              )}
-            </Button>
-            <p className="text-sm text-center text-muted-foreground">
-              Already have account?{" "}
-              <Link className="underline text-foreground" href="/auth/login">
-                Sign in
-              </Link>
-            </p>
-          </div>
+    <AuthShell
+      eyebrow="Start for free"
+      title="Create your account"
+      description="Start with your email. We’ll send a one-time verification code—no password setup yet."
+      visualTitle="One short link can open a clearer view."
+      visualDescription="Create memorable links, understand every visit, and keep control of where your audience lands."
+    >
+      <form onSubmit={handleStartSignup} className="space-y-5">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            placeholder="you@example.com"
+            type="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            disabled={isAnyLoading}
+            className="h-11"
+            required
+          />
         </div>
+
+        <div className="flex items-start space-x-2">
+          <Checkbox
+            id="agree_terms"
+            checked={formData.agree_terms}
+            onCheckedChange={(checked) =>
+              setFormData((prev) => ({
+                ...prev,
+                agree_terms: checked as boolean,
+              }))
+            }
+            disabled={isAnyLoading}
+            className="mt-0.5"
+          />
+          <Label htmlFor="agree_terms" className="text-sm font-normal leading-5">
+            I agree to the <TermsDialog>Terms & Conditions</TermsDialog>
+          </Label>
+        </div>
+
+        <Button
+          className="h-11 w-full"
+          disabled={isAnyLoading}
+          type="submit"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 size-4 animate-spin" />
+              Sending code...
+            </>
+          ) : (
+            "Continue with email"
+          )}
+        </Button>
+      </form>
+
+      <div className="my-5 flex items-center gap-3">
+        <span className="h-px flex-1 bg-border" />
+        <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+          or
+        </span>
+        <span className="h-px flex-1 bg-border" />
       </div>
 
-      <Image
-        src="/sign-up.svg"
-        alt="Image"
-        width={1000}
-        height={1000}
-        className="w-1/2 rounded-xl object-cover md:block hidden"
-        loading="eager"
-      />
-    </div>
+      <Button
+        className="h-11 w-full"
+        variant="outline"
+        onClick={handleGoogleSignup}
+        disabled={isAnyLoading}
+        type="button"
+      >
+        {isGoogleLoading ? (
+          <>
+            <Loader2 className="mr-2 size-4 animate-spin" />
+            Redirecting to Google...
+          </>
+        ) : (
+          <>
+            <GoogleIcon />
+            Sign up with Google
+          </>
+        )}
+      </Button>
+
+      <p className="mt-5 text-center text-sm text-muted-foreground">
+        Already have an account?{" "}
+        <Link
+          className="font-semibold text-foreground underline-offset-4 hover:underline"
+          href="/auth/login"
+        >
+          Sign in
+        </Link>
+      </p>
+    </AuthShell>
   );
 }

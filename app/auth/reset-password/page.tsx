@@ -6,9 +6,10 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import Image from "next/image";
 import Link from "next/link";
 
+import { AuthenticatedTransition } from "@/components/auth/authenticated-transition";
+import { AuthShell } from "@/components/auth/auth-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -25,8 +26,6 @@ import PasswordIndicator, {
 } from "@/components/forms/input/PasswordIndicator";
 import { resetPassword } from "@/lib/api/auth";
 import { useValidateResetTokenQuery } from "@/lib/hooks/queries/useAdminQuery";
-
-const BRAND_URL = process.env.NEXT_PUBLIC_BRAND_URL || "https://lihat.in";
 
 // Zod schema for form validation
 const resetPasswordSchema = z
@@ -54,6 +53,7 @@ function ResetPasswordContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isResetTransitioning, setIsResetTransitioning] = useState(false);
 
   const tokenParam = searchParams.get("token");
   const { isLoading: isValidating, isSuccess: isValidToken, isError: isTokenError, error: tokenError } = useValidateResetTokenQuery(tokenParam);
@@ -114,9 +114,7 @@ function ResetPasswordContent() {
           duration: 5000,
         });
 
-        setTimeout(() => {
-          router.push("/auth/login");
-        }, 1500);
+        setIsResetTransitioning(true);
       }
     } catch (error: unknown) {
       console.error("Reset password error:", error);
@@ -165,34 +163,14 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="md:flex md:min-h-full bg-background md:p-6 py-6 gap-x-6">
-      {/* Left side: Reset password form */}
-      <div className="md:w-1/2 flex items-center justify-center">
-        <div className="max-w-sm px-6 py-16 md:p-0 w-full">
-          {/* Header section with logo and title */}
-          <div className="space-y-6 mb-6">
-            <Link href={BRAND_URL} target="_blank">
-              <Image
-                src="/logo.svg"
-                alt="Logo"
-                width={100}
-                height={100}
-                className="mx-auto mb-4 rounded"
-              />
-            </Link>
-            <div className="flex flex-col gap-y-3">
-              <h1 className="text-2xl md:text-3xl font-bold">
-                Reset Your Password
-              </h1>
-              <p className="text-muted-foreground text-sm">
-                Enter your new password below. Make sure it&apos;s strong and
-                secure.
-              </p>
-            </div>
-          </div>
-
-          {/* Reset password form using React Hook Form + Shadcn */}
-          <Form {...form}>
+    <AuthShell
+      eyebrow="Secure recovery"
+      title="Choose a new password"
+      description="Create a strong password you haven’t used before. We’ll securely return you to sign in when it’s updated."
+      visualTitle="A fresh password. The same links and history."
+      visualDescription="Your account data stays exactly where it is while your credentials are securely replaced."
+    >
+      <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 mb-6"
@@ -297,27 +275,27 @@ function ResetPasswordContent() {
                 )}
               </Button>
             </form>
-          </Form>
+      </Form>
 
-          <p className="text-sm text-center text-muted-foreground">
-            Remember your password?{" "}
-            <Link className="underline text-foreground" href="/auth/login">
-              Sign in
-            </Link>
-          </p>
-        </div>
-      </div>
+      <p className="text-sm text-center text-muted-foreground">
+        Remember your password?{" "}
+        <Link
+          className="font-semibold text-foreground underline-offset-4 hover:underline"
+          href="/auth/login"
+        >
+          Sign in
+        </Link>
+      </p>
 
-      {/* Right side: Image (hidden on mobile) */}
-      <Image
-        src="/reset-password.svg"
-        alt="Reset Password"
-        width="600"
-        height="600"
-        className="w-1/2 rounded-xl object-contain md:block hidden"
-        style={{ transform: "scale(0.75)" }}
+      <AuthenticatedTransition
+        active={isResetTransitioning}
+        statusLabel="Reset complete"
+        finalTitle="Password updated"
+        finalDescription="Returning you to sign in"
+        prepareMainEntry={false}
+        onComplete={() => router.push("/auth/login")}
       />
-    </div>
+    </AuthShell>
   );
 }
 

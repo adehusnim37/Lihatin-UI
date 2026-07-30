@@ -6,6 +6,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import BlobDefault from "@/components/blob/blob-default";
 import { OTPForm } from "@/components/otp-form";
+import { AuthenticatedTransition } from "@/components/auth/authenticated-transition";
 import { verifyTOTPLogin, saveUserData } from "@/lib/api/auth";
 import {
   buildAuthSupportURL,
@@ -21,6 +22,8 @@ export default function VerifyLoginPage() {
   const [pendingAuthToken, setPendingAuthToken] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | undefined>();
   const [supportLink, setSupportLink] = useState<string | null>(null);
+  const [isAuthenticatedTransitioning, setIsAuthenticatedTransitioning] =
+    useState(false);
 
   useEffect(() => {
     // Get pending auth token from sessionStorage (set during login)
@@ -86,8 +89,7 @@ export default function VerifyLoginPage() {
         // Update auth context
         await auth.login(response.data);
 
-        // Redirect to main page
-        router.push("/main");
+        setIsAuthenticatedTransitioning(true);
       }
     } catch (err: unknown) {
       const message =
@@ -136,6 +138,10 @@ export default function VerifyLoginPage() {
           </div>
         )}
       </div>
+      <AuthenticatedTransition
+        active={isAuthenticatedTransitioning}
+        onComplete={() => router.push("/main")}
+      />
     </div>
   );
 }

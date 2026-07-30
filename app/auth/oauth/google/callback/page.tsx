@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -9,12 +9,16 @@ import {
   saveUserData,
 } from "@/lib/api/auth";
 import { useAuth } from "@/app/context/AuthContext";
+import { AuthenticatedTransition } from "@/components/auth/authenticated-transition";
 
 function GoogleOAuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const auth = useAuth();
   const handledRef = useRef(false);
+  const [authenticatedDestination, setAuthenticatedDestination] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     if (handledRef.current) {
@@ -70,7 +74,7 @@ function GoogleOAuthCallbackContent() {
           description: `Welcome, ${response.data.user.first_name}!`,
           duration: 2500,
         });
-        router.replace(redirectTo);
+        setAuthenticatedDestination(redirectTo);
       } catch (error: unknown) {
         sessionStorage.removeItem("post_login_redirect");
         const errorMessage =
@@ -93,6 +97,14 @@ function GoogleOAuthCallbackContent() {
         <Loader2 className="size-5 animate-spin" />
         Completing Google sign-in...
       </div>
+      <AuthenticatedTransition
+        active={Boolean(authenticatedDestination)}
+        onComplete={() => {
+          if (authenticatedDestination) {
+            router.replace(authenticatedDestination);
+          }
+        }}
+      />
     </div>
   );
 }
