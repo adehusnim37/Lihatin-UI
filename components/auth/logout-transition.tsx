@@ -3,7 +3,7 @@
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
-import { IconLink, IconLogout } from "@tabler/icons-react";
+import { IconLogout } from "@tabler/icons-react";
 import { gsap } from "gsap";
 import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
 
@@ -101,15 +101,6 @@ export function LogoutTransition({
             "-=0.28",
           )
           .from(
-            "[data-logout-topline]",
-            {
-              autoAlpha: 0,
-              duration: 0.4,
-              y: -12,
-            },
-            "-=0.18",
-          )
-          .from(
             "[data-logout-logo]",
             {
               autoAlpha: 0,
@@ -197,16 +188,6 @@ export function LogoutTransition({
         data-logout-content
         className="absolute inset-0 flex flex-col p-5 text-primary-foreground sm:p-8 lg:p-10"
       >
-        <div
-          data-logout-topline
-          className="flex items-center justify-between gap-4 text-[10px] font-bold uppercase tracking-[0.2em] sm:text-xs"
-        >
-          <span className="inline-flex items-center gap-2">
-            <IconLink className="size-4" />
-            Lihat.in secure handoff
-          </span>
-          <span className="text-primary-foreground/60">02 / 01</span>
-        </div>
 
         <div className="flex flex-1 flex-col items-center justify-center text-center">
           <span
@@ -246,13 +227,6 @@ export function LogoutTransition({
           </span>
         </div>
 
-        <div className="flex items-center justify-between text-[10px] font-medium uppercase tracking-[0.16em] text-primary-foreground/55 sm:text-xs">
-          <span>Dashboard locked</span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="size-1.5 animate-pulse rounded-full bg-third motion-reduce:animate-none" />
-            Signing out
-          </span>
-        </div>
       </div>
     </div>,
     document.body,

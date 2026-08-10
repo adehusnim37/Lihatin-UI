@@ -2,7 +2,6 @@
 
 import { createPortal } from "react-dom";
 import { useEffect, useRef } from "react";
-import { IconCheck, IconLink } from "@tabler/icons-react";
 import { gsap } from "gsap";
 import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
 
@@ -105,16 +104,6 @@ export function AuthenticatedTransition({
               ease: "none",
             },
             "-=0.3",
-          )
-          .from(
-            "[data-authenticated-topline]",
-            {
-              y: -12,
-              autoAlpha: 0,
-              duration: 0.42,
-              ease: "power3.out",
-            },
-            "-=0.2",
           )
           .from(
             "[data-authenticated-mark]",
@@ -258,17 +247,6 @@ export function AuthenticatedTransition({
         data-authenticated-content
         className="absolute inset-0 flex flex-col p-5 text-primary-foreground sm:p-8 lg:p-10"
       >
-        <div
-          data-authenticated-topline
-          className="flex items-center justify-between gap-4 text-[10px] font-bold uppercase tracking-[0.2em] sm:text-xs"
-        >
-          <span className="inline-flex items-center gap-2">
-            <IconLink className="size-4" />
-            Lihat.in secure handoff
-          </span>
-          <span className="text-primary-foreground/60">02 / 02</span>
-        </div>
-
         <div className="flex flex-1 flex-col items-center justify-center text-center">
           <span
             data-authenticated-mark
@@ -318,13 +296,6 @@ export function AuthenticatedTransition({
           </span>
         </div>
 
-        <div className="flex items-center justify-between text-[10px] font-medium uppercase tracking-[0.16em] text-primary-foreground/55 sm:text-xs">
-          <span>Session encrypted</span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="size-1.5 animate-pulse rounded-full bg-third" />
-            Ready
-          </span>
-        </div>
       </div>
     </div>,
     document.body,
