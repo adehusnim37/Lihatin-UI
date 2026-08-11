@@ -9,6 +9,7 @@ gsap.registerPlugin(MorphSVGPlugin);
 
 interface AuthenticatedTransitionProps {
   active: boolean;
+  compact?: boolean;
   exitAfterComplete?: boolean;
   finalDescription?: string;
   finalTitle?: string;
@@ -23,6 +24,7 @@ const waveEnd = "M 0 100 V 0 Q 50 0 100 0 V 100 Z";
 
 export function AuthenticatedTransition({
   active,
+  compact = false,
   exitAfterComplete = false,
   finalDescription = "Opening your dashboard",
   finalTitle = "You're authenticated",
@@ -61,6 +63,29 @@ export function AuthenticatedTransition({
 
     media.add("(prefers-reduced-motion: no-preference)", () => {
       const context = gsap.context(() => {
+        const entrance = compact
+          ? {
+              firstWave: 0.32,
+              secondWave: 0.26,
+              atmosphere: 0.18,
+              mark: 0.34,
+              check: 0.26,
+              copy: 0.32,
+              copyStagger: 0.04,
+              progress: 0.32,
+              pause: 0.08,
+            }
+          : {
+              firstWave: 0.52,
+              secondWave: 0.42,
+              atmosphere: 0.28,
+              mark: 0.5,
+              check: 0.42,
+              copy: 0.48,
+              copyStagger: 0.055,
+              progress: 0.48,
+              pause: 0.22,
+            };
         const timeline = gsap.timeline({
           defaults: { ease: "power3.inOut" },
           onComplete: finish,
@@ -70,37 +95,37 @@ export function AuthenticatedTransition({
           .set(overlay, { autoAlpha: 1 })
           .to("[data-auth-wave-back]", {
             morphSVG: waveMiddle,
-            duration: 0.52,
+            duration: entrance.firstWave,
             ease: "power2.in",
           })
           .to(
             "[data-auth-wave-front]",
             {
               morphSVG: waveMiddle,
-              duration: 0.52,
+              duration: entrance.firstWave,
               ease: "power2.in",
             },
-            "<0.07",
+            compact ? "<0.04" : "<0.07",
           )
           .to("[data-auth-wave-back]", {
             morphSVG: waveEnd,
-            duration: 0.42,
+            duration: entrance.secondWave,
             ease: "power2.out",
           })
           .to(
             "[data-auth-wave-front]",
             {
               morphSVG: waveEnd,
-              duration: 0.42,
+              duration: entrance.secondWave,
               ease: "power2.out",
             },
-            "<0.07",
+            compact ? "<0.04" : "<0.07",
           )
           .to(
             "[data-authenticated-atmosphere]",
             {
               autoAlpha: 1,
-              duration: 0.28,
+              duration: entrance.atmosphere,
               ease: "none",
             },
             "-=0.3",
@@ -111,7 +136,7 @@ export function AuthenticatedTransition({
               scale: 0.72,
               rotation: -8,
               autoAlpha: 0,
-              duration: 0.5,
+              duration: entrance.mark,
               ease: "back.out(2.2)",
             },
             "-=0.28",
@@ -120,7 +145,7 @@ export function AuthenticatedTransition({
             "[data-authenticated-check]",
             {
               strokeDashoffset: 32,
-              duration: 0.42,
+              duration: entrance.check,
               ease: "power2.out",
             },
             "-=0.28",
@@ -130,8 +155,8 @@ export function AuthenticatedTransition({
             {
               yPercent: 110,
               autoAlpha: 0,
-              duration: 0.48,
-              stagger: 0.055,
+              duration: entrance.copy,
+              stagger: entrance.copyStagger,
               ease: "power3.out",
             },
             "-=0.25",
@@ -140,12 +165,12 @@ export function AuthenticatedTransition({
             "[data-authenticated-progress]",
             {
               scaleX: 1,
-              duration: 0.48,
+              duration: entrance.progress,
               ease: "power2.inOut",
             },
             "-=0.24",
           )
-          .to({}, { duration: 0.22 });
+          .to({}, { duration: entrance.pause });
 
         if (exitAfterComplete) {
           timeline
@@ -202,7 +227,7 @@ export function AuthenticatedTransition({
       media.revert();
       document.body.style.overflow = previousOverflow;
     };
-  }, [active, exitAfterComplete, prepareMainEntry]);
+  }, [active, compact, exitAfterComplete, prepareMainEntry]);
 
   if (!active || typeof document === "undefined") return null;
 

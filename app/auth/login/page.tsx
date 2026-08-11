@@ -417,6 +417,8 @@ function LoginContent() {
 
       <AuthenticatedTransition
         active={Boolean(authenticatedDestination)}
+        compact
+        prepareMainEntry={false}
         onComplete={() => {
           if (authenticatedDestination) {
             router.push(authenticatedDestination);
