@@ -25,10 +25,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface DisableTOTPModalProps {
   onDisableComplete?: () => void;
+  disabled?: boolean;
 }
 
 export default function DisableTOTPModal({
   onDisableComplete,
+  disabled = false,
 }: DisableTOTPModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -87,7 +89,7 @@ export default function DisableTOTPModal({
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" disabled={disabled}>
           <IconShieldOff className="size-4 mr-2" />
           Disable 2FA
         </Button>

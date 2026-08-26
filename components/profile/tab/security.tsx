@@ -18,9 +18,12 @@ import DisableTOTPModal from "../modal/disableTOTP";
 import { useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfileQuery } from "@/lib/hooks/queries/useProfileQuery";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function ProfileSecurityTab() {
   const searchParams = useSearchParams();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin" || user?.role === "super_admin";
   const {
     data: profileResponse,
     isLoading,
@@ -136,7 +139,10 @@ export default function ProfileSecurityTab() {
                 </div>
               </div>
               {profileData?.auth.totp_enabled ? (
-                <DisableTOTPModal onDisableComplete={() => refetch()} />
+                <DisableTOTPModal
+                  onDisableComplete={() => refetch()}
+                  disabled={isAdmin}
+                />
               ) : (
                 <SetupTOTPModal
                   onSetupComplete={() => refetch()}
