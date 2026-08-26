@@ -280,7 +280,7 @@ export default function AdminPremiumCodesPage() {
       <AppSidebar />
       <SidebarInset>
         <SiteHeader />
-        <main className="flex flex-1 flex-col gap-6 p-4 md:p-6">
+        <main className="flex min-w-0 flex-1 flex-col gap-6 p-4 md:p-6">
           <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl space-y-2">
               <div>
@@ -295,6 +295,7 @@ export default function AdminPremiumCodesPage() {
             </div>
             <Button
               variant="outline"
+              className="w-full sm:w-auto"
               onClick={() => refetch()}
               disabled={isLoading || isFetching}
             >
@@ -333,7 +334,7 @@ export default function AdminPremiumCodesPage() {
           )}
 
           {!isLoading && !isError && isAdmin && (
-            <Card className="overflow-hidden py-0">
+            <Card className="min-w-0 overflow-hidden py-0">
               <CardHeader className="border-b bg-muted/20 px-5 py-5 md:px-6">
                 <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                   <div>
@@ -360,127 +361,145 @@ export default function AdminPremiumCodesPage() {
                     </p>
                   </div>
                 ) : (
-                  <Table className="min-w-[920px]">
-                    <TableHeader>
-                      <TableRow className="hover:bg-transparent">
-                        <TableHead className="w-[270px] pl-5 md:pl-6">
-                          Code
-                        </TableHead>
-                        <TableHead className="w-[220px]">Capacity</TableHead>
-                        <TableHead>Validity</TableHead>
-                        <TableHead>Redeemers</TableHead>
-                        <TableHead>Last updated</TableHead>
-                        <TableHead className="w-12 pr-5 md:pr-6">
-                          <span className="sr-only">Open details</span>
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {codes.map((code) => {
-                        const usedBy = getUsedByLabels(code, userLabelById);
-                        const status = getCodeStatus(code);
-                        const copyDisabled =
-                          status.label === "Expired" ||
-                          status.label === "Fully redeemed";
+                  <>
+                    <div className="space-y-3 p-4 xl:hidden">
+                      {codes.map((code) => (
+                        <PremiumCodeMobileCard
+                          key={code.id}
+                          code={code}
+                          usedBy={getUsedByLabels(code, userLabelById)}
+                          onOpen={() => openDetailDialog(code)}
+                        />
+                      ))}
+                    </div>
 
-                        return (
-                          <TableRow key={code.id} className="group">
-                            <TableCell className="py-4 pl-5 md:pl-6">
-                              <div className="flex items-start gap-2">
-                                <div className="min-w-0 space-y-2">
-                                  <button
-                                    type="button"
-                                    className="block max-w-[210px] truncate rounded text-left font-mono text-xs font-semibold tracking-wide outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
-                                    onClick={() => openDetailDialog(code)}
-                                    title={code.secret_code}
-                                  >
-                                    {code.secret_code}
-                                  </button>
-                                  <StatusBadge
-                                    tone={status.tone}
-                                    className="text-[11px]"
-                                  >
-                                    {status.label}
-                                  </StatusBadge>
-                                </div>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="size-7 shrink-0 opacity-60 group-hover:opacity-100"
-                                  disabled={copyDisabled}
-                                  onClick={() => void copyText(code.secret_code)}
-                                  title={
-                                    copyDisabled
-                                      ? status.label
-                                      : "Copy premium code"
-                                  }
-                                >
-                                  {copyDisabled ? (
-                                    <IconClipboardOff className="size-3.5" />
-                                  ) : (
-                                    <IconCopy className="size-3.5" />
-                                  )}
-                                  <span className="sr-only">
-                                    Copy premium code
-                                  </span>
-                                </Button>
-                              </div>
-                            </TableCell>
-                            <TableCell className="py-4">
-                              <CapacityMeter code={code} compact />
-                            </TableCell>
-                            <TableCell className="py-4">
-                              <div className="space-y-1">
-                                <p className="text-sm">
-                                  {formatDate(code.valid_until)}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  {getValidityLabel(code.valid_until)}
-                                </p>
-                              </div>
-                            </TableCell>
-                            <TableCell className="py-4">
-                              <RedeemerPreview labels={usedBy} />
-                            </TableCell>
-                            <TableCell className="py-4">
-                              <div className="space-y-1">
-                                <p className="text-sm">
-                                  {formatDate(code.updated_at)}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  {formatTime(code.updated_at)}
-                                </p>
-                              </div>
-                            </TableCell>
-                            <TableCell className="py-4 pr-5 text-right md:pr-6">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-8"
-                                onClick={() => openDetailDialog(code)}
-                                title="Open code details"
-                              >
-                                <IconChevronRight className="size-4" />
-                                <span className="sr-only">
-                                  Open code details
-                                </span>
-                              </Button>
-                            </TableCell>
+                    <div className="hidden xl:block">
+                      <Table className="min-w-[920px]">
+                        <TableHeader>
+                          <TableRow className="hover:bg-transparent">
+                            <TableHead className="w-[270px] pl-5 md:pl-6">
+                              Code
+                            </TableHead>
+                            <TableHead className="w-[220px]">Capacity</TableHead>
+                            <TableHead>Validity</TableHead>
+                            <TableHead>Redeemers</TableHead>
+                            <TableHead>Last updated</TableHead>
+                            <TableHead className="w-12 pr-5 md:pr-6">
+                              <span className="sr-only">Open details</span>
+                            </TableHead>
                           </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {codes.map((code) => {
+                            const usedBy = getUsedByLabels(code, userLabelById);
+                            const status = getCodeStatus(code);
+                            const copyDisabled =
+                              status.label === "Expired" ||
+                              status.label === "Fully redeemed";
+
+                            return (
+                              <TableRow key={code.id} className="group">
+                                <TableCell className="py-4 pl-5 md:pl-6">
+                                  <div className="flex items-start gap-2">
+                                    <div className="min-w-0 space-y-2">
+                                      <button
+                                        type="button"
+                                        className="block max-w-[210px] truncate rounded text-left font-mono text-xs font-semibold tracking-wide outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
+                                        onClick={() => openDetailDialog(code)}
+                                        title={code.secret_code}
+                                      >
+                                        {code.secret_code}
+                                      </button>
+                                      <StatusBadge
+                                        tone={status.tone}
+                                        className="text-[11px]"
+                                      >
+                                        {status.label}
+                                      </StatusBadge>
+                                    </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="size-7 shrink-0 opacity-60 group-hover:opacity-100"
+                                      disabled={copyDisabled}
+                                      onClick={() =>
+                                        void copyText(code.secret_code)
+                                      }
+                                      title={
+                                        copyDisabled
+                                          ? status.label
+                                          : "Copy premium code"
+                                      }
+                                    >
+                                      {copyDisabled ? (
+                                        <IconClipboardOff className="size-3.5" />
+                                      ) : (
+                                        <IconCopy className="size-3.5" />
+                                      )}
+                                      <span className="sr-only">
+                                        Copy premium code
+                                      </span>
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="py-4">
+                                  <CapacityMeter code={code} compact />
+                                </TableCell>
+                                <TableCell className="py-4">
+                                  <div className="space-y-1">
+                                    <p className="text-sm">
+                                      {formatDate(code.valid_until)}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {getValidityLabel(code.valid_until)}
+                                    </p>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="py-4">
+                                  <RedeemerPreview labels={usedBy} />
+                                </TableCell>
+                                <TableCell className="py-4">
+                                  <div className="space-y-1">
+                                    <p className="text-sm">
+                                      {formatDate(code.updated_at)}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {formatTime(code.updated_at)}
+                                    </p>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="py-4 pr-5 text-right md:pr-6">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-8"
+                                    onClick={() => openDetailDialog(code)}
+                                    title="Open code details"
+                                  >
+                                    <IconChevronRight className="size-4" />
+                                    <span className="sr-only">
+                                      Open code details
+                                    </span>
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </>
                 )}
 
-                <div className="flex items-center justify-between border-t px-5 py-4 text-sm md:px-6">
+                <div className="flex flex-col gap-3 border-t px-4 py-4 text-sm min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between md:px-6">
                   <p className="text-muted-foreground">
                     Page {page} of {totalPages}
                   </p>
-                  <div className="flex gap-2">
+                  <div className="flex w-full gap-2 min-[420px]:w-auto">
                     <Button
                       variant="outline"
                       size="sm"
+                      className="flex-1 min-[420px]:flex-none"
                       onClick={() =>
                         setPage((previous) => Math.max(1, previous - 1))
                       }
@@ -491,6 +510,7 @@ export default function AdminPremiumCodesPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      className="flex-1 min-[420px]:flex-none"
                       onClick={() =>
                         setPage((previous) =>
                           Math.min(totalPages, previous + 1)
@@ -509,10 +529,10 @@ export default function AdminPremiumCodesPage() {
       </SidebarInset>
 
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-h-[calc(100vh-2rem)] gap-0 overflow-hidden p-0 sm:max-w-3xl">
+        <DialogContent className="flex h-dvh max-h-none w-full max-w-none flex-col gap-0 overflow-hidden rounded-none border-0 p-0 sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:max-w-3xl sm:rounded-lg sm:border">
           {activeCode && (
             <>
-              <DialogHeader className="border-b px-5 pb-5 pt-6 pr-12 md:px-6 md:pr-14">
+              <DialogHeader className="shrink-0 border-b px-4 pb-4 pt-5 pr-12 text-left sm:px-5 sm:pb-5 sm:pt-6 md:px-6 md:pr-14">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <DialogTitle>Premium code ledger</DialogTitle>
@@ -553,25 +573,29 @@ export default function AdminPremiumCodesPage() {
               <Tabs
                 value={detailTab}
                 onValueChange={(value) => setDetailTab(value as DetailTab)}
-                className="min-h-0 gap-0"
+                className="min-h-0 flex-1 gap-0"
               >
-                <div className="border-b px-5 py-3 md:px-6">
+                <div className="shrink-0 border-b px-4 py-3 sm:px-5 md:px-6">
                   <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="usage">
+                    <TabsTrigger value="overview" className="px-1 text-xs sm:text-sm">
+                      Overview
+                    </TabsTrigger>
+                    <TabsTrigger value="usage" className="px-1 text-xs sm:text-sm">
                       Usage
                       <span className="rounded-full bg-background px-1.5 py-0.5 text-[10px] tabular-nums">
                         {activeCode.usage_count}
                       </span>
                     </TabsTrigger>
-                    <TabsTrigger value="send">Send code</TabsTrigger>
+                    <TabsTrigger value="send" className="px-1 text-xs sm:text-sm">
+                      Send code
+                    </TabsTrigger>
                   </TabsList>
                 </div>
 
-                <ScrollArea className="h-[min(52vh,430px)]">
+                <ScrollArea className="min-h-0 flex-1">
                   <TabsContent
                     value="overview"
-                    className="m-0 space-y-5 px-5 py-5 md:px-6"
+                    className="m-0 space-y-5 px-4 py-5 sm:px-5 md:px-6"
                   >
                     <CapacityMeter code={activeCode} />
 
@@ -615,7 +639,7 @@ export default function AdminPremiumCodesPage() {
 
                   <TabsContent
                     value="usage"
-                    className="m-0 space-y-4 px-5 py-5 md:px-6"
+                    className="m-0 space-y-4 px-4 py-5 sm:px-5 md:px-6"
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                       <div>
@@ -668,7 +692,7 @@ export default function AdminPremiumCodesPage() {
 
                   <TabsContent
                     value="send"
-                    className="m-0 space-y-5 px-5 py-5 md:px-6"
+                    className="m-0 space-y-5 px-4 py-5 sm:px-5 md:px-6"
                   >
                     {activeCodeExpired || activeCodeLimitReached ? (
                       <Alert variant="destructive">
@@ -818,7 +842,7 @@ export default function AdminPremiumCodesPage() {
                 </ScrollArea>
               </Tabs>
 
-              <DialogFooter className="border-t bg-muted/20 px-5 py-4 md:px-6">
+              <DialogFooter className="shrink-0 border-t bg-muted/20 px-4 py-4 sm:px-5 md:px-6 [&_button]:w-full sm:[&_button]:w-auto">
                 {detailTab !== "send" && (
                   <Button
                     variant="outline"
@@ -908,7 +932,7 @@ function RecipientPicker({
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="w-[var(--radix-popover-trigger-width)] min-w-72 p-0"
+        className="w-[var(--radix-popover-trigger-width)] max-w-[calc(100vw-2rem)] p-0"
       >
         <div className="border-b p-3">
           <div className="relative">
@@ -1009,6 +1033,95 @@ function RecipientPicker({
   );
 }
 
+function PremiumCodeMobileCard({
+  code,
+  usedBy,
+  onOpen,
+}: {
+  code: AdminPremiumCode;
+  usedBy: string[];
+  onOpen: () => void;
+}) {
+  const status = getCodeStatus(code);
+  const copyDisabled =
+    status.label === "Expired" || status.label === "Fully redeemed";
+
+  return (
+    <article className="min-w-0 space-y-4 rounded-lg border p-4">
+      <div className="flex min-w-0 items-start justify-between gap-3">
+        <div className="min-w-0 space-y-2">
+          <button
+            type="button"
+            className="block max-w-full truncate rounded text-left font-mono text-xs font-semibold tracking-wide outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
+            onClick={onOpen}
+            title={code.secret_code}
+          >
+            {code.secret_code}
+          </button>
+          <StatusBadge tone={status.tone} className="text-[11px]">
+            {status.label}
+          </StatusBadge>
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            disabled={copyDisabled}
+            onClick={() => void copyText(code.secret_code)}
+            title={copyDisabled ? status.label : "Copy premium code"}
+          >
+            {copyDisabled ? (
+              <IconClipboardOff className="size-4" />
+            ) : (
+              <IconCopy className="size-4" />
+            )}
+            <span className="sr-only">Copy premium code</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            onClick={onOpen}
+            title="Open code details"
+          >
+            <IconChevronRight className="size-4" />
+            <span className="sr-only">Open code details</span>
+          </Button>
+        </div>
+      </div>
+
+      <CapacityMeter code={code} compact />
+
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t pt-3">
+        <div className="min-w-0">
+          <dt className="text-[11px] text-muted-foreground">Validity</dt>
+          <dd className="truncate text-sm font-medium">
+            {formatDate(code.valid_until)}
+          </dd>
+          <dd className="truncate text-xs text-muted-foreground">
+            {getValidityLabel(code.valid_until)}
+          </dd>
+        </div>
+        <div className="min-w-0">
+          <dt className="text-[11px] text-muted-foreground">Last updated</dt>
+          <dd className="truncate text-sm font-medium">
+            {formatDate(code.updated_at)}
+          </dd>
+          <dd className="truncate text-xs text-muted-foreground">
+            {formatTime(code.updated_at)}
+          </dd>
+        </div>
+      </dl>
+
+      <div className="min-w-0 border-t pt-3">
+        <p className="mb-1.5 text-[11px] text-muted-foreground">Redeemers</p>
+        <RedeemerPreview labels={usedBy} />
+      </div>
+    </article>
+  );
+}
+
 function CapacityMeter({
   code,
   compact = false,
@@ -1026,7 +1139,7 @@ function CapacityMeter({
     <div
       className={
         compact
-          ? "w-48 space-y-2"
+          ? "w-full space-y-2"
           : "rounded-xl border bg-muted/20 p-4 md:p-5"
       }
     >
@@ -1189,24 +1302,41 @@ function UsageEmptyState() {
 
 function PageSkeleton() {
   return (
-    <Card className="overflow-hidden py-0">
-      <CardHeader className="border-b px-6 py-5">
+    <Card className="min-w-0 overflow-hidden py-0">
+      <CardHeader className="border-b px-4 py-5 sm:px-6">
         <Skeleton className="h-5 w-36" />
         <Skeleton className="h-4 w-52" />
       </CardHeader>
       <CardContent className="space-y-0 p-0">
-        {Array.from({ length: 5 }).map((_, index) => (
-          <div
-            key={index}
-            className="grid grid-cols-5 gap-6 border-b px-6 py-4 last:border-0"
-          >
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-          </div>
-        ))}
+        <div className="space-y-3 p-4 xl:hidden">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="space-y-4 rounded-lg border p-4">
+              <div className="flex items-center justify-between gap-3">
+                <Skeleton className="h-5 w-40 max-w-[65%]" />
+                <Skeleton className="size-8" />
+              </div>
+              <Skeleton className="h-2 w-full" />
+              <div className="grid grid-cols-2 gap-3">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="hidden xl:block">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <div
+              key={index}
+              className="grid grid-cols-5 gap-6 border-b px-6 py-4 last:border-0"
+            >
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

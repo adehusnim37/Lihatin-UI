@@ -672,7 +672,7 @@ function ProfilePageContent() {
                     onValueChange={(value) => setActiveTab(value)}
                     className="space-y-4"
                   >
-                    <TabsList>
+                    <TabsList className="grid h-auto w-full grid-cols-2 sm:h-9 sm:w-fit sm:grid-cols-4">
                       <TabsTrigger value="general">General</TabsTrigger>
                       <TabsTrigger value="security">Security</TabsTrigger>
                       <TabsTrigger value="session">Sessions</TabsTrigger>

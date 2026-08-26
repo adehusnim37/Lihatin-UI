@@ -206,14 +206,14 @@ export default function SessionTab() {
 
   return (
     <TabsContent value="session" className="space-y-4">
-      <Card>
-        <CardHeader className="pb-0">
+      <Card className="min-w-0 overflow-hidden">
+        <CardHeader className="px-4 pb-0 sm:px-6">
           <CardTitle>Sessions</CardTitle>
           <CardDescription>
             Manage signed-in devices and review recent login activity.
           </CardDescription>
         </CardHeader>
-        <CardContent className="pt-4">
+        <CardContent className="px-4 pt-4 sm:px-6">
           <Tabs defaultValue="active" className="space-y-4">
             <TabsList className="grid w-full grid-cols-2 sm:w-fit">
               <TabsTrigger value="active">
@@ -363,8 +363,8 @@ export default function SessionTab() {
 
             <TabsContent value="history" className="mt-0 space-y-4">
               {recentActivity && (
-                <div className="grid grid-cols-2 overflow-hidden rounded-lg border md:grid-cols-4">
-                  <div className="border-b border-r p-3 md:border-b-0">
+                <div className="grid grid-cols-2 overflow-hidden rounded-lg border sm:grid-cols-4">
+                  <div className="border-b border-r p-3 sm:border-b-0">
                     <p className="text-xs text-muted-foreground">
                       Attempts (24h)
                     </p>
@@ -372,7 +372,7 @@ export default function SessionTab() {
                       {recentActivity.total_attempts}
                     </p>
                   </div>
-                  <div className="border-b p-3 md:border-b-0 md:border-r">
+                  <div className="border-b p-3 sm:border-b-0 sm:border-r">
                     <p className="text-xs text-muted-foreground">Successful</p>
                     <p className="mt-1 text-xl font-semibold tabular-nums text-green-600">
                       {recentActivity.successful_attempts}
@@ -393,8 +393,8 @@ export default function SessionTab() {
                 </div>
               )}
 
-              <div className="flex items-center justify-between gap-3">
-                <div>
+              <div className="flex items-start justify-between gap-3 sm:items-center">
+                <div className="min-w-0">
                   <p className="text-sm font-medium">Recent login attempts</p>
                   <p className="text-xs text-muted-foreground">
                     Select an attempt to inspect its details.
@@ -403,6 +403,7 @@ export default function SessionTab() {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="shrink-0"
                   onClick={() => refetch()}
                   disabled={isRefetching}
                 >
@@ -421,7 +422,55 @@ export default function SessionTab() {
                 </div>
               ) : attemptsData && attemptsData.attempts.length > 0 ? (
                 <>
-                  <div className="overflow-x-auto">
+                  <div className="space-y-2 lg:hidden">
+                    {attemptsData.attempts.map((attempt) => {
+                      const {
+                        browser,
+                        isMobile,
+                        BrowserIcon,
+                        DeviceIcon,
+                      } = parseUserAgent(attempt.user_agent);
+
+                      return (
+                        <button
+                          key={attempt.id}
+                          type="button"
+                          className="w-full rounded-lg border p-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          onClick={() => {
+                            setSelectedId(attempt.id);
+                            setIsDetailOpen(true);
+                          }}
+                          aria-label={`View ${attempt.success ? "successful" : "failed"} login attempt from ${formatDate(attempt.created_at)}`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <LoginAttemptBadge success={attempt.success} />
+                            <span className="shrink-0 text-xs text-muted-foreground">
+                              {formatDate(attempt.created_at)}
+                            </span>
+                          </div>
+                          <div className="mt-3 flex min-w-0 items-center gap-2">
+                            <DeviceIcon className="size-4 shrink-0 text-muted-foreground" />
+                            <BrowserIcon className="size-4 shrink-0 text-muted-foreground" />
+                            <span className="truncate text-sm font-medium">
+                              {browser} {isMobile ? "(Mobile)" : "(Desktop)"}
+                            </span>
+                          </div>
+                          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                            <code className="break-all rounded bg-muted px-1.5 py-0.5 font-mono">
+                              {attempt.ip_address}
+                            </code>
+                            {!attempt.success && attempt.fail_reason && (
+                              <span className="line-clamp-1 min-w-0">
+                                {attempt.fail_reason}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="hidden overflow-x-auto lg:block">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -431,7 +480,7 @@ export default function SessionTab() {
                           <TableHead className="min-w-[180px]">
                             Device & Browser
                           </TableHead>
-                          <TableHead className="hidden min-w-[120px] sm:table-cell">
+                          <TableHead className="min-w-[120px]">
                             IP Address
                           </TableHead>
                           <TableHead className="min-w-[120px]">Time</TableHead>
@@ -471,7 +520,7 @@ export default function SessionTab() {
                                   </span>
                                 </div>
                               </TableCell>
-                              <TableCell className="hidden sm:table-cell">
+                              <TableCell>
                                 <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
                                   {attempt.ip_address}
                                 </code>
@@ -534,17 +583,17 @@ export default function SessionTab() {
 
       {/* Detail Sheet */}
       <Sheet open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <SheetContent className="w-full sm:max-w-[600px] overflow-y-auto">
-          <SheetHeader className="mb-6">
+        <SheetContent className="w-full max-w-none gap-0 overflow-hidden p-0 sm:max-w-[600px]">
+          <SheetHeader className="shrink-0 border-b px-4 py-4 pr-12 sm:px-6">
             <SheetTitle>Login Attempt</SheetTitle>
             <SheetDescription>Authentication attempt details</SheetDescription>
           </SheetHeader>
 
           {isLoadingDetail ? (
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-y-auto p-4 sm:p-6">
               <Skeleton className="h-6 w-3/4" />
               <Skeleton className="h-4 w-1/2" />
-              <div className="space-y-3 mt-6">
+              <div className="mt-6 space-y-3">
                 <Skeleton className="h-20 w-full" />
                 <Skeleton className="h-20 w-full" />
                 <Skeleton className="h-20 w-full" />
@@ -554,7 +603,7 @@ export default function SessionTab() {
           ) : selectedAttempt ? (
             <SessionDetail attempt={selectedAttempt} />
           ) : (
-            <div className="flex h-full items-center justify-center text-muted-foreground">
+            <div className="flex h-full items-center justify-center p-6 text-center text-muted-foreground">
               No data available
             </div>
           )}
