@@ -190,6 +190,31 @@ export interface LogoutResponse {
   message: string;
 }
 
+// A single row in the "active devices / sessions" list.
+export interface ActiveSessionData {
+  session_id: string;
+  is_current: boolean;
+  device_id?: string;
+  ip_address: string;
+  user_agent: string;
+  created_at: string;
+  last_seen: string;
+  expires_at: string;
+}
+
+export interface SessionsListResponse {
+  total: number;
+  sessions: ActiveSessionData[];
+}
+
+export interface RevokeSessionsResponse {
+  revoked_sessions?: number;
+  revoked_all?: boolean;
+  device_id?: string;
+  revoked_session?: string;
+  was_current?: boolean;
+}
+
 export interface RegisterRequest {
   first_name: string;
   last_name: string;
@@ -602,11 +627,23 @@ async function fetchProtected(
 export async function login(
   credentials: LoginRequest
 ): Promise<APIResponse<LoginResult>> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  // Attach the browser fingerprint (metadata only) so the session + login
+  // event records the same device identifier the rest of the app uses.
+  if (typeof window !== "undefined") {
+    const { getDeviceID } = await import("@/lib/device");
+    const deviceID = await getDeviceID();
+    if (deviceID) {
+      headers["X-Device-ID"] = deviceID;
+    }
+  }
+
   const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     credentials: "include", // ✅ Send cookies with request
     body: JSON.stringify(credentials),
   });
@@ -1916,5 +1953,91 @@ export async function disableTOTP(
     throw new Error(result.message || "Failed to disable TOTP");
   }
 
+  return result;
+}
+
+/**
+ * Revoke all active sessions belonging to a given device fingerprint.
+ * Scoped to the signed-in user's own sessions on the backend.
+ */
+export async function revokeDevice(
+  deviceId: string
+): Promise<APIResponse<{ revoked_sessions: number; device_id: string }>> {
+  const response = await fetchProtected(
+    `${API_URL}/auth/sessions/revoke-device`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ device_id: deviceId }),
+    }
+  );
+
+  const result: APIResponse<{ revoked_sessions: number; device_id: string }> =
+    await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to revoke device");
+  }
+
+  return result;
+}
+
+/** List the signed-in user's active sessions/devices. */
+export async function listSessions(): Promise<
+  APIResponse<SessionsListResponse>
+> {
+  const response = await fetchProtected(`${API_URL}/auth/sessions`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const result: APIResponse<SessionsListResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to list sessions");
+  }
+  return result;
+}
+
+/** Revoke a single session by its session_id. */
+export async function revokeSession(
+  sessionId: string
+): Promise<APIResponse<RevokeSessionsResponse>> {
+  const response = await fetchProtected(`${API_URL}/auth/sessions/revoke`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ session_id: sessionId }),
+  });
+
+  const result: APIResponse<RevokeSessionsResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to revoke session");
+  }
+  return result;
+}
+
+/** Revoke every session for the user (logs out all devices). */
+export async function revokeAllSessions(): Promise<
+  APIResponse<RevokeSessionsResponse>
+> {
+  const response = await fetchProtected(
+    `${API_URL}/auth/sessions/revoke-all`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  const result: APIResponse<RevokeSessionsResponse> = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to revoke all sessions");
+  }
   return result;
 }

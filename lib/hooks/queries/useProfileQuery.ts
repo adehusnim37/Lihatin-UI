@@ -5,6 +5,10 @@ import {
   checkUsernameChangeEligibility,
   checkEmailChangeEligibility,
   getProfile,
+  listSessions,
+  revokeAllSessions,
+  revokeDevice,
+  revokeSession,
   updateProfile,
   type ChangeEmailRequest,
   type ChangeUsernameRequest,
@@ -40,6 +44,27 @@ export function useUpdateProfileMutation() {
       const response = await updateProfile(payload);
       if (!response.success) {
         throw new Error(response.message || "Failed to update profile");
+      }
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: profileKeys.detail() });
+    },
+  });
+}
+
+/**
+ * Revokes all sessions for a given device fingerprint. Used by the "Sign out
+ * of this device" action in the security tab.
+ */
+export function useRevokeDeviceMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (deviceId: string) => {
+      const response = await revokeDevice(deviceId);
+      if (!response.success) {
+        throw new Error(response.message || "Failed to revoke device");
       }
       return response;
     },
@@ -111,6 +136,60 @@ export function useChangeUsernameMutation() {
       queryClient.invalidateQueries({
         queryKey: profileKeys.usernameEligibility(),
       });
+    },
+  });
+}
+
+export const sessionKeys = {
+  all: ["sessions"] as const,
+  list: () => [...sessionKeys.all, "list"] as const,
+};
+
+export function useSessionsQuery() {
+  return useQuery({
+    queryKey: sessionKeys.list(),
+    queryFn: async () => {
+      const response = await listSessions();
+      if (!response.success) {
+        throw new Error(response.message || "Failed to list sessions");
+      }
+      return response;
+    },
+  });
+}
+
+export function useRevokeSessionMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (sessionId: string) => {
+      const response = await revokeSession(sessionId);
+      if (!response.success) {
+        throw new Error(response.message || "Failed to revoke session");
+      }
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: sessionKeys.list() });
+      queryClient.invalidateQueries({ queryKey: profileKeys.detail() });
+    },
+  });
+}
+
+export function useRevokeAllSessionsMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const response = await revokeAllSessions();
+      if (!response.success) {
+        throw new Error(response.message || "Failed to revoke all sessions");
+      }
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: sessionKeys.list() });
+      queryClient.invalidateQueries({ queryKey: profileKeys.detail() });
     },
   });
 }

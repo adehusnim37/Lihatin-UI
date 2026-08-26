@@ -4,7 +4,8 @@
  * 🛡️ Automatically attaches CSRF token to mutating requests
  */
 
-import { refreshToken } from "./auth";
+import { clearUserData, refreshToken } from "./auth";
+import { getDeviceID } from "@/lib/device";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
 
@@ -123,6 +124,15 @@ export async function fetchWithAuth(
   // Prepare headers
   const headers = new Headers(init?.headers);
 
+  // Attach device fingerprint (metadata only) on the browser side. The value
+  // is used by the backend for session/device tracking, not authorization.
+  if (typeof window !== "undefined") {
+    const deviceID = await getDeviceID();
+    if (deviceID) {
+      headers.set("X-Device-ID", deviceID);
+    }
+  }
+
   // Attach CSRF token for mutating requests.
   if (requiresCSRF(method)) {
     const token = await getCSRFToken();
@@ -188,16 +198,29 @@ export async function fetchWithAuth(
 
       // Retry original request with new tokens
       const retryResponse = await fetch(input, { ...config, headers });
+
+      // A successful refresh must not hide a session that Redis has revoked.
+      // HTTP-only cookies are expired by the backend; clear client auth state
+      // and leave the protected UI when the retried request is still rejected.
+      if (retryResponse.status === 401) {
+        clearCSRFToken();
+        clearUserData();
+        if (typeof window !== "undefined") {
+          window.location.replace("/auth/login?error=session_expired");
+        }
+      }
+
       return retryResponse;
     } catch (refreshError) {
       console.error("Token refresh failed:", refreshError);
 
       // Clear CSRF token on auth failure
       clearCSRFToken();
+      clearUserData();
 
       // Redirect to login if refresh fails
       if (typeof window !== "undefined") {
-        window.location.href = "/auth/login?error=session_expired";
+        window.location.replace("/auth/login?error=session_expired");
       }
 
       // Return original 401 response

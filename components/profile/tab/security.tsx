@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardHeader,
@@ -8,30 +7,20 @@ import {
 } from "@/components/ui/card";
 import { TabsContent } from "@radix-ui/react-tabs";
 import {
-  IconBoxMultiple,
-  IconChevronDown,
-  IconDeviceDesktopCode,
   IconKey,
-  IconLock,
   IconShield,
+  IconUserCheck,
 } from "@tabler/icons-react";
 import { Label } from "recharts";
 import ChangePasswordDialog from "../modal/changePassword";
 import SetupTOTPModal from "../modal/setupTOTP";
 import DisableTOTPModal from "../modal/disableTOTP";
-import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfileQuery } from "@/lib/hooks/queries/useProfileQuery";
 
 export default function ProfileSecurityTab() {
   const searchParams = useSearchParams();
-  const [isSessionOpen, setIsSessionOpen] = useState(false);
   const {
     data: profileResponse,
     isLoading,
@@ -45,18 +34,6 @@ export default function ProfileSecurityTab() {
 
   const handlePasswordChanged = () => {
     void refetch();
-  };
-
-  const formatDateTime = (dateString?: string | null) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date);
   };
 
   const formatRelativeTime = (dateString?: string | null) => {
@@ -142,134 +119,6 @@ export default function ProfileSecurityTab() {
             </div>
           </div>
 
-          {/* Current session metadata is session-scoped; previous login is immutable history. */}
-          <div className="space-y-2">
-            <Label>Session Security</Label>
-            <Collapsible
-              open={isSessionOpen}
-              onOpenChange={setIsSessionOpen}
-              className="space-y-2"
-            >
-              <div className="flex items-center justify-between p-3 rounded-lg border">
-                <div className="flex items-center gap-3 flex-1">
-                  <IconBoxMultiple className="size-5 text-muted-foreground" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Session Information</p>
-                    {!isSessionOpen && (
-                      <p className="text-xs text-muted-foreground">
-                        Click to view details
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <CollapsibleTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <IconChevronDown
-                      className={`size-4 transition-transform ${
-                        isSessionOpen ? "rotate-180" : ""
-                      }`}
-                    />
-                  </Button>
-                </CollapsibleTrigger>
-              </div>
-
-              <CollapsibleContent className="space-y-2">
-                <div className="rounded-lg border p-4 space-y-3 bg-muted/50">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      Current IP Address
-                    </span>
-                    <span className="text-sm font-medium font-mono">
-                      {profileData?.auth.current_session?.ip_address || "N/A"}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      Current Session Started
-                    </span>
-                    <span className="text-sm font-medium">
-                      {formatDateTime(
-                        profileData?.auth.current_session?.created_at,
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      Previous Login
-                    </span>
-                    <span className="text-sm font-medium">
-                      {formatDateTime(
-                        profileData?.auth.previous_login?.authenticated_at,
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      Previous Login IP
-                    </span>
-                    <span className="text-sm font-medium font-mono">
-                      {profileData?.auth.previous_login?.ip_address || "N/A"}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      Last Logout at
-                    </span>
-                    <p className="text-sm font-medium">
-                      {formatDateTime(profileData?.auth.last_logout_at) ||
-                        "N/A"}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      Account Status
-                    </span>
-                    <span className="text-sm font-medium">
-                      {profileData?.auth.account_status === "active" ? (
-                        <span className="text-green-600">Active</span>
-                      ) : (
-                        <span className="text-red-600">Inactive</span>
-                      )}
-                    </span>
-                  </div>
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Current Device</Label>
-            <div className="flex items-center justify-between p-3 rounded-lg border">
-              <div className="flex items-center gap-3">
-                <IconDeviceDesktopCode className="size-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">
-                    Session Device Identifier
-                  </p>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground font-mono font-medium">
-                {profileData?.auth.current_session?.device_id || "N/A"}
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Failed Login Attempts</Label>
-            <div className="flex items-center justify-between p-3 rounded-lg border">
-              <div className="flex items-center gap-3">
-                <IconLock className="size-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">Account Security</p>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground font-medium">
-                {profileData?.auth.failed_login_attempts || 0} unsuccessful
-                attempts
-              </p>
-            </div>
-          </div>
-
           <div className="space-y-2">
             <Label>Two-Factor Authentication</Label>
             <div className="flex items-center justify-between p-3 rounded-lg border">
@@ -294,6 +143,35 @@ export default function ProfileSecurityTab() {
                   openOnMount={shouldAutoOpenTOTP}
                 />
               )}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Account</Label>
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div className="flex items-center gap-3">
+                <IconUserCheck className="size-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">Account Status</p>
+                  <p className="text-xs text-muted-foreground">
+                    Your account access is currently{" "}
+                    {profileData?.auth.account_status === "active"
+                      ? "available"
+                      : "restricted"}
+                  </p>
+                </div>
+              </div>
+              <span
+                className={`text-sm font-medium ${
+                  profileData?.auth.account_status === "active"
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {profileData?.auth.account_status === "active"
+                  ? "Active"
+                  : "Inactive"}
+              </span>
             </div>
           </div>
         </CardContent>

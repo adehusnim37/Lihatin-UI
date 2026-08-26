@@ -675,7 +675,7 @@ function ProfilePageContent() {
                     <TabsList>
                       <TabsTrigger value="general">General</TabsTrigger>
                       <TabsTrigger value="security">Security</TabsTrigger>
-                      <TabsTrigger value="session">Session</TabsTrigger>
+                      <TabsTrigger value="session">Sessions</TabsTrigger>
                       <TabsTrigger value="notifications">
                         Notifications
                       </TabsTrigger>
@@ -693,7 +693,7 @@ function ProfilePageContent() {
                     {/* Security Tab */}
                     <ProfileSecurityTab />
 
-                    {/* Session Tab */}
+                    {/* Sessions Tab */}
                     <SessionTab />
 
                     {/* Notifications Tab */}
