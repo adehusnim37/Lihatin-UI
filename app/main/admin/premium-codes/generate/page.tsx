@@ -242,7 +242,7 @@ export default function AdminGeneratePremiumCodesPage() {
                           disablePast
                         />
                         <div className="flex flex-wrap gap-2">
-                          {[7, 30, 90].map((days) => (
+                          {[7, 30, 90, 180, 360].map((days) => (
                             <Button
                               key={days}
                               type="button"
