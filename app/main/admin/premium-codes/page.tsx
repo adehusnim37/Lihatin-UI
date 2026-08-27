@@ -448,10 +448,10 @@ export default function AdminPremiumCodesPage() {
                                 <TableCell className="py-4">
                                   <div className="space-y-1">
                                     <p className="text-sm">
-                                      {formatDate(code.valid_until)}
+                                      {formatDate(code.valid_until, code.is_lifetime)}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
-                                      {getValidityLabel(code.valid_until)}
+                                      {getValidityLabel(code.valid_until, code.is_lifetime)}
                                     </p>
                                   </div>
                                 </TableCell>
@@ -625,8 +625,8 @@ export default function AdminPremiumCodesPage() {
                       <Metric
                         icon={<IconCalendar />}
                         label="Valid until"
-                        value={formatDate(activeCode.valid_until)}
-                        detail={getValidityLabel(activeCode.valid_until)}
+                        value={formatDate(activeCode.valid_until, activeCode.is_lifetime)}
+                        detail={getValidityLabel(activeCode.valid_until, activeCode.is_lifetime)}
                       />
                       <Metric
                         icon={<IconKey />}
@@ -1097,10 +1097,10 @@ function PremiumCodeMobileCard({
         <div className="min-w-0">
           <dt className="text-[11px] text-muted-foreground">Validity</dt>
           <dd className="truncate text-sm font-medium">
-            {formatDate(code.valid_until)}
+            {formatDate(code.valid_until, code.is_lifetime)}
           </dd>
           <dd className="truncate text-xs text-muted-foreground">
-            {getValidityLabel(code.valid_until)}
+            {getValidityLabel(code.valid_until, code.is_lifetime)}
           </dd>
         </div>
         <div className="min-w-0">
@@ -1363,7 +1363,7 @@ function getCodeStatus(code: AdminPremiumCode): {
   label: "Active" | "Expired" | "Fully redeemed";
   tone: StatusBadgeTone;
 } {
-  if (isDateInPast(code.valid_until)) {
+  if (!code.is_lifetime && isDateInPast(code.valid_until)) {
     return { label: "Expired", tone: "danger" };
   }
   if (hasReachedLimit(code)) {
@@ -1383,7 +1383,8 @@ function isDateInPast(value?: string | null): boolean {
   return !Number.isNaN(parsed.getTime()) && parsed.getTime() < Date.now();
 }
 
-function getValidityLabel(value?: string | null): string {
+function getValidityLabel(value?: string | null, isLifetime?: boolean): string {
+  if (isLifetime) return "Lifetime";
   if (!value) return "No expiration";
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return "Invalid date";
@@ -1394,7 +1395,8 @@ function getValidityLabel(value?: string | null): string {
   return `Expires in ${days} days`;
 }
 
-function formatDate(value?: string | null): string {
+function formatDate(value?: string | null, isLifetime?: boolean): string {
+  if (isLifetime) return "Lifetime";
   if (!value) return "No expiration";
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return "Invalid date";

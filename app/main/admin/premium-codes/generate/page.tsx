@@ -37,6 +37,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   generateAdminPremiumCodes,
@@ -59,6 +60,7 @@ export default function AdminGeneratePremiumCodesPage() {
   );
   const [limitUsage, setLimitUsage] = useState(1);
   const [amount, setAmount] = useState(5);
+  const [isLifetime, setIsLifetime] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [generatedCodes, setGeneratedCodes] = useState<AdminPremiumCode[]>([]);
   const [lastGeneratedAt, setLastGeneratedAt] = useState<string | null>(null);
@@ -77,24 +79,26 @@ export default function AdminGeneratePremiumCodesPage() {
   const totalEntitlements = codeCount * limitUsage;
   const generatedCount = generatedCodes.length;
   const expirySummary = useMemo(
-    () => getExpirySummary(validUntilDate),
-    [validUntilDate]
+    () => getExpirySummary(validUntilDate, isLifetime),
+    [validUntilDate, isLifetime]
   );
 
   const handleGenerate = async () => {
     if (!isAdmin || isSubmitting) return;
 
-    if (!validUntilDate || Number.isNaN(validUntilDate.getTime())) {
-      toast.error("Expiration required", {
-        description: "Choose when these premium codes should expire.",
-      });
-      return;
-    }
-    if (validUntilDate.getTime() <= Date.now()) {
-      toast.error("Expiration must be in the future", {
-        description: "Choose a later date and time.",
-      });
-      return;
+    if (!isLifetime) {
+      if (!validUntilDate || Number.isNaN(validUntilDate.getTime())) {
+        toast.error("Expiration required", {
+          description: "Choose when these premium codes should expire.",
+        });
+        return;
+      }
+      if (validUntilDate.getTime() <= Date.now()) {
+        toast.error("Expiration must be in the future", {
+          description: "Choose a later date and time.",
+        });
+        return;
+      }
     }
     if (!Number.isFinite(limitUsage) || limitUsage < 1) {
       toast.error("Usage limit must be at least 1");
@@ -111,10 +115,13 @@ export default function AdminGeneratePremiumCodesPage() {
     setIsSubmitting(true);
     try {
       const response = await generateAdminPremiumCodes({
-        valid_until: validUntilDate.toISOString(),
+        valid_until: isLifetime
+          ? undefined
+          : validUntilDate?.toISOString(),
         limit_usage: limitUsage,
         is_bulk: isBatch,
         amount: isBatch ? amount : undefined,
+        is_lifetime: isLifetime,
       });
       const normalized = normalizeGeneratedCodes(response.data);
       setGeneratedCodes(normalized);
@@ -271,6 +278,24 @@ export default function AdminGeneratePremiumCodesPage() {
                       </div>
                     </div>
 
+                    <div className="rounded-xl border bg-muted/20 p-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <Label htmlFor="is_lifetime">Lifetime access</Label>
+                          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                            Codes never expire. Redemption stays available
+                            indefinitely instead of stopping at a valid-until
+                            date.
+                          </p>
+                        </div>
+                        <Switch
+                          id="is_lifetime"
+                          checked={isLifetime}
+                          onCheckedChange={setIsLifetime}
+                        />
+                      </div>
+                    </div>
+
                     {isBatch && (
                       <div className="rounded-xl border bg-muted/20 p-4">
                         <div className="grid gap-4 sm:grid-cols-[1fr_220px] sm:items-center">
@@ -315,9 +340,10 @@ export default function AdminGeneratePremiumCodesPage() {
                   codeCount={codeCount}
                   limitUsage={limitUsage}
                   totalEntitlements={totalEntitlements}
-                  validUntil={validUntilDate}
+                  validUntil={isLifetime ? undefined : validUntilDate}
                   expirySummary={expirySummary}
                   mode={mode}
+                  isLifetime={isLifetime}
                 />
               </div>
 
@@ -404,6 +430,7 @@ function IssuanceManifest({
   validUntil,
   expirySummary,
   mode,
+  isLifetime,
 }: {
   codeCount: number;
   limitUsage: number;
@@ -411,6 +438,7 @@ function IssuanceManifest({
   validUntil?: Date;
   expirySummary: string;
   mode: GenerationMode;
+  isLifetime: boolean;
 }) {
   return (
     <Card className="overflow-hidden border-l-4 border-l-primary py-0 xl:sticky xl:top-6">
@@ -448,8 +476,14 @@ function IssuanceManifest({
         <ManifestRow
           icon={<IconCalendar />}
           label="Expires"
-          value={validUntil ? formatDateTime(validUntil.toISOString()) : "Not set"}
-          detail={expirySummary}
+          value={
+            isLifetime
+              ? "Never"
+              : validUntil
+                ? formatDateTime(validUntil.toISOString())
+                : "Not set"
+          }
+          detail={isLifetime ? "Lifetime access" : expirySummary}
         />
       </CardContent>
       <div className="flex items-center gap-2 border-t bg-muted/20 px-5 py-4 text-xs text-muted-foreground">
@@ -509,7 +543,11 @@ function GeneratedCodeList({ codes }: { codes: AdminPremiumCode[] }) {
               <span>
                 {code.usage_count} / {code.limit_usage ?? "∞"} used
               </span>
-              <span>Expires {formatDateTime(code.valid_until)}</span>
+              <span>
+                {code.is_lifetime || !code.valid_until
+                  ? "Never expires"
+                  : `Expires ${formatDateTime(code.valid_until)}`}
+              </span>
             </div>
           </div>
           <Button
@@ -547,7 +585,8 @@ function addDays(source: Date, days: number): Date {
   return new Date(source.getTime() + days * 86_400_000);
 }
 
-function getExpirySummary(value?: Date): string {
+function getExpirySummary(value?: Date, isLifetime?: boolean): string {
+  if (isLifetime) return "Never expires";
   if (!value || Number.isNaN(value.getTime())) return "Choose a valid date";
   const remainingMs = value.getTime() - Date.now();
   if (remainingMs <= 0) return "Expiration is in the past";

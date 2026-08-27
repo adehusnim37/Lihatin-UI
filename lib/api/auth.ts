@@ -285,6 +285,7 @@ export interface AdminPremiumCode {
   valid_until?: string | null;
   limit_usage?: number | null;
   usage_count: number;
+  is_lifetime?: boolean;
   created_at: string;
   updated_at: string;
   key_usage?: AdminPremiumCodeUsage[];
@@ -315,10 +316,11 @@ export interface AdminUserEmailOptionsResponse {
 }
 
 export interface AdminGeneratePremiumCodeRequest {
-  valid_until: string;
+  valid_until?: string;
   limit_usage: number;
   is_bulk?: boolean;
   amount?: number;
+  is_lifetime?: boolean;
 }
 
 export interface AdminGeneratePremiumCodeBulkResponse {
