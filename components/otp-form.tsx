@@ -29,6 +29,7 @@ import {
 interface OTPFormProps extends React.ComponentProps<"div"> {
   onVerify?: (otp: string) => Promise<void> | void;
   onResend?: () => Promise<number | void> | number | void;
+  verificationMethod: "totp" | "email";
   email?: string;
   description?: React.ReactNode;
   isSubmitting?: boolean;
@@ -41,6 +42,7 @@ export function OTPForm({
   className,
   onVerify,
   onResend,
+  verificationMethod,
   email,
   description,
   isSubmitting = false,
@@ -142,12 +144,12 @@ export function OTPForm({
   }, [isComplete]);
 
   const maskedEmail = useMemo(() => {
-    if (!email) return null;
+    if (verificationMethod !== "email" || !email) return null;
     const [local, domain] = email.split("@");
     if (!domain) return email;
     if (local.length <= 2) return `${local[0] || "*"}***@${domain}`;
     return `${local.slice(0, 2)}***@${domain}`;
-  }, [email]);
+  }, [email, verificationMethod]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -215,7 +217,7 @@ export function OTPForm({
           <FieldDescription className="mx-auto mt-2 max-w-xs leading-5">
             {description ? (
               description
-            ) : maskedEmail ? (
+            ) : verificationMethod === "email" ? (
               <>Enter the 6-digit code we sent to continue securely.</>
             ) : (
               "Open your authenticator app and enter the 6-digit code."

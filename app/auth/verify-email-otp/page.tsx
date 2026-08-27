@@ -176,6 +176,7 @@ function VerifyEmailOTPContent() {
       <BlobDefault />
       <div className="w-full max-w-sm">
         <OTPForm
+          verificationMethod="email"
           email={email}
           description="Enter the 6-digit code sent to your email"
           onVerify={handleVerify}

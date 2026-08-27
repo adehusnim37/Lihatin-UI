@@ -122,7 +122,7 @@ export default function VerifyLoginPage() {
       <BlobDefault />
       <div className="w-full max-w-sm">
         <OTPForm
-          email={userEmail}
+          verificationMethod="totp"
           onVerify={handleVerify}
           isSubmitting={isSubmitting}
           error={error}
