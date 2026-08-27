@@ -49,6 +49,13 @@ type GenerationMode = "single" | "batch";
 
 const DEFAULT_EXPIRY_DAYS = 7;
 const MAX_BATCH_SIZE = 100;
+const EXPIRY_PRESETS = [
+  { days: 7, label: "1 week" },
+  { days: 30, label: "1 month" },
+  { days: 90, label: "3 months" },
+  { days: 180, label: "6 months" },
+  { days: 360, label: "12 months" },
+] as const;
 
 export default function AdminGeneratePremiumCodesPage() {
   const [roleFromStorage, setRoleFromStorage] = useState<
@@ -58,6 +65,8 @@ export default function AdminGeneratePremiumCodesPage() {
   const [validUntilDate, setValidUntilDate] = useState<Date | undefined>(() =>
     addDays(new Date(), DEFAULT_EXPIRY_DAYS)
   );
+  const [selectedExpiryPreset, setSelectedExpiryPreset] =
+    useState<number | null>(DEFAULT_EXPIRY_DAYS);
   const [limitUsage, setLimitUsage] = useState(1);
   const [amount, setAmount] = useState(5);
   const [isLifetime, setIsLifetime] = useState(false);
@@ -82,6 +91,16 @@ export default function AdminGeneratePremiumCodesPage() {
     () => getExpirySummary(validUntilDate, isLifetime),
     [validUntilDate, isLifetime]
   );
+
+  const handleExpiryPresetChange = (days: number) => {
+    setSelectedExpiryPreset(days);
+    setValidUntilDate(addDays(new Date(), days));
+  };
+
+  const handleCustomExpiryChange = (date: Date | undefined) => {
+    setSelectedExpiryPreset(null);
+    setValidUntilDate(date);
+  };
 
   const handleGenerate = async () => {
     if (!isAdmin || isSubmitting) return;
@@ -228,37 +247,107 @@ export default function AdminGeneratePremiumCodesPage() {
                       </Tabs>
                     </div>
 
-                    <div className="grid gap-6 md:grid-cols-2">
-                      <div className="space-y-3">
+                    <section className="overflow-hidden rounded-xl border bg-muted/10">
+                      <div className="flex flex-col gap-4 border-b px-4 py-4 sm:flex-row sm:items-center sm:justify-between md:px-5">
                         <div>
-                          <Label>Valid until</Label>
+                          <Label className="text-sm">Code validity</Label>
                           <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                            Redemption stops immediately after this time.
+                            Choose how long these codes can be redeemed.
                           </p>
                         </div>
-                        <DateTimePicker24hForm
-                          value={validUntilDate}
-                          onChange={setValidUntilDate}
-                          disablePast
-                        />
-                        <div className="flex flex-wrap gap-2">
-                          {[7, 30, 90, 180, 360].map((days) => (
-                            <Button
-                              key={days}
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                setValidUntilDate(addDays(new Date(), days))
-                              }
-                            >
-                              {days} days
-                            </Button>
-                          ))}
+                        <div className="flex shrink-0 items-center justify-between gap-3 rounded-lg border bg-background px-3 py-2 sm:justify-start">
+                          <Label
+                            htmlFor="is_lifetime"
+                            className="cursor-pointer text-xs font-medium"
+                          >
+                            No expiry
+                          </Label>
+                          <Switch
+                            id="is_lifetime"
+                            checked={isLifetime}
+                            onCheckedChange={setIsLifetime}
+                          />
                         </div>
                       </div>
 
-                      <div className="space-y-3">
+                      {isLifetime ? (
+                        <div className="flex items-start gap-3 px-4 py-5 md:px-5">
+                          <div className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+                            <IconSparkles className="size-4" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">
+                              These codes never expire
+                            </p>
+                            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                              Redemption remains available until the codes are
+                              disabled or fully used.
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-5 px-4 py-5 md:px-5">
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between gap-3">
+                              <Label className="text-xs">Custom date and time</Label>
+                              <span className="text-[11px] text-muted-foreground">
+                                Local timezone
+                              </span>
+                            </div>
+                            <DateTimePicker24hForm
+                              value={validUntilDate}
+                              onChange={handleCustomExpiryChange}
+                              disablePast
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label className="text-xs">Quick select</Label>
+                            <div
+                              className="grid grid-cols-2 gap-2 sm:grid-cols-5"
+                              role="group"
+                              aria-label="Expiration presets"
+                            >
+                              {EXPIRY_PRESETS.map(({ days, label }) => {
+                                const isSelected =
+                                  selectedExpiryPreset === days;
+                                return (
+                                  <Button
+                                    key={days}
+                                    type="button"
+                                    variant={isSelected ? "default" : "outline"}
+                                    className="h-auto min-h-14 flex-col gap-0.5 rounded-lg px-2 py-2.5 last:col-span-2 sm:last:col-span-1"
+                                    aria-pressed={isSelected}
+                                    onClick={() =>
+                                      handleExpiryPresetChange(days)
+                                    }
+                                  >
+                                    <span>{label}</span>
+                                    <span
+                                      className={
+                                        isSelected
+                                          ? "text-[10px] font-normal text-primary-foreground/75"
+                                          : "text-[10px] font-normal text-muted-foreground"
+                                      }
+                                    >
+                                      {days} days
+                                    </span>
+                                  </Button>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
+                            <IconClock className="size-3.5 shrink-0" />
+                            <span>{expirySummary}</span>
+                          </div>
+                        </div>
+                      )}
+                    </section>
+
+                    <div className="rounded-xl border bg-muted/20 p-4">
+                      <div className="grid gap-4 sm:grid-cols-[1fr_220px] sm:items-center">
                         <div>
                           <Label htmlFor="limit_usage">
                             Redemptions per code
@@ -269,29 +358,11 @@ export default function AdminGeneratePremiumCodesPage() {
                           </p>
                         </div>
                         <CounterInput
+                          id="limit_usage"
                           value={limitUsage}
                           onChange={setLimitUsage}
                           min={1}
                           max={100_000}
-                          className="max-w-xs"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border bg-muted/20 p-4">
-                      <div className="flex items-center justify-between gap-4">
-                        <div>
-                          <Label htmlFor="is_lifetime">Lifetime access</Label>
-                          <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                            Codes never expire. Redemption stays available
-                            indefinitely instead of stopping at a valid-until
-                            date.
-                          </p>
-                        </div>
-                        <Switch
-                          id="is_lifetime"
-                          checked={isLifetime}
-                          onCheckedChange={setIsLifetime}
                         />
                       </div>
                     </div>
@@ -300,13 +371,14 @@ export default function AdminGeneratePremiumCodesPage() {
                       <div className="rounded-xl border bg-muted/20 p-4">
                         <div className="grid gap-4 sm:grid-cols-[1fr_220px] sm:items-center">
                           <div>
-                            <Label>Number of codes</Label>
+                            <Label htmlFor="amount">Number of codes</Label>
                             <p className="mt-1 text-xs leading-5 text-muted-foreground">
                               Each code is unique and follows the same expiry
                               and redemption limit.
                             </p>
                           </div>
                           <CounterInput
+                            id="amount"
                             value={amount}
                             onChange={setAmount}
                             min={1}

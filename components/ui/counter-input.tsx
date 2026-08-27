@@ -2,11 +2,11 @@
 
 import * as React from "react";
 import { Minus, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 interface CounterInputProps {
+  id?: string;
   value?: number;
   onChange?: (value: number) => void;
   min?: number;
@@ -16,6 +16,7 @@ interface CounterInputProps {
 }
 
 export function CounterInput({
+  id,
   value = 0,
   onChange,
   min = 0,
@@ -46,11 +47,16 @@ export function CounterInput({
   };
 
   return (
-    <div className={cn("flex items-center space-x-2", className)}>
-      <Button
-        variant="outline"
-        size="icon"
-        className="size-8 shrink-0"
+    <div
+      className={cn(
+        "flex h-10 w-full items-stretch overflow-hidden rounded-lg border bg-background shadow-xs transition-[border-color,box-shadow] focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
+        className
+      )}
+      role="group"
+      aria-label="Number stepper"
+    >
+      <button
+        className="grid w-11 shrink-0 place-items-center border-r text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-40"
         onClick={(e) => {
           e.preventDefault();
           handleDecrement();
@@ -60,21 +66,22 @@ export function CounterInput({
       >
         <Minus className="size-4" />
         <span className="sr-only">Decrease</span>
-      </Button>
-      <div className="flex-1">
+      </button>
+      <div className="min-w-0 flex-1">
         <Input
+          id={id}
           type="number"
           value={value}
           onChange={handleChange}
-          className="h-8 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          className="h-full rounded-none border-0 bg-transparent text-center shadow-none [appearance:textfield] focus-visible:border-transparent focus-visible:ring-0 dark:bg-transparent [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           min={min}
           max={max}
+          step={step}
+          inputMode="numeric"
         />
       </div>
-      <Button
-        variant="outline"
-        size="icon"
-        className="size-8 shrink-0"
+      <button
+        className="grid w-11 shrink-0 place-items-center border-l text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-40"
         onClick={(e) => {
           e.preventDefault();
           handleIncrement();
@@ -84,7 +91,7 @@ export function CounterInput({
       >
         <Plus className="size-4" />
         <span className="sr-only">Increase</span>
-      </Button>
+      </button>
     </div>
   );
 }
