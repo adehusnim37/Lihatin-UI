@@ -7,6 +7,7 @@ const cspDirectives = [
   "img-src 'self' data: blob: https:",
   "font-src 'self' data: https:",
   `connect-src 'self' https: wss:${isProduction ? "" : " http://localhost:3000 http://localhost:3001 http://localhost:8080 ws:"}`,
+  "frame-src 'self' https://challenges.cloudflare.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
