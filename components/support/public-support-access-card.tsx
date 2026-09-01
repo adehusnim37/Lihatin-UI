@@ -327,21 +327,17 @@ export function PublicSupportAccessCard() {
   };
 
   return (
-    <Card className="min-w-0 shadow-sm">
-      <CardHeader>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          Secure Access
-        </p>
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <IconSearch className="size-5" />
-          Track & Open Ticket
-        </CardTitle>
-        <CardDescription>
-          Check existing ticket, then continue to secure conversation page with
-          access code or OTP.
+    <Card className="min-w-0 gap-5 py-5 shadow-none">
+      <CardHeader className="gap-2 px-5">
+        <div className="flex size-9 items-center justify-center rounded-lg border bg-background">
+          <IconSearch className="size-[18px]" />
+        </div>
+        <CardTitle className="text-lg">Find your ticket</CardTitle>
+        <CardDescription className="leading-6">
+          Enter the ticket code and the email address used when it was created.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-5 px-5">
         <form onSubmit={handleTrackTicket} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="track-ticket">Ticket Code</Label>
@@ -381,7 +377,7 @@ export function PublicSupportAccessCard() {
           <Button
             type="submit"
             variant="outline"
-            className="w-full"
+            className="w-full sm:w-auto"
             disabled={trackTicketMutation.isPending}
           >
             {trackTicketMutation.isPending ? "Checking..." : "Check Ticket"}
@@ -393,20 +389,18 @@ export function PublicSupportAccessCard() {
             open={isAccessDialogOpen}
             onOpenChange={setIsAccessDialogOpen}
           >
-            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Verify Access</DialogTitle>
                 <DialogDescription>
-                  Use the secure access code from your email. OTP is available
-                  if the access code is unavailable.
+                  Ticket {trackResult.ticket_code}. Use the access code from
+                  your email, or verify with OTP.
                 </DialogDescription>
               </DialogHeader>
           {!showOTPSection ? (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
               <div className="space-y-2">
-                <Label htmlFor="support-link-code">
-                  Access Code (from email link)
-                </Label>
+                <Label htmlFor="support-link-code">Access code</Label>
                 <Input
                   id="support-link-code"
                   value={linkCode}
@@ -430,20 +424,13 @@ export function PublicSupportAccessCard() {
                 <p className="font-medium text-foreground">
                   Have you lost the access code?
                 </p>
-                <p
+                <button
+                  type="button"
                   onClick={() => setShowOTPSection(true)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setShowOTPSection(true);
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  className="font-medium text-primary hover:underline cursor-pointer"
+                  className="font-medium text-primary underline-offset-4 hover:underline"
                 >
                   Verify with OTP instead
-                </p>
+                </button>
               </div>
             </div>
           ) : (
@@ -467,6 +454,14 @@ export function PublicSupportAccessCard() {
                     verification code in your email.
                   </p>
 
+                  <div className="flex justify-center py-2">
+                    <SupportTurnstileField
+                      token={captchaToken}
+                      onTokenChange={setCaptchaToken}
+                      resetSignal={captchaResetSignal}
+                    />
+                  </div>
+
                   <Button
                     className="w-full"
                     onClick={() => void handleRequestOTP()}
@@ -476,14 +471,6 @@ export function PublicSupportAccessCard() {
                       ? "Sending OTP..."
                       : "Send OTP to Email"}
                   </Button>
-
-                  <div className="flex justify-center py-2">
-                    <SupportTurnstileField
-                      token={captchaToken}
-                      onTokenChange={setCaptchaToken}
-                      resetSignal={captchaResetSignal}
-                    />
-                  </div>
                 </div>
               ) : (
                 <div className="space-y-5 py-2">
@@ -501,10 +488,14 @@ export function PublicSupportAccessCard() {
                     <Input
                       id="otp-input"
                       value={otpCode}
-                      onChange={(event) => setOtpCode(event.target.value)}
+                      onChange={(event) =>
+                        setOtpCode(event.target.value.replace(/\D/g, ""))
+                      }
                       placeholder="• • • • • •"
                       className="h-12 text-center text-2xl tracking-[0.5em] font-medium transition-all focus:tracking-[0.7em]"
                       maxLength={6}
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
                     />
                     <Button
                       onClick={() => void handleVerifyOTP()}

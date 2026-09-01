@@ -52,35 +52,19 @@ export function SupportConversationBubble({
       ? (message.sender_type === "system" ? "System" : "User")
       : (message.sender_type === "admin" ? "Support Team" : "System");
 
-  const badgeLabel = message.sender_type === "admin" 
-    ? "Support" 
-    : message.sender_type === "system" 
-      ? "System" 
-      : "User";
-
   return (
     <div className={cn("flex", mine ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "max-w-[88%] rounded-2xl border px-4 py-3 text-sm shadow-sm sm:max-w-[80%]",
+          "max-w-[88%] rounded-xl border px-3.5 py-3 text-sm sm:max-w-[76%]",
           mine
-            ? "border-primary/15 bg-primary/5 text-foreground"
-            : "bg-card text-card-foreground",
+            ? "border-primary/15 bg-primary/10 text-foreground"
+            : "bg-background text-card-foreground",
         )}
       >
-        <div className="mb-2 flex items-start justify-between gap-4">
-          <div className="space-y-0.5">
-            <p className="font-medium">{senderLabel}</p>
-            <p className="text-xs text-muted-foreground">{formatDate(message.created_at)}</p>
-          </div>
-          <span
-            className={cn(
-              "rounded-full px-2 py-0.5 text-[11px] font-medium",
-              message.sender_type === "admin" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
-            )}
-          >
-            {badgeLabel}
-          </span>
+        <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs">
+          <p className="font-medium text-foreground">{senderLabel}</p>
+          <p className="text-muted-foreground">{formatDate(message.created_at)}</p>
         </div>
 
         {message.body ? (
@@ -97,7 +81,7 @@ export function SupportConversationBubble({
                 href={getAttachmentUrl(attachment.id)}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full bg-background px-3 py-1.5 text-xs font-medium text-primary shadow-sm ring-1 ring-border transition-colors hover:bg-muted/60"
+                className="rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-muted/60"
               >
                 {attachment.file_name} ({formatBytes(attachment.size_bytes)})
               </a>

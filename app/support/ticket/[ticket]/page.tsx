@@ -8,7 +8,6 @@ import {
   useRef,
   useState,
 } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -21,6 +20,7 @@ import {
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 
+import { PublicSupportShell } from "@/components/support/public-support-shell";
 import { SupportStatusBadge } from "@/components/support/support-ticket-badges";
 import { Button } from "@/components/ui/button";
 import {
@@ -95,7 +95,10 @@ function PublicSupportConversationContent() {
 
   const hasStoredToken = Boolean(storedSupportAccessToken.trim());
   const shouldVerifyLinkCode =
-    !hasStoredToken && Boolean(linkCode) && Boolean(ticketCode) && Boolean(email);
+    !hasStoredToken &&
+    Boolean(linkCode) &&
+    Boolean(ticketCode) &&
+    Boolean(email);
 
   const verifyCodeQuery = useVerifySupportAccessCodeQuery(
     { ticket: ticketCode, email, code: linkCode },
@@ -123,7 +126,10 @@ function PublicSupportConversationContent() {
     conversationQuery.isFetching && Boolean(conversation);
 
   useEffect(() => {
-    if (verifyCodeQuery.status === "success" && verifyCodeQuery.data?.access_token) {
+    if (
+      verifyCodeQuery.status === "success" &&
+      verifyCodeQuery.data?.access_token
+    ) {
       const token = verifyCodeQuery.data.access_token;
       storePublicSupportAccessToken(ticketCode, email, token);
 
@@ -241,7 +247,6 @@ function PublicSupportConversationContent() {
     ? categoryLabelMap[conversation.category]
     : null;
   const isVerifyingFromLink = verifyCodeQuery.isPending && shouldVerifyLinkCode;
-  const needsAccess = !activeToken && !isVerifyingFromLink;
   const conversationDescription = isVerifyingFromLink
     ? "Verifying secure access..."
     : activeToken
@@ -249,263 +254,233 @@ function PublicSupportConversationContent() {
       : "Access needed before thread can open.";
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-gradient-to-b from-white via-slate-50 to-slate-100 px-4 py-10 md:px-8">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <header className="rounded-2xl border bg-white p-6 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Image src="/logo.svg" alt="Lihatin" width={40} height={40} />
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                  Public Access
-                </p>
-                <h1 className="text-2xl font-semibold">Support Conversation</h1>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Ticket {ticketCode || "-"}
-                </p>
-              </div>
-            </div>
+    <PublicSupportShell
+      title="Support conversation"
+      description={`Ticket ${ticketCode || "-"}`}
+    >
+      <div className="mb-2 flex justify-end">
+        <Button asChild variant="ghost" size="sm">
+          <Link
+            href={`/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email)}`}
+          >
+            <IconArrowLeft className="mr-2 size-4" />
+            Back to ticket access
+          </Link>
+        </Button>
+      </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <Button asChild variant="outline">
-                <Link
-                  href={`/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email)}`}
-                >
-                  <IconArrowLeft className="mr-2 size-4" />
-                  Back to Support Access
-                </Link>
-              </Button>
-              <Button asChild variant="ghost">
-                <Link href="/auth/login">Back to Login</Link>
-              </Button>
-            </div>
-          </div>
-        </header>
-
-        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
-          <div className="min-w-0 space-y-6">
-            <Card className="min-w-0">
-              <CardHeader>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <CardTitle className="text-xl">Conversation</CardTitle>
-                    <CardDescription>{conversationDescription}</CardDescription>
-                  </div>
-                  {conversation && (
-                    <SupportStatusBadge status={conversation.status} />
-                  )}
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-start">
+        <div className="min-w-0">
+          <Card className="min-w-0 gap-5 py-5 shadow-none">
+            <CardHeader className="px-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <CardTitle className="text-xl">Conversation</CardTitle>
+                  <CardDescription>{conversationDescription}</CardDescription>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {!email ? (
-                  <div className="rounded-lg border bg-muted/20 p-4 text-sm text-muted-foreground">
-                    Email missing from support link. Return to support page and
-                    verify ticket again.
-                  </div>
-                ) : isVerifyingFromLink ? (
-                  <div className="rounded-lg border bg-primary/20 p-4 text-sm text-primary">
-                    Verifying secure access from link...
-                  </div>
-                ) : isConversationLoading && activeToken ? (
-                  <div className="rounded-lg border bg-muted/20 p-4 text-sm text-muted-foreground">
-                    Loading conversation...
-                  </div>
-                ) : conversation && activeToken ? (
-                  <>
-                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-muted/20 px-4 py-3 text-sm">
-                      <div>
-                        <p className="font-medium text-foreground">
-                          {conversation.subject}
-                        </p>
-                        <p className="text-muted-foreground">{email}</p>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => void conversationQuery.refetch()}
-                        disabled={conversationQuery.isFetching}
-                      >
-                        <IconRefresh className="mr-2 size-4" />
-                        {isRefreshingConversation ? "Refreshing..." : "Refresh"}
-                      </Button>
+                {conversation && (
+                  <SupportStatusBadge status={conversation.status} />
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4 px-5">
+              {!email ? (
+                <div className="rounded-lg border bg-muted/20 p-4 text-sm text-muted-foreground">
+                  Email missing from support link. Return to support page and
+                  verify ticket again.
+                </div>
+              ) : isVerifyingFromLink ? (
+                <div className="rounded-lg border bg-primary/20 p-4 text-sm text-primary">
+                  Verifying secure access from link...
+                </div>
+              ) : isConversationLoading && activeToken ? (
+                <div className="rounded-lg border bg-muted/20 p-4 text-sm text-muted-foreground">
+                  Loading conversation...
+                </div>
+              ) : conversation && activeToken ? (
+                <>
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b pb-4 text-sm">
+                    <div>
+                      <p className="font-medium text-foreground">
+                        {conversation.subject}
+                      </p>
+                      <p className="text-muted-foreground">{email}</p>
                     </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => void conversationQuery.refetch()}
+                      disabled={conversationQuery.isFetching}
+                    >
+                      <IconRefresh className="mr-2 size-4" />
+                      {isRefreshingConversation ? "Refreshing..." : "Refresh"}
+                    </Button>
+                  </div>
 
-                    <div className="max-h-[520px] space-y-3 overflow-y-auto rounded-xl border bg-muted/20 p-3">
-                      {(conversation.messages ?? []).length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                          No messages yet.
-                        </p>
-                      ) : (
-                        (conversation.messages ?? []).map((message) => (
-                          <SupportConversationBubble
-                            key={message.id}
-                            message={message}
-                            getAttachmentUrl={(id) =>
-                              getPublicSupportAttachmentURL({
-                                ticket: conversation.ticket_code,
-                                email,
-                                accessToken: activeToken,
-                                attachmentID: id,
-                              })
+                  <div className="max-h-[560px] space-y-3 overflow-y-auto rounded-lg bg-muted/35 p-3">
+                    {(conversation.messages ?? []).length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        No messages yet.
+                      </p>
+                    ) : (
+                      (conversation.messages ?? []).map((message) => (
+                        <SupportConversationBubble
+                          key={message.id}
+                          message={message}
+                          getAttachmentUrl={(id) =>
+                            getPublicSupportAttachmentURL({
+                              ticket: conversation.ticket_code,
+                              email,
+                              accessToken: activeToken,
+                              attachmentID: id,
+                            })
+                          }
+                        />
+                      ))
+                    )}
+                  </div>
+
+                  <form
+                    onSubmit={handleSendMessage}
+                    className="space-y-3 border-t pt-4"
+                  >
+                    {conversation.status === "resolved" ||
+                    conversation.status === "closed" ? (
+                      <Alert className="mt-4 border-emerald-200 bg-emerald-50/50 text-emerald-900">
+                        <IconMessage2 className="size-4 stroke-emerald-600" />
+                        <AlertTitle>Conversation Closed</AlertTitle>
+                        <AlertDescription className="text-emerald-800">
+                          This ticket has been marked as {conversation.status}{" "}
+                          on {formatDate(conversation.updated_at!)}. Cannot
+                          receive or send new messages.
+                        </AlertDescription>
+                      </Alert>
+                    ) : (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="support-reply-message">Reply</Label>
+                          <textarea
+                            id="support-reply-message"
+                            value={draftMessage}
+                            onChange={(event) =>
+                              setDraftMessage(event.target.value)
+                            }
+                            className="min-h-28 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                            placeholder="Write message to support team"
+                          />
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <input
+                            ref={attachmentInputRef}
+                            type="file"
+                            multiple
+                            className="hidden"
+                            onChange={(event) =>
+                              setDraftFiles(
+                                Array.from(event.target.files || []),
+                              )
                             }
                           />
-                        ))
-                      )}
-                    </div>
-
-                    <form
-                      onSubmit={handleSendMessage}
-                      className="space-y-3 rounded-xl border p-4"
-                    >
-                      {conversation.status === "resolved" ||
-                      conversation.status === "closed" ? (
-                        <Alert className="mt-4 border-emerald-200 bg-emerald-50/50 text-emerald-900">
-                          <IconMessage2 className="size-4 stroke-emerald-600" />
-                          <AlertTitle>Conversation Closed</AlertTitle>
-                          <AlertDescription className="text-emerald-800">
-                            This ticket has been marked as {conversation.status}{" "}
-                            on {formatDate(conversation.updated_at!)}. Cannot
-                            receive or send new messages.
-                          </AlertDescription>
-                        </Alert>
-                      ) : (
-                        <>
-                          <div className="space-y-2">
-                            <Label htmlFor="support-reply-message">Reply</Label>
-                            <textarea
-                              id="support-reply-message"
-                              value={draftMessage}
-                              onChange={(event) =>
-                                setDraftMessage(event.target.value)
-                              }
-                              className="min-h-28 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                              placeholder="Write message to support team"
-                            />
-                          </div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <input
-                              ref={attachmentInputRef}
-                              type="file"
-                              multiple
-                              className="hidden"
-                              onChange={(event) =>
-                                setDraftFiles(
-                                  Array.from(event.target.files || []),
-                                )
-                              }
-                            />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() =>
-                                attachmentInputRef.current?.click()
-                              }
-                            >
-                              <IconPaperclip className="mr-2 size-4" />
-                              Attach Files
-                            </Button>
-                            <Button
-                              type="submit"
-                              disabled={sendMessageMutation.isPending}
-                            >
-                              <IconSend className="mr-2 size-4" />
-                              {sendMessageMutation.isPending
-                                ? "Sending..."
-                                : "Send Reply"}
-                            </Button>
-                          </div>
-                        </>
-                      )}
-
-                      {draftFiles.length > 0 && (
-                        <div className="rounded-md border bg-muted/20 p-2 text-xs text-muted-foreground">
-                          {draftFiles.map((file) => file.name).join(", ")}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => attachmentInputRef.current?.click()}
+                          >
+                            <IconPaperclip className="mr-2 size-4" />
+                            Attach Files
+                          </Button>
+                          <Button
+                            type="submit"
+                            disabled={sendMessageMutation.isPending}
+                          >
+                            <IconSend className="mr-2 size-4" />
+                            {sendMessageMutation.isPending
+                              ? "Sending..."
+                              : "Send Reply"}
+                          </Button>
                         </div>
-                      )}
-                    </form>
-                  </>
-                ) : (
-                  <div className="space-y-3 rounded-xl border bg-muted/20 p-4">
-                    <p className="text-sm text-muted-foreground">
-                      {accessError ||
-                        "Secure access required before opening conversation."}
+                      </>
+                    )}
+
+                    {draftFiles.length > 0 && (
+                      <div className="rounded-md border bg-muted/20 p-2 text-xs text-muted-foreground">
+                        {draftFiles.map((file) => file.name).join(", ")}
+                      </div>
+                    )}
+                  </form>
+                </>
+              ) : (
+                <div className="space-y-3 rounded-xl border bg-muted/20 p-4">
+                  <p className="text-sm text-muted-foreground">
+                    {accessError ||
+                      "Secure access required before opening conversation."}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild>
+                      <Link
+                        href={`/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email)}`}
+                      >
+                        <IconKey className="mr-2 size-4" />
+                        Verify access
+                      </Link>
+                    </Button>
+                    <Button variant="outline" onClick={handleResetAccess}>
+                      Use different details
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="min-w-0 lg:sticky lg:top-6">
+          <Card className="gap-4 py-5 shadow-none">
+            <CardHeader className="px-5">
+              <CardTitle className="text-base">Ticket overview</CardTitle>
+              <CardDescription>Details for this thread.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 px-5 text-sm">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Ticket Code
+                  </p>
+                  <p className="mt-1 font-semibold">{ticketCode || "-"}</p>
+                </div>
+
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Email
+                  </p>
+                  <p className="mt-1 break-words font-medium">{email || "-"}</p>
+                </div>
+
+                {categoryLabel && (
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Category
                     </p>
-                    <div className="flex flex-wrap gap-2">
-                      <Button asChild>
-                        <Link
-                          href={`/support/access?ticket=${encodeURIComponent(ticketCode)}&email=${encodeURIComponent(email)}`}
-                        >
-                          <IconKey className="mr-2 size-4" />
-                          Verify Access on Support Page
-                        </Link>
-                      </Button>
-                      <Button variant="outline" onClick={handleResetAccess}>
-                        Reset Access
-                      </Button>
-                    </div>
+                    <p className="mt-1 font-medium">{categoryLabel}</p>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </div>
 
-          <div className="min-w-0">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Ticket Overview</CardTitle>
-                <CardDescription>
-                  Reference info for this secure thread.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4 text-sm">
-                <div className="rounded-xl border bg-muted/20 p-4 space-y-3">
+                {conversation?.created_at && (
                   <div>
                     <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                      Ticket Code
+                      Created
                     </p>
-                    <p className="mt-1 font-semibold">{ticketCode || "-"}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                      Email
-                    </p>
-                    <p className="mt-1 break-words font-medium">
-                      {email || "-"}
+                    <p className="mt-1 font-medium">
+                      {formatDate(conversation.created_at)}
                     </p>
                   </div>
-
-                  {categoryLabel && (
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                        Category
-                      </p>
-                      <p className="mt-1 font-medium">{categoryLabel}</p>
-                    </div>
-                  )}
-
-                  {conversation?.created_at && (
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                        Created
-                      </p>
-                      <p className="mt-1 font-medium">
-                        {formatDate(conversation.created_at)}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        <div className="text-center text-xs text-muted-foreground">
-          Keep ticket code private. Support team will never ask your OTP or
-          password.
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
-    </div>
+    </PublicSupportShell>
   );
 }
 

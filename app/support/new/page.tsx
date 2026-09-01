@@ -1,36 +1,26 @@
 import { Suspense } from "react";
-import { PublicSupportInfoCard } from "@/components/support/public-support-info";
 import { PublicSupportShell } from "@/components/support/public-support-shell";
 import { PublicSupportSubmitCard } from "@/components/support/public-support-submit-card";
 
 export default function SupportNewPage() {
   return (
     <PublicSupportShell
-      title="Submit Support Ticket"
-      description="Create new support request. No login required."
+      title="Submit a support ticket"
+      description="Tell us what happened and we'll follow up by email."
+      centered
     >
-      <div className="space-y-6">
-        <Suspense
-          fallback={
-            <div className="min-h-[120px] flex items-center justify-center text-sm text-muted-foreground">Loading…</div>
-          }
-        >
-          <PublicSupportSubmitCard />
-        </Suspense>
-        <PublicSupportInfoCard
-          introLabel="New Request"
-          introTitle="Before you submit"
-          introDescription="Use this form for new problems, bug reports, billing issues, or account help. If you already have ticket code, open existing ticket instead."
-          introPoints={[
-            "Explain problem clearly, including exact error message if you have one.",
-            "Use same email you can access, because updates and secure links go there.",
-            "Have ticket code already? Continue in existing ticket flow instead of creating duplicate request.",
-          ]}
-          ctaLabel="Open Existing Ticket"
-          ctaHref="/support/access"
-          note="Secure ticket links and OTP are sent only to ticket email address."
-          className="xl:min-h-0"
-        />
+      <div className="mx-auto w-full max-w-xl">
+        <div className="min-w-0">
+          <Suspense
+            fallback={
+              <div className="flex min-h-32 items-center justify-center rounded-xl border bg-background text-sm text-muted-foreground">
+                Loading form…
+              </div>
+            }
+          >
+            <PublicSupportSubmitCard />
+          </Suspense>
+        </div>
       </div>
     </PublicSupportShell>
   );

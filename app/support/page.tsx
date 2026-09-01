@@ -3,8 +3,9 @@
 import { Suspense, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { IconArrowRight, IconKey, IconLifebuoy, IconPointFilled } from "@tabler/icons-react";
+import { IconArrowRight, IconKey, IconLifebuoy } from "@tabler/icons-react";
 
+import { PublicSupportInfoCard } from "@/components/support/public-support-info";
 import { PublicSupportShell } from "@/components/support/public-support-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,79 +55,58 @@ function SupportChooserContent() {
 
   return (
     <PublicSupportShell
-      title="Lihatin Support"
-      description="Choose what you need first, then continue with focused flow."
+      title="How can we help?"
+      description="Create a new request or securely continue an existing support conversation."
+      centered
     >
-      <div className="grid auto-rows-fr gap-6 lg:grid-cols-2">
-        <Card className="flex h-full flex-col shadow-sm transition-shadow hover:shadow-md">
-          <CardHeader className="">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">New Request</p>
-            <CardTitle className="flex items-center gap-2">
-              <IconLifebuoy className="size-5" />
-              Submit New Ticket
-            </CardTitle>
-            <CardDescription className="font-semibold text-foreground/80">
-              Report new problem, billing issue, feature request, or account access issue.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-1 flex-col gap-6">
-            <div className="space-y-2.5 rounded-2xl border bg-muted/20 p-4">
-              {[
-                "Create brand-new support request with ticket code sent to your email.",
-                "Best for account issues, billing, bugs, or feature requests.",
-                "No login needed.",
-              ].map((point) => (
-                <div key={point} className="flex items-start gap-2.5 text-sm text-foreground/80">
-                  <IconPointFilled className="mt-1 size-3.5 shrink-0 text-primary" />
-                  <p className="leading-6">{point}</p>
-                </div>
-              ))}
-            </div>
-            <div className="pt-2">
-              <Button asChild className="w-full sm:w-auto">
+      <div className="mx-auto max-w-3xl space-y-4">
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card className="gap-4 shadow-none transition-colors hover:border-foreground/20">
+            <CardHeader className="gap-3 px-5">
+              <div className="flex size-10 items-center justify-center rounded-lg border bg-background text-foreground">
+                <IconLifebuoy className="size-5" />
+              </div>
+              <div className="space-y-1.5">
+                <CardTitle className="text-lg">Submit a new ticket</CardTitle>
+                <CardDescription className="leading-6">
+                  Report an account, billing, or product issue. No sign-in required.
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="mt-auto px-5">
+              <Button asChild size="sm">
                 <Link href="/support/new">
-                  Start New Ticket
+                  Create ticket
                   <IconArrowRight className="ml-2 size-4" />
                 </Link>
               </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card className="flex h-full flex-col shadow-sm transition-shadow hover:shadow-md">
-          <CardHeader className="">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Existing Request</p>
-            <CardTitle className="flex items-center gap-2">
-              <IconKey className="size-5" />
-              Open Existing Ticket
-            </CardTitle>
-            <CardDescription className="font-semibold text-foreground/80">
-              Track ticket status, verify access code or OTP, then continue to secure conversation.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-1 flex-col gap-6">
-            <div className="space-y-2.5 rounded-2xl border bg-muted/20 p-4">
-              {[
-                "Reopen conversation with ticket code plus access code or OTP.",
-                "See status and continue file/message thread securely.",
-                "Best when support already emailed you.",
-              ].map((point) => (
-                <div key={point} className="flex items-start gap-2.5 text-sm text-foreground/80">
-                  <IconPointFilled className="mt-1 size-3.5 shrink-0 text-primary" />
-                  <p className="leading-6">{point}</p>
-                </div>
-              ))}
-            </div>
-            <div className="pt-2">
-              <Button asChild variant="outline" className="w-full sm:w-auto">
+          <Card className="gap-4 shadow-none transition-colors hover:border-foreground/20">
+            <CardHeader className="gap-3 px-5">
+              <div className="flex size-10 items-center justify-center rounded-lg border bg-background text-foreground">
+                <IconKey className="size-5" />
+              </div>
+              <div className="space-y-1.5">
+                <CardTitle className="text-lg">Open an existing ticket</CardTitle>
+                <CardDescription className="leading-6">
+                  Check status and continue a secure conversation using your ticket details.
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="mt-auto px-5">
+              <Button asChild variant="outline" size="sm">
                 <Link href="/support/access">
-                  Open Existing Ticket
+                  Track ticket
                   <IconArrowRight className="ml-2 size-4" />
                 </Link>
               </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
+
+        <PublicSupportInfoCard />
       </div>
     </PublicSupportShell>
   );

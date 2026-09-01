@@ -1,123 +1,84 @@
-import Link from "next/link";
 import {
-  IconArrowRight,
   IconClock,
+  IconInfoCircle,
   IconMail,
-  IconPointFilled,
   IconShieldLock,
   IconTicket,
 } from "@tabler/icons-react";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export function PublicSupportInfoCard({
-  title,
-  introLabel,
-  introTitle,
-  introDescription,
-  introPoints,
-  ctaLabel,
-  ctaHref,
-  note,
   className,
 }: {
-  title?: string;
-  introLabel?: string;
-  introTitle?: string;
-  introDescription?: string;
-  introPoints?: string[];
-  ctaLabel?: string;
-  ctaHref?: string;
-  note?: string;
   className?: string;
 }) {
+  const items = [
+    {
+      icon: IconClock,
+      label: "Estimated response",
+      value: "Within one business day",
+    },
+    {
+      icon: IconTicket,
+      label: "Support hours",
+      value: "Mon–Fri, 09:00–18:00 WIB",
+    },
+    {
+      icon: IconMail,
+      label: "Support email",
+      value: "support@lihat.in",
+    },
+    {
+      icon: IconShieldLock,
+      label: "Secure access",
+      value: "Links and OTP go only to the ticket email",
+    },
+  ];
+
   return (
-    <Card className={["min-w-0 shadow-sm xl:min-h-[760px]", className].filter(Boolean).join(" ")}>
-      <CardHeader className="">
-        <CardTitle className="text-2xl">
-          {title || (introTitle || introDescription || ctaLabel ? "Support Guide" : "Support Info")}
-        </CardTitle>
+    <Card
+      className={[
+        "min-w-0 gap-4 border-primary/20 bg-primary/[0.03] py-5 shadow-none",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <CardHeader className="gap-1.5 px-5">
+        <Badge
+          variant="outline"
+          className="mb-1 border-primary/25 bg-primary/5 text-primary"
+        >
+          <IconInfoCircle />
+          Good to know
+        </Badge>
+        <CardTitle className="text-base">Support information</CardTitle>
+        <CardDescription>
+          What to expect when contacting the support team.
+        </CardDescription>
       </CardHeader>
-      <CardContent className="flex h-full flex-col space-y-5 px-5 pb-5 pt-0">
-        {(introTitle || introDescription || (ctaLabel && ctaHref)) && (
-          <div className="rounded-2xl border bg-gradient-to-br from-muted/30 via-background to-background p-5">
-            {introLabel ? (
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                {introLabel}
-              </p>
-            ) : null}
-            {introTitle ? <p className="mt-2 text-lg font-semibold text-foreground">{introTitle}</p> : null}
-            {introDescription ? <p className="mt-3 text-sm leading-7 text-muted-foreground">{introDescription}</p> : null}
-            {introPoints?.length ? (
-              <div className="mt-4 space-y-2.5">
-                {introPoints.map((point) => (
-                  <div key={point} className="flex items-start gap-2.5 text-sm text-foreground/80">
-                    <IconPointFilled className="mt-1 size-3.5 shrink-0 text-primary" />
-                    <p className="leading-6">{point}</p>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-            {ctaLabel && ctaHref ? (
-              <Button asChild variant="outline" className="mt-4 w-full sm:w-auto">
-                <Link href={ctaHref}>
-                  {ctaLabel}
-                  <IconArrowRight className="ml-2 size-4" />
-                </Link>
-              </Button>
-            ) : null}
-          </div>
-        )}
+      <CardContent className="grid gap-x-6 gap-y-4 px-5 sm:grid-cols-2">
+        {items.map((item) => {
+          const Icon = item.icon;
 
-        <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Support Info</p>
-          <div className="grid gap-3">
-            <div className="flex items-start gap-3 rounded-xl border bg-background px-4 py-3.5">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                <IconClock className="h-[18px] w-[18px]" />
-              </div>
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Estimated Response</p>
-                <p className="mt-0.5 text-sm font-semibold">Within 24 hours (business day)</p>
+          return (
+            <div key={item.label} className="flex min-w-0 items-start gap-3">
+              <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+              <div className="min-w-0 text-sm">
+                <p className="text-muted-foreground">{item.label}</p>
+                <p className="mt-0.5 font-medium leading-5">{item.value}</p>
               </div>
             </div>
-
-            <div className="flex items-start gap-3 rounded-xl border bg-background px-4 py-3.5">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
-                <IconTicket className="h-[18px] w-[18px]" />
-              </div>
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Support Hours</p>
-                <p className="mt-0.5 text-sm font-semibold">Mon - Fri, 09:00 - 18:00 WIB</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 rounded-xl border bg-background px-4 py-3.5">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
-                <IconMail className="h-[18px] w-[18px]" />
-              </div>
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Email Fallback</p>
-                <p className="mt-0.5 text-sm font-semibold">support@lihat.in</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-auto rounded-2xl border bg-muted/20 px-4 py-3.5">
-          <div className="flex items-start gap-3">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <IconShieldLock className="h-[18px] w-[18px]" />
-            </div>
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Security Note</p>
-              <p className="mt-1 text-sm leading-6 text-foreground/80">
-                {note || "Support team will never ask your password or OTP code in chat."}
-              </p>
-            </div>
-          </div>
-        </div>
+          );
+        })}
       </CardContent>
     </Card>
   );

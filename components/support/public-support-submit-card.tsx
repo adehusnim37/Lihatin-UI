@@ -85,17 +85,18 @@ export function PublicSupportSubmitCard() {
   };
 
   return (
-    <Card className="min-w-0 shadow-sm">
-      <CardHeader>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">New Request Form</p>
-        <CardTitle className="flex items-center gap-2">
-          <IconLifebuoy className="size-5" />
-          Submit Support Ticket
-        </CardTitle>
-        <CardDescription>Public form. No login required.</CardDescription>
+    <Card className="min-w-0 gap-5 py-5 shadow-none">
+      <CardHeader className="gap-2 px-5">
+        <div className="flex size-9 items-center justify-center rounded-lg border bg-background">
+          <IconLifebuoy className="size-[18px]" />
+        </div>
+        <CardTitle className="text-lg">Ticket details</CardTitle>
+        <CardDescription className="leading-6">
+          We&apos;ll send the ticket code and secure access link to your email.
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmitTicket} className="space-y-4">
+      <CardContent className="px-5">
+        <form onSubmit={handleSubmitTicket} className="space-y-5">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="support-email">Email</Label>
@@ -153,7 +154,7 @@ export function PublicSupportSubmitCard() {
           </div>
 
           <div className="space-y-2">
-            <Label>Captcha</Label>
+            <Label>Security check</Label>
             <SupportTurnstileField
               token={captchaToken}
               onTokenChange={setCaptchaToken}
@@ -161,13 +162,18 @@ export function PublicSupportSubmitCard() {
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={createTicketMutation.isPending}>
+          <Button
+            type="submit"
+            className="w-full sm:w-auto"
+            disabled={createTicketMutation.isPending}
+          >
             {createTicketMutation.isPending ? "Submitting..." : "Submit Ticket"}
           </Button>
 
           {submittedCode && (
-            <div className="rounded-lg border bg-muted/30 p-3 text-sm break-words">
-              Ticket submitted. Code: <strong>{submittedCode}</strong>. Check email for secure conversation link.
+            <div className="rounded-lg border bg-muted/40 p-3 text-sm leading-6">
+              Ticket <strong>{submittedCode}</strong> was created. Check your
+              email for the secure conversation link.
             </div>
           )}
         </form>
