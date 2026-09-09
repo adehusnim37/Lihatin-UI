@@ -30,11 +30,19 @@ export function PublicSupportSubmitCard() {
   );
   const reason = useMemo(() => getSupportReasonFromSearch(searchParams.get("reason")), [searchParams]);
   const preset = reason ? reasonPresetMap[reason] : null;
+  const suspiciousLinkCode = useMemo(
+    () => (searchParams.get("code") || "").trim(),
+    [searchParams],
+  );
+  const initialDescription =
+    reason === "SUSPICIOUS_LINK" && suspiciousLinkCode
+      ? `${preset?.descriptionHint || ""} Short code: ${suspiciousLinkCode}`.trim()
+      : preset?.descriptionHint || "";
 
   const [email, setEmail] = useState(queryEmail);
   const [category, setCategory] = useState<SupportCategory>(preset?.category || "other");
   const [subject, setSubject] = useState(preset?.subject || "");
-  const [description, setDescription] = useState(preset?.descriptionHint || "");
+  const [description, setDescription] = useState(initialDescription);
   const [captchaToken, setCaptchaToken] = useState("");
   const [captchaResetSignal, setCaptchaResetSignal] = useState(0);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);

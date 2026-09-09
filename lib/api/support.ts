@@ -11,6 +11,7 @@ export type SupportCategory =
   | "billing"
   | "bug_report"
   | "feature_request"
+  | "suspicious_link"
   | "other";
 
 export type SupportTicketStatus =

@@ -2,7 +2,13 @@ export type AuthSupportReason =
   | "ACCOUNT_LOCKED"
   | "USER_LOCKED"
   | "ACCOUNT_DEACTIVATED"
-  | "EMAIL_NOT_VERIFIED";
+  | "EMAIL_NOT_VERIFIED"
+  | "SUSPICIOUS_LINK"
+  | "BUG_REPORT"
+  | "OTHER"
+  | "FEATURE_REQUEST"
+  | "BILLING"
+  | "LOST_2FA";
 
 export function getAuthSupportReasonFromMessage(
   message: string

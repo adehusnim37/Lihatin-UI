@@ -560,7 +560,7 @@ export function RedirectExperience({
                 Stay on Lihatin
               </Link>
               <Link
-                href="/support/new"
+                href={`/support/new?reason=SUSPICIOUS_LINK&code=${encodeURIComponent(preview.shortCode)}`}
                 className="inline-flex items-center gap-1.5 hover:text-[#244f5c] hover:underline"
               >
                 <Flag className="size-3.5" />
