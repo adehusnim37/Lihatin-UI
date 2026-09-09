@@ -98,6 +98,7 @@ const categoryFilterOptions: {
   { value: "billing", label: "Billing" },
   { value: "bug_report", label: "Bug Report" },
   { value: "feature_request", label: "Feature Request" },
+  { value: "suspicious_link", label: "Suspicious Link" },
   { value: "other", label: "Other" },
 ];
 

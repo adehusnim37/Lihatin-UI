@@ -257,7 +257,9 @@ function LoginContent() {
         const emailForSupport = formData.email_or_username.includes("@")
           ? formData.email_or_username.trim()
           : undefined;
-        setSupportLink(buildAuthSupportURL(supportReason, emailForSupport));
+        setSupportLink(
+          buildAuthSupportURL(supportReason, emailForSupport, "login"),
+        );
       }
     } finally {
       setIsLoading(false);

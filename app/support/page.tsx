@@ -9,8 +9,8 @@ import { PublicSupportInfoCard } from "@/components/support/public-support-info"
 import { PublicSupportShell } from "@/components/support/public-support-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { buildPublicSupportConversationURL } from "@/lib/support/public-access";
 import { getSupportReasonFromSearch } from "@/lib/support/public-support";
+import { clearLegacyPublicSupportAccessTokens } from "@/lib/support/public-access";
 
 function SupportChooserContent() {
   const router = useRouter();
@@ -18,39 +18,50 @@ function SupportChooserContent() {
   const redirectedRef = useRef(false);
 
   useEffect(() => {
+    clearLegacyPublicSupportAccessTokens();
     if (redirectedRef.current) {
       return;
     }
 
     const ticket = (searchParams.get("ticket") || "").trim().toUpperCase();
-    const email = (searchParams.get("email") || "").trim();
     const code = (searchParams.get("code") || "").trim();
-    const reason = getSupportReasonFromSearch(searchParams.get("reason"));
-
-    if (ticket && email && code) {
-      redirectedRef.current = true;
-      router.replace(buildPublicSupportConversationURL(ticket, email, code));
-      return;
-    }
-
-    if (ticket || email || code) {
-      redirectedRef.current = true;
-      const params = new URLSearchParams();
-      if (ticket) params.set("ticket", ticket);
-      if (email) params.set("email", email);
-      if (code) params.set("code", code);
-      router.replace(`/support/access${params.toString() ? `?${params.toString()}` : ""}`);
-      return;
-    }
+    const legacyTopic = (searchParams.get("topic") || "").trim().toLowerCase();
+    const reason =
+      getSupportReasonFromSearch(searchParams.get("reason")) ||
+      (legacyTopic === "suspicious-link" || legacyTopic === "link-error"
+        ? "SUSPICIOUS_LINK"
+        : null);
 
     if (reason) {
       redirectedRef.current = true;
       const params = new URLSearchParams({ reason });
-      if (email) {
-        params.set("email", email);
-      }
+      const source = (searchParams.get("source") || "").trim();
+      const error = (searchParams.get("error") || "").trim();
+
+      if (source) params.set("source", source);
+      if (reason === "SUSPICIOUS_LINK" && code) params.set("code", code);
+      if (reason === "SUSPICIOUS_LINK" && error) params.set("error", error);
+
       router.replace(`/support/new?${params.toString()}`);
+      return;
     }
+
+    if (ticket) {
+      redirectedRef.current = true;
+      router.replace(`/support/access?ticket=${encodeURIComponent(ticket)}`);
+      return;
+    }
+
+    if (
+      searchParams.has("email") ||
+      searchParams.has("code") ||
+      searchParams.has("access_token")
+    ) {
+      redirectedRef.current = true;
+      router.replace("/support");
+      return;
+    }
+
   }, [router, searchParams]);
 
   return (

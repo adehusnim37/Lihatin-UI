@@ -1057,9 +1057,12 @@ function LinkErrorContent() {
 
   const retryHref = code ? `/${encodeURIComponent(code)}` : "/";
   const passcodeHref = `/${encodeURIComponent(code)}/enter-passcode`;
-  const supportHref = `/support?topic=link-error${
-    code ? `&code=${encodeURIComponent(code)}` : ""
-  }`;
+  const supportParams = new URLSearchParams({
+    reason: "SUSPICIOUS_LINK",
+  });
+  if (code) supportParams.set("code", code);
+  if (type) supportParams.set("error", type);
+  const supportHref = `/support/new?${supportParams.toString()}`;
 
   return (
     <main

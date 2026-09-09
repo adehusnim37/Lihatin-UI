@@ -31,13 +31,17 @@ export function formatBytes(value: number): string {
 
 export interface SupportConversationBubbleProps {
   message: SupportMessageResponse;
-  getAttachmentUrl: (attachmentId: string) => string;
+  getAttachmentUrl?: (attachmentId: string) => string;
+  onDownloadAttachment?: (
+    attachment: NonNullable<SupportMessageResponse["attachments"]>[number],
+  ) => void;
   isAdminView?: boolean;
 }
 
 export function SupportConversationBubble({
   message,
   getAttachmentUrl,
+  onDownloadAttachment,
   isAdminView = false,
 }: SupportConversationBubbleProps) {
   const attachments = message.attachments ?? [];
@@ -75,17 +79,28 @@ export function SupportConversationBubble({
 
         {attachments.length > 0 ? (
           <div className="mt-3 flex flex-wrap gap-2">
-            {attachments.map((attachment) => (
-              <a
-                key={attachment.id}
-                href={getAttachmentUrl(attachment.id)}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-muted/60"
-              >
-                {attachment.file_name} ({formatBytes(attachment.size_bytes)})
-              </a>
-            ))}
+            {attachments.map((attachment) =>
+              onDownloadAttachment ? (
+                <button
+                  key={attachment.id}
+                  type="button"
+                  onClick={() => onDownloadAttachment(attachment)}
+                  className="rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-muted/60"
+                >
+                  {attachment.file_name} ({formatBytes(attachment.size_bytes)})
+                </button>
+              ) : (
+                <a
+                  key={attachment.id}
+                  href={getAttachmentUrl?.(attachment.id) || "#"}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-muted/60"
+                >
+                  {attachment.file_name} ({formatBytes(attachment.size_bytes)})
+                </a>
+              ),
+            )}
           </div>
         ) : null}
       </div>

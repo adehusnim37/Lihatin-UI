@@ -171,5 +171,3 @@ function getStoredRole(): string | null {
 function isAdminRole(role: string): boolean {
   return role === "admin" || role === "super_admin";
 }
-
-export { getStoredRole, isAdminRole };

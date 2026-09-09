@@ -15,8 +15,9 @@ import { type SupportCategory } from "@/lib/api/support";
 import { useCreateSupportTicketMutation } from "@/lib/hooks/queries/useSupportQuery";
 import {
   categoryOptions,
+  getAuthSupportSourceFromSearch,
   getSupportReasonFromSearch,
-  reasonPresetMap,
+  resolveSupportPreset,
 } from "@/lib/support/public-support";
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
@@ -29,12 +30,30 @@ export function PublicSupportSubmitCard() {
     [searchParams],
   );
   const reason = useMemo(() => getSupportReasonFromSearch(searchParams.get("reason")), [searchParams]);
-  const preset = reason ? reasonPresetMap[reason] : null;
+  const source = useMemo(
+    () => getAuthSupportSourceFromSearch(searchParams.get("source")),
+    [searchParams],
+  );
+  const preset = reason ? resolveSupportPreset(reason, source) : null;
+  const suspiciousLinkCode = useMemo(
+    () => (searchParams.get("code") || "").trim().slice(0, 80),
+    [searchParams],
+  );
+  const suspiciousLinkError = useMemo(
+    () => (searchParams.get("error") || "").trim().slice(0, 80),
+    [searchParams],
+  );
+  const initialDescription =
+    reason === "SUSPICIOUS_LINK" && (suspiciousLinkCode || suspiciousLinkError)
+      ? `${preset?.descriptionHint || ""}${
+          suspiciousLinkCode ? `\n\nShort code: ${suspiciousLinkCode}` : ""
+        }${suspiciousLinkError ? `\nError shown: ${suspiciousLinkError}` : ""}`.trim()
+      : preset?.descriptionHint || "";
 
   const [email, setEmail] = useState(queryEmail);
   const [category, setCategory] = useState<SupportCategory>(preset?.category || "other");
   const [subject, setSubject] = useState(preset?.subject || "");
-  const [description, setDescription] = useState(preset?.descriptionHint || "");
+  const [description, setDescription] = useState(initialDescription);
   const [captchaToken, setCaptchaToken] = useState("");
   const [captchaResetSignal, setCaptchaResetSignal] = useState(0);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);

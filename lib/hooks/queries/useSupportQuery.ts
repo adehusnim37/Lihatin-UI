@@ -11,10 +11,10 @@ import {
   listUserSupportTickets,
   requestSupportAccessOTP,
   resendSupportAccessOTP,
+  revokePublicSupportAccess,
   sendAdminSupportMessage,
   sendPublicSupportMessage,
   sendUserSupportMessage,
-  trackSupportTicket,
   updateAdminSupportTicket,
   verifySupportAccessCode,
   verifySupportAccessOTP,
@@ -30,7 +30,6 @@ import {
   type SupportOTPChallengeResponse,
   type SupportPriority,
   type SupportTicketStatus,
-  type TrackSupportTicketResponse,
   type UserListSupportTicketsResponse,
 } from "@/lib/api/support";
 
@@ -51,8 +50,6 @@ type UserTicketListParams = {
 
 type PublicConversationParams = {
   ticket: string;
-  email: string;
-  accessToken: string;
 };
 
 type PublicSendMessageVariables = {
@@ -91,18 +88,8 @@ const ensureSuccess = <TData,>(
 export const supportKeys = {
   all: ["support"] as const,
   public: () => [...supportKeys.all, "public"] as const,
-  publicTrack: (ticket: string, email: string) =>
-    [...supportKeys.public(), "track", { ticket, email }] as const,
-  publicConversation: (
-    ticket: string,
-    email: string,
-    accessToken: string,
-  ) =>
-    [
-      ...supportKeys.public(),
-      "conversation",
-      { ticket, email, accessToken },
-    ] as const,
+  publicConversation: (ticket: string) =>
+    [...supportKeys.public(), "conversation", ticket] as const,
   admin: () => [...supportKeys.all, "admin"] as const,
   adminTickets: () => [...supportKeys.admin(), "tickets"] as const,
   adminTicketList: (params: AdminTicketListParams) =>
@@ -126,18 +113,6 @@ export function useCreateSupportTicketMutation() {
     ): Promise<CreateSupportTicketResponse> => {
       const response = await createSupportTicket(payload);
       return ensureSuccess(response, "Failed to submit support ticket");
-    },
-  });
-}
-
-export function useTrackSupportTicketMutation() {
-  return useMutation({
-    mutationFn: async (payload: {
-      ticket: string;
-      email: string;
-    }): Promise<TrackSupportTicketResponse> => {
-      const response = await trackSupportTicket(payload);
-      return ensureSuccess(response, "Failed to track ticket");
     },
   });
 }
@@ -195,39 +170,17 @@ export function useVerifySupportAccessCodeMutation() {
   });
 }
 
-export function useVerifySupportAccessCodeQuery(
-  params: { ticket: string; email: string; code: string },
-  enabled: boolean,
-) {
-  return useQuery({
-    queryKey: [...supportKeys.public(), "verify-code", params] as const,
-    queryFn: async (): Promise<SupportAccessResponse> => {
-      const response = await verifySupportAccessCode(params);
-      return ensureSuccess(response, "Failed to verify access code");
-    },
-    enabled: enabled && Boolean(params.ticket && params.email && params.code),
-    retry: false,
-    staleTime: Infinity,
-  });
-}
-
 export function usePublicSupportConversationQuery(
   params: PublicConversationParams,
   enabled: boolean,
 ) {
   return useQuery({
-    queryKey: supportKeys.publicConversation(
-      params.ticket,
-      params.email,
-      params.accessToken,
-    ),
+    queryKey: supportKeys.publicConversation(params.ticket),
     queryFn: async (): Promise<SupportConversationResponse> => {
       const response = await listPublicSupportConversation(params);
       return ensureSuccess(response, "Failed to load conversation");
     },
-    enabled:
-      enabled &&
-      Boolean(params.ticket && params.email && params.accessToken),
+    enabled: enabled && Boolean(params.ticket),
   });
 }
 
@@ -244,12 +197,18 @@ export function useSendPublicSupportMessageMutation() {
     },
     onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({
-        queryKey: supportKeys.publicConversation(
-          variables.params.ticket,
-          variables.params.email,
-          variables.params.accessToken,
-        ),
+        queryKey: supportKeys.publicConversation(variables.params.ticket),
       });
+    },
+  });
+}
+
+export function useRevokePublicSupportAccessMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (ticket: string) => revokePublicSupportAccess(ticket),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: supportKeys.public() });
     },
   });
 }

@@ -121,7 +121,9 @@ function VerifyEmailOTPContent() {
       });
       const supportReason = getAuthSupportReasonFromMessage(message);
       if (supportReason) {
-        setSupportLink(buildAuthSupportURL(supportReason, email));
+        setSupportLink(
+          buildAuthSupportURL(supportReason, email, "email_otp"),
+        );
       }
 
       if (message.toLowerCase().includes("expired")) {

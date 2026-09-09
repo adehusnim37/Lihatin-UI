@@ -11,6 +11,7 @@ export type SupportCategory =
   | "billing"
   | "bug_report"
   | "feature_request"
+  | "suspicious_link"
   | "other";
 
 export type SupportTicketStatus =
@@ -48,7 +49,6 @@ export interface SupportOTPChallengeResponse {
 }
 
 export interface SupportAccessResponse {
-  access_token: string;
   expires_in_seconds: number;
   ticket: TrackSupportTicketResponse;
 }
@@ -173,31 +173,6 @@ export async function createSupportTicket(
   return result;
 }
 
-export async function trackSupportTicket(params: {
-  ticket: string;
-  email: string;
-}): Promise<APIResponse<TrackSupportTicketResponse>> {
-  const query = new URLSearchParams({
-    ticket: params.ticket,
-    email: params.email,
-  });
-
-  const response = await fetch(`${API_URL}/support/track?${query.toString()}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-  });
-
-  const result: APIResponse<TrackSupportTicketResponse> = await response.json();
-  if (!response.ok) {
-    throw new Error(getErrorMessage(result) || "Failed to track ticket");
-  }
-
-  return result;
-}
-
 export async function requestSupportAccessOTP(payload: {
   ticket: string;
   email: string;
@@ -286,16 +261,9 @@ export async function verifySupportAccessCode(payload: {
 
 export async function listPublicSupportConversation(params: {
   ticket: string;
-  email: string;
-  accessToken: string;
 }): Promise<APIResponse<SupportConversationResponse>> {
-  const query = new URLSearchParams({
-    email: params.email,
-    access_token: params.accessToken,
-  });
-
   const response = await fetch(
-    `${API_URL}/support/tickets/${encodeURIComponent(params.ticket)}/messages?${query.toString()}`,
+    `${API_URL}/support/tickets/${encodeURIComponent(params.ticket)}/messages`,
     {
       method: "GET",
       credentials: "include",
@@ -311,12 +279,10 @@ export async function listPublicSupportConversation(params: {
 }
 
 export async function sendPublicSupportMessage(
-  params: { ticket: string; email: string; accessToken: string },
+  params: { ticket: string },
   payload: { body?: string; attachments?: File[] },
 ): Promise<APIResponse<SupportMessageResponse>> {
   const formData = new FormData();
-  formData.set("email", params.email);
-  formData.set("access_token", params.accessToken);
   if (payload.body && payload.body.trim()) {
     formData.set("body", payload.body.trim());
   }
@@ -344,16 +310,33 @@ export async function sendPublicSupportMessage(
 
 export function getPublicSupportAttachmentURL(params: {
   ticket: string;
-  email: string;
-  accessToken: string;
   attachmentID: string;
 }): string {
-  const query = new URLSearchParams({
-    email: params.email,
-    access_token: params.accessToken,
-  });
+  return `${API_URL}/support/tickets/${encodeURIComponent(params.ticket)}/attachments/${encodeURIComponent(params.attachmentID)}`;
+}
 
-  return `${API_URL}/support/tickets/${encodeURIComponent(params.ticket)}/attachments/${encodeURIComponent(params.attachmentID)}?${query.toString()}`;
+export async function downloadPublicSupportAttachment(params: {
+  ticket: string;
+  attachmentID: string;
+}): Promise<Blob> {
+  const response = await fetch(getPublicSupportAttachmentURL(params), {
+    method: "GET",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    throw new Error("Failed to download attachment");
+  }
+  return response.blob();
+}
+
+export async function revokePublicSupportAccess(ticket: string): Promise<void> {
+  const response = await fetch(`${API_URL}/support/tickets/${encodeURIComponent(ticket)}/access/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok && response.status !== 204) {
+    throw new Error("Failed to end support session");
+  }
 }
 
 export async function listAdminSupportTickets(params?: {
