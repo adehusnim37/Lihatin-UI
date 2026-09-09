@@ -1057,9 +1057,7 @@ function LinkErrorContent() {
 
   const retryHref = code ? `/${encodeURIComponent(code)}` : "/";
   const passcodeHref = `/${encodeURIComponent(code)}/enter-passcode`;
-  const supportHref = `/support?topic=link-error${
-    code ? `&code=${encodeURIComponent(code)}` : ""
-  }`;
+  const supportHref = "/support/new";
 
   return (
     <main

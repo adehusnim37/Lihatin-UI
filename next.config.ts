@@ -18,6 +18,13 @@ const nextConfig: NextConfig = {
         headers: sharedHeaders,
       },
       {
+        source: "/support/:path*",
+        headers: [
+          { key: "Cache-Control", value: "private, no-store" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      },
+      {
         source: "/robots.txt",
         headers: [
           ...sharedHeaders,

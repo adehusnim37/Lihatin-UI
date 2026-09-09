@@ -9,8 +9,8 @@ import { PublicSupportInfoCard } from "@/components/support/public-support-info"
 import { PublicSupportShell } from "@/components/support/public-support-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { buildPublicSupportConversationURL } from "@/lib/support/public-access";
 import { getSupportReasonFromSearch } from "@/lib/support/public-support";
+import { clearLegacyPublicSupportAccessTokens } from "@/lib/support/public-access";
 
 function SupportChooserContent() {
   const router = useRouter();
@@ -18,37 +18,33 @@ function SupportChooserContent() {
   const redirectedRef = useRef(false);
 
   useEffect(() => {
+    clearLegacyPublicSupportAccessTokens();
     if (redirectedRef.current) {
       return;
     }
 
     const ticket = (searchParams.get("ticket") || "").trim().toUpperCase();
-    const email = (searchParams.get("email") || "").trim();
-    const code = (searchParams.get("code") || "").trim();
     const reason = getSupportReasonFromSearch(searchParams.get("reason"));
 
-    if (ticket && email && code) {
+    if (ticket) {
       redirectedRef.current = true;
-      router.replace(buildPublicSupportConversationURL(ticket, email, code));
+      router.replace(`/support/access?ticket=${encodeURIComponent(ticket)}`);
       return;
     }
 
-    if (ticket || email || code) {
+    if (
+      searchParams.has("email") ||
+      searchParams.has("code") ||
+      searchParams.has("access_token")
+    ) {
       redirectedRef.current = true;
-      const params = new URLSearchParams();
-      if (ticket) params.set("ticket", ticket);
-      if (email) params.set("email", email);
-      if (code) params.set("code", code);
-      router.replace(`/support/access${params.toString() ? `?${params.toString()}` : ""}`);
+      router.replace("/support");
       return;
     }
 
     if (reason) {
       redirectedRef.current = true;
       const params = new URLSearchParams({ reason });
-      if (email) {
-        params.set("email", email);
-      }
       router.replace(`/support/new?${params.toString()}`);
     }
   }, [router, searchParams]);

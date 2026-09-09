@@ -23,17 +23,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { type TrackSupportTicketResponse } from "@/lib/api/support";
 import {
   useRequestSupportAccessOTPMutation,
   useResendSupportAccessOTPMutation,
-  useTrackSupportTicketMutation,
   useVerifySupportAccessCodeMutation,
   useVerifySupportAccessOTPMutation,
 } from "@/lib/hooks/queries/useSupportQuery";
 import {
   buildPublicSupportConversationURL,
-  storePublicSupportAccessToken,
+  clearLegacyPublicSupportAccessTokens,
 } from "@/lib/support/public-access";
 
 const IS_DEV = process.env.NODE_ENV === "development";
@@ -41,56 +39,33 @@ const IS_DEV = process.env.NODE_ENV === "development";
 export function PublicSupportAccessCard() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const queryEmail = (searchParams.get("email") || "").trim();
   const queryTicket = (searchParams.get("ticket") || "").trim().toUpperCase();
-  const queryCode = (searchParams.get("code") || "").trim();
 
   const [trackTicket, setTrackTicket] = useState(queryTicket);
-  const [trackEmail, setTrackEmail] = useState(queryEmail);
-  const [trackResult, setTrackResult] =
-    useState<TrackSupportTicketResponse | null>(null);
+  const [trackEmail, setTrackEmail] = useState("");
 
-  const [linkCode, setLinkCode] = useState(queryCode);
+  const [linkCode, setLinkCode] = useState("");
   const [otpChallengeToken, setOtpChallengeToken] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [otpCooldownRemaining, setOtpCooldownRemaining] = useState(0);
   const [otpTargetEmail, setOtpTargetEmail] = useState("");
-  const [otpSource, setOtpSource] = useState<{
-    ticket: string;
-    email: string;
-  } | null>(null);
   const [captchaToken, setCaptchaToken] = useState("");
   const [captchaResetSignal, setCaptchaResetSignal] = useState(0);
   const [showOTPSection, setShowOTPSection] = useState(false);
   const [isAccessDialogOpen, setIsAccessDialogOpen] = useState(false);
-  const trackTicketMutation = useTrackSupportTicketMutation();
   const verifyCodeMutation = useVerifySupportAccessCodeMutation();
   const requestOTPMutation = useRequestSupportAccessOTPMutation();
   const verifyOTPMutation = useVerifySupportAccessOTPMutation();
   const resendOTPMutation = useResendSupportAccessOTPMutation();
 
-  useEffect(() => {
-    if (!otpSource) {
-      return;
-    }
-
-    const normalizedTicket = trackTicket.trim().toUpperCase();
-    const normalizedEmail = trackEmail.trim().toLowerCase();
-    if (
-      otpSource.ticket === normalizedTicket &&
-      otpSource.email === normalizedEmail
-    ) {
-      return;
-    }
-
+  const resetOTPState = () => {
     setOtpChallengeToken("");
     setOtpCode("");
     setOtpCooldownRemaining(0);
     setOtpTargetEmail("");
-    setOtpSource(null);
     setCaptchaToken("");
     setCaptchaResetSignal((previous) => previous + 1);
-  }, [otpSource, trackEmail, trackTicket]);
+  };
 
   useEffect(() => {
     if (otpCooldownRemaining <= 0) {
@@ -104,13 +79,23 @@ export function PublicSupportAccessCard() {
     return () => window.clearTimeout(timeout);
   }, [otpCooldownRemaining]);
 
-  const openConversation = (
-    ticket: string,
-    ticketEmail: string,
-    accessToken: string,
-  ) => {
-    storePublicSupportAccessToken(ticket, ticketEmail, accessToken);
-    router.push(buildPublicSupportConversationURL(ticket, ticketEmail));
+  useEffect(() => {
+    clearLegacyPublicSupportAccessTokens();
+    if (
+      searchParams.has("email") ||
+      searchParams.has("code") ||
+      searchParams.has("access_token")
+    ) {
+      router.replace(
+        queryTicket
+          ? `/support/access?ticket=${encodeURIComponent(queryTicket)}`
+          : "/support/access",
+      );
+    }
+  }, [queryTicket, router, searchParams]);
+
+  const openConversation = (ticket: string) => {
+    router.push(buildPublicSupportConversationURL(ticket));
   };
 
   const handleTrackTicket = async (event: FormEvent) => {
@@ -120,46 +105,11 @@ export function PublicSupportAccessCard() {
       return;
     }
 
-    try {
-      const response = await trackTicketMutation.mutateAsync({
-        ticket: trackTicket.trim().toUpperCase(),
-        email: trackEmail.trim(),
-      });
-
-      setTrackResult(response);
-		if (response.status.toLowerCase() === "closed") {
-			setIsAccessDialogOpen(false);
-			toast.error("Ticket is closed", {
-				description:
-					"This ticket can no longer be reopened or receive new messages.",
-			});
-			return;
-		}
-
-		setShowOTPSection(false);
-		setIsAccessDialogOpen(true);
-      toast.success("Ticket found", {
-        description:
-          "Continue with access code or OTP to open conversation page.",
-      });
-    } catch (error: unknown) {
-      setTrackResult(null);
-      setIsAccessDialogOpen(false);
-      toast.error("Ticket not found", {
-        description:
-          error instanceof Error
-            ? error.message
-            : "Please check ticket and email.",
-      });
-    }
+    setShowOTPSection(false);
+    setIsAccessDialogOpen(true);
   };
 
   const handleVerifyCode = async () => {
-    if (!trackResult || trackResult.status.toLowerCase() === "closed") {
-      toast.error("Check an active ticket first");
-      return;
-    }
-
     const ticket = trackTicket.trim().toUpperCase();
     const ticketEmail = trackEmail.trim();
     const code = linkCode.trim();
@@ -176,15 +126,10 @@ export function PublicSupportAccessCard() {
         code,
       });
 
-      const token = response.access_token || "";
-      if (!token) {
-        throw new Error("Access token missing in response");
-      }
-
       toast.success("Secure access granted", {
         description: "Opening conversation page...",
       });
-      openConversation(ticket, ticketEmail, token);
+      openConversation(response.ticket.ticket_code || ticket);
     } catch (error: unknown) {
       toast.error("Failed to verify access code", {
         description:
@@ -192,15 +137,13 @@ export function PublicSupportAccessCard() {
             ? error.message
             : "Please request OTP instead.",
       });
+    } finally {
+      setLinkCode("");
+      verifyCodeMutation.reset();
     }
   };
 
   const handleRequestOTP = async () => {
-    if (!trackResult || trackResult.status.toLowerCase() === "closed") {
-      toast.error("Check an active ticket first");
-      return;
-    }
-
     const ticket = trackTicket.trim().toUpperCase();
     const ticketEmail = trackEmail.trim();
 
@@ -225,12 +168,9 @@ export function PublicSupportAccessCard() {
       setOtpChallengeToken(response.challenge_token || "");
       setOtpCooldownRemaining(Math.max(0, response.cooldown_seconds || 0));
       setOtpTargetEmail(ticketEmail);
-      setOtpSource({
-        ticket,
-        email: ticketEmail.toLowerCase(),
-      });
       toast.success("OTP sent", {
-        description: "Check your email inbox for verification code.",
+        description:
+          "If the ticket details match, a verification code will arrive by email.",
       });
     } catch (error: unknown) {
       toast.error("Failed to request OTP", {
@@ -240,22 +180,17 @@ export function PublicSupportAccessCard() {
     } finally {
       setCaptchaToken("");
       setCaptchaResetSignal((previous) => previous + 1);
+      requestOTPMutation.reset();
     }
   };
 
   const handleVerifyOTP = async () => {
-    if (!trackResult || trackResult.status.toLowerCase() === "closed") {
-      toast.error("Check an active ticket first");
-      return;
-    }
-
     if (!otpChallengeToken.trim() || !otpCode.trim()) {
       toast.error("Challenge token and OTP are required");
       return;
     }
 
     const ticket = trackTicket.trim().toUpperCase();
-    const ticketEmail = trackEmail.trim();
 
     try {
       const response = await verifyOTPMutation.mutateAsync({
@@ -263,20 +198,18 @@ export function PublicSupportAccessCard() {
         otp_code: otpCode.trim(),
       });
 
-      const token = response.access_token || "";
-      if (!token) {
-        throw new Error("Access token missing in response");
-      }
-
       toast.success("Secure access granted", {
         description: "Opening conversation page...",
       });
-      openConversation(ticket, ticketEmail, token);
+      openConversation(response.ticket.ticket_code || ticket);
     } catch (error: unknown) {
       toast.error("Failed to verify OTP", {
         description:
           error instanceof Error ? error.message : "Please try again.",
       });
+    } finally {
+      setOtpCode("");
+      verifyOTPMutation.reset();
     }
   };
 
@@ -305,10 +238,6 @@ export function PublicSupportAccessCard() {
       }
       setOtpCooldownRemaining(nextCooldown);
       setOtpTargetEmail(trackEmail.trim());
-      setOtpSource({
-        ticket: trackTicket.trim().toUpperCase(),
-        email: trackEmail.trim().toLowerCase(),
-      });
       toast.success("OTP resent", {
         description:
           nextCooldown > 0
@@ -323,6 +252,7 @@ export function PublicSupportAccessCard() {
     } finally {
       setCaptchaToken("");
       setCaptchaResetSignal((previous) => previous + 1);
+      resendOTPMutation.reset();
     }
   };
 
@@ -346,10 +276,8 @@ export function PublicSupportAccessCard() {
               value={trackTicket}
               onChange={(event) => {
                 setTrackTicket(event.target.value.toUpperCase());
-                if (trackResult) {
-                  setTrackResult(null);
-                  setIsAccessDialogOpen(false);
-                }
+                resetOTPState();
+                setIsAccessDialogOpen(false);
               }}
               placeholder="LHTK-XXXXXX"
               required
@@ -364,10 +292,8 @@ export function PublicSupportAccessCard() {
               value={trackEmail}
               onChange={(event) => {
                 setTrackEmail(event.target.value);
-                if (trackResult) {
-                  setTrackResult(null);
-                  setIsAccessDialogOpen(false);
-                }
+                resetOTPState();
+                setIsAccessDialogOpen(false);
               }}
               placeholder="you@example.com"
               required
@@ -378,13 +304,11 @@ export function PublicSupportAccessCard() {
             type="submit"
             variant="outline"
             className="w-full sm:w-auto"
-            disabled={trackTicketMutation.isPending}
           >
-            {trackTicketMutation.isPending ? "Checking..." : "Check Ticket"}
+            Continue
           </Button>
         </form>
 
-        {trackResult && trackResult.status.toLowerCase() !== "closed" && (
           <Dialog
             open={isAccessDialogOpen}
             onOpenChange={setIsAccessDialogOpen}
@@ -393,7 +317,7 @@ export function PublicSupportAccessCard() {
               <DialogHeader>
                 <DialogTitle>Verify Access</DialogTitle>
                 <DialogDescription>
-                  Ticket {trackResult.ticket_code}. Use the access code from
+                  Ticket {trackTicket.trim().toUpperCase()}. Use the access code from
                   your email, or verify with OTP.
                 </DialogDescription>
               </DialogHeader>
@@ -553,7 +477,6 @@ export function PublicSupportAccessCard() {
           )}
             </DialogContent>
           </Dialog>
-        )}
 
       </CardContent>
     </Card>

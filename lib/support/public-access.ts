@@ -1,50 +1,24 @@
-const PUBLIC_SUPPORT_ACCESS_PREFIX = "support-public-access";
-
 function normalizeTicket(ticket: string): string {
   return ticket.trim().toUpperCase();
 }
 
-function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase();
+const LEGACY_PUBLIC_SUPPORT_ACCESS_PREFIX = "support-public-access:";
+
+export function clearLegacyPublicSupportAccessTokens(): void {
+  if (typeof window === "undefined") return;
+  try {
+    for (let index = window.localStorage.length - 1; index >= 0; index -= 1) {
+      const key = window.localStorage.key(index);
+      if (key?.startsWith(LEGACY_PUBLIC_SUPPORT_ACCESS_PREFIX)) {
+        window.localStorage.removeItem(key);
+      }
+    }
+  } catch {
+    // Storage may be unavailable in hardened/private browsing contexts.
+  }
 }
 
-export function buildPublicSupportConversationURL(ticket: string, email: string, code?: string): string {
+export function buildPublicSupportConversationURL(ticket: string): string {
   const normalizedTicket = normalizeTicket(ticket);
-  const query = new URLSearchParams({
-    email: email.trim(),
-  });
-
-  if (code?.trim()) {
-    query.set("code", code.trim());
-  }
-
-  return `/support/ticket/${encodeURIComponent(normalizedTicket)}?${query.toString()}`;
-}
-
-function getStorageKey(ticket: string, email: string): string {
-  return `${PUBLIC_SUPPORT_ACCESS_PREFIX}:${normalizeTicket(ticket)}:${normalizeEmail(email)}`;
-}
-
-export function storePublicSupportAccessToken(ticket: string, email: string, token: string): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.setItem(getStorageKey(ticket, email), token);
-}
-
-export function getStoredPublicSupportAccessToken(ticket: string, email: string): string {
-  if (typeof window === "undefined") {
-    return "";
-  }
-
-  return window.localStorage.getItem(getStorageKey(ticket, email)) || "";
-}
-
-export function clearStoredPublicSupportAccessToken(ticket: string, email: string): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.removeItem(getStorageKey(ticket, email));
+  return `/support/ticket/${encodeURIComponent(normalizedTicket)}`;
 }
