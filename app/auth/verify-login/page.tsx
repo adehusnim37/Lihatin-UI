@@ -101,7 +101,7 @@ export default function VerifyLoginPage() {
       });
       const supportReason = getAuthSupportReasonFromMessage(message);
       if (supportReason) {
-        setSupportLink(buildAuthSupportURL(supportReason, userEmail));
+        setSupportLink(buildAuthSupportURL(supportReason, userEmail, "totp"));
       }
 
       if (message.toLowerCase().includes("expired") || message === "Authentication expired") {

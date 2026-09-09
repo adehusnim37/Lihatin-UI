@@ -24,7 +24,27 @@ function SupportChooserContent() {
     }
 
     const ticket = (searchParams.get("ticket") || "").trim().toUpperCase();
-    const reason = getSupportReasonFromSearch(searchParams.get("reason"));
+    const code = (searchParams.get("code") || "").trim();
+    const legacyTopic = (searchParams.get("topic") || "").trim().toLowerCase();
+    const reason =
+      getSupportReasonFromSearch(searchParams.get("reason")) ||
+      (legacyTopic === "suspicious-link" || legacyTopic === "link-error"
+        ? "SUSPICIOUS_LINK"
+        : null);
+
+    if (reason) {
+      redirectedRef.current = true;
+      const params = new URLSearchParams({ reason });
+      const source = (searchParams.get("source") || "").trim();
+      const error = (searchParams.get("error") || "").trim();
+
+      if (source) params.set("source", source);
+      if (reason === "SUSPICIOUS_LINK" && code) params.set("code", code);
+      if (reason === "SUSPICIOUS_LINK" && error) params.set("error", error);
+
+      router.replace(`/support/new?${params.toString()}`);
+      return;
+    }
 
     if (ticket) {
       redirectedRef.current = true;
@@ -42,11 +62,6 @@ function SupportChooserContent() {
       return;
     }
 
-    if (reason) {
-      redirectedRef.current = true;
-      const params = new URLSearchParams({ reason });
-      router.replace(`/support/new?${params.toString()}`);
-    }
   }, [router, searchParams]);
 
   return (

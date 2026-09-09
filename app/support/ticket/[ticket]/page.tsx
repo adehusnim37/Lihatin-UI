@@ -47,6 +47,7 @@ const categoryLabelMap: Record<SupportCategory, string> = {
   billing: "Billing",
   bug_report: "Bug Report",
   feature_request: "Feature Request",
+  suspicious_link: "Suspicious Link",
   other: "Other",
 };
 
