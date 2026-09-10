@@ -234,7 +234,9 @@ function MorphingLinkVisual() {
             Redirect ready
           </Badge>
         </div>
-        <p className="text-xs font-medium text-muted-foreground">Your new short link</p>
+        <p className="text-xs font-medium text-muted-foreground">
+          Your new short link
+        </p>
         <p className="mt-1 truncate text-lg font-bold tracking-tight text-foreground sm:text-xl">
           lihat.in/launch-day
         </p>
@@ -262,7 +264,7 @@ function MorphingLinkVisual() {
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] opacity-60">
             Response time
           </p>
-          <p className="mt-1 text-2xl font-bold">118ms</p>
+          <p className="mt-1 text-2xl font-bold">18ms</p>
         </div>
         <div className="rounded-full border border-primary-foreground/15 bg-background/40 px-3 py-1.5 text-xs font-semibold backdrop-blur">
           Singapore edge
@@ -313,10 +315,8 @@ function BouncyFooter() {
     const path = pathRef.current;
     if (!footer || !path) return;
 
-    const downPath =
-      "M0 0C0 0 300 64 720 64S1440 0 1440 0V220H0V0Z";
-    const centerPath =
-      "M0 0C0 0 300 0 720 0S1440 0 1440 0V220H0V0Z";
+    const downPath = "M0 0C0 0 300 64 720 64S1440 0 1440 0V220H0V0Z";
+    const centerPath = "M0 0C0 0 300 0 720 0S1440 0 1440 0V220H0V0Z";
     const media = gsap.matchMedia();
 
     media.add("(prefers-reduced-motion: no-preference)", () => {
@@ -387,13 +387,22 @@ function BouncyFooter() {
               Product
             </p>
             <div className="mt-4 flex flex-col items-start gap-3 text-sm text-background/70">
-              <Link href="/auth/register" className="transition-colors hover:text-background">
+              <Link
+                href="/auth/register"
+                className="transition-colors hover:text-background"
+              >
                 Create account
               </Link>
-              <Link href="/auth/login" className="transition-colors hover:text-background">
+              <Link
+                href="/auth/login"
+                className="transition-colors hover:text-background"
+              >
                 Sign in
               </Link>
-              <Link href="/main" className="transition-colors hover:text-background">
+              <Link
+                href="/main"
+                className="transition-colors hover:text-background"
+              >
                 Dashboard
               </Link>
             </div>
@@ -403,13 +412,22 @@ function BouncyFooter() {
               Legal
             </p>
             <div className="mt-4 flex flex-col items-start gap-3 text-sm text-background/70">
-              <Link href="/terms" className="transition-colors hover:text-background">
+              <Link
+                href="/terms"
+                className="transition-colors hover:text-background"
+              >
                 Terms
               </Link>
-              <Link href="/privacy" className="transition-colors hover:text-background">
+              <Link
+                href="/privacy"
+                className="transition-colors hover:text-background"
+              >
                 Privacy
               </Link>
-              <Link href="/support" className="transition-colors hover:text-background">
+              <Link
+                href="/support"
+                className="transition-colors hover:text-background"
+              >
                 Support
               </Link>
             </div>
@@ -446,7 +464,9 @@ export default function Index() {
 
   const previewCode = sanitizedAlias || "your-custom-code";
   const previewShortURL = `lihat.in/${previewCode}`;
-  const createdShortURL = createdShortCode ? `lihat.in/${createdShortCode}` : null;
+  const createdShortURL = createdShortCode
+    ? `lihat.in/${createdShortCode}`
+    : null;
 
   useEffect(() => {
     const page = pageRef.current;
@@ -517,62 +537,66 @@ export default function Index() {
           });
         });
 
-        gsap.utils.toArray<HTMLElement>("[data-section-reveal]").forEach((section) => {
-          gsap.from(section, {
-            y: 48,
-            autoAlpha: 0,
-            duration: 0.85,
-            ease: "power3.out",
-            scrollTrigger: {
-              trigger: section,
-              start: "top 84%",
-              once: true,
-            },
+        gsap.utils
+          .toArray<HTMLElement>("[data-section-reveal]")
+          .forEach((section) => {
+            gsap.from(section, {
+              y: 48,
+              autoAlpha: 0,
+              duration: 0.85,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: section,
+                start: "top 84%",
+                once: true,
+              },
+            });
           });
-        });
 
-        gsap.utils.toArray<HTMLElement>("[data-feature-card]").forEach((card) => {
-          const icon = card.querySelector("[data-feature-icon]");
+        gsap.utils
+          .toArray<HTMLElement>("[data-feature-card]")
+          .forEach((card) => {
+            const icon = card.querySelector("[data-feature-icon]");
 
-          const enter = () => {
-            gsap.to(card, {
-              y: -8,
-              duration: 0.35,
-              ease: "power2.out",
-              overwrite: true,
-            });
-            gsap.to(icon, {
-              rotation: -8,
-              scale: 1.08,
-              duration: 0.35,
-              ease: "back.out(2)",
-              overwrite: true,
-            });
-          };
+            const enter = () => {
+              gsap.to(card, {
+                y: -8,
+                duration: 0.35,
+                ease: "power2.out",
+                overwrite: true,
+              });
+              gsap.to(icon, {
+                rotation: -8,
+                scale: 1.08,
+                duration: 0.35,
+                ease: "back.out(2)",
+                overwrite: true,
+              });
+            };
 
-          const leave = () => {
-            gsap.to(card, {
-              y: 0,
-              duration: 0.4,
-              ease: "power2.out",
-              overwrite: true,
-            });
-            gsap.to(icon, {
-              rotation: 0,
-              scale: 1,
-              duration: 0.4,
-              ease: "power2.out",
-              overwrite: true,
-            });
-          };
+            const leave = () => {
+              gsap.to(card, {
+                y: 0,
+                duration: 0.4,
+                ease: "power2.out",
+                overwrite: true,
+              });
+              gsap.to(icon, {
+                rotation: 0,
+                scale: 1,
+                duration: 0.4,
+                ease: "power2.out",
+                overwrite: true,
+              });
+            };
 
-          card.addEventListener("mouseenter", enter);
-          card.addEventListener("mouseleave", leave);
-          removeCardListeners.push(() => {
-            card.removeEventListener("mouseenter", enter);
-            card.removeEventListener("mouseleave", leave);
+            card.addEventListener("mouseenter", enter);
+            card.addEventListener("mouseleave", leave);
+            removeCardListeners.push(() => {
+              card.removeEventListener("mouseenter", enter);
+              card.removeEventListener("mouseleave", leave);
+            });
           });
-        });
 
         return () => removeCardListeners.forEach((remove) => remove());
       }, page);
@@ -583,7 +607,9 @@ export default function Index() {
     return () => media.revert();
   }, []);
 
-  const handleTryCreateLink = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleTryCreateLink = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
     event.preventDefault();
 
     const trimmedURL = demoUrl.trim();
@@ -674,7 +700,11 @@ export default function Index() {
         className="sticky top-0 z-50 border-b bg-background/85 backdrop-blur-xl"
       >
         <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:h-[72px] sm:px-6">
-          <Link href="/" className="flex items-center gap-2.5" aria-label="Lihatin home">
+          <Link
+            href="/"
+            className="flex items-center gap-2.5"
+            aria-label="Lihatin home"
+          >
             <Image
               src="/logo.svg"
               alt=""
@@ -685,7 +715,10 @@ export default function Index() {
             />
             <span className="text-base font-bold tracking-tight">Lihat.in</span>
           </Link>
-          <nav className="flex items-center gap-1.5 sm:gap-2" aria-label="Account navigation">
+          <nav
+            className="flex items-center gap-1.5 sm:gap-2"
+            aria-label="Account navigation"
+          >
             <AuthTransitionLink
               href="/auth/login"
               variant="ghost"
@@ -763,14 +796,16 @@ export default function Index() {
                 data-hero-reveal
                 className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-muted-foreground"
               >
-                {["No credit card", "Free forever plan", "Setup in seconds"].map(
-                  (item) => (
-                    <span key={item} className="flex items-center gap-1.5">
-                      <IconCheck className="size-3.5 text-primary" />
-                      {item}
-                    </span>
-                  ),
-                )}
+                {[
+                  "No credit card",
+                  "Free forever plan",
+                  "Setup in seconds",
+                ].map((item) => (
+                  <span key={item} className="flex items-center gap-1.5">
+                    <IconCheck className="size-3.5 text-primary" />
+                    {item}
+                  </span>
+                ))}
               </div>
             </div>
 
@@ -799,8 +834,8 @@ export default function Index() {
                   <span className="block text-primary">made effortless.</span>
                 </h2>
                 <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground sm:text-base">
-                  Enter a destination and choose an alias. We&apos;ll create a real
-                  short link using your account session.
+                  Enter a destination and choose an alias. We&apos;ll create a
+                  real short link using your account session.
                 </p>
               </div>
 
@@ -851,20 +886,22 @@ export default function Index() {
                   </div>
                 </form>
 
-                <div className="mt-5 flex flex-col gap-3 rounded-xl border bg-muted/40 p-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                      Preview
-                    </p>
-                    <p className="mt-1 truncate text-sm font-semibold text-foreground">
-                      {previewShortURL}
-                    </p>
+                {!createdShortURL && !cutTransition && (
+                  <div className="mt-5 flex flex-col gap-3 rounded-xl border bg-muted/40 p-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                        Preview
+                      </p>
+                      <p className="mt-1 truncate text-sm font-semibold text-foreground">
+                        {previewShortURL}
+                      </p>
+                    </div>
+                    <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-primary/20 px-2.5 py-1 text-[11px] font-semibold text-foreground">
+                      <span className="size-1.5 rounded-full bg-primary" />
+                      Available
+                    </span>
                   </div>
-                  <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-primary/20 px-2.5 py-1 text-[11px] font-semibold text-foreground">
-                    <span className="size-1.5 rounded-full bg-primary" />
-                    Available
-                  </span>
-                </div>
+                )}
 
                 {createdShortURL && (
                   <div className="mt-3 flex flex-col gap-3 rounded-xl border border-primary/40 bg-primary/15 p-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
@@ -904,7 +941,9 @@ export default function Index() {
               </p>
               <h2 className="mt-4 text-3xl font-bold leading-tight tracking-[-0.045em] text-foreground sm:text-5xl">
                 Everything you need.
-                <span className="block text-muted-foreground">Nothing you don&apos;t.</span>
+                <span className="block text-muted-foreground">
+                  Nothing you don&apos;t.
+                </span>
               </h2>
             </div>
 
