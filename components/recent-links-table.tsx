@@ -74,18 +74,20 @@ export function RecentLinksTable({ links = [], isLoading = false }: RecentLinksT
             {links.slice(0, 5).map((link) => (
               <div
                 key={link.id}
-                className="flex flex-col gap-2 rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                className="rounded-lg border p-3 transition-colors hover:bg-muted/50"
               >
-                <div className="flex items-start justify-between gap-2">
+                <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0 flex-1 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <code className="text-sm font-semibold">{link.short_code}</code>
+                    <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5">
+                      <code className="min-w-0 max-w-full break-all text-sm leading-5 font-semibold">
+                        {link.short_code}
+                      </code>
                       <ActiveInactiveBadge isActive={link.is_active} className="text-xs" />
                       <Badge variant="secondary" className="text-xs">
                         {link.click_count ?? link.detail?.current_clicks ?? 0} clicks
                       </Badge>
                     </div>
-                    <p className="text-sm font-medium text-foreground line-clamp-1">
+                    <p className="line-clamp-2 text-sm font-medium text-foreground sm:line-clamp-1">
                       {link.title || "Untitled"}
                     </p>
                     <a
@@ -101,20 +103,24 @@ export function RecentLinksTable({ links = [], isLoading = false }: RecentLinksT
                       <IconExternalLink className="size-3 flex-shrink-0" />
                     </a>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex shrink-0 items-center justify-end gap-1 self-end sm:self-start">
                     <Button
                       variant="ghost"
-                      size="sm"
+                      size="icon"
+                      className="size-10 sm:size-8"
                       onClick={() => copyToClipboard(link.short_code)}
                       title="Copy link"
+                      aria-label={`Copy ${link.short_code} link`}
                     >
                       <IconCopy className="size-4" />
                     </Button>
                     <Button
                       variant="ghost"
-                      size="sm"
+                      size="icon"
+                      className="size-10 sm:size-8"
                       onClick={() => window.open(`/main/links/${link.short_code}`, "_blank")}
                       title="View stats"
+                      aria-label={`View ${link.short_code} stats`}
                     >
                       <IconEye className="size-4" />
                     </Button>
