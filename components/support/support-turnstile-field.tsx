@@ -13,6 +13,7 @@ declare global {
         options: {
           sitekey: string;
           size?: "flexible" | "compact";
+          theme?: "light" | "dark" | "auto";
           callback: (token: string) => void;
           "error-callback"?: () => void;
           "expired-callback"?: () => void;
@@ -68,6 +69,7 @@ export function SupportTurnstileField({
       captchaWidgetIdRef.current = window.turnstile.render(captchaRef.current, {
         sitekey: TURNSTILE_SITE_KEY,
         size: nextSize,
+        theme: "light",
         callback: (nextToken: string) => onTokenChange(nextToken),
         "error-callback": () => onTokenChange(""),
         "expired-callback": () => onTokenChange(""),
