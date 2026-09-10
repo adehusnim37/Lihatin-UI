@@ -133,9 +133,11 @@ export function SupportConversationBubble({
       </div>
 
       <Dialog open={preview !== null} onOpenChange={(open) => !open && setPreview(null)}>
-        <DialogContent className="flex h-[90dvh] max-w-5xl flex-col">
-          <DialogHeader className="pr-8">
-            <DialogTitle className="truncate">{preview?.file_name}</DialogTitle>
+        <DialogContent className="flex h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-5xl flex-col gap-3 overflow-hidden p-3 sm:h-[90dvh] sm:w-full sm:gap-4 sm:p-6">
+          <DialogHeader className="min-w-0 pr-8 text-left">
+            <DialogTitle className="truncate text-base sm:text-lg" title={preview?.file_name}>
+              {preview?.file_name}
+            </DialogTitle>
             <DialogDescription>
               Preview attachment{preview ? ` · ${formatBytes(preview.size_bytes)}` : ""}
             </DialogDescription>
@@ -157,7 +159,11 @@ export function SupportConversationBubble({
               />
             ) : null}
           </div>
-          <Button type="button" onClick={() => preview && download(preview)} className="self-end">
+          <Button
+            type="button"
+            onClick={() => preview && download(preview)}
+            className="w-full shrink-0 sm:w-auto sm:self-end"
+          >
             <Download className="size-4" />
             Download
           </Button>

@@ -645,7 +645,7 @@ export default function AnalyticsPage() {
 
                       <div className="flex justify-end gap-2 mt-1">
                         <Button
-                          size="xs"
+                          size="sm"
                           variant="outline"
                           onClick={() => {
                             const resolvedUrl = (
@@ -659,7 +659,7 @@ export default function AnalyticsPage() {
                           Copy Link
                         </Button>
                         <Button
-                          size="xs"
+                          size="sm"
                           variant="ghost"
                           onClick={() =>
                             router.push(`/main/analytics/${link.short_code}`)
