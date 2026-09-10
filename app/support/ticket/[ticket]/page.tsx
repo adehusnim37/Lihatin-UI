@@ -29,6 +29,7 @@ import {
 import { Label } from "@/components/ui/label";
 import {
   downloadPublicSupportAttachment,
+  getPublicSupportAttachmentURL,
   type SupportAttachmentResponse,
   type SupportCategory,
 } from "@/lib/api/support";
@@ -206,6 +207,12 @@ function PublicSupportConversationContent() {
                       <SupportConversationBubble
                         key={message.id}
                         message={message}
+                        getAttachmentUrl={(attachmentID) =>
+                          getPublicSupportAttachmentURL({
+                            ticket: ticketCode,
+                            attachmentID,
+                          })
+                        }
                         onDownloadAttachment={(attachment) =>
                           void handleDownloadAttachment(attachment)
                         }
@@ -231,6 +238,7 @@ function PublicSupportConversationContent() {
                   <input
                     ref={attachmentInputRef}
                     type="file"
+                    accept="application/pdf,image/jpeg,image/png,image/webp,image/gif"
                     multiple
                     className="hidden"
                     onChange={(event) =>

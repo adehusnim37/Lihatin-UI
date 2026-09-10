@@ -68,17 +68,22 @@ export function DateTimePicker({
           <IconCalendarClock className="ml-auto size-4 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent
+        className="max-h-[var(--radix-popover-content-available-height)] w-[calc(100vw-2rem)] max-w-fit overflow-y-auto p-0 sm:w-auto"
+        align="start"
+        collisionPadding={16}
+      >
         <div className="sm:flex">
           <Calendar
+            className="mx-auto"
             mode="single"
             selected={date}
             onSelect={handleDateSelect}
             disabled={disablePast ? { before: startOfDay(now) } : undefined}
             autoFocus
           />
-          <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
-            <ScrollArea className="w-64 sm:w-auto h-72 sm:h-full">
+          <div className="flex flex-col divide-y sm:h-[300px] sm:flex-row sm:divide-x sm:divide-y-0">
+            <ScrollArea className="h-16 w-full sm:h-full sm:w-auto">
               <div className="flex sm:flex-col p-2">
                 {Array.from({ length: 24 }, (_, i) => i)
                   .reverse()
@@ -106,7 +111,7 @@ export function DateTimePicker({
               </div>
               <ScrollBar orientation="horizontal" className="sm:hidden" />
             </ScrollArea>
-            <ScrollArea className="w-64 sm:w-auto h-72 sm:h-full">
+            <ScrollArea className="h-16 w-full sm:h-full sm:w-auto">
               <div className="flex sm:flex-col p-2">
                 {Array.from({ length: 12 }, (_, i) => i * 5).map((minute) => {
                   const isToday = date && isSameDay(date, now);

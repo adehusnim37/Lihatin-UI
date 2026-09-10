@@ -346,7 +346,9 @@ export default function ShortLinkCard({
             <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1 mt-auto">
               <div className="flex items-center gap-1.5" title="Total Clicks">
                 <MousePointerClick className="size-3.5" />
-                <span>{data.detail?.current_clicks ?? 0} clicks</span>
+                <span>
+                  {data.click_count ?? data.detail?.current_clicks ?? 0} clicks
+                </span>
               </div>
               <div
                 className="flex items-center gap-1.5"

@@ -474,13 +474,16 @@ export default function AnalyticsPage() {
             </Card>
           </div>
 
-          {/* Detailed Link Table (Restored) */}
+          {/* Detailed Link Table (Restored for Desktop, modern responsive list for Mobile) */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Recent Links</CardTitle>
-                <CardDescription>
+                <CardDescription className="hidden sm:block">
                   Detailed performance of your most recent links.
+                </CardDescription>
+                <CardDescription className="sm:hidden text-xs">
+                  Your most recently created links.
                 </CardDescription>
               </div>
               <Button
@@ -488,102 +491,188 @@ export default function AnalyticsPage() {
                 size="sm"
                 onClick={() => router.push("/main/links")}
               >
-                View All Matches <ArrowRight className="ml-2 size-4" />
+                <span className="hidden sm:inline">View All Matches</span>
+                <span className="sm:hidden text-xs">View All</span>
+                <ArrowRight className="ml-1 sm:ml-2 size-4" />
               </Button>
             </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Link Details</TableHead>
-                    <TableHead>Short Code</TableHead>
-                    <TableHead>Clicks</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {linksLoading ? (
-                    Array.from({ length: 3 }).map((_, i) => (
-                      <TableRow key={i}>
-                        <TableCell>
-                          <Skeleton className="h-8 w-40" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-6 w-20" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-6 w-10" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="h-6 w-16" />
-                        </TableCell>
-                        <TableCell>
-                          <Skeleton className="size-8 ml-auto" />
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : links.length === 0 ? (
+            <CardContent className="p-0 sm:p-6">
+              {/* Desktop Tabled View */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell
-                        colSpan={5}
-                        className="text-center py-6 text-muted-foreground"
-                      >
-                        No links found.
-                      </TableCell>
+                      <TableHead>Link Details</TableHead>
+                      <TableHead>Short Code</TableHead>
+                      <TableHead>Clicks</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
                     </TableRow>
-                  ) : (
-                    links.map((link) => (
-                      <TableRow key={link.id}>
-                        <TableCell>
-                          <div className="flex flex-col gap-1">
-                            <div
-                              className="font-medium truncate max-w-[200px]"
-                              title={link.title}
-                            >
-                              {link.title || "Untitled"}
-                            </div>
-                            <a
-                              href={link.original_url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-xs text-muted-foreground hover:underline truncate max-w-[200px] flex items-center gap-1"
-                            >
-                              {link.original_url}{" "}
-                              <ExternalLink className="size-3" />
-                            </a>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="font-mono">
-                            /{link.short_code}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1 font-medium">
-                            <MousePointerClick className="size-3 text-muted-foreground" />
-                            {link.detail?.current_clicks || 0}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <ActiveInactiveBadge isActive={link.is_active} />
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() =>
-                              router.push(`/main/analytics/${link.short_code}`)
-                            }
-                          >
-                            Details
-                          </Button>
+                  </TableHeader>
+                  <TableBody>
+                    {linksLoading ? (
+                      Array.from({ length: 3 }).map((_, i) => (
+                        <TableRow key={i}>
+                          <TableCell>
+                            <Skeleton className="h-8 w-40" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-6 w-20" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-6 w-10" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-6 w-16" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="size-8 ml-auto" />
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : links.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={5}
+                          className="text-center py-6 text-muted-foreground"
+                        >
+                          No links found.
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                    ) : (
+                      links.map((link) => (
+                        <TableRow key={link.id}>
+                          <TableCell>
+                            <div className="flex flex-col gap-1">
+                              <div
+                                className="font-medium truncate max-w-[200px]"
+                                title={link.title}
+                              >
+                                {link.title || "Untitled"}
+                              </div>
+                              <a
+                                href={link.original_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-xs text-muted-foreground hover:underline truncate max-w-[200px] flex items-center gap-1"
+                              >
+                                {link.original_url}{" "}
+                                <ExternalLink className="size-3" />
+                              </a>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="font-mono">
+                              /{link.short_code}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1 font-medium">
+                              <MousePointerClick className="size-3 text-muted-foreground" />
+                              {link.click_count ?? link.detail?.current_clicks ?? 0}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <ActiveInactiveBadge isActive={link.is_active} />
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() =>
+                                router.push(`/main/analytics/${link.short_code}`)
+                              }
+                            >
+                              Details
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile Card List View */}
+              <div className="md:hidden divide-y divide-border">
+                {linksLoading ? (
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="p-4 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <Skeleton className="h-6 w-32" />
+                        <Skeleton className="h-5 w-16" />
+                      </div>
+                      <Skeleton className="h-4 w-48" />
+                      <div className="flex gap-2 pt-2">
+                        <Skeleton className="h-8 w-20" />
+                        <Skeleton className="h-8 w-16" />
+                      </div>
+                    </div>
+                  ))
+                ) : links.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground text-sm">
+                    No links found.
+                  </div>
+                ) : (
+                  links.map((link) => (
+                    <div key={link.id} className="p-4 flex flex-col gap-3 hover:bg-muted/30 transition-colors">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-semibold text-sm truncate" title={link.title}>
+                            {link.title || "Untitled"}
+                          </h4>
+                          <span className="text-xs text-muted-foreground font-mono inline-block mt-0.5">
+                            /{link.short_code}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <ActiveInactiveBadge isActive={link.is_active} />
+                          <Badge variant="secondary" className="text-[10px] font-semibold h-5 px-1.5">
+                            {link.click_count ?? link.detail?.current_clicks ?? 0} clicks
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <a
+                        href={link.original_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs text-muted-foreground hover:underline hover:text-primary truncate flex items-center gap-1 w-full"
+                      >
+                        <span className="truncate">{link.original_url}</span>
+                        <ExternalLink className="size-3 shrink-0" />
+                      </a>
+
+                      <div className="flex justify-end gap-2 mt-1">
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          onClick={() => {
+                            const resolvedUrl = (
+                              process.env.NEXT_PUBLIC_FRONTEND_URL ||
+                              window.location.origin
+                            ).replace(/\/+$/, "");
+                            navigator.clipboard.writeText(`${resolvedUrl}/${link.short_code}`);
+                          }}
+                          className="h-8 px-2.5 text-xs flex items-center gap-1"
+                        >
+                          Copy Link
+                        </Button>
+                        <Button
+                          size="xs"
+                          variant="ghost"
+                          onClick={() =>
+                            router.push(`/main/analytics/${link.short_code}`)
+                          }
+                          className="h-8 px-2.5 text-xs text-primary hover:text-primary hover:bg-primary/10"
+                        >
+                          Details
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>

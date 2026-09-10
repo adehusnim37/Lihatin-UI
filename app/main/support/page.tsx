@@ -262,6 +262,7 @@ export default function UserSupportPage() {
                           <input
                             ref={fileInputRef}
                             type="file"
+                            accept="application/pdf,image/jpeg,image/png,image/webp,image/gif"
                             multiple
                             className="hidden"
                             onChange={(event) => setDraftFiles(Array.from(event.target.files || []))}
@@ -297,5 +298,4 @@ export default function UserSupportPage() {
     </SidebarProvider>
   );
 }
-
 

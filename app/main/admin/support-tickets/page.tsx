@@ -753,6 +753,7 @@ export default function AdminSupportTicketsPage() {
                             <input
                               ref={attachmentInputRef}
                               type="file"
+                              accept="application/pdf,image/jpeg,image/png,image/webp,image/gif"
                               multiple
                               className="hidden"
                               onChange={(event) =>

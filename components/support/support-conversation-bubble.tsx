@@ -1,5 +1,17 @@
+"use client";
+
+import { useState } from "react";
+import { Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SupportMessageResponse } from "@/lib/api/support";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export function formatDate(value: string): string {
   const parsed = new Date(value);
@@ -45,6 +57,22 @@ export function SupportConversationBubble({
   isAdminView = false,
 }: SupportConversationBubbleProps) {
   const attachments = message.attachments ?? [];
+  const [preview, setPreview] = useState<SupportAttachment | null>(null);
+
+  const getUrl = (id: string, inline = false) => {
+    const url = getAttachmentUrl?.(id) || "#";
+    return inline && url !== "#"
+      ? `${url}${url.includes("?") ? "&" : "?"}disposition=inline`
+      : url;
+  };
+
+  const download = (attachment: SupportAttachment) => {
+    if (onDownloadAttachment) return onDownloadAttachment(attachment);
+    const link = document.createElement("a");
+    link.href = getUrl(attachment.id);
+    link.download = attachment.file_name;
+    link.click();
+  };
 
   const mine = isAdminView 
     ? message.sender_type === "admin"
@@ -80,30 +108,73 @@ export function SupportConversationBubble({
         {attachments.length > 0 ? (
           <div className="mt-3 flex flex-wrap gap-2">
             {attachments.map((attachment) =>
-              onDownloadAttachment ? (
+              isPreviewable(attachment) && getAttachmentUrl ? (
                 <button
                   key={attachment.id}
                   type="button"
-                  onClick={() => onDownloadAttachment(attachment)}
+                  onClick={() => setPreview(attachment)}
                   className="rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-muted/60"
                 >
                   {attachment.file_name} ({formatBytes(attachment.size_bytes)})
                 </button>
               ) : (
-                <a
+                <button
                   key={attachment.id}
-                  href={getAttachmentUrl?.(attachment.id) || "#"}
-                  target="_blank"
-                  rel="noreferrer"
+                  type="button"
+                  onClick={() => download(attachment)}
                   className="rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-muted/60"
                 >
                   {attachment.file_name} ({formatBytes(attachment.size_bytes)})
-                </a>
+                </button>
               ),
             )}
           </div>
         ) : null}
       </div>
+
+      <Dialog open={preview !== null} onOpenChange={(open) => !open && setPreview(null)}>
+        <DialogContent className="flex h-[90dvh] max-w-5xl flex-col">
+          <DialogHeader className="pr-8">
+            <DialogTitle className="truncate">{preview?.file_name}</DialogTitle>
+            <DialogDescription>
+              Preview attachment{preview ? ` · ${formatBytes(preview.size_bytes)}` : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="min-h-0 flex-1 overflow-hidden rounded-md border bg-muted/30">
+            {preview && isPdf(preview) ? (
+              <iframe
+                src={getUrl(preview.id, true)}
+                title={preview.file_name}
+                className="h-full w-full"
+              />
+            ) : preview ? (
+              // The source is an authenticated API URL rather than a Next.js image asset.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={getUrl(preview.id, true)}
+                alt={preview.file_name}
+                className="h-full w-full object-contain"
+              />
+            ) : null}
+          </div>
+          <Button type="button" onClick={() => preview && download(preview)} className="self-end">
+            <Download className="size-4" />
+            Download
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
+}
+
+type SupportAttachment = NonNullable<SupportMessageResponse["attachments"]>[number];
+
+function isPdf(attachment: SupportAttachment) {
+  return attachment.content_type === "application/pdf" || /\.pdf$/i.test(attachment.file_name);
+}
+
+function isPreviewable(attachment: SupportAttachment) {
+  return isPdf(attachment) ||
+    attachment.content_type === "image/jpeg" ||
+    /\.jpe?g$/i.test(attachment.file_name);
 }

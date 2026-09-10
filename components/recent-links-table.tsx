@@ -23,6 +23,9 @@ interface ShortLink {
   is_active: boolean;
   created_at: string;
   click_count?: number;
+  detail?: {
+    current_clicks?: number;
+  };
 }
 
 interface RecentLinksTableProps {
@@ -79,7 +82,7 @@ export function RecentLinksTable({ links = [], isLoading = false }: RecentLinksT
                       <code className="text-sm font-semibold">{link.short_code}</code>
                       <ActiveInactiveBadge isActive={link.is_active} className="text-xs" />
                       <Badge variant="secondary" className="text-xs">
-                        {link.click_count ?? 0} clicks
+                        {link.click_count ?? link.detail?.current_clicks ?? 0} clicks
                       </Badge>
                     </div>
                     <p className="text-sm font-medium text-foreground line-clamp-1">
