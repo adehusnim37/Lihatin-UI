@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   getAdminUsers,
@@ -50,6 +55,15 @@ export const adminKeys = {
         "users",
         "email-options",
         page,
+        limit,
+        search,
+      ] as const,
+    emailOptionsInfinite: (limit: number, search: string) =>
+      [
+        ...adminKeys.all,
+        "users",
+        "email-options",
+        "infinite",
         limit,
         search,
       ] as const,
@@ -119,6 +133,34 @@ export function useAdminUserEmailOptionsQuery(
       }
       return response.data as AdminUserEmailOptionsResponse;
     },
+    enabled,
+    placeholderData: (previousData) => previousData,
+  });
+}
+
+export function useAdminUserEmailOptionsInfiniteQuery(
+  limit = 20,
+  search = "",
+  enabled = true,
+) {
+  return useInfiniteQuery({
+    queryKey: adminKeys.users.emailOptionsInfinite(limit, search),
+    queryFn: async ({ pageParam }) => {
+      const response = await getAdminUserEmailOptions({
+        page: pageParam,
+        limit,
+        search,
+        sort: "created_at",
+        order_by: "desc",
+      });
+      if (!response.success) {
+        throw new Error(response.message || "Failed to load eligible recipients");
+      }
+      return response.data as AdminUserEmailOptionsResponse;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.page < lastPage.total_pages ? lastPage.page + 1 : undefined,
     enabled,
     placeholderData: (previousData) => previousData,
   });

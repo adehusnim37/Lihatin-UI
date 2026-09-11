@@ -78,10 +78,11 @@ import {
   type AdminPremiumCode,
   type AdminPremiumCodeUsage,
   type AdminUserEmailOption,
+  type AdminUserEmailOptionsResponse,
 } from "@/lib/api/auth";
 import {
   useAdminPremiumCodesQuery,
-  useAdminUserEmailOptionsQuery,
+  useAdminUserEmailOptionsInfiniteQuery,
   useSendAdminPremiumCodeEmailMutation,
 } from "@/lib/hooks/queries/useAdminQuery";
 
@@ -106,7 +107,6 @@ export default function AdminPremiumCodesPage() {
   const [selectedRecipientLabel, setSelectedRecipientLabel] = useState("");
   const [recipientPickerOpen, setRecipientPickerOpen] = useState(false);
   const [recipientSearch, setRecipientSearch] = useState("");
-  const [recipientPage, setRecipientPage] = useState(1);
   const [customEmail, setCustomEmail] = useState("");
   const [customName, setCustomName] = useState("");
   const [messageNote, setMessageNote] = useState("");
@@ -131,15 +131,22 @@ export default function AdminPremiumCodesPage() {
   const {
     data: recipientData,
     isLoading: recipientLoading,
-    isFetching: recipientFetching,
+    isFetchingNextPage: recipientFetchingNextPage,
     isError: recipientError,
-  } = useAdminUserEmailOptionsQuery(
-    recipientPage,
+    fetchNextPage: fetchNextRecipientPage,
+    hasNextPage: hasNextRecipientPage,
+  } = useAdminUserEmailOptionsInfiniteQuery(
     RECIPIENT_PAGE_LIMIT,
     debouncedRecipientSearch,
-    detailOpen && detailTab === "send" && recipientMode === "used_user"
+    detailOpen && detailTab === "send" && recipientMode === "used_user",
   );
-  const recipientOptions = recipientData?.users ?? [];
+  const recipientOptions = useMemo(
+    () =>
+      recipientData?.pages.flatMap(
+        (pageData: AdminUserEmailOptionsResponse) => pageData.users,
+      ) ?? [],
+    [recipientData],
+  );
   const sendEmailMutation = useSendAdminPremiumCodeEmailMutation();
 
   const userLabelById = useMemo(() => {
@@ -168,7 +175,7 @@ export default function AdminPremiumCodesPage() {
       .sort(
         (left, right) =>
           new Date(right.created_at).getTime() -
-          new Date(left.created_at).getTime()
+          new Date(left.created_at).getTime(),
       )
       .filter((usage) => {
         if (!query) return true;
@@ -211,7 +218,6 @@ export default function AdminPremiumCodesPage() {
     setSelectedUserID("");
     setSelectedRecipientLabel("");
     setRecipientSearch("");
-    setRecipientPage(1);
     setCustomEmail("");
     setCustomName("");
     setMessageNote("");
@@ -264,7 +270,7 @@ export default function AdminPremiumCodesPage() {
       { premiumCodeId: activeCode.id, payload },
       {
         onSuccess: () => setDetailOpen(false),
-      }
+      },
     );
   };
 
@@ -380,7 +386,9 @@ export default function AdminPremiumCodesPage() {
                             <TableHead className="w-[270px] pl-5 md:pl-6">
                               Code
                             </TableHead>
-                            <TableHead className="w-[220px]">Capacity</TableHead>
+                            <TableHead className="w-[220px]">
+                              Capacity
+                            </TableHead>
                             <TableHead>Validity</TableHead>
                             <TableHead>Redeemers</TableHead>
                             <TableHead>Last updated</TableHead>
@@ -448,10 +456,16 @@ export default function AdminPremiumCodesPage() {
                                 <TableCell className="py-4">
                                   <div className="space-y-1">
                                     <p className="text-sm">
-                                      {formatDate(code.valid_until, code.is_lifetime)}
+                                      {formatDate(
+                                        code.valid_until,
+                                        code.is_lifetime,
+                                      )}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
-                                      {getValidityLabel(code.valid_until, code.is_lifetime)}
+                                      {getValidityLabel(
+                                        code.valid_until,
+                                        code.is_lifetime,
+                                      )}
                                     </p>
                                   </div>
                                 </TableCell>
@@ -513,7 +527,7 @@ export default function AdminPremiumCodesPage() {
                       className="flex-1 min-[420px]:flex-none"
                       onClick={() =>
                         setPage((previous) =>
-                          Math.min(totalPages, previous + 1)
+                          Math.min(totalPages, previous + 1),
                         )
                       }
                       disabled={!hasNext}
@@ -529,7 +543,7 @@ export default function AdminPremiumCodesPage() {
       </SidebarInset>
 
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="flex h-dvh max-h-none w-full max-w-none flex-col gap-0 overflow-hidden rounded-none border-0 p-0 sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:max-w-3xl sm:rounded-lg sm:border">
+        <DialogContent className="flex max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-none flex-col gap-0 overflow-hidden rounded-lg border p-0 sm:w-full sm:max-w-3xl">
           {activeCode && (
             <>
               <DialogHeader className="shrink-0 border-b px-4 pb-4 pt-5 pr-12 text-left sm:px-5 sm:pb-5 sm:pt-6 md:px-6 md:pr-14">
@@ -577,16 +591,25 @@ export default function AdminPremiumCodesPage() {
               >
                 <div className="shrink-0 border-b px-4 py-3 sm:px-5 md:px-6">
                   <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="overview" className="px-1 text-xs sm:text-sm">
+                    <TabsTrigger
+                      value="overview"
+                      className="px-1 text-xs sm:text-sm"
+                    >
                       Overview
                     </TabsTrigger>
-                    <TabsTrigger value="usage" className="px-1 text-xs sm:text-sm">
+                    <TabsTrigger
+                      value="usage"
+                      className="px-1 text-xs sm:text-sm"
+                    >
                       Usage
                       <span className="rounded-full bg-background px-1.5 py-0.5 text-[10px] tabular-nums">
                         {activeCode.usage_count}
                       </span>
                     </TabsTrigger>
-                    <TabsTrigger value="send" className="px-1 text-xs sm:text-sm">
+                    <TabsTrigger
+                      value="send"
+                      className="px-1 text-xs sm:text-sm"
+                    >
                       Send code
                     </TabsTrigger>
                   </TabsList>
@@ -625,8 +648,14 @@ export default function AdminPremiumCodesPage() {
                       <Metric
                         icon={<IconCalendar />}
                         label="Valid until"
-                        value={formatDate(activeCode.valid_until, activeCode.is_lifetime)}
-                        detail={getValidityLabel(activeCode.valid_until, activeCode.is_lifetime)}
+                        value={formatDate(
+                          activeCode.valid_until,
+                          activeCode.is_lifetime,
+                        )}
+                        detail={getValidityLabel(
+                          activeCode.valid_until,
+                          activeCode.is_lifetime,
+                        )}
                       />
                       <Metric
                         icon={<IconKey />}
@@ -752,30 +781,25 @@ export default function AdminPremiumCodesPage() {
                                 search={recipientSearch}
                                 onSearchChange={(value) => {
                                   setRecipientSearch(value);
-                                  setRecipientPage(1);
                                 }}
                                 onSelect={(user) => {
                                   setSelectedUserID(user.id);
                                   setSelectedRecipientLabel(
-                                    `${user.username} (${user.email})`
+                                    `${user.username} (${user.email})`,
                                   );
                                   setRecipientPickerOpen(false);
                                 }}
-                                page={recipientData?.page ?? recipientPage}
-                                totalPages={Math.max(
-                                  1,
-                                  recipientData?.total_pages ?? 1
-                                )}
-                                onPrevious={() =>
-                                  setRecipientPage((previous) =>
-                                    Math.max(1, previous - 1)
-                                  )
-                                }
-                                onNext={() =>
-                                  setRecipientPage((previous) => previous + 1)
-                                }
+                                onLoadMore={() => {
+                                  if (
+                                    hasNextRecipientPage &&
+                                    !recipientFetchingNextPage
+                                  ) {
+                                    void fetchNextRecipientPage();
+                                  }
+                                }}
+                                hasMore={Boolean(hasNextRecipientPage)}
                                 isLoading={recipientLoading}
-                                isFetching={recipientFetching}
+                                isFetchingMore={recipientFetchingNextPage}
                                 isError={recipientError}
                               />
                               <p className="text-xs text-muted-foreground">
@@ -885,12 +909,10 @@ function RecipientPicker({
   search,
   onSearchChange,
   onSelect,
-  page,
-  totalPages,
-  onPrevious,
-  onNext,
+  onLoadMore,
+  hasMore,
   isLoading,
-  isFetching,
+  isFetchingMore,
   isError,
 }: {
   open: boolean;
@@ -901,12 +923,10 @@ function RecipientPicker({
   search: string;
   onSearchChange: (value: string) => void;
   onSelect: (user: AdminUserEmailOption) => void;
-  page: number;
-  totalPages: number;
-  onPrevious: () => void;
-  onNext: () => void;
+  onLoadMore: () => void;
+  hasMore: boolean;
   isLoading: boolean;
-  isFetching: boolean;
+  isFetchingMore: boolean;
   isError: boolean;
 }) {
   return (
@@ -920,9 +940,7 @@ function RecipientPicker({
         >
           <span
             className={
-              selectedLabel
-                ? "truncate"
-                : "truncate text-muted-foreground"
+              selectedLabel ? "truncate" : "truncate text-muted-foreground"
             }
           >
             {selectedLabel || "Search eligible user"}
@@ -947,7 +965,20 @@ function RecipientPicker({
           </div>
         </div>
 
-        <ScrollArea className="h-56">
+        <div
+          className="h-48 touch-pan-y overflow-x-hidden overflow-y-auto overscroll-y-contain"
+          onWheel={(event) => event.stopPropagation()}
+          onTouchMove={(event) => event.stopPropagation()}
+          onScroll={(event) => {
+            const target = event.currentTarget;
+            const nearBottom =
+              target.scrollTop + target.clientHeight >=
+              target.scrollHeight - 48;
+            if (nearBottom) {
+              onLoadMore();
+            }
+          }}
+        >
           <div className="p-1.5">
             {isLoading ? (
               <div className="space-y-2 p-2">
@@ -970,68 +1001,57 @@ function RecipientPicker({
                 </p>
               </div>
             ) : (
-              options.map((user) => {
-                const label = `${user.username} (${user.email})`;
-                const selected = user.id === selectedUserID;
-                return (
-                  <button
-                    key={user.id}
-                    type="button"
-                    className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left outline-none transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
-                    onClick={() => onSelect(user)}
-                  >
-                    <div className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                      {getInitials(user.username)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">
-                        {user.username}
-                      </p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {user.email}
-                      </p>
-                    </div>
-                    {selected && (
-                      <IconCheck
-                        className="size-4 shrink-0 text-primary"
-                        aria-label={`${label} selected`}
-                      />
-                    )}
-                  </button>
-                );
-              })
+              <>
+                {options.map((user) => {
+                  const label = `${user.username} (${user.email})`;
+                  const selected = user.id === selectedUserID;
+                  return (
+                    <button
+                      key={user.id}
+                      type="button"
+                      className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left outline-none transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
+                      onClick={() => onSelect(user)}
+                    >
+                      <div className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                        {getInitials(user.username)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">
+                          {user.username}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </div>
+                      {selected && (
+                        <IconCheck
+                          className="size-4 shrink-0 text-primary"
+                          aria-label={`${label} selected`}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+                {isFetchingMore && (
+                  <div className="space-y-2 p-2">
+                    <Skeleton className="h-9 w-full" />
+                    <Skeleton className="h-9 w-full" />
+                  </div>
+                )}
+                {!hasMore && !isFetchingMore && (
+                  <p className="px-3 py-3 text-center text-xs text-muted-foreground">
+                    No more users
+                  </p>
+                )}
+              </>
             )}
-          </div>
-        </ScrollArea>
-
-        <div className="flex items-center justify-between border-t px-3 py-2">
-          <span className="text-xs text-muted-foreground">
-            Page {page} of {totalPages}
-            {isFetching && !isLoading ? " · updating" : ""}
-          </span>
-          <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onPrevious}
-              disabled={page <= 1 || isFetching}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onNext}
-              disabled={page >= totalPages || isFetching}
-            >
-              Next
-            </Button>
           </div>
         </div>
       </PopoverContent>
     </Popover>
   );
 }
+
 
 function PremiumCodeMobileCard({
   code,
@@ -1150,7 +1170,11 @@ function CapacityMeter({
               Redemption capacity
             </p>
           )}
-          <p className={compact ? "text-sm font-medium" : "text-2xl font-semibold"}>
+          <p
+            className={
+              compact ? "text-sm font-medium" : "text-2xl font-semibold"
+            }
+          >
             {code.usage_count}
             <span
               className={
@@ -1344,10 +1368,10 @@ function PageSkeleton() {
 
 function getUsedByLabels(
   code: AdminPremiumCode,
-  userLabelById: Record<string, string>
+  userLabelById: Record<string, string>,
 ): string[] {
   const labels = (code.key_usage ?? []).map(
-    (usage) => userLabelById[usage.user_id] || usage.user_id
+    (usage) => userLabelById[usage.user_id] || usage.user_id,
   );
   return Array.from(new Set(labels));
 }

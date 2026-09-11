@@ -475,10 +475,6 @@ function AdminUsersPageContent() {
         <main className="flex flex-1 flex-col gap-6 p-4 md:p-6">
           <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl">
-              <div className="mb-2 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                <IconUsers className="size-3.5" />
-                Account operations
-              </div>
               <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
                 User directory
               </h1>
