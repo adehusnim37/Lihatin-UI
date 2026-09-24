@@ -319,7 +319,7 @@ export default function LinkDetailPage() {
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="size-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="size-8 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                       onClick={() => {
                         setTitleInput(link.title || link.short_code);
                         setIsEditingTitle(true);
@@ -409,25 +409,27 @@ export default function LinkDetailPage() {
                   <CardContent className="space-y-6 pt-6 flex flex-col justify-between h-[calc(100%-3.5rem)]">
                     <div>
                       {isEditing ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xl sm:text-2xl font-bold tracking-tighter text-muted-foreground select-none">
-                            {host}/
-                          </span>
-                          <Input
-                            value={slugInput}
-                            onChange={(e) => setSlugInput(e.target.value)}
-                            className="text-xl font-bold h-10 min-w-[120px]"
-                            autoFocus
-                            disabled={isCheckingSlug}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" && !isCheckingSlug)
-                                handleSaveSlug();
-                              if (e.key === "Escape") {
-                                setIsEditing(false);
-                                setSlugInput(code);
-                              }
-                            }}
-                          />
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className="flex min-w-0 flex-1 basis-full items-center gap-2 sm:basis-auto">
+                            <span className="shrink truncate text-xl font-bold tracking-tighter text-muted-foreground select-none sm:text-2xl">
+                              {host}/
+                            </span>
+                            <Input
+                              value={slugInput}
+                              onChange={(e) => setSlugInput(e.target.value)}
+                              className="h-10 min-w-0 flex-1 text-xl font-bold"
+                              autoFocus
+                              disabled={isCheckingSlug}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && !isCheckingSlug)
+                                  handleSaveSlug();
+                                if (e.key === "Escape") {
+                                  setIsEditing(false);
+                                  setSlugInput(code);
+                                }
+                              }}
+                            />
+                          </div>
                           <div className="flex items-center gap-1">
                             <Button
                               size="icon"
@@ -477,7 +479,7 @@ export default function LinkDetailPage() {
                               </span>
                             </span>
                           </div>
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
+                          <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity ml-2">
                             <Button
                               size="icon"
                               variant="ghost"
@@ -515,7 +517,7 @@ export default function LinkDetailPage() {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="size-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="size-6 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                             onClick={() => {
                               setUrlInput(link.original_url);
                               setIsEditingUrl(true);
@@ -736,7 +738,7 @@ export default function LinkDetailPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="size-7 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="size-7 text-muted-foreground opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                           onClick={() => {
                             setDescriptionInput(link.description || "");
                             setIsEditingDescription(true);
@@ -833,7 +835,7 @@ export default function LinkDetailPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="size-7 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="size-7 text-muted-foreground opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                           onClick={() => {
                             setTagsInput({
                               utm_source: link.detail?.utm_source || "",

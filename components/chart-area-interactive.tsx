@@ -123,14 +123,14 @@ export function ChartAreaInteractive({
   }
 
   return (
-    <Card className="@container/card">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
+    <Card className="@container/card min-w-0 overflow-hidden">
+      <CardHeader className="min-w-0">
+        <CardTitle className="truncate">{title}</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">{desc}</span>
           <span className="@[540px]/card:hidden">{mobileDescription}</span>
         </CardDescription>
-        <CardAction>
+        <CardAction className="shrink-0">
           <ToggleGroup
             type="single"
             value={timeRange}
@@ -146,7 +146,7 @@ export function ChartAreaInteractive({
           </ToggleGroup>
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger
-              className="flex w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden"
+              className="flex w-32 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate sm:w-40 @[767px]/card:hidden"
               size="sm"
               aria-label="Select a time range"
             >
@@ -174,7 +174,7 @@ export function ChartAreaInteractive({
         ) : (
           <ChartContainer
             config={chartConfig}
-            className="aspect-auto h-[250px] w-full"
+            className="aspect-auto h-[220px] w-full min-w-0 sm:h-[250px]"
           >
             <AreaChart data={filteredData}>
               <defs>
