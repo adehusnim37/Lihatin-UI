@@ -166,7 +166,7 @@ export function ChartAreaInteractive({
           </Select>
         </CardAction>
       </CardHeader>
-      <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6 min-w-0">
+      <CardContent className="min-w-0 px-2 pt-4 pb-8 sm:px-6 sm:pt-6 sm:pb-6">
         {filteredData.length === 0 ? (
           <div className="flex h-[250px] items-center justify-center text-muted-foreground">
             {emptyMessage}
