@@ -85,12 +85,12 @@ export function APIKeyUsageDialog({
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 py-4 border-b">
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Total Requests</p>
-            <p className="text-2xl font-bold">{usageData?.total_count || 0}</p>
+            <p className="text-xs text-muted-foreground">Counted Uses</p>
+            <p className="text-2xl font-bold">{apiKey.usage_count}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Usage Limit</p>
-            <p className="text-2xl font-bold">{apiKey.limit_usage || "∞"}</p>
+            <p className="text-xs text-muted-foreground">Key Total Cap</p>
+            <p className="text-2xl font-bold">{apiKey.limit_usage ?? "∞"}</p>
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Last Used</p>
@@ -99,6 +99,11 @@ export function APIKeyUsageDialog({
             </p>
           </div>
         </div>
+
+        <p className="text-xs text-muted-foreground">
+          Rate limit berlaku bersama untuk semua key dalam akun. Request yang
+          ditolak karena izin atau rate limit tidak menambah penggunaan key.
+        </p>
 
         {/* Activity Logs */}
         <div className="flex-1 overflow-y-auto min-h-0">

@@ -169,12 +169,12 @@ export function APIKeyCard({
           <span>Last used {formatDate(apiKey.last_used_at)}</span>
         </div>
         <div className="flex items-center gap-2">
-          {apiKey.limit_usage ? (
+          {apiKey.limit_usage != null ? (
             <span>
-              {apiKey.usage_count} / {apiKey.limit_usage} calls
+              {apiKey.usage_count} / {apiKey.limit_usage} uses
             </span>
           ) : (
-            <span>{apiKey.usage_count} calls</span>
+            <span>{apiKey.usage_count} uses</span>
           )}
         </div>
       </div>

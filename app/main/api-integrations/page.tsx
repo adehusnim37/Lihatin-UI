@@ -1,13 +1,9 @@
 "use client";
 
-import {
-  Key,
-  Plus,
-  ExternalLink,
-  BookOpen,
-} from "lucide-react";
+import { Key, Plus, BookOpen, ExternalLink, Info } from "lucide-react";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import { APIDocumentation } from "@/components/api-docs/api-documentation";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -15,12 +11,9 @@ import { CreateAPIKeyDialog } from "@/components/api-keys/create-api-key-dialog"
 import { APIKeyList } from "@/components/api-keys/api-key-list";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
-const API_DOCS_URL =
-  process.env.NEXT_PUBLIC_API_DOCS_URL || `${API_BASE_URL}/docs/postman`;
 const POSTMAN_COLLECTION_URL =
   process.env.NEXT_PUBLIC_POSTMAN_COLLECTION_URL ||
   "https://www.postman.com/adehusnim/workspace/lihatin/collection/13183823-585cf118-ae9e-4e0d-af3c-f599d1caaf38?action=share&creator=13183823";
@@ -28,20 +21,6 @@ const POSTMAN_COLLECTION_URL =
 export default function ApiIntegrationsPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const queryClient = useQueryClient();
-
-  const docsUrl = API_DOCS_URL;
-  const { data: docsAvailable, isLoading: docsLoading } = useQuery({
-    queryKey: ["api-docs", "available", docsUrl] as const,
-    queryFn: async () => {
-      try {
-        const res = await fetch(docsUrl);
-        return res.ok;
-      } catch {
-        return false;
-      }
-    },
-    staleTime: 5 * 60 * 1000,
-  });
 
   return (
     <SidebarProvider
@@ -53,9 +32,9 @@ export default function ApiIntegrationsPage() {
       }
     >
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <SiteHeader />
-        <div className="flex flex-1 flex-col gap-6 p-6">
+        <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6">
           {/* Header */}
           <div className="space-y-2">
             <h1 className="text-3xl font-bold flex items-center gap-3">
@@ -67,7 +46,7 @@ export default function ApiIntegrationsPage() {
           </div>
 
           {/* Tabs for API Keys and Documentation */}
-          <Tabs defaultValue="api-keys" className="space-y-6 w-full">
+          <Tabs defaultValue="api-keys" className="space-y-6 w-full min-w-0">
             <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
               <TabsTrigger value="api-keys" className="flex items-center gap-2">
                 <Key className="size-4" />
@@ -105,6 +84,36 @@ export default function ApiIntegrationsPage() {
                     </Button>
                   </div>
 
+                  <div
+                    role="note"
+                    className="flex items-start gap-3 rounded-xl border border-sky-500/25 bg-sky-500/5 p-4"
+                  >
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-sky-500/15 text-sky-600 dark:text-sky-400">
+                      <Info className="size-4" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0 space-y-2">
+                      <p className="text-sm font-semibold">Account API request limits</p>
+                      <div className="flex flex-wrap gap-2">
+                        <Badge
+                          variant="outline"
+                          className="border-sky-500/30 bg-background/70 text-sky-700 dark:text-sky-300"
+                        >
+                          Standard · 50/hour
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className="border-amber-500/30 bg-background/70 text-amber-700 dark:text-amber-300"
+                        >
+                          Premium · 100/10 min
+                        </Badge>
+                      </div>
+                      <p className="text-xs leading-relaxed text-muted-foreground">
+                        All API keys in your account share this rate limit. Each
+                        key can also have its own optional total-use cap.
+                      </p>
+                    </div>
+                  </div>
+
                   {/* API Key List */}
                   <APIKeyList />
 
@@ -117,48 +126,8 @@ export default function ApiIntegrationsPage() {
             </TabsContent>
 
             {/* Documentation Tab */}
-            <TabsContent value="documentation" className="space-y-6">
-              {/* Header with download button */}
-              <div>
-                <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-blue-500/10">
-                      <BookOpen className="size-5 text-blue-500" />
-                    </div>
-                    <div>
-                      <h2 className="font-semibold">API Reference</h2>
-                      <p className="text-sm text-muted-foreground">
-                        Interactive API documentation
-                      </p>
-                    </div>
-                  </div>
-                  <Button variant="outline" asChild>
-                    <a
-                      href={POSTMAN_COLLECTION_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <ExternalLink className="size-4 mr-2" />
-                      Open Postman Collection
-                    </a>
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {docsLoading
-                    ? "Checking docs endpoint..."
-                    : docsAvailable
-                      ? "Docs endpoint is reachable."
-                      : "Docs endpoint is not reachable from this browser."}{" "}
-                  <a
-                    href={docsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline underline-offset-2"
-                  >
-                    Open docs endpoint
-                  </a>
-                </p>
-              </div>
+            <TabsContent value="documentation" className="min-w-0 space-y-6">
+              <APIDocumentation />
             </TabsContent>
           </Tabs>
         </div>

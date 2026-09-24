@@ -25,6 +25,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Validate OpenAPI contract
+        run: bun run docs:lint && bun run docs:test
+
       - name: Lint
         continue-on-error: true
         run: bun run lint

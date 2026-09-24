@@ -1,0 +1,2080 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Lihatin API",
+    "version": "1.0.0",
+    "description": "Buat dan kelola short link dari aplikasi Anda.\n\n### Autentikasi\nKirim key lengkap melalui header `X-API-Key`. Format key: `keyID.secretKey`.\n\n### Akses dan batas penggunaan\nAkun non-premium dapat menggunakan API dengan maksimal **50 request per jam**. Akun premium aktif mendapat limit lebih tinggi, yaitu **100 request per 10 menit**. Batas dihitung bersama untuk seluruh API key dan endpoint short link dalam satu akun, meskipun IP berbeda. Batas total per key (`limit_usage`) adalah pembatas tambahan yang dapat diubah pemilik key. Perubahan ini tidak mengubah rate limit akun. Penggunaan key hanya bertambah setelah izin serta rate limit akun lolos.\n\n### Izin akses\n- `read`: membaca link dan statistik.\n- `write`: membuat link.\n- `update`: mengubah link.\n- `delete`: menghapus link.\n\nUntuk penjelasan kuota, pengelolaan key, dan contoh langkah demi langkah, buka tab **Panduan penggunaan**."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/v1",
+      "description": "Development. Halaman docs menyesuaikan server dengan NEXT_PUBLIC_API_URL."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Short links",
+      "description": "Buat, baca, ubah, dan hapus short link."
+    },
+    {
+      "name": "Analytics",
+      "description": "Statistik klik dan riwayat kunjungan."
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "paths": {
+    "/api/short": {
+      "post": {
+        "operationId": "createShortLink",
+        "summary": "Buat satu atau beberapa link",
+        "description": "**Izin akses:** `write`\n\nBuat satu link atau beberapa link sekaligus.\n\n- **Satu link:** masukkan data ke objek `link`.\n- **Beberapa link:** isi `is_bulky` dengan `true`, lalu masukkan daftar ke `links`.\n- Pemilik link mengikuti akun yang membuat API key.\n\n**Catatan:** saat membuat satu link, `limit`, `enable_stats`, dan `tags` belum diterapkan. Atur melalui endpoint PUT setelah link dibuat.\n\nPeriksa hasil sebelum mengulang request agar tidak membuat link ganda.\n\n**Contoh Single / Bulk:** pilih contoh di bawah panel kode. Kode request dan contoh respons 201 mengikuti pilihan tersebut. Pilihan format pada bagian Body hanya menjelaskan struktur data; tidak mengubah contoh kode.",
+        "tags": [
+          "Short links"
+        ],
+        "x-required-permissions": [
+          "write"
+        ],
+        "responses": {
+          "201": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "data": {
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/ShortLink"
+                        },
+                        {
+                          "$ref": "#/components/schemas/BulkResult"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success"
+                  ]
+                },
+                "examples": {
+                  "Single": {
+                    "summary": "Single",
+                    "description": "Satu link yang berhasil dibuat.",
+                    "value": {
+                      "success": true,
+                      "message": "Short link created successfully",
+                      "data": {
+                        "id": "01997270-0000-7000-8000-000000000001",
+                        "short_code": "contoh001",
+                        "original_url": "https://example.com/artikel",
+                        "title": "Artikel contoh",
+                        "is_active": true,
+                        "expires_at": null,
+                        "created_at": "2026-09-24T10:00:00Z",
+                        "updated_at": "2026-09-24T10:00:00Z"
+                      }
+                    }
+                  },
+                  "Bulk": {
+                    "summary": "Bulk",
+                    "description": "Daftar link yang berhasil dibuat beserta jumlahnya.",
+                    "value": {
+                      "success": true,
+                      "message": "Bulk short links created successfully",
+                      "data": {
+                        "links": [
+                          {
+                            "id": "01997270-0000-7000-8000-000000000002",
+                            "short_code": "contoh002",
+                            "original_url": "https://example.com/satu",
+                            "title": "Artikel pertama",
+                            "is_active": true,
+                            "expires_at": null,
+                            "created_at": "2026-09-24T10:00:00Z",
+                            "updated_at": "2026-09-24T10:00:00Z"
+                          },
+                          {
+                            "id": "01997270-0000-7000-8000-000000000003",
+                            "short_code": "contoh003",
+                            "original_url": "https://example.com/dua",
+                            "title": "Artikel kedua",
+                            "is_active": true,
+                            "expires_at": null,
+                            "created_at": "2026-09-24T10:00:00Z",
+                            "updated_at": "2026-09-24T10:00:00Z"
+                          }
+                        ],
+                        "total_count": 2,
+                        "message": "Successfully created 2 short links"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Format key, body JSON, atau parameter tidak valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Header X-API-Key tidak ada atau autentikasi diperlukan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission tidak cukup, IP ditolak, atau akun dinonaktifkan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Link/key tidak ditemukan; key tidak aktif atau kedaluwarsa juga dapat menghasilkan 404.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit atau kuota kumulatif key tercapai.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Kesalahan internal backend.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Short code sudah digunakan. Pilih kode lain.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRequest"
+              },
+              "examples": {
+                "Single": {
+                  "value": {
+                    "is_bulky": false,
+                    "link": {
+                      "original_url": "https://example.com/artikel",
+                      "title": "Artikel contoh"
+                    }
+                  },
+                  "summary": "Single",
+                  "description": "Satu link"
+                },
+                "Bulk": {
+                  "value": {
+                    "is_bulky": true,
+                    "links": [
+                      {
+                        "original_url": "https://example.com/satu",
+                        "title": "Artikel pertama"
+                      },
+                      {
+                        "original_url": "https://example.com/dua",
+                        "title": "Artikel kedua"
+                      }
+                    ]
+                  },
+                  "summary": "Bulk",
+                  "description": "Beberapa link sekaligus"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listShortLinks",
+        "summary": "Daftar short link",
+        "description": "**Izin akses:** `read`\n\nAmbil daftar link dengan pembagian halaman.\n\n- Akun biasa hanya melihat link miliknya.\n- Akun admin dapat melihat link pengguna lain.\n- Gunakan `page` dan `limit` untuk memilih halaman, `search` untuk mencari, serta `sort` dan `order_by` untuk mengurutkan.",
+        "tags": [
+          "Short links"
+        ],
+        "x-required-permissions": [
+          "read"
+        ],
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/LinkPage"
+                    }
+                  },
+                  "required": [
+                    "success"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Format key, body JSON, atau parameter tidak valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Header X-API-Key tidak ada atau autentikasi diperlukan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission tidak cukup, IP ditolak, atau akun dinonaktifkan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Link/key tidak ditemukan; key tidak aktif atau kedaluwarsa juga dapat menghasilkan 404.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit atau kuota kumulatif key tercapai.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Kesalahan internal backend.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "description": "Nomor halaman."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            },
+            "description": "Jumlah item per halaman."
+          },
+          {
+            "name": "order_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "description": "Urutan hasil."
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "created_at",
+                "updated_at",
+                "short_code",
+                "title"
+              ],
+              "default": "created_at"
+            },
+            "description": "Kolom sorting. Admin juga menerima original_url, is_active, user_id."
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Pencarian short link."
+          }
+        ]
+      }
+    },
+    "/api/short/{code}": {
+      "get": {
+        "operationId": "getShortLink",
+        "summary": "Detail short link",
+        "description": "**Izin akses:** `read`\n\nAmbil informasi sebuah link berdasarkan kodenya. Endpoint ini mengembalikan data JSON; tidak mengarahkan pengunjung ke URL tujuan.",
+        "tags": [
+          "Short links"
+        ],
+        "x-required-permissions": [
+          "read"
+        ],
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/ShortLink"
+                    }
+                  },
+                  "required": [
+                    "success"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Format key, body JSON, atau parameter tidak valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Header X-API-Key tidak ada atau autentikasi diperlukan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission tidak cukup, IP ditolak, atau akun dinonaktifkan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Link/key tidak ditemukan; key tidak aktif atau kedaluwarsa juga dapat menghasilkan 404.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit atau kuota kumulatif key tercapai.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Kesalahan internal backend.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "description": "Kode link dari field short_code pada respons pembuatan link. Contoh: artikel-contoh.",
+            "example": "artikel-contoh"
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updateShortLink",
+        "summary": "Ubah short link",
+        "description": "**Izin akses:** `update`\n\nUbah pengaturan link berdasarkan kodenya.\n\n- Kirim field langsung di body, tanpa objek `link`.\n- Field yang tidak dikirim tetap menggunakan nilai sebelumnya.\n- `original_url` tidak dapat diubah lewat endpoint ini.\n\nRespons berisi data perubahan yang Anda kirim, bukan seluruh informasi link.",
+        "tags": [
+          "Short links"
+        ],
+        "x-required-permissions": [
+          "update"
+        ],
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/UpdateLink"
+                    }
+                  },
+                  "required": [
+                    "success"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Format key, body JSON, atau parameter tidak valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Header X-API-Key tidak ada atau autentikasi diperlukan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission tidak cukup, IP ditolak, atau akun dinonaktifkan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Link/key tidak ditemukan; key tidak aktif atau kedaluwarsa juga dapat menghasilkan 404.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit atau kuota kumulatif key tercapai.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Kesalahan internal backend.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Short code sudah digunakan. Pilih kode lain.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "description": "Kode link dari field short_code pada respons pembuatan link. Contoh: artikel-contoh.",
+            "example": "artikel-contoh"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLink"
+              },
+              "examples": {
+                "Update": {
+                  "value": {
+                    "title": "Artikel terbaru",
+                    "is_active": true,
+                    "expires_at": null,
+                    "click_limit": 0
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteShortLink",
+        "summary": "Hapus short link",
+        "description": "**Izin akses:** `delete`\n\nHapus link berdasarkan kodenya. Periksa kode sebelum mengirim request.\n\nBody bersifat opsional. Isi `passcode` jika diperlukan. Saat berhasil, respons berisi `success` dan `message`.",
+        "tags": [
+          "Short links"
+        ],
+        "x-required-permissions": [
+          "delete"
+        ],
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "success"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "message": "Short link deleted successfully"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Format key, body JSON, atau parameter tidak valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Header X-API-Key tidak ada atau autentikasi diperlukan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission tidak cukup, IP ditolak, atau akun dinonaktifkan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Link/key tidak ditemukan; key tidak aktif atau kedaluwarsa juga dapat menghasilkan 404.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit atau kuota kumulatif key tercapai.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Kesalahan internal backend.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "description": "Kode link dari field short_code pada respons pembuatan link. Contoh: artikel-contoh.",
+            "example": "artikel-contoh"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "passcode": {
+                    "type": "string",
+                    "pattern": "^[0-9]{6}$",
+                    "description": "Enam digit; tidak boleh seluruh digit sama."
+                  }
+                }
+              },
+              "examples": {
+                "Dengan passcode": {
+                  "value": {
+                    "passcode": "123456"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/short/stats": {
+      "get": {
+        "operationId": "getShortLinkSummary",
+        "summary": "Statistik keseluruhan",
+        "description": "**Izin akses:** `read`\n\nLihat ringkasan jumlah link dan aktivitas klik.\n\nUntuk memfilter periode klik, kirim **kedua** parameter `start_date` dan `end_date`. Gunakan format tanggal `YYYY-MM-DD`, misalnya `2026-09-01`.\n\nJumlah link tetap mencakup semua link. Perhitungan klik mengikuti periode yang dipilih dan rentang waktu statistik masing-masing.",
+        "tags": [
+          "Analytics"
+        ],
+        "x-required-permissions": [
+          "read"
+        ],
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DashboardStats"
+                    }
+                  },
+                  "required": [
+                    "success"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Format key, body JSON, atau parameter tidak valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Header X-API-Key tidak ada atau autentikasi diperlukan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission tidak cukup, IP ditolak, atau akun dinonaktifkan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Link/key tidak ditemukan; key tidak aktif atau kedaluwarsa juga dapat menghasilkan 404.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit atau kuota kumulatif key tercapai.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Kesalahan internal backend.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Tanggal YYYY-MM-DD. Kirim bersama pasangan tanggalnya."
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Tanggal YYYY-MM-DD. Kirim bersama pasangan tanggalnya."
+          }
+        ]
+      }
+    },
+    "/api/short/{code}/stats": {
+      "get": {
+        "operationId": "getShortLinkStats",
+        "summary": "Statistik satu link",
+        "description": "**Izin akses:** `read`\n\nLihat statistik untuk satu link:\n\n- Jumlah klik dan pengunjung unik.\n- Tren klik berdasarkan waktu.\n- Sumber kunjungan, perangkat, dan negara.",
+        "tags": [
+          "Analytics"
+        ],
+        "x-required-permissions": [
+          "read"
+        ],
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/LinkStats"
+                    }
+                  },
+                  "required": [
+                    "success"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Format key, body JSON, atau parameter tidak valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Header X-API-Key tidak ada atau autentikasi diperlukan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission tidak cukup, IP ditolak, atau akun dinonaktifkan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Link/key tidak ditemukan; key tidak aktif atau kedaluwarsa juga dapat menghasilkan 404.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit atau kuota kumulatif key tercapai.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Kesalahan internal backend.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "description": "Kode link dari field short_code pada respons pembuatan link. Contoh: artikel-contoh.",
+            "example": "artikel-contoh"
+          }
+        ]
+      }
+    },
+    "/api/short/{code}/views": {
+      "get": {
+        "operationId": "getShortLinkViews",
+        "summary": "Riwayat kunjungan",
+        "description": "**Izin akses:** `read`\n\nLihat daftar kunjungan untuk satu link. Hasil diurutkan berdasarkan `clicked_at` secara menurun secara bawaan. Gunakan `order_by=asc` untuk urutan terlama ke terbaru.",
+        "tags": [
+          "Analytics"
+        ],
+        "x-required-permissions": [
+          "read"
+        ],
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/ViewsResult"
+                    }
+                  },
+                  "required": [
+                    "success"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Format key, body JSON, atau parameter tidak valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Header X-API-Key tidak ada atau autentikasi diperlukan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission tidak cukup, IP ditolak, atau akun dinonaktifkan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Link/key tidak ditemukan; key tidak aktif atau kedaluwarsa juga dapat menghasilkan 404.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit atau kuota kumulatif key tercapai.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Kesalahan internal backend.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "description": "Kode link dari field short_code pada respons pembuatan link. Contoh: artikel-contoh.",
+            "example": "artikel-contoh"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "description": "Nomor halaman."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            },
+            "description": "Jumlah item per halaman."
+          },
+          {
+            "name": "order_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "description": "Urutan hasil."
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "clicked_at"
+              ],
+              "default": "clicked_at"
+            },
+            "description": "Kolom pengurutan riwayat kunjungan."
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "Key lengkap keyID.secretKey. Bukan Bearer token. Permission tercantum pada setiap operasi."
+      }
+    },
+    "schemas": {
+      "CreateLink": {
+        "type": "object",
+        "properties": {
+          "original_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL tujuan yang akan dibuka pengunjung."
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "Judul link."
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Keterangan singkat tentang link."
+          },
+          "custom_code": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 100,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "description": "Kode pilihan untuk link. Gunakan huruf, angka, tanda hubung, atau underscore tanpa spasi."
+          },
+          "passcode": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$",
+            "description": "Enam digit; tidak boleh seluruh digit sama."
+          },
+          "expires_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Waktu kedaluwarsa dalam format RFC3339. null berarti tanpa masa kedaluwarsa."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000,
+            "description": "Belum diteruskan oleh handler single; gunakan PUT click_limit."
+          },
+          "enable_stats": {
+            "type": "boolean",
+            "description": "Belum diteruskan oleh handler single; gunakan PUT enable_stats."
+          },
+          "tags": {
+            "type": "object",
+            "properties": {
+              "utm_source": {
+                "type": "string"
+              },
+              "utm_medium": {
+                "type": "string"
+              },
+              "utm_campaign": {
+                "type": "string"
+              },
+              "utm_term": {
+                "type": "string"
+              },
+              "utm_content": {
+                "type": "string"
+              }
+            },
+            "description": "Belum diteruskan oleh handler single; gunakan field utm_* melalui PUT."
+          }
+        },
+        "required": [
+          "original_url"
+        ],
+        "title": "Data link baru"
+      },
+      "UpdateLink": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255,
+            "description": "Judul link."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 1000,
+            "description": "Keterangan singkat tentang link."
+          },
+          "short_code": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 100,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "description": "Kode unik pada alamat short link."
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "true berarti aktif; false berarti nonaktif."
+          },
+          "expires_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Tidak dikirim: tetap. null: hapus masa berlaku. Tanggal baru harus di masa depan."
+          },
+          "passcode": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$",
+            "description": "Enam digit; tidak boleh seluruh digit sama."
+          },
+          "click_limit": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "0 berarti tanpa batas."
+          },
+          "enable_stats": {
+            "type": "boolean",
+            "description": "Mengaktifkan pencatatan statistik. Saat membuat satu link, atur melalui PUT setelah link dibuat."
+          },
+          "custom_domain": {
+            "type": "string",
+            "format": "uri",
+            "description": "Domain khusus untuk link."
+          },
+          "utm_source": {
+            "type": "string",
+            "description": "Sumber kampanye, misalnya newsletter."
+          },
+          "utm_medium": {
+            "type": "string",
+            "description": "Media kampanye, misalnya email."
+          },
+          "utm_campaign": {
+            "type": "string",
+            "description": "Nama kampanye."
+          },
+          "utm_term": {
+            "type": "string",
+            "description": "Kata kunci kampanye."
+          },
+          "utm_content": {
+            "type": "string",
+            "description": "Pembeda konten atau variasi iklan."
+          }
+        },
+        "title": "Perubahan link"
+      },
+      "CreateRequest": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "is_bulky": {
+                "type": "boolean",
+                "const": false,
+                "default": false
+              },
+              "link": {
+                "$ref": "#/components/schemas/CreateLink"
+              }
+            },
+            "required": [
+              "link"
+            ],
+            "title": "Satu link"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "is_bulky": {
+                "type": "boolean",
+                "const": true
+              },
+              "links": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CreateLink"
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "is_bulky",
+              "links"
+            ],
+            "title": "Beberapa link"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "is_bulky": {
+                "type": "boolean",
+                "const": false,
+                "default": false
+              },
+              "links": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CreateLink"
+                },
+                "minItems": 1,
+                "maxItems": 1
+              }
+            },
+            "required": [
+              "links"
+            ],
+            "title": "Satu link melalui array"
+          }
+        ],
+        "description": "Gunakan salah satu format berikut. Jika link dan links dikirim bersamaan pada mode single, handler mendahulukan links.",
+        "title": "Permintaan pembuatan link"
+      },
+      "ShortLink": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID record pada sistem."
+          },
+          "user_id": {
+            "type": "string",
+            "description": "ID akun pemilik link."
+          },
+          "short_code": {
+            "type": "string",
+            "description": "Kode unik pada alamat short link."
+          },
+          "original_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL tujuan yang akan dibuka pengunjung."
+          },
+          "title": {
+            "type": "string",
+            "description": "Judul link."
+          },
+          "description": {
+            "type": "string",
+            "description": "Keterangan singkat tentang link."
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "true berarti aktif; false berarti nonaktif."
+          },
+          "expires_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Waktu kedaluwarsa dalam format RFC3339. null berarti tanpa masa kedaluwarsa."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Waktu pembuatan dalam format RFC3339."
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Waktu perubahan terakhir dalam format RFC3339."
+          },
+          "detail": {
+            "$ref": "#/components/schemas/ShortLinkDetail"
+          }
+        },
+        "required": [
+          "id",
+          "short_code",
+          "original_url",
+          "is_active",
+          "expires_at",
+          "created_at"
+        ],
+        "title": "Detail link"
+      },
+      "ShortLinkListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID record pada sistem."
+          },
+          "user_id": {
+            "type": "string",
+            "description": "ID akun pemilik link."
+          },
+          "short_code": {
+            "type": "string",
+            "description": "Kode unik pada alamat short link."
+          },
+          "original_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL tujuan yang akan dibuka pengunjung."
+          },
+          "title": {
+            "type": "string",
+            "description": "Judul link."
+          },
+          "description": {
+            "type": "string",
+            "description": "Keterangan singkat tentang link."
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "true berarti aktif; false berarti nonaktif."
+          },
+          "expires_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Waktu kedaluwarsa dalam format RFC3339. null berarti tanpa masa kedaluwarsa."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Waktu pembuatan dalam format RFC3339."
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Waktu perubahan terakhir dalam format RFC3339."
+          },
+          "click_count": {
+            "type": "integer",
+            "description": "Jumlah klik pada link."
+          }
+        },
+        "required": [
+          "id",
+          "short_code",
+          "original_url",
+          "is_active",
+          "expires_at"
+        ],
+        "title": "Ringkasan link"
+      },
+      "ShortLinkDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID record pada sistem."
+          },
+          "passcode": {
+            "type": "integer"
+          },
+          "click_limit": {
+            "type": "integer",
+            "description": "Batas klik. Nilai 0 berarti tanpa batas."
+          },
+          "current_clicks": {
+            "type": "integer",
+            "description": "Jumlah klik yang sudah tercatat."
+          },
+          "enable_stats": {
+            "type": "boolean",
+            "description": "Mengaktifkan pencatatan statistik. Saat membuat satu link, atur melalui PUT setelah link dibuat."
+          },
+          "custom_domain": {
+            "type": "string",
+            "description": "Domain khusus untuk link."
+          },
+          "utm_source": {
+            "type": "string",
+            "description": "Sumber kampanye, misalnya newsletter."
+          },
+          "utm_medium": {
+            "type": "string",
+            "description": "Media kampanye, misalnya email."
+          },
+          "utm_campaign": {
+            "type": "string",
+            "description": "Nama kampanye."
+          },
+          "utm_term": {
+            "type": "string",
+            "description": "Kata kunci kampanye."
+          },
+          "utm_content": {
+            "type": "string",
+            "description": "Pembeda konten atau variasi iklan."
+          },
+          "is_banned": {
+            "type": "boolean",
+            "description": "Menunjukkan apakah link diblokir oleh admin."
+          },
+          "banned_reason": {
+            "type": "string",
+            "description": "Alasan pemblokiran."
+          },
+          "banned_by": {
+            "type": "string",
+            "description": "ID admin yang memblokir link."
+          }
+        },
+        "title": "Pengaturan link"
+      },
+      "BulkResult": {
+        "type": "object",
+        "properties": {
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShortLink"
+            },
+            "description": "Daftar link yang berhasil dibuat."
+          },
+          "total_count": {
+            "type": "integer",
+            "description": "Jumlah seluruh hasil."
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "links",
+          "total_count",
+          "message"
+        ],
+        "title": "Hasil pembuatan beberapa link"
+      },
+      "LinkPage": {
+        "type": "object",
+        "properties": {
+          "short_links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShortLinkListItem"
+            },
+            "description": "Daftar link pada halaman ini."
+          },
+          "total_count": {
+            "type": "integer",
+            "description": "Jumlah seluruh hasil."
+          },
+          "page": {
+            "type": "integer",
+            "description": "Nomor halaman saat ini."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Jumlah item per halaman."
+          },
+          "total_pages": {
+            "type": "integer",
+            "description": "Jumlah halaman yang tersedia."
+          },
+          "sort": {
+            "type": "string",
+            "description": "Nama field yang dipakai untuk mengurutkan hasil."
+          },
+          "order_by": {
+            "type": "string",
+            "description": "asc untuk naik; desc untuk turun."
+          }
+        },
+        "required": [
+          "short_links",
+          "total_count",
+          "page",
+          "limit",
+          "total_pages",
+          "sort",
+          "order_by"
+        ],
+        "title": "Halaman daftar link"
+      },
+      "ClickHistoryItem": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "Tanggal atau waktu kelompok statistik."
+          },
+          "count": {
+            "type": "integer",
+            "description": "Jumlah kejadian dalam kelompok ini."
+          }
+        },
+        "required": [
+          "date",
+          "count"
+        ],
+        "title": "Jumlah klik per waktu"
+      },
+      "LinkStats": {
+        "type": "object",
+        "properties": {
+          "short": {
+            "type": "string",
+            "description": "Kode link yang dihitung statistiknya."
+          },
+          "total_clicks": {
+            "type": "integer",
+            "description": "Total klik."
+          },
+          "unique_visitors": {
+            "type": "integer",
+            "description": "Jumlah pengunjung unik berdasarkan perhitungan backend."
+          },
+          "last_24h": {
+            "type": "integer",
+            "description": "Jumlah klik dalam 24 jam terakhir."
+          },
+          "last_7d": {
+            "type": "integer",
+            "description": "Jumlah klik dalam 7 hari terakhir."
+          },
+          "last_30d": {
+            "type": "integer",
+            "description": "Jumlah klik dalam 30 hari terakhir."
+          },
+          "last_60d": {
+            "type": "integer",
+            "description": "Jumlah klik dalam 60 hari terakhir."
+          },
+          "last_90d": {
+            "type": "integer",
+            "description": "Jumlah klik dalam 90 hari terakhir."
+          },
+          "top_referrers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "host": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "Sumber kunjungan yang paling sering tercatat."
+          },
+          "top_devices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "device": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "Perangkat yang paling sering digunakan."
+          },
+          "top_countries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "country": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "Negara asal kunjungan terbanyak."
+          },
+          "click_history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClickHistoryItem"
+            },
+            "description": "Riwayat jumlah klik per tanggal."
+          },
+          "click_history_hourly": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClickHistoryItem"
+            },
+            "description": "Riwayat jumlah klik per jam."
+          }
+        },
+        "title": "Statistik satu link"
+      },
+      "DashboardStats": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "object",
+            "properties": {
+              "total_links": {
+                "type": "integer"
+              },
+              "active_links": {
+                "type": "integer"
+              },
+              "inactive_links": {
+                "type": "integer"
+              },
+              "total_clicks": {
+                "type": "integer"
+              },
+              "total_unique_visitors": {
+                "type": "integer"
+              },
+              "clicks_last24h": {
+                "type": "integer"
+              },
+              "clicks_last7d": {
+                "type": "integer"
+              },
+              "clicks_last30d": {
+                "type": "integer"
+              },
+              "clicks_last60d": {
+                "type": "integer"
+              },
+              "clicks_last90d": {
+                "type": "integer"
+              },
+              "top_referrers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "host": {
+                      "type": "string"
+                    },
+                    "count": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "top_devices": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "device": {
+                      "type": "string"
+                    },
+                    "count": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "top_countries": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "country": {
+                      "type": "string"
+                    },
+                    "count": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "click_history": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ClickHistoryItem"
+                }
+              }
+            },
+            "description": "Ringkasan statistik."
+          }
+        },
+        "required": [
+          "summary"
+        ],
+        "title": "Statistik keseluruhan"
+      },
+      "View": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID record pada sistem."
+          },
+          "ip_address": {
+            "type": "string",
+            "description": "Alamat IP kunjungan."
+          },
+          "user_agent": {
+            "type": "string",
+            "description": "Informasi aplikasi atau browser pengunjung."
+          },
+          "referer": {
+            "type": "string",
+            "description": "Halaman asal pengunjung, jika tersedia."
+          },
+          "country": {
+            "type": "string",
+            "description": "Negara asal kunjungan."
+          },
+          "city": {
+            "type": "string",
+            "description": "Kota asal kunjungan."
+          },
+          "device": {
+            "type": "string",
+            "description": "Jenis perangkat."
+          },
+          "browser": {
+            "type": "string",
+            "description": "Nama browser."
+          },
+          "os": {
+            "type": "string",
+            "description": "Sistem operasi."
+          },
+          "clicked_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Waktu kunjungan dalam format RFC3339."
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "Detail kunjungan"
+      },
+      "ViewsResult": {
+        "type": "object",
+        "properties": {
+          "views": {
+            "type": "object",
+            "properties": {
+              "recent_views": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/View"
+                }
+              },
+              "total_count": {
+                "type": "integer"
+              },
+              "page": {
+                "type": "integer"
+              },
+              "limit": {
+                "type": "integer"
+              },
+              "total_pages": {
+                "type": "integer"
+              },
+              "sort": {
+                "type": "string"
+              },
+              "order_by": {
+                "type": "string"
+              }
+            },
+            "description": "Riwayat kunjungan beserta informasi halaman."
+          }
+        },
+        "required": [
+          "views"
+        ],
+        "title": "Halaman riwayat kunjungan"
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "error": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "data": {
+            "type": "null",
+            "description": "Dapat muncul pada error validasi atau middleware; dihilangkan pada sebagian respons."
+          }
+        },
+        "required": [
+          "success"
+        ],
+        "title": "Respons kesalahan"
+      }
+    }
+  }
+}

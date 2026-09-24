@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -73,6 +73,16 @@ export function EditAPIKeyDialog({
     },
   });
 
+  useEffect(() => {
+    if (!open) return;
+
+    form.reset({
+      name: apiKey.name,
+      permissions: apiKey.permissions as FormData["permissions"],
+      limit_usage: apiKey.limit_usage ?? null,
+    });
+  }, [apiKey, form, open]);
+
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
@@ -80,6 +90,7 @@ export function EditAPIKeyDialog({
         name: data.name,
         permissions: data.permissions,
         limit_usage: data.limit_usage ?? undefined,
+        clear_limit_usage: data.limit_usage == null && apiKey.limit_usage != null,
       };
 
       const response = await updateAPIKey(apiKey.id, updateData);
@@ -172,9 +183,9 @@ export function EditAPIKeyDialog({
             )}
           </div>
 
-          {/* Usage Limit */}
+          {/* Per-key total-use cap */}
           <div className="space-y-2">
-            <Label htmlFor="limit_usage">Usage Limit (optional)</Label>
+            <Label htmlFor="limit_usage">Total-use cap for this key (optional)</Label>
             <Input
               id="limit_usage"
               type="number"
@@ -185,7 +196,9 @@ export function EditAPIKeyDialog({
               })}
             />
             <p className="text-xs text-muted-foreground">
-              Maximum number of API calls. Leave empty for unlimited.
+              An optional safety cap for this key. It does not change your
+              account&apos;s hourly or premium rate limit. Clear the field to
+              remove the cap.
             </p>
           </div>
 

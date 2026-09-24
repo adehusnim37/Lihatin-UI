@@ -1,3 +1,4 @@
+@layer scalar-base, scalar-theme, scalar-config, theme, base, components, utilities;
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -147,5 +148,48 @@
   .recharts-wrapper,
   .recharts-wrapper * {
     font-family: var(--font-geist-sans);
+  }
+}
+
+/* Keep the embedded reference aligned with the dashboard theme. */
+.lihatin-api-reference {
+  --scalar-background-1: var(--background);
+  --scalar-background-2: var(--muted);
+  --scalar-background-3: var(--accent);
+  --scalar-color-1: var(--foreground);
+  --scalar-color-2: var(--muted-foreground);
+  --scalar-color-3: var(--muted-foreground);
+  --scalar-color-accent: var(--primary);
+  --scalar-border-color: var(--border);
+  --scalar-font: var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif);
+  --scalar-font-code: var(--font-geist-mono, ui-monospace, monospace);
+}
+
+/* Scope readability and narrow-screen adjustments to the embedded docs. */
+.lihatin-api-reference .section {
+  padding-block: 2.5rem;
+}
+.lihatin-api-reference .section-container {
+  padding-inline: clamp(1rem, 3vw, 2rem);
+}
+.lihatin-api-reference .section-columns {
+  gap: 2rem;
+}
+.lihatin-api-reference .markdown {
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+.lihatin-api-reference .markdown p + p,
+.lihatin-api-reference .markdown p + ul,
+.lihatin-api-reference .markdown p + ol {
+  margin-top: 0.75rem;
+}
+@media (max-width: 640px) {
+  .lihatin-api-reference .section {
+    padding: 1.5rem 0;
+  }
+  .lihatin-api-reference .section-columns {
+    flex-direction: column;
+    gap: 1.5rem;
   }
 }

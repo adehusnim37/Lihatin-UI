@@ -288,9 +288,9 @@ export function CreateAPIKeyDialog({
             )}
           </div>
 
-          {/* Usage Limit */}
+          {/* Per-key total-use cap */}
           <div className="space-y-2">
-            <Label htmlFor="limit_usage">Usage Limit (optional)</Label>
+            <Label htmlFor="limit_usage">Total-use cap for this key (optional)</Label>
             <Input
               id="limit_usage"
               type="number"
@@ -301,7 +301,8 @@ export function CreateAPIKeyDialog({
               })}
             />
             <p className="text-xs text-muted-foreground">
-              Maximum number of API calls. Leave empty for unlimited.
+              Optional safety cap for this key. It does not change your
+              account&apos;s rate limit. Leave empty for no cap.
             </p>
           </div>
 

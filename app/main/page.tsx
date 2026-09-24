@@ -24,6 +24,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useDashboardStats, useLinks } from "@/lib/hooks/queries/useLinksQuery";
 import { useLogCounts } from "@/lib/hooks/queries/useLogsQuery";
 import { useRecentActivityQuery } from "@/lib/hooks/queries/useLoginAttemptsQuery";
+import { InAppAnnouncementDialog } from "@/components/notifications/in-app-announcement-dialog";
 
 /**
  * Main Dashboard Page
@@ -225,6 +226,7 @@ export default function Page() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <InAppAnnouncementDialog blocked={showMigrateDialog} />
     </>
   );
 }

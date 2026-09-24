@@ -31,6 +31,7 @@ export interface UpdateAPIKeyRequest {
   blocked_ips?: string[];
   allowed_ips?: string[];
   limit_usage?: number;
+  clear_limit_usage?: boolean;
 }
 
 // Response types
@@ -152,24 +153,24 @@ export interface APIKeyActivityLogsResponse {
 
 // APIKeyStatsResponse represents statistics about API keys
 export interface APIKeyStatsResponse {
-  TotalKeys: number;
-  ActiveKeys: number;
-  ExpiredKeys: number;
-  TotalUsage: number;
-  MostUsedKey?: APIKeyUsage | null;
-  LastUsedKey?: APIKeyLastUsed | null;
+  total_keys: number;
+  active_keys: number;
+  expired_keys: number;
+  total_usage: number;
+  most_used_key?: APIKeyUsage | null;
+  last_used_key?: APIKeyLastUsed | null;
 }
 
 // APIKeyUsage represents information about the most used key
 export interface APIKeyUsage {
-  Name: string;
-  UsageCount: number;
+  name: string;
+  usage_count: number;
 }
 
 // APIKeyLastUsed represents information about the last used key
 export interface APIKeyLastUsed {
-  Name: string;
-  LastUsedAt?: Date;
+  name: string;
+  last_used_at?: string;
 }
 
 /**

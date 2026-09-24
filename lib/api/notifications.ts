@@ -15,6 +15,13 @@ export interface UpdateNotificationPreferences {
   promotional_email?: boolean;
 }
 
+export interface InAppAnnouncement {
+  id: string;
+  title: string;
+  body: string;
+  href: string;
+}
+
 interface APIResponse<T> {
   success: boolean;
   data: T | null;
@@ -50,4 +57,19 @@ export async function updateNotificationPreferences(
     body: JSON.stringify(payload),
   });
   return parseResponse<NotificationPreferences>(response);
+}
+
+export async function getPendingInAppAnnouncements() {
+  const response = await fetchWithAuth(`${API_URL}/notifications/in-app`, {
+    method: "GET",
+  });
+  return parseResponse<InAppAnnouncement[]>(response);
+}
+
+export async function markInAppAnnouncementRead(id: string) {
+  const response = await fetchWithAuth(
+    `${API_URL}/notifications/in-app/${encodeURIComponent(id)}/read`,
+    { method: "POST" },
+  );
+  return parseResponse<{ id: string }>(response);
 }
