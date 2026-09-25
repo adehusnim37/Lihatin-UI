@@ -4,7 +4,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { completeGoogleOAuthCallback, saveUserData } from "@/lib/api/auth";
+import { completeGoogleOAuthCallback } from "@/lib/api/auth";
 import { useAuth } from "@/app/context/AuthContext";
 import { AuthenticatedTransition } from "@/components/auth/authenticated-transition";
 
@@ -60,8 +60,7 @@ function GoogleOAuthCallbackContent() {
           throw new Error("Invalid OAuth callback response");
         }
 
-        saveUserData(response.data.user);
-        await auth.login(response.data);
+        await auth.login();
         sessionStorage.removeItem("post_login_redirect");
 
         toast.success("Login Successful", {
