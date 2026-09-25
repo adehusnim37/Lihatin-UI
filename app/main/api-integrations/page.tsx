@@ -10,17 +10,21 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { CreateAPIKeyDialog } from "@/components/api-keys/create-api-key-dialog";
 import { APIKeyList } from "@/components/api-keys/api-key-list";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/app/context/AuthContext";
+import { useAPIKeys, apiKeysKeys } from "@/lib/hooks/queries/useAPIKeysQuery";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const POSTMAN_COLLECTION_URL =
-  process.env.NEXT_PUBLIC_POSTMAN_COLLECTION_URL ||
-  "https://www.postman.com/adehusnim/workspace/lihatin/collection/13183823-585cf118-ae9e-4e0d-af3c-f599d1caaf38?action=share&creator=13183823";
-
 export default function ApiIntegrationsPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { data: apiKeys, isLoading: keysLoading, isError: keysError } = useAPIKeys();
+  const activeKeyCount = Array.isArray(apiKeys)
+    ? apiKeys.filter((key) => key.user_id === user?.id && key.is_active).length
+    : 0;
+  const keyLimitReached = activeKeyCount >= 3;
 
   return (
     <SidebarProvider
@@ -73,11 +77,21 @@ export default function ApiIntegrationsPage() {
                         </p>
                       </div>
                     </div>
-                    <Button onClick={() => setCreateDialogOpen(true)}>
+                    <Button
+                      onClick={() => setCreateDialogOpen(true)}
+                      disabled={!user || keysLoading || keysError || keyLimitReached}
+                    >
                       <Plus className="size-4 mr-2" />
                       Generate New Key
                     </Button>
                   </div>
+
+                  {keyLimitReached && (
+                    <p className="text-xs text-muted-foreground">
+                      You have reached the limit of 3 active API keys. Deactivate or revoke one
+                      before creating another.
+                    </p>
+                  )}
 
                   <div
                     role="note"
@@ -132,7 +146,7 @@ export default function ApiIntegrationsPage() {
           open={createDialogOpen}
           onOpenChange={setCreateDialogOpen}
           onSuccess={() => {
-            queryClient.invalidateQueries({ queryKey: ["api-keys"] });
+            queryClient.invalidateQueries({ queryKey: apiKeysKeys.all });
           }}
         />
       </SidebarInset>

@@ -16,7 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Pencil } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, Pencil, Shield, Ban } from "lucide-react";
 import { updateAPIKey, APIKeyResponse, UpdateAPIKeyRequest } from "@/lib/api/api-keys";
 import { toast } from "sonner";
 
@@ -29,6 +30,8 @@ const editAPIKeySchema = z.object({
     .array(z.enum(["read", "write", "delete", "update"]))
     .min(1, "Select at least one permission"),
   limit_usage: z.number().min(0).optional().nullable(),
+  ip_mode: z.enum(["none", "allowlist", "blocklist"]),
+  ip_list: z.string().optional(),
 });
 
 type FormData = z.infer<typeof editAPIKeySchema>;
@@ -50,33 +53,70 @@ const PERMISSIONS = [
 export function EditAPIKeyDialog({ open, onOpenChange, apiKey, onSuccess }: EditAPIKeyDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
 
+  const getInitialIPValues = () => {
+    if (apiKey.allowed_ips && apiKey.allowed_ips.length > 0) {
+      return { mode: "allowlist" as const, list: apiKey.allowed_ips.join(", ") };
+    }
+    if (apiKey.blocked_ips && apiKey.blocked_ips.length > 0) {
+      return { mode: "blocklist" as const, list: apiKey.blocked_ips.join(", ") };
+    }
+    return { mode: "none" as const, list: "" };
+  };
+
+  const initialIPs = getInitialIPValues();
+
   const form = useForm<FormData>({
     resolver: zodResolver(editAPIKeySchema),
     defaultValues: {
       name: apiKey.name,
       permissions: apiKey.permissions as ("read" | "write" | "delete" | "update")[],
       limit_usage: apiKey.limit_usage ?? null,
+      ip_mode: initialIPs.mode,
+      ip_list: initialIPs.list,
     },
   });
 
   useEffect(() => {
     if (!open) return;
 
+    const getInitialIPValues = () => {
+      if (apiKey.allowed_ips && apiKey.allowed_ips.length > 0) {
+        return { mode: "allowlist" as const, list: apiKey.allowed_ips.join(", ") };
+      }
+      if (apiKey.blocked_ips && apiKey.blocked_ips.length > 0) {
+        return { mode: "blocklist" as const, list: apiKey.blocked_ips.join(", ") };
+      }
+      return { mode: "none" as const, list: "" };
+    };
+
+    const currentIPs = getInitialIPValues();
+
     form.reset({
       name: apiKey.name,
       permissions: apiKey.permissions as FormData["permissions"],
       limit_usage: apiKey.limit_usage ?? null,
+      ip_mode: currentIPs.mode,
+      ip_list: currentIPs.list,
     });
   }, [apiKey, form, open]);
 
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
+      const parsedIPs = data.ip_list
+        ? data.ip_list
+            .split(",")
+            .map((ip) => ip.trim())
+            .filter(Boolean)
+        : [];
+
       const updateData: UpdateAPIKeyRequest = {
         name: data.name,
         permissions: data.permissions,
         limit_usage: data.limit_usage ?? undefined,
         clear_limit_usage: data.limit_usage == null && apiKey.limit_usage != null,
+        allowed_ips: data.ip_mode === "allowlist" ? parsedIPs : [],
+        blocked_ips: data.ip_mode === "blocklist" ? parsedIPs : [],
       };
 
       const response = await updateAPIKey(apiKey.id, updateData);
@@ -157,21 +197,64 @@ export function EditAPIKeyDialog({ open, onOpenChange, apiKey, onSuccess }: Edit
           </div>
 
           {/* Per-key total-use cap */}
-          <div className="space-y-2">
-            <Label htmlFor="limit_usage">Total-use cap for this key (optional)</Label>
-            <Input
-              id="limit_usage"
-              type="number"
-              min={0}
-              placeholder="Unlimited"
-              {...form.register("limit_usage", {
-                setValueAs: (v) => (v === "" ? null : parseInt(v, 10)),
-              })}
-            />
-            <p className="text-xs text-muted-foreground">
-              An optional safety cap for this key. It does not change your account&apos;s hourly or
-              premium rate limit. Clear the field to remove the cap.
-            </p>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="limit_usage">Total-use cap for this key (optional)</Label>
+              <Input
+                id="limit_usage"
+                type="number"
+                min={0}
+                placeholder="Unlimited"
+                {...form.register("limit_usage", {
+                  setValueAs: (v) => (v === "" ? null : parseInt(v, 10)),
+                })}
+              />
+              <p className="text-xs text-muted-foreground">
+                An optional safety cap for this key. It does not change your account&apos;s hourly
+                or premium rate limit. Clear the field to remove the cap.
+              </p>
+            </div>
+
+            {/* IP Restrictions */}
+            <div className="space-y-3">
+              <Label>IP Restrictions (optional)</Label>
+              <Tabs
+                value={form.watch("ip_mode")}
+                onValueChange={(value) =>
+                  form.setValue("ip_mode", value as "none" | "allowlist" | "blocklist")
+                }
+                className="w-full"
+              >
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="none" className="text-xs">
+                    No Restriction
+                  </TabsTrigger>
+                  <TabsTrigger value="allowlist" className="text-xs gap-1">
+                    <Shield className="size-3" />
+                    Allow List
+                  </TabsTrigger>
+                  <TabsTrigger value="blocklist" className="text-xs gap-1">
+                    <Ban className="size-3" />
+                    Block List
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              {form.watch("ip_mode") !== "none" && (
+                <div className="space-y-2 pt-2">
+                  <Input
+                    id="ip_list"
+                    placeholder="192.168.1.1, 10.0.0.1"
+                    {...form.register("ip_list")}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {form.watch("ip_mode") === "allowlist"
+                      ? "Only these IPs can use this API key."
+                      : "These IPs will be blocked from using this API key."}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
           <DialogFooter>

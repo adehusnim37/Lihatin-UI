@@ -47,6 +47,7 @@ export interface CreateAPIKeyResponse {
 
 export interface APIKeyResponse {
   id: string;
+  user_id: string;
   name: string;
   key_preview: string;
   last_used_at?: string;
@@ -56,6 +57,8 @@ export interface APIKeyResponse {
   last_ip_used?: string;
   is_active: boolean;
   permissions: string[];
+  blocked_ips?: string[];
+  allowed_ips?: string[];
   created_at: string;
   updated_at: string;
 }
