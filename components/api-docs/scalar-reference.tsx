@@ -4,15 +4,16 @@ import { useMemo } from "react";
 import { useTheme } from "next-themes";
 import { ApiReferenceReact } from "@scalar/api-reference-react";
 import { getOpenAPIDocument } from "@/lib/api-docs/document";
+import { useDocsLocale } from "@/lib/api-docs/locale";
 import "@scalar/api-reference-react/style.css";
-
-const content = getOpenAPIDocument();
 
 export default function ScalarReference() {
   const { resolvedTheme } = useTheme();
+  const { locale } = useDocsLocale();
+
   const configuration = useMemo(
     () => ({
-      content,
+      content: getOpenAPIDocument(locale),
       theme: "none" as const,
       layout: "modern" as const,
       darkMode: resolvedTheme === "dark",
@@ -29,7 +30,7 @@ export default function ScalarReference() {
       withDefaultFonts: false,
       authentication: { preferredSecurityScheme: "ApiKeyAuth" },
     }),
-    [resolvedTheme],
+    [resolvedTheme, locale],
   );
 
   return (
