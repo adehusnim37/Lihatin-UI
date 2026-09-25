@@ -66,8 +66,8 @@ export function APIKeyUsageDialog({ open, onOpenChange, apiKey }: APIKeyUsageDia
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+      <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] sm:max-h-[80vh] overflow-hidden flex flex-col p-4 sm:p-6">
+        <DialogHeader className="pr-6">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-purple-500/10">
               <Activity className="size-5 text-purple-500" />
@@ -80,18 +80,23 @@ export function APIKeyUsageDialog({ open, onOpenChange, apiKey }: APIKeyUsageDia
         </DialogHeader>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 py-4 border-b">
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Counted Uses</p>
-            <p className="text-2xl font-bold">{apiKey.usage_count}</p>
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 py-3 sm:py-4 border-b">
+          <div className="space-y-1 min-w-0">
+            <p className="text-xs text-muted-foreground truncate font-medium">Counted Uses</p>
+            <p className="text-lg sm:text-2xl font-bold truncate">{apiKey.usage_count}</p>
           </div>
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Key Total Cap</p>
-            <p className="text-2xl font-bold">{apiKey.limit_usage ?? "∞"}</p>
+          <div className="space-y-1 min-w-0">
+            <p className="text-xs text-muted-foreground truncate font-medium">Key Total Cap</p>
+            <p className="text-lg sm:text-2xl font-bold truncate">{apiKey.limit_usage ?? "∞"}</p>
           </div>
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Last Used</p>
-            <p className="text-sm font-medium">{formatDate(apiKey.last_used_at)}</p>
+          <div className="space-y-1 min-w-0">
+            <p className="text-xs text-muted-foreground truncate font-medium">Last Used</p>
+            <p
+              className="text-xs sm:text-sm font-medium truncate"
+              title={apiKey.last_used_at ? formatFullDate(apiKey.last_used_at) : undefined}
+            >
+              {formatDate(apiKey.last_used_at)}
+            </p>
           </div>
         </div>
 
@@ -101,7 +106,7 @@ export function APIKeyUsageDialog({ open, onOpenChange, apiKey }: APIKeyUsageDia
         </p>
 
         {/* Activity Logs */}
-        <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="flex-1 overflow-y-auto min-h-0 pr-1 select-none">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -123,16 +128,16 @@ export function APIKeyUsageDialog({ open, onOpenChange, apiKey }: APIKeyUsageDia
                   key={log.id}
                   className="rounded-lg border bg-card p-3 space-y-2 hover:border-primary/30 transition-colors"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-2 min-w-0">
                       <HttpMethodBadge method={log.activity_log.method || "GET"} />
-                      <code className="text-xs bg-muted px-2 py-0.5 rounded font-mono">
+                      <code className="text-xs bg-muted px-2 py-0.5 rounded font-mono truncate max-w-[140px] xs:max-w-[240px] sm:max-w-none">
                         {log.activity_log.route || "/"}
                       </code>
                     </div>
                     <HttpStatusCodeBadge statusCode={log.activity_log.status_code} />
                   </div>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Clock className="size-3" />
                       {formatFullDate(log.activity_log.timestamp)}
@@ -158,7 +163,7 @@ export function APIKeyUsageDialog({ open, onOpenChange, apiKey }: APIKeyUsageDia
 
         {/* Pagination */}
         {usageData && usageData.total_pages > 1 && (
-          <div className="flex items-center justify-between pt-4 border-t">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t">
             <p className="text-sm text-muted-foreground">
               Page {page} of {usageData.total_pages}
             </p>
