@@ -19,7 +19,10 @@ export function APIDocumentation() {
   return (
     <Tabs defaultValue="reference" className="w-full min-w-0 space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <TabsList aria-label="Jenis dokumentasi" className="grid h-auto w-full grid-cols-2 sm:w-auto">
+        <TabsList
+          aria-label="Jenis dokumentasi"
+          className="grid h-auto w-full grid-cols-2 sm:w-auto"
+        >
           <TabsTrigger value="reference">Referensi endpoint</TabsTrigger>
           <TabsTrigger value="guide">Panduan penggunaan</TabsTrigger>
         </TabsList>
@@ -35,13 +38,29 @@ export function APIDocumentation() {
       </div>
       <TabsContent value="reference" className="w-full min-w-0 space-y-5">
         <ol className="grid gap-3 rounded-xl border bg-muted/30 p-4 text-sm leading-6 md:grid-cols-3">
-          <li><strong className="block">1. Pilih endpoint</strong><span className="text-muted-foreground">Buka operasi yang ingin digunakan, seperti membuat atau membaca link.</span></li>
-          <li><strong className="block">2. Masukkan API key</strong><span className="text-muted-foreground">Isi key lengkap pada kolom Value di bagian Authentication.</span></li>
-          <li><strong className="block">3. Coba request</strong><span className="text-muted-foreground">Klik Test Request dan periksa isinya sebelum mengirim. Operasi tulis mengubah data sungguhan.</span></li>
+          <li>
+            <strong className="block">1. Pilih endpoint</strong>
+            <span className="text-muted-foreground">
+              Buka operasi yang ingin digunakan, seperti membuat atau membaca link.
+            </span>
+          </li>
+          <li>
+            <strong className="block">2. Masukkan API key</strong>
+            <span className="text-muted-foreground">
+              Isi key lengkap pada kolom Value di bagian Authentication.
+            </span>
+          </li>
+          <li>
+            <strong className="block">3. Coba request</strong>
+            <span className="text-muted-foreground">
+              Klik Test Request dan periksa isinya sebelum mengirim. Operasi tulis mengubah data
+              sungguhan.
+            </span>
+          </li>
         </ol>
         <p className="text-sm leading-6 text-muted-foreground">
-          Struktur data ditampilkan pada Body (data yang dikirim) dan Responses
-          (balasan API) di setiap endpoint. Key yang diisi tidak disimpan permanen.
+          Struktur data ditampilkan pada Body (data yang dikirim) dan Responses (balasan API) di
+          setiap endpoint. Key yang diisi tidak disimpan permanen.
         </p>
         <ScalarReference />
       </TabsContent>

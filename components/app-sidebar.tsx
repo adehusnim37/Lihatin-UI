@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
-import Image from "next/image"
+import * as React from "react";
+import Link from "next/link";
+import Image from "next/image";
 
-import { useAuth } from "@/app/context/AuthContext"
-import { NavMain } from "@/components/navbar/nav-main"
-import { NavSecondary } from "@/components/navbar/nav-secondary"
-import { NavUser } from "@/components/navbar/nav-user"
+import { useAuth } from "@/app/context/AuthContext";
+import { NavMain } from "@/components/navbar/nav-main";
+import { NavSecondary } from "@/components/navbar/nav-secondary";
+import { NavUser } from "@/components/navbar/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -16,23 +16,20 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { SidebarData } from "@/components/sidebar.data"
+} from "@/components/ui/sidebar";
+import { SidebarData } from "@/components/sidebar.data";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user } = useAuth()
-  const role = normalizeRole(user?.role)
-  const isAdmin = role === "admin" || role === "super_admin"
+  const { user } = useAuth();
+  const role = normalizeRole(user?.role);
+  const isAdmin = role === "admin" || role === "super_admin";
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
+            <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
               <Link href="/main">
                 <Image
                   src="/logo.svg"
@@ -50,11 +47,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={SidebarData.navMain} />
         {isAdmin && SidebarData.navAdmin.length > 0 && (
-          <NavMain
-            items={SidebarData.navAdmin}
-            label="Admin"
-            showQuickCreate={false}
-          />
+          <NavMain items={SidebarData.navAdmin} label="Admin" showQuickCreate={false} />
         )}
         <NavSecondary items={SidebarData.navSecondary} className="mt-auto" />
       </SidebarContent>
@@ -62,14 +55,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavUser />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
 
 const normalizeRole = (role?: string): string | null => {
   if (!role) {
-    return null
+    return null;
   }
 
-  const normalized = role.trim().toLowerCase()
-  return normalized || null
-}
+  const normalized = role.trim().toLowerCase();
+  return normalized || null;
+};

@@ -2,14 +2,20 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const spec = JSON.parse(readFileSync(new URL("../lib/api-docs/openapi.json", import.meta.url), "utf8"));
+const spec = JSON.parse(
+  readFileSync(new URL("../lib/api-docs/openapi.json", import.meta.url), "utf8"),
+);
 const create = spec.paths["/api/short"].post;
 const requests = create.requestBody.content["application/json"].examples;
 const responseMedia = create.responses["201"].content["application/json"];
 const responses = responseMedia.examples;
 
 test("Scalar can pair every create request with a response using the same example key", () => {
-  assert.equal(responseMedia.example, undefined, "A fixed response example would compete with the selectable examples");
+  assert.equal(
+    responseMedia.example,
+    undefined,
+    "A fixed response example would compete with the selectable examples",
+  );
   assert.deepEqual(Object.keys(requests).sort(), Object.keys(responses).sort());
   assert.ok(requests.Single);
   assert.ok(requests.Bulk);

@@ -20,12 +20,10 @@ export const SECURITY_HEADERS = Object.freeze({
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
-  "Permissions-Policy":
-    "camera=(), geolocation=(), microphone=(), payment=(), usb=()",
+  "Permissions-Policy": "camera=(), geolocation=(), microphone=(), payment=(), usb=()",
   ...(isProduction
     ? {
-        "Strict-Transport-Security":
-          "max-age=31536000; includeSubDomains; preload",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
       }
     : {}),
 });

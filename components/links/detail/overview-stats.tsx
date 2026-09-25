@@ -33,13 +33,7 @@ import {
 
 import { ShortLink } from "@/lib/api/shortlinks";
 import { useLinkStats } from "@/lib/hooks/queries/useLinksQuery";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -115,21 +109,11 @@ export function OverviewStats({ link }: OverviewStatsProps) {
   }
 
   if (!stats) {
-    return (
-      <div className="p-8 text-center text-muted-foreground">
-        No stats available.
-      </div>
-    );
+    return <div className="p-8 text-center text-muted-foreground">No stats available.</div>;
   }
 
-  const {
-    total_clicks,
-    unique_visitors,
-    top_referrers,
-    top_devices,
-    top_countries,
-    last_24h,
-  } = stats;
+  const { total_clicks, unique_visitors, top_referrers, top_devices, top_countries, last_24h } =
+    stats;
 
   return (
     <div className="space-y-6">
@@ -163,9 +147,7 @@ export function OverviewStats({ link }: OverviewStatsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-medium -mt-4">{unique_visitors}</div>
-            <p className="text-xs text-muted-foreground mt-4">
-              Distinct IP addresses
-            </p>
+            <p className="text-xs text-muted-foreground mt-4">Distinct IP addresses</p>
           </CardContent>
         </Card>
         <Card>
@@ -186,7 +168,7 @@ export function OverviewStats({ link }: OverviewStatsProps) {
             <p className="text-xs text-muted-foreground mt-4">
               {top_countries && top_countries.length > 0
                 ? `${top_countries[0].count} clicks (${Math.round(
-                    (top_countries[0].count / total_clicks) * 100
+                    (top_countries[0].count / total_clicks) * 100,
                   )}%)`
                 : "No data"}
             </p>
@@ -194,21 +176,17 @@ export function OverviewStats({ link }: OverviewStatsProps) {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Top Device
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Top Device</CardTitle>
             <MonitorSmartphone className="size-4 text-purple-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-medium truncate -mt-4">
-              {top_devices && top_devices.length > 0
-                ? top_devices[0].device
-                : "N/A"}
+              {top_devices && top_devices.length > 0 ? top_devices[0].device : "N/A"}
             </div>
             <p className="text-xs text-muted-foreground mt-4">
               {top_devices && top_devices.length > 0
                 ? `${top_devices[0].count} clicks (${Math.round(
-                    (top_devices[0].count / total_clicks) * 100
+                    (top_devices[0].count / total_clicks) * 100,
                   )}%)`
                 : "No data"}
             </p>
@@ -240,24 +218,13 @@ export function OverviewStats({ link }: OverviewStatsProps) {
           </CardHeader>
           <CardContent className="h-[300px] min-h-[220px] min-w-0">
             {isMounted && filteredHistory.length > 0 ? (
-              <ResponsiveContainer
-                width="100%"
-                height="100%"
-                minWidth={0}
-                minHeight={220}
-              >
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={220}>
                 <AreaChart
                   data={filteredHistory}
                   margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                 >
                   <defs>
-                    <linearGradient
-                      id="colorClicks"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
+                    <linearGradient id="colorClicks" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
                     </linearGradient>
@@ -315,12 +282,7 @@ export function OverviewStats({ link }: OverviewStatsProps) {
           </CardHeader>
           <CardContent className="h-[300px] min-h-[220px] min-w-0">
             {isMounted && top_devices && top_devices.length > 0 ? (
-              <ResponsiveContainer
-                width="100%"
-                height="100%"
-                minWidth={0}
-                minHeight={220}
-              >
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={220}>
                 <PieChart>
                   <Pie
                     data={top_devices}
@@ -333,10 +295,7 @@ export function OverviewStats({ link }: OverviewStatsProps) {
                     nameKey="device"
                   >
                     {top_devices.map((_, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip
@@ -375,24 +334,16 @@ export function OverviewStats({ link }: OverviewStatsProps) {
                     <div className="w-full space-y-1">
                       <div className="flex justify-between text-sm">
                         <span className="font-medium truncate">
-                          {item.country === "Local Machine"
-                            ? "Localhost"
-                            : item.country}
+                          {item.country === "Local Machine" ? "Localhost" : item.country}
                         </span>
-                        <span className="text-muted-foreground">
-                          {item.count}
-                        </span>
+                        <span className="text-muted-foreground">{item.count}</span>
                       </div>
                       <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
                         <div
                           className="h-full bg-red-500 rounded-full"
                           style={{
                             width: `${
-                              (item.count /
-                                Math.max(
-                                  ...top_countries.map((d) => d.count)
-                                )) *
-                              100
+                              (item.count / Math.max(...top_countries.map((d) => d.count))) * 100
                             }%`,
                           }}
                         />
@@ -425,10 +376,7 @@ export function OverviewStats({ link }: OverviewStatsProps) {
                   >
                     <div className="flex items-center gap-2 overflow-hidden">
                       <Globe className="size-4 text-muted-foreground shrink-0" />
-                      <span
-                        className="text-sm font-medium truncate"
-                        title={item.host}
-                      >
+                      <span className="text-sm font-medium truncate" title={item.host}>
                         {item.host || "Direct"}
                       </span>
                     </div>

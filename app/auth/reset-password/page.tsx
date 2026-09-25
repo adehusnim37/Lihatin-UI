@@ -35,7 +35,7 @@ const resetPasswordSchema = z
       .min(8, "Password must be at least 8 characters")
       .refine(
         (val) => calculatePasswordStrength(val, 8).score >= 3,
-        "Password is too weak. Add uppercase, numbers, or symbols."
+        "Password is too weak. Add uppercase, numbers, or symbols.",
       ),
     confirmPassword: z.string().min(1, "Please confirm your password"),
   })
@@ -56,12 +56,20 @@ function ResetPasswordContent() {
   const [isResetTransitioning, setIsResetTransitioning] = useState(false);
 
   const tokenParam = searchParams.get("token");
-  const { isLoading: isValidating, isSuccess: isValidToken, isError: isTokenError, error: tokenError } = useValidateResetTokenQuery(tokenParam);
+  const {
+    isLoading: isValidating,
+    isSuccess: isValidToken,
+    isError: isTokenError,
+    error: tokenError,
+  } = useValidateResetTokenQuery(tokenParam);
 
   useEffect(() => {
     if (isTokenError && tokenError) {
       toast.error("Invalid Token", {
-        description: tokenError instanceof Error ? tokenError.message : "This reset link is invalid or expired",
+        description:
+          tokenError instanceof Error
+            ? tokenError.message
+            : "This reset link is invalid or expired",
         duration: 4000,
       });
     }
@@ -119,9 +127,7 @@ function ResetPasswordContent() {
     } catch (error: unknown) {
       console.error("Reset password error:", error);
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Unable to reset password. Please try again.";
+        error instanceof Error ? error.message : "Unable to reset password. Please try again.";
       toast.error("Reset Failed", {
         description: errorMessage,
         duration: 4000,
@@ -151,12 +157,9 @@ function ResetPasswordContent() {
           <XCircle className="size-16 text-destructive" />
           <h2 className="text-2xl font-bold">Invalid Reset Link</h2>
           <p className="text-muted-foreground">
-            This password reset link is invalid or has expired. Please request a
-            new one.
+            This password reset link is invalid or has expired. Please request a new one.
           </p>
-          <Button onClick={() => router.push("/auth/forgot-password")}>
-            Request New Link
-          </Button>
+          <Button onClick={() => router.push("/auth/forgot-password")}>Request New Link</Button>
         </div>
       </div>
     );
@@ -171,110 +174,97 @@ function ResetPasswordContent() {
       visualDescription="Your account data stays exactly where it is while your credentials are securely replaced."
     >
       <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4 mb-6"
-            >
-              {/* New Password Field */}
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>New Password</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          {...field}
-                          placeholder="Enter new password"
-                          type={showPassword ? "text" : "password"}
-                          disabled={isLoading}
-                          className="pr-10"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          {showPassword ? (
-                            <EyeOff className="size-4" />
-                          ) : (
-                            <Eye className="size-4" />
-                          )}
-                        </button>
-                      </div>
-                    </FormControl>
-                    <PasswordIndicator password={password} />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mb-6">
+          {/* New Password Field */}
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>New Password</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      {...field}
+                      placeholder="Enter new password"
+                      type={showPassword ? "text" : "password"}
+                      disabled={isLoading}
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                </FormControl>
+                <PasswordIndicator password={password} />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-              {/* Confirm Password Field */}
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          {...field}
-                          placeholder="Confirm new password"
-                          type={showConfirmPassword ? "text" : "password"}
-                          disabled={isLoading}
-                          className="pr-10"
-                        />
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setShowConfirmPassword(!showConfirmPassword)
-                          }
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff className="size-4" />
-                          ) : (
-                            <Eye className="size-4" />
-                          )}
-                        </button>
-                      </div>
-                    </FormControl>
-                    {/* Visual match indicator */}
-                    {confirmPassword && password !== confirmPassword && (
-                      <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
-                        <XCircle className="size-3" />
-                        Passwords do not match
-                      </p>
-                    )}
-                    {confirmPassword && password === confirmPassword && (
-                      <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-                        <CheckCircle2 className="size-3" />
-                        Passwords match
-                      </p>
-                    )}
-                    <FormMessage />
-                  </FormItem>
+          {/* Confirm Password Field */}
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirm Password</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      {...field}
+                      placeholder="Confirm new password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      disabled={isLoading}
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="size-4" />
+                      ) : (
+                        <Eye className="size-4" />
+                      )}
+                    </button>
+                  </div>
+                </FormControl>
+                {/* Visual match indicator */}
+                {confirmPassword && password !== confirmPassword && (
+                  <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                    <XCircle className="size-3" />
+                    Passwords do not match
+                  </p>
                 )}
-              />
+                {confirmPassword && password === confirmPassword && (
+                  <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                    <CheckCircle2 className="size-3" />
+                    Passwords match
+                  </p>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-              {/* Submit Button */}
-              <Button
-                className="w-full"
-                type="submit"
-                disabled={isLoading || !form.formState.isValid}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 size-4 animate-spin" />
-                    Resetting Password...
-                  </>
-                ) : (
-                  "Reset Password"
-                )}
-              </Button>
-            </form>
+          {/* Submit Button */}
+          <Button className="w-full" type="submit" disabled={isLoading || !form.formState.isValid}>
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 size-4 animate-spin" />
+                Resetting Password...
+              </>
+            ) : (
+              "Reset Password"
+            )}
+          </Button>
+        </form>
       </Form>
 
       <p className="text-sm text-center text-muted-foreground">

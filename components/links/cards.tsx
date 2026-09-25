@@ -19,13 +19,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-  ItemTitle,
-} from "@/components/ui/item";
+import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item";
 import {
   Dialog,
   DialogContent,
@@ -41,12 +35,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { cn } from "@/lib/utils";
 import { DetailLink } from "@/lib/api/shortlinks";
@@ -81,12 +70,7 @@ interface ShortLinkCardProps {
   onToggle?: (code: string) => Promise<void>;
 }
 
-export default function ShortLinkCard({
-  data,
-  baseUrl,
-  onDelete,
-  onToggle,
-}: ShortLinkCardProps) {
+export default function ShortLinkCard({ data, baseUrl, onDelete, onToggle }: ShortLinkCardProps) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [showActivateDialog, setShowActivateDialog] = useState(false);
@@ -99,9 +83,7 @@ export default function ShortLinkCard({
   const resolvedBaseUrl = (
     baseUrl ||
     process.env.NEXT_PUBLIC_FRONTEND_URL ||
-    (typeof window !== "undefined"
-      ? window.location.origin
-      : "http://localhost:3000")
+    (typeof window !== "undefined" ? window.location.origin : "http://localhost:3000")
   ).replace(/\/+$/, "");
 
   const shortUrl = `${resolvedBaseUrl}/${data.short_code}${
@@ -125,9 +107,7 @@ export default function ShortLinkCard({
     });
   };
 
-  const isExpired = data.expires_at
-    ? new Date(data.expires_at) < new Date()
-    : false;
+  const isExpired = data.expires_at ? new Date(data.expires_at) < new Date() : false;
 
   const getStatusColor = () => {
     if (isExpired) return "bg-red-500/80";
@@ -140,10 +120,7 @@ export default function ShortLinkCard({
     return data.is_active ? "Active" : "Inactive";
   };
 
-  const handleUpdate = async (
-    code: string,
-    updateData: UpdateShortLinkRequest,
-  ) => {
+  const handleUpdate = async (code: string, updateData: UpdateShortLinkRequest) => {
     return updateMutation.mutateAsync({ code, data: updateData });
   };
 
@@ -178,10 +155,7 @@ export default function ShortLinkCard({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div
-                    className={cn(
-                      "size-2.5 rounded-full shrink-0 shadow-sm",
-                      getStatusColor()
-                    )}
+                    className={cn("size-2.5 rounded-full shrink-0 shadow-sm", getStatusColor())}
                   />
                 </TooltipTrigger>
                 <TooltipContent side="top">
@@ -190,7 +164,7 @@ export default function ShortLinkCard({
               </Tooltip>
             </TooltipProvider>
             <ItemContent className="gap-0 min-w-0">
-            <ItemTitle
+              <ItemTitle
                 className="w-full min-w-0 text-sm font-semibold flex items-center gap-1.5 cursor-pointer hover:text-primary transition-colors"
                 onClick={handleNavigateToDetail}
               >
@@ -221,9 +195,7 @@ export default function ShortLinkCard({
                   </TooltipProvider>
                 )}
               </ItemTitle>
-              <ItemDescription className="text-xs truncate">
-                {data.short_code}
-              </ItemDescription>
+              <ItemDescription className="text-xs truncate">{data.short_code}</ItemDescription>
             </ItemContent>
             <ItemActions className="-me-2">
               <DropdownMenu>
@@ -247,9 +219,7 @@ export default function ShortLinkCard({
                     <Lock className="mr-2 size-4" />
                     {hasPasscode ? "Change Passcode" : "Set Passcode"}
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setShowExpirationDialog(true)}
-                  >
+                  <DropdownMenuItem onClick={() => setShowExpirationDialog(true)}>
                     <Calendar className="mr-2 size-4" />
                     {data.expires_at ? "Change Expiration" : "Set Expiration"}
                   </DropdownMenuItem>
@@ -284,9 +254,7 @@ export default function ShortLinkCard({
         <CardContent className="p-0 flex flex-col flex-1 relative z-10">
           {/* Short URL Box (Restored Grey Box) */}
           <div className="bg-muted/50 border-y px-4 py-3 flex items-center gap-2">
-            <code className="text-xs font-mono truncate flex-1">
-              {shortUrl}
-            </code>
+            <code className="text-xs font-mono truncate flex-1">{shortUrl}</code>
             <Button
               variant="ghost"
               size="icon"
@@ -346,9 +314,7 @@ export default function ShortLinkCard({
             <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1 mt-auto">
               <div className="flex items-center gap-1.5" title="Total Clicks">
                 <MousePointerClick className="size-3.5" />
-                <span>
-                  {data.click_count ?? data.detail?.current_clicks ?? 0} clicks
-                </span>
+                <span>{data.click_count ?? data.detail?.current_clicks ?? 0} clicks</span>
               </div>
               <div
                 className="flex items-center gap-1.5"

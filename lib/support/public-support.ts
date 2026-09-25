@@ -1,8 +1,5 @@
 import type { SupportCategory } from "@/lib/api/support";
-import type {
-  AuthSupportReason,
-  AuthSupportSource,
-} from "@/lib/auth-support";
+import type { AuthSupportReason, AuthSupportSource } from "@/lib/auth-support";
 
 export type SupportPreset = {
   category: SupportCategory;
@@ -161,15 +158,9 @@ export function resolveSupportPreset(
   };
 }
 
-export function getAuthSupportSourceFromSearch(
-  raw: string | null,
-): AuthSupportSource | null {
+export function getAuthSupportSourceFromSearch(raw: string | null): AuthSupportSource | null {
   const normalized = (raw || "").trim().toLowerCase();
-  if (
-    normalized === "login" ||
-    normalized === "totp" ||
-    normalized === "email_otp"
-  ) {
+  if (normalized === "login" || normalized === "totp" || normalized === "email_otp") {
     return normalized;
   }
   return null;

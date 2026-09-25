@@ -19,8 +19,7 @@ export const profileKeys = {
   all: ["profile"] as const,
   detail: () => [...profileKeys.all, "detail"] as const,
   emailEligibility: () => [...profileKeys.all, "email-eligibility"] as const,
-  usernameEligibility: () =>
-    [...profileKeys.all, "username-eligibility"] as const,
+  usernameEligibility: () => [...profileKeys.all, "username-eligibility"] as const,
 };
 
 export function useProfileQuery() {

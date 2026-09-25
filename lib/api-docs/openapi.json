@@ -32,12 +32,8 @@
         "operationId": "createShortLink",
         "summary": "Buat satu atau beberapa link",
         "description": "**Izin akses:** `write`\n\nBuat satu link atau beberapa link sekaligus.\n\n- **Satu link:** masukkan data ke objek `link`.\n- **Beberapa link:** isi `is_bulky` dengan `true`, lalu masukkan daftar ke `links`.\n- Pemilik link mengikuti akun yang membuat API key.\n\n**Catatan:** saat membuat satu link, `limit`, `enable_stats`, dan `tags` belum diterapkan. Atur melalui endpoint PUT setelah link dibuat.\n\nPeriksa hasil sebelum mengulang request agar tidak membuat link ganda.\n\n**Contoh Single / Bulk:** pilih contoh di bawah panel kode. Kode request dan contoh respons 201 mengikuti pilihan tersebut. Pilihan format pada bagian Body hanya menjelaskan struktur data; tidak mengubah contoh kode.",
-        "tags": [
-          "Short links"
-        ],
-        "x-required-permissions": [
-          "write"
-        ],
+        "tags": ["Short links"],
+        "x-required-permissions": ["write"],
         "responses": {
           "201": {
             "description": "Berhasil.",
@@ -53,10 +49,7 @@
                       "type": "string"
                     },
                     "error": {
-                      "type": [
-                        "object",
-                        "null"
-                      ],
+                      "type": ["object", "null"],
                       "additionalProperties": {
                         "type": "string"
                       }
@@ -72,9 +65,7 @@
                       ]
                     }
                   },
-                  "required": [
-                    "success"
-                  ]
+                  "required": ["success"]
                 },
                 "examples": {
                   "Single": {
@@ -249,12 +240,8 @@
         "operationId": "listShortLinks",
         "summary": "Daftar short link",
         "description": "**Izin akses:** `read`\n\nAmbil daftar link dengan pembagian halaman.\n\n- Akun biasa hanya melihat link miliknya.\n- Akun admin dapat melihat link pengguna lain.\n- Gunakan `page` dan `limit` untuk memilih halaman, `search` untuk mencari, serta `sort` dan `order_by` untuk mengurutkan.",
-        "tags": [
-          "Short links"
-        ],
-        "x-required-permissions": [
-          "read"
-        ],
+        "tags": ["Short links"],
+        "x-required-permissions": ["read"],
         "responses": {
           "200": {
             "description": "Berhasil.",
@@ -270,10 +257,7 @@
                       "type": "string"
                     },
                     "error": {
-                      "type": [
-                        "object",
-                        "null"
-                      ],
+                      "type": ["object", "null"],
                       "additionalProperties": {
                         "type": "string"
                       }
@@ -282,9 +266,7 @@
                       "$ref": "#/components/schemas/LinkPage"
                     }
                   },
-                  "required": [
-                    "success"
-                  ]
+                  "required": ["success"]
                 }
               }
             }
@@ -380,10 +362,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": [
-                "asc",
-                "desc"
-              ],
+              "enum": ["asc", "desc"],
               "default": "desc"
             },
             "description": "Urutan hasil."
@@ -394,12 +373,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": [
-                "created_at",
-                "updated_at",
-                "short_code",
-                "title"
-              ],
+              "enum": ["created_at", "updated_at", "short_code", "title"],
               "default": "created_at"
             },
             "description": "Kolom sorting. Admin juga menerima original_url, is_active, user_id."
@@ -421,12 +395,8 @@
         "operationId": "getShortLink",
         "summary": "Detail short link",
         "description": "**Izin akses:** `read`\n\nAmbil informasi sebuah link berdasarkan kodenya. Endpoint ini mengembalikan data JSON; tidak mengarahkan pengunjung ke URL tujuan.",
-        "tags": [
-          "Short links"
-        ],
-        "x-required-permissions": [
-          "read"
-        ],
+        "tags": ["Short links"],
+        "x-required-permissions": ["read"],
         "responses": {
           "200": {
             "description": "Berhasil.",
@@ -442,10 +412,7 @@
                       "type": "string"
                     },
                     "error": {
-                      "type": [
-                        "object",
-                        "null"
-                      ],
+                      "type": ["object", "null"],
                       "additionalProperties": {
                         "type": "string"
                       }
@@ -454,9 +421,7 @@
                       "$ref": "#/components/schemas/ShortLink"
                     }
                   },
-                  "required": [
-                    "success"
-                  ]
+                  "required": ["success"]
                 }
               }
             }
@@ -542,12 +507,8 @@
         "operationId": "updateShortLink",
         "summary": "Ubah short link",
         "description": "**Izin akses:** `update`\n\nUbah pengaturan link berdasarkan kodenya.\n\n- Kirim field langsung di body, tanpa objek `link`.\n- Field yang tidak dikirim tetap menggunakan nilai sebelumnya.\n- `original_url` tidak dapat diubah lewat endpoint ini.\n\nRespons berisi data perubahan yang Anda kirim, bukan seluruh informasi link.",
-        "tags": [
-          "Short links"
-        ],
-        "x-required-permissions": [
-          "update"
-        ],
+        "tags": ["Short links"],
+        "x-required-permissions": ["update"],
         "responses": {
           "200": {
             "description": "Berhasil.",
@@ -563,10 +524,7 @@
                       "type": "string"
                     },
                     "error": {
-                      "type": [
-                        "object",
-                        "null"
-                      ],
+                      "type": ["object", "null"],
                       "additionalProperties": {
                         "type": "string"
                       }
@@ -575,9 +533,7 @@
                       "$ref": "#/components/schemas/UpdateLink"
                     }
                   },
-                  "required": [
-                    "success"
-                  ]
+                  "required": ["success"]
                 }
               }
             }
@@ -693,12 +649,8 @@
         "operationId": "deleteShortLink",
         "summary": "Hapus short link",
         "description": "**Izin akses:** `delete`\n\nHapus link berdasarkan kodenya. Periksa kode sebelum mengirim request.\n\nBody bersifat opsional. Isi `passcode` jika diperlukan. Saat berhasil, respons berisi `success` dan `message`.",
-        "tags": [
-          "Short links"
-        ],
-        "x-required-permissions": [
-          "delete"
-        ],
+        "tags": ["Short links"],
+        "x-required-permissions": ["delete"],
         "responses": {
           "200": {
             "description": "Berhasil.",
@@ -714,18 +666,13 @@
                       "type": "string"
                     },
                     "error": {
-                      "type": [
-                        "object",
-                        "null"
-                      ],
+                      "type": ["object", "null"],
                       "additionalProperties": {
                         "type": "string"
                       }
                     }
                   },
-                  "required": [
-                    "success"
-                  ]
+                  "required": ["success"]
                 },
                 "example": {
                   "success": true,
@@ -841,12 +788,8 @@
         "operationId": "getShortLinkSummary",
         "summary": "Statistik keseluruhan",
         "description": "**Izin akses:** `read`\n\nLihat ringkasan jumlah link dan aktivitas klik.\n\nUntuk memfilter periode klik, kirim **kedua** parameter `start_date` dan `end_date`. Gunakan format tanggal `YYYY-MM-DD`, misalnya `2026-09-01`.\n\nJumlah link tetap mencakup semua link. Perhitungan klik mengikuti periode yang dipilih dan rentang waktu statistik masing-masing.",
-        "tags": [
-          "Analytics"
-        ],
-        "x-required-permissions": [
-          "read"
-        ],
+        "tags": ["Analytics"],
+        "x-required-permissions": ["read"],
         "responses": {
           "200": {
             "description": "Berhasil.",
@@ -862,10 +805,7 @@
                       "type": "string"
                     },
                     "error": {
-                      "type": [
-                        "object",
-                        "null"
-                      ],
+                      "type": ["object", "null"],
                       "additionalProperties": {
                         "type": "string"
                       }
@@ -874,9 +814,7 @@
                       "$ref": "#/components/schemas/DashboardStats"
                     }
                   },
-                  "required": [
-                    "success"
-                  ]
+                  "required": ["success"]
                 }
               }
             }
@@ -971,12 +909,8 @@
         "operationId": "getShortLinkStats",
         "summary": "Statistik satu link",
         "description": "**Izin akses:** `read`\n\nLihat statistik untuk satu link:\n\n- Jumlah klik dan pengunjung unik.\n- Tren klik berdasarkan waktu.\n- Sumber kunjungan, perangkat, dan negara.",
-        "tags": [
-          "Analytics"
-        ],
-        "x-required-permissions": [
-          "read"
-        ],
+        "tags": ["Analytics"],
+        "x-required-permissions": ["read"],
         "responses": {
           "200": {
             "description": "Berhasil.",
@@ -992,10 +926,7 @@
                       "type": "string"
                     },
                     "error": {
-                      "type": [
-                        "object",
-                        "null"
-                      ],
+                      "type": ["object", "null"],
                       "additionalProperties": {
                         "type": "string"
                       }
@@ -1004,9 +935,7 @@
                       "$ref": "#/components/schemas/LinkStats"
                     }
                   },
-                  "required": [
-                    "success"
-                  ]
+                  "required": ["success"]
                 }
               }
             }
@@ -1094,12 +1023,8 @@
         "operationId": "getShortLinkViews",
         "summary": "Riwayat kunjungan",
         "description": "**Izin akses:** `read`\n\nLihat daftar kunjungan untuk satu link. Hasil diurutkan berdasarkan `clicked_at` secara menurun secara bawaan. Gunakan `order_by=asc` untuk urutan terlama ke terbaru.",
-        "tags": [
-          "Analytics"
-        ],
-        "x-required-permissions": [
-          "read"
-        ],
+        "tags": ["Analytics"],
+        "x-required-permissions": ["read"],
         "responses": {
           "200": {
             "description": "Berhasil.",
@@ -1115,10 +1040,7 @@
                       "type": "string"
                     },
                     "error": {
-                      "type": [
-                        "object",
-                        "null"
-                      ],
+                      "type": ["object", "null"],
                       "additionalProperties": {
                         "type": "string"
                       }
@@ -1127,9 +1049,7 @@
                       "$ref": "#/components/schemas/ViewsResult"
                     }
                   },
-                  "required": [
-                    "success"
-                  ]
+                  "required": ["success"]
                 }
               }
             }
@@ -1238,10 +1158,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": [
-                "asc",
-                "desc"
-              ],
+              "enum": ["asc", "desc"],
               "default": "desc"
             },
             "description": "Urutan hasil."
@@ -1252,9 +1169,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": [
-                "clicked_at"
-              ],
+              "enum": ["clicked_at"],
               "default": "clicked_at"
             },
             "description": "Kolom pengurutan riwayat kunjungan."
@@ -1304,10 +1219,7 @@
             "description": "Enam digit; tidak boleh seluruh digit sama."
           },
           "expires_at": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "format": "date-time",
             "description": "Waktu kedaluwarsa dalam format RFC3339. null berarti tanpa masa kedaluwarsa."
           },
@@ -1343,9 +1255,7 @@
             "description": "Belum diteruskan oleh handler single; gunakan field utm_* melalui PUT."
           }
         },
-        "required": [
-          "original_url"
-        ],
+        "required": ["original_url"],
         "title": "Data link baru"
       },
       "UpdateLink": {
@@ -1375,10 +1285,7 @@
             "description": "true berarti aktif; false berarti nonaktif."
           },
           "expires_at": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "format": "date-time",
             "description": "Tidak dikirim: tetap. null: hapus masa berlaku. Tanggal baru harus di masa depan."
           },
@@ -1438,9 +1345,7 @@
                 "$ref": "#/components/schemas/CreateLink"
               }
             },
-            "required": [
-              "link"
-            ],
+            "required": ["link"],
             "title": "Satu link"
           },
           {
@@ -1458,10 +1363,7 @@
                 "minItems": 1
               }
             },
-            "required": [
-              "is_bulky",
-              "links"
-            ],
+            "required": ["is_bulky", "links"],
             "title": "Beberapa link"
           },
           {
@@ -1481,9 +1383,7 @@
                 "maxItems": 1
               }
             },
-            "required": [
-              "links"
-            ],
+            "required": ["links"],
             "title": "Satu link melalui array"
           }
         ],
@@ -1523,10 +1423,7 @@
             "description": "true berarti aktif; false berarti nonaktif."
           },
           "expires_at": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "format": "date-time",
             "description": "Waktu kedaluwarsa dalam format RFC3339. null berarti tanpa masa kedaluwarsa."
           },
@@ -1544,14 +1441,7 @@
             "$ref": "#/components/schemas/ShortLinkDetail"
           }
         },
-        "required": [
-          "id",
-          "short_code",
-          "original_url",
-          "is_active",
-          "expires_at",
-          "created_at"
-        ],
+        "required": ["id", "short_code", "original_url", "is_active", "expires_at", "created_at"],
         "title": "Detail link"
       },
       "ShortLinkListItem": {
@@ -1587,10 +1477,7 @@
             "description": "true berarti aktif; false berarti nonaktif."
           },
           "expires_at": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "format": "date-time",
             "description": "Waktu kedaluwarsa dalam format RFC3339. null berarti tanpa masa kedaluwarsa."
           },
@@ -1609,13 +1496,7 @@
             "description": "Jumlah klik pada link."
           }
         },
-        "required": [
-          "id",
-          "short_code",
-          "original_url",
-          "is_active",
-          "expires_at"
-        ],
+        "required": ["id", "short_code", "original_url", "is_active", "expires_at"],
         "title": "Ringkasan link"
       },
       "ShortLinkDetail": {
@@ -1697,11 +1578,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "links",
-          "total_count",
-          "message"
-        ],
+        "required": ["links", "total_count", "message"],
         "title": "Hasil pembuatan beberapa link"
       },
       "LinkPage": {
@@ -1762,10 +1639,7 @@
             "description": "Jumlah kejadian dalam kelompok ini."
           }
         },
-        "required": [
-          "date",
-          "count"
-        ],
+        "required": ["date", "count"],
         "title": "Jumlah klik per waktu"
       },
       "LinkStats": {
@@ -1953,9 +1827,7 @@
             "description": "Ringkasan statistik."
           }
         },
-        "required": [
-          "summary"
-        ],
+        "required": ["summary"],
         "title": "Statistik keseluruhan"
       },
       "View": {
@@ -2003,9 +1875,7 @@
             "description": "Waktu kunjungan dalam format RFC3339."
           }
         },
-        "required": [
-          "id"
-        ],
+        "required": ["id"],
         "title": "Detail kunjungan"
       },
       "ViewsResult": {
@@ -2042,9 +1912,7 @@
             "description": "Riwayat kunjungan beserta informasi halaman."
           }
         },
-        "required": [
-          "views"
-        ],
+        "required": ["views"],
         "title": "Halaman riwayat kunjungan"
       },
       "ErrorResponse": {
@@ -2057,10 +1925,7 @@
             "type": "string"
           },
           "error": {
-            "type": [
-              "object",
-              "null"
-            ],
+            "type": ["object", "null"],
             "additionalProperties": {
               "type": "string"
             }
@@ -2070,9 +1935,7 @@
             "description": "Dapat muncul pada error validasi atau middleware; dihilangkan pada sebagian respons."
           }
         },
-        "required": [
-          "success"
-        ],
+        "required": ["success"],
         "title": "Respons kesalahan"
       }
     }

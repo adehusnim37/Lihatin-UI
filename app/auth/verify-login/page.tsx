@@ -8,10 +8,7 @@ import BlobDefault from "@/components/blob/blob-default";
 import { OTPForm } from "@/components/otp-form";
 import { AuthenticatedTransition } from "@/components/auth/authenticated-transition";
 import { verifyTOTPLogin, saveUserData } from "@/lib/api/auth";
-import {
-  buildAuthSupportURL,
-  getAuthSupportReasonFromMessage,
-} from "@/lib/auth-support";
+import { buildAuthSupportURL, getAuthSupportReasonFromMessage } from "@/lib/auth-support";
 import { useAuth } from "@/app/context/AuthContext";
 
 export default function VerifyLoginPage() {
@@ -22,8 +19,7 @@ export default function VerifyLoginPage() {
   const [pendingAuthToken, setPendingAuthToken] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | undefined>();
   const [supportLink, setSupportLink] = useState<string | null>(null);
-  const [isAuthenticatedTransitioning, setIsAuthenticatedTransitioning] =
-    useState(false);
+  const [isAuthenticatedTransitioning, setIsAuthenticatedTransitioning] = useState(false);
 
   useEffect(() => {
     // Get pending auth token from sessionStorage (set during login)
@@ -92,8 +88,7 @@ export default function VerifyLoginPage() {
         setIsAuthenticatedTransitioning(true);
       }
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Invalid verification code";
+      const message = err instanceof Error ? err.message : "Invalid verification code";
       setError(message);
       toast.error("Verification Failed", {
         description: message,
@@ -129,9 +124,7 @@ export default function VerifyLoginPage() {
         />
         {supportLink && (
           <div className="text-center mt-4">
-            <p className="text-sm text-muted-foreground mb-2">
-              Need help accessing your account?
-            </p>
+            <p className="text-sm text-muted-foreground mb-2">Need help accessing your account?</p>
             <Link href={supportLink} className="text-sm text-primary hover:underline">
               Contact Support →
             </Link>

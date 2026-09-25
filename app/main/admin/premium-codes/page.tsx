@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type CSSProperties,
-  type ReactNode,
-} from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import {
   IconCalendar,
   IconCheck,
@@ -28,13 +22,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -45,11 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -61,10 +45,7 @@ import {
 } from "@/components/ui/select";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  StatusBadge,
-  type StatusBadgeTone,
-} from "@/components/ui/status-badge";
+import { StatusBadge, type StatusBadgeTone } from "@/components/ui/status-badge";
 import {
   Table,
   TableBody,
@@ -93,16 +74,13 @@ const PAGE_LIMIT = 10;
 const RECIPIENT_PAGE_LIMIT = 20;
 
 export default function AdminPremiumCodesPage() {
-  const [roleFromStorage, setRoleFromStorage] = useState<
-    string | null | undefined
-  >(undefined);
+  const [roleFromStorage, setRoleFromStorage] = useState<string | null | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [detailOpen, setDetailOpen] = useState(false);
   const [activeCode, setActiveCode] = useState<AdminPremiumCode | null>(null);
   const [detailTab, setDetailTab] = useState<DetailTab>("overview");
   const [usageSearch, setUsageSearch] = useState("");
-  const [recipientMode, setRecipientMode] =
-    useState<RecipientMode>("used_user");
+  const [recipientMode, setRecipientMode] = useState<RecipientMode>("used_user");
   const [selectedUserID, setSelectedUserID] = useState("");
   const [selectedRecipientLabel, setSelectedRecipientLabel] = useState("");
   const [recipientPickerOpen, setRecipientPickerOpen] = useState(false);
@@ -142,9 +120,8 @@ export default function AdminPremiumCodesPage() {
   );
   const recipientOptions = useMemo(
     () =>
-      recipientData?.pages.flatMap(
-        (pageData: AdminUserEmailOptionsResponse) => pageData.users,
-      ) ?? [],
+      recipientData?.pages.flatMap((pageData: AdminUserEmailOptionsResponse) => pageData.users) ??
+      [],
     [recipientData],
   );
   const sendEmailMutation = useSendAdminPremiumCodeEmailMutation();
@@ -164,33 +141,25 @@ export default function AdminPremiumCodesPage() {
     return Math.ceil(pagination.total / pagination.limit);
   }, [pagination]);
   const hasPrevious = page > 1;
-  const hasNext = pagination
-    ? pagination.page * pagination.limit < pagination.total
-    : false;
+  const hasNext = pagination ? pagination.page * pagination.limit < pagination.total : false;
 
   const activeCodeUsages = useMemo(() => {
     if (!activeCode) return [];
     const query = usageSearch.trim().toLowerCase();
     return [...(activeCode.key_usage ?? [])]
       .sort(
-        (left, right) =>
-          new Date(right.created_at).getTime() -
-          new Date(left.created_at).getTime(),
+        (left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime(),
       )
       .filter((usage) => {
         if (!query) return true;
         const label = userLabelById[usage.user_id] || usage.user_id;
-        return (
-          label.toLowerCase().includes(query) ||
-          usage.user_id.toLowerCase().includes(query)
-        );
+        return label.toLowerCase().includes(query) || usage.user_id.toLowerCase().includes(query);
       });
   }, [activeCode, usageSearch, userLabelById]);
 
   const activeCodeUniqueUsers = useMemo(() => {
     if (!activeCode) return 0;
-    return new Set((activeCode.key_usage ?? []).map((usage) => usage.user_id))
-      .size;
+    return new Set((activeCode.key_usage ?? []).map((usage) => usage.user_id)).size;
   }, [activeCode]);
 
   const activeCodeLastRedeemedAt = useMemo(() => {
@@ -203,12 +172,8 @@ export default function AdminPremiumCodesPage() {
     }, null);
   }, [activeCode]);
 
-  const activeCodeExpired = activeCode
-    ? isDateInPast(activeCode.valid_until)
-    : false;
-  const activeCodeLimitReached = activeCode
-    ? hasReachedLimit(activeCode)
-    : false;
+  const activeCodeExpired = activeCode ? isDateInPast(activeCode.valid_until) : false;
+  const activeCodeLimitReached = activeCode ? hasReachedLimit(activeCode) : false;
 
   const openDetailDialog = (code: AdminPremiumCode) => {
     setActiveCode(code);
@@ -290,12 +255,10 @@ export default function AdminPremiumCodesPage() {
           <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl space-y-2">
               <div>
-                <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
-                  Premium codes
-                </h1>
+                <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Premium codes</h1>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  Track redemption capacity, review every usage record, and
-                  deliver codes without losing context.
+                  Track redemption capacity, review every usage record, and deliver codes without
+                  losing context.
                 </p>
               </div>
             </div>
@@ -305,16 +268,12 @@ export default function AdminPremiumCodesPage() {
               onClick={() => refetch()}
               disabled={isLoading || isFetching}
             >
-              <IconRefresh
-                className={isFetching && !isLoading ? "animate-spin" : ""}
-              />
+              <IconRefresh className={isFetching && !isLoading ? "animate-spin" : ""} />
               Refresh
             </Button>
           </header>
 
-          {(isLoading || typeof roleFromStorage === "undefined") && (
-            <PageSkeleton />
-          )}
+          {(isLoading || typeof roleFromStorage === "undefined") && <PageSkeleton />}
 
           {typeof roleFromStorage !== "undefined" && !isAdmin && (
             <Card>
@@ -332,8 +291,7 @@ export default function AdminPremiumCodesPage() {
               <CardHeader>
                 <CardTitle>Premium codes could not be loaded</CardTitle>
                 <CardDescription>
-                  Refresh the page. If the issue continues, check the API
-                  connection.
+                  Refresh the page. If the issue continues, check the API connection.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -362,8 +320,7 @@ export default function AdminPremiumCodesPage() {
                     </div>
                     <p className="text-sm font-medium">No premium codes yet</p>
                     <p className="max-w-sm text-sm text-muted-foreground">
-                      Generated premium codes will appear here with their
-                      redemption activity.
+                      Generated premium codes will appear here with their redemption activity.
                     </p>
                   </div>
                 ) : (
@@ -383,12 +340,8 @@ export default function AdminPremiumCodesPage() {
                       <Table className="min-w-[920px]">
                         <TableHeader>
                           <TableRow className="hover:bg-transparent">
-                            <TableHead className="w-[270px] pl-5 md:pl-6">
-                              Code
-                            </TableHead>
-                            <TableHead className="w-[220px]">
-                              Capacity
-                            </TableHead>
+                            <TableHead className="w-[270px] pl-5 md:pl-6">Code</TableHead>
+                            <TableHead className="w-[220px]">Capacity</TableHead>
                             <TableHead>Validity</TableHead>
                             <TableHead>Redeemers</TableHead>
                             <TableHead>Last updated</TableHead>
@@ -402,8 +355,7 @@ export default function AdminPremiumCodesPage() {
                             const usedBy = getUsedByLabels(code, userLabelById);
                             const status = getCodeStatus(code);
                             const copyDisabled =
-                              status.label === "Expired" ||
-                              status.label === "Fully redeemed";
+                              status.label === "Expired" || status.label === "Fully redeemed";
 
                             return (
                               <TableRow key={code.id} className="group">
@@ -418,10 +370,7 @@ export default function AdminPremiumCodesPage() {
                                       >
                                         {code.secret_code}
                                       </button>
-                                      <StatusBadge
-                                        tone={status.tone}
-                                        className="text-[11px]"
-                                      >
+                                      <StatusBadge tone={status.tone} className="text-[11px]">
                                         {status.label}
                                       </StatusBadge>
                                     </div>
@@ -430,23 +379,15 @@ export default function AdminPremiumCodesPage() {
                                       size="icon"
                                       className="size-7 shrink-0 opacity-60 group-hover:opacity-100"
                                       disabled={copyDisabled}
-                                      onClick={() =>
-                                        void copyText(code.secret_code)
-                                      }
-                                      title={
-                                        copyDisabled
-                                          ? status.label
-                                          : "Copy premium code"
-                                      }
+                                      onClick={() => void copyText(code.secret_code)}
+                                      title={copyDisabled ? status.label : "Copy premium code"}
                                     >
                                       {copyDisabled ? (
                                         <IconClipboardOff className="size-3.5" />
                                       ) : (
                                         <IconCopy className="size-3.5" />
                                       )}
-                                      <span className="sr-only">
-                                        Copy premium code
-                                      </span>
+                                      <span className="sr-only">Copy premium code</span>
                                     </Button>
                                   </div>
                                 </TableCell>
@@ -456,16 +397,10 @@ export default function AdminPremiumCodesPage() {
                                 <TableCell className="py-4">
                                   <div className="space-y-1">
                                     <p className="text-sm">
-                                      {formatDate(
-                                        code.valid_until,
-                                        code.is_lifetime,
-                                      )}
+                                      {formatDate(code.valid_until, code.is_lifetime)}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
-                                      {getValidityLabel(
-                                        code.valid_until,
-                                        code.is_lifetime,
-                                      )}
+                                      {getValidityLabel(code.valid_until, code.is_lifetime)}
                                     </p>
                                   </div>
                                 </TableCell>
@@ -474,9 +409,7 @@ export default function AdminPremiumCodesPage() {
                                 </TableCell>
                                 <TableCell className="py-4">
                                   <div className="space-y-1">
-                                    <p className="text-sm">
-                                      {formatDate(code.updated_at)}
-                                    </p>
+                                    <p className="text-sm">{formatDate(code.updated_at)}</p>
                                     <p className="text-xs text-muted-foreground">
                                       {formatTime(code.updated_at)}
                                     </p>
@@ -491,9 +424,7 @@ export default function AdminPremiumCodesPage() {
                                     title="Open code details"
                                   >
                                     <IconChevronRight className="size-4" />
-                                    <span className="sr-only">
-                                      Open code details
-                                    </span>
+                                    <span className="sr-only">Open code details</span>
                                   </Button>
                                 </TableCell>
                               </TableRow>
@@ -514,9 +445,7 @@ export default function AdminPremiumCodesPage() {
                       variant="outline"
                       size="sm"
                       className="flex-1 min-[420px]:flex-none"
-                      onClick={() =>
-                        setPage((previous) => Math.max(1, previous - 1))
-                      }
+                      onClick={() => setPage((previous) => Math.max(1, previous - 1))}
                       disabled={!hasPrevious}
                     >
                       Previous
@@ -525,11 +454,7 @@ export default function AdminPremiumCodesPage() {
                       variant="outline"
                       size="sm"
                       className="flex-1 min-[420px]:flex-none"
-                      onClick={() =>
-                        setPage((previous) =>
-                          Math.min(totalPages, previous + 1),
-                        )
-                      }
+                      onClick={() => setPage((previous) => Math.min(totalPages, previous + 1))}
                       disabled={!hasNext}
                     >
                       Next
@@ -551,14 +476,10 @@ export default function AdminPremiumCodesPage() {
                   <div className="min-w-0">
                     <DialogTitle>Premium code ledger</DialogTitle>
                     <DialogDescription className="mt-1">
-                      Review capacity and redemption history before sharing this
-                      code.
+                      Review capacity and redemption history before sharing this code.
                     </DialogDescription>
                   </div>
-                  <StatusBadge
-                    tone={getCodeStatus(activeCode).tone}
-                    className="w-fit shrink-0"
-                  >
+                  <StatusBadge tone={getCodeStatus(activeCode).tone} className="w-fit shrink-0">
                     {getCodeStatus(activeCode).label}
                   </StatusBadge>
                 </div>
@@ -591,35 +512,23 @@ export default function AdminPremiumCodesPage() {
               >
                 <div className="shrink-0 border-b px-4 py-3 sm:px-5 md:px-6">
                   <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger
-                      value="overview"
-                      className="px-1 text-xs sm:text-sm"
-                    >
+                    <TabsTrigger value="overview" className="px-1 text-xs sm:text-sm">
                       Overview
                     </TabsTrigger>
-                    <TabsTrigger
-                      value="usage"
-                      className="px-1 text-xs sm:text-sm"
-                    >
+                    <TabsTrigger value="usage" className="px-1 text-xs sm:text-sm">
                       Usage
                       <span className="rounded-full bg-background px-1.5 py-0.5 text-[10px] tabular-nums">
                         {activeCode.usage_count}
                       </span>
                     </TabsTrigger>
-                    <TabsTrigger
-                      value="send"
-                      className="px-1 text-xs sm:text-sm"
-                    >
+                    <TabsTrigger value="send" className="px-1 text-xs sm:text-sm">
                       Send code
                     </TabsTrigger>
                   </TabsList>
                 </div>
 
                 <ScrollArea className="min-h-0 flex-1">
-                  <TabsContent
-                    value="overview"
-                    className="m-0 space-y-5 px-4 py-5 sm:px-5 md:px-6"
-                  >
+                  <TabsContent value="overview" className="m-0 space-y-5 px-4 py-5 sm:px-5 md:px-6">
                     <CapacityMeter code={activeCode} />
 
                     <div className="grid gap-3 sm:grid-cols-2">
@@ -635,9 +544,7 @@ export default function AdminPremiumCodesPage() {
                         icon={<IconClock />}
                         label="Last redeemed"
                         value={
-                          activeCodeLastRedeemedAt
-                            ? formatDate(activeCodeLastRedeemedAt)
-                            : "Never"
+                          activeCodeLastRedeemedAt ? formatDate(activeCodeLastRedeemedAt) : "Never"
                         }
                         detail={
                           activeCodeLastRedeemedAt
@@ -648,14 +555,8 @@ export default function AdminPremiumCodesPage() {
                       <Metric
                         icon={<IconCalendar />}
                         label="Valid until"
-                        value={formatDate(
-                          activeCode.valid_until,
-                          activeCode.is_lifetime,
-                        )}
-                        detail={getValidityLabel(
-                          activeCode.valid_until,
-                          activeCode.is_lifetime,
-                        )}
+                        value={formatDate(activeCode.valid_until, activeCode.is_lifetime)}
+                        detail={getValidityLabel(activeCode.valid_until, activeCode.is_lifetime)}
                       />
                       <Metric
                         icon={<IconKey />}
@@ -666,15 +567,10 @@ export default function AdminPremiumCodesPage() {
                     </div>
                   </TabsContent>
 
-                  <TabsContent
-                    value="usage"
-                    className="m-0 space-y-4 px-4 py-5 sm:px-5 md:px-6"
-                  >
+                  <TabsContent value="usage" className="m-0 space-y-4 px-4 py-5 sm:px-5 md:px-6">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                       <div>
-                        <p className="text-sm font-medium">
-                          Redemption history
-                        </p>
+                        <p className="text-sm font-medium">Redemption history</p>
                         <p className="mt-1 text-xs text-muted-foreground">
                           Every redemption is listed individually, newest first.
                         </p>
@@ -683,9 +579,7 @@ export default function AdminPremiumCodesPage() {
                         <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                           value={usageSearch}
-                          onChange={(event) =>
-                            setUsageSearch(event.target.value)
-                          }
+                          onChange={(event) => setUsageSearch(event.target.value)}
                           placeholder="Search user or email"
                           className="pl-9"
                         />
@@ -696,9 +590,7 @@ export default function AdminPremiumCodesPage() {
                       <UsageEmptyState />
                     ) : activeCodeUsages.length === 0 ? (
                       <div className="rounded-lg border border-dashed px-4 py-10 text-center">
-                        <p className="text-sm font-medium">
-                          No matching redemption
-                        </p>
+                        <p className="text-sm font-medium">No matching redemption</p>
                         <p className="mt-1 text-xs text-muted-foreground">
                           Try a different username, email, or user ID.
                         </p>
@@ -709,9 +601,7 @@ export default function AdminPremiumCodesPage() {
                           <UsageRow
                             key={usage.id}
                             usage={usage}
-                            label={
-                              userLabelById[usage.user_id] || usage.user_id
-                            }
+                            label={userLabelById[usage.user_id] || usage.user_id}
                             showBorder={index < activeCodeUsages.length - 1}
                           />
                         ))}
@@ -719,10 +609,7 @@ export default function AdminPremiumCodesPage() {
                     )}
                   </TabsContent>
 
-                  <TabsContent
-                    value="send"
-                    className="m-0 space-y-5 px-4 py-5 sm:px-5 md:px-6"
-                  >
+                  <TabsContent value="send" className="m-0 space-y-5 px-4 py-5 sm:px-5 md:px-6">
                     {activeCodeExpired || activeCodeLimitReached ? (
                       <Alert variant="destructive">
                         <IconClipboardOff />
@@ -741,8 +628,7 @@ export default function AdminPremiumCodesPage() {
                             Delivery details
                           </p>
                           <p className="mt-1 text-xs text-muted-foreground">
-                            The dialog closes automatically after the email is
-                            delivered.
+                            The dialog closes automatically after the email is delivered.
                           </p>
                         </div>
 
@@ -751,20 +637,14 @@ export default function AdminPremiumCodesPage() {
                             <Label>Recipient type</Label>
                             <Select
                               value={recipientMode}
-                              onValueChange={(value) =>
-                                setRecipientMode(value as RecipientMode)
-                              }
+                              onValueChange={(value) => setRecipientMode(value as RecipientMode)}
                             >
                               <SelectTrigger className="h-9 w-full">
                                 <SelectValue placeholder="Select recipient type" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="used_user">
-                                  Existing user
-                                </SelectItem>
-                                <SelectItem value="custom_email">
-                                  Custom email
-                                </SelectItem>
+                                <SelectItem value="used_user">Existing user</SelectItem>
+                                <SelectItem value="custom_email">Custom email</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -784,16 +664,11 @@ export default function AdminPremiumCodesPage() {
                                 }}
                                 onSelect={(user) => {
                                   setSelectedUserID(user.id);
-                                  setSelectedRecipientLabel(
-                                    `${user.username} (${user.email})`,
-                                  );
+                                  setSelectedRecipientLabel(`${user.username} (${user.email})`);
                                   setRecipientPickerOpen(false);
                                 }}
                                 onLoadMore={() => {
-                                  if (
-                                    hasNextRecipientPage &&
-                                    !recipientFetchingNextPage
-                                  ) {
+                                  if (hasNextRecipientPage && !recipientFetchingNextPage) {
                                     void fetchNextRecipientPage();
                                   }
                                 }}
@@ -808,17 +683,13 @@ export default function AdminPremiumCodesPage() {
                             </div>
                           ) : (
                             <div className="grid content-start gap-2">
-                              <Label htmlFor="recipient_email">
-                                Recipient email
-                              </Label>
+                              <Label htmlFor="recipient_email">Recipient email</Label>
                               <Input
                                 id="recipient_email"
                                 type="email"
                                 placeholder="name@company.com"
                                 value={customEmail}
-                                onChange={(event) =>
-                                  setCustomEmail(event.target.value)
-                                }
+                                onChange={(event) => setCustomEmail(event.target.value)}
                               />
                             </div>
                           )}
@@ -828,36 +699,27 @@ export default function AdminPremiumCodesPage() {
                           <div className="grid gap-2">
                             <Label htmlFor="recipient_name">
                               Recipient name{" "}
-                              <span className="text-muted-foreground">
-                                (optional)
-                              </span>
+                              <span className="text-muted-foreground">(optional)</span>
                             </Label>
                             <Input
                               id="recipient_name"
                               placeholder="Jane Doe"
                               value={customName}
-                              onChange={(event) =>
-                                setCustomName(event.target.value)
-                              }
+                              onChange={(event) => setCustomName(event.target.value)}
                             />
                           </div>
                         )}
 
                         <div className="grid gap-2">
                           <Label htmlFor="message_note">
-                            Message{" "}
-                            <span className="text-muted-foreground">
-                              (optional)
-                            </span>
+                            Message <span className="text-muted-foreground">(optional)</span>
                           </Label>
                           <textarea
                             id="message_note"
                             className="min-h-24 w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                             placeholder="Add context for the recipient"
                             value={messageNote}
-                            onChange={(event) =>
-                              setMessageNote(event.target.value)
-                            }
+                            onChange={(event) => setMessageNote(event.target.value)}
                           />
                         </div>
                       </>
@@ -880,15 +742,11 @@ export default function AdminPremiumCodesPage() {
                   <Button
                     onClick={handleSendSecretCode}
                     disabled={
-                      sendEmailMutation.isPending ||
-                      activeCodeExpired ||
-                      activeCodeLimitReached
+                      sendEmailMutation.isPending || activeCodeExpired || activeCodeLimitReached
                     }
                   >
                     <IconMailForward />
-                    {sendEmailMutation.isPending
-                      ? "Sending..."
-                      : "Send premium code"}
+                    {sendEmailMutation.isPending ? "Sending..." : "Send premium code"}
                   </Button>
                 )}
               </DialogFooter>
@@ -938,11 +796,7 @@ function RecipientPicker({
           aria-expanded={open}
           className="h-9 w-full min-w-0 justify-between font-normal"
         >
-          <span
-            className={
-              selectedLabel ? "truncate" : "truncate text-muted-foreground"
-            }
-          >
+          <span className={selectedLabel ? "truncate" : "truncate text-muted-foreground"}>
             {selectedLabel || "Search eligible user"}
           </span>
           <IconChevronDown className="size-4 shrink-0 opacity-50" />
@@ -971,9 +825,7 @@ function RecipientPicker({
           onTouchMove={(event) => event.stopPropagation()}
           onScroll={(event) => {
             const target = event.currentTarget;
-            const nearBottom =
-              target.scrollTop + target.clientHeight >=
-              target.scrollHeight - 48;
+            const nearBottom = target.scrollTop + target.clientHeight >= target.scrollHeight - 48;
             if (nearBottom) {
               onLoadMore();
             }
@@ -996,9 +848,7 @@ function RecipientPicker({
             ) : options.length === 0 ? (
               <div className="px-3 py-8 text-center">
                 <p className="text-sm font-medium">No eligible users found</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Try another username or email.
-                </p>
+                <p className="mt-1 text-xs text-muted-foreground">Try another username or email.</p>
               </div>
             ) : (
               <>
@@ -1016,12 +866,8 @@ function RecipientPicker({
                         {getInitials(user.username)}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">
-                          {user.username}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {user.email}
-                        </p>
+                        <p className="truncate text-sm font-medium">{user.username}</p>
+                        <p className="truncate text-xs text-muted-foreground">{user.email}</p>
                       </div>
                       {selected && (
                         <IconCheck
@@ -1052,7 +898,6 @@ function RecipientPicker({
   );
 }
 
-
 function PremiumCodeMobileCard({
   code,
   usedBy,
@@ -1063,8 +908,7 @@ function PremiumCodeMobileCard({
   onOpen: () => void;
 }) {
   const status = getCodeStatus(code);
-  const copyDisabled =
-    status.label === "Expired" || status.label === "Fully redeemed";
+  const copyDisabled = status.label === "Expired" || status.label === "Fully redeemed";
 
   return (
     <article className="min-w-0 space-y-4 rounded-lg border p-4">
@@ -1125,12 +969,8 @@ function PremiumCodeMobileCard({
         </div>
         <div className="min-w-0">
           <dt className="text-[11px] text-muted-foreground">Last updated</dt>
-          <dd className="truncate text-sm font-medium">
-            {formatDate(code.updated_at)}
-          </dd>
-          <dd className="truncate text-xs text-muted-foreground">
-            {formatTime(code.updated_at)}
-          </dd>
+          <dd className="truncate text-sm font-medium">{formatDate(code.updated_at)}</dd>
+          <dd className="truncate text-xs text-muted-foreground">{formatTime(code.updated_at)}</dd>
         </div>
       </dl>
 
@@ -1142,27 +982,13 @@ function PremiumCodeMobileCard({
   );
 }
 
-function CapacityMeter({
-  code,
-  compact = false,
-}: {
-  code: AdminPremiumCode;
-  compact?: boolean;
-}) {
+function CapacityMeter({ code, compact = false }: { code: AdminPremiumCode; compact?: boolean }) {
   const limit = code.limit_usage ?? 0;
   const unlimited = limit <= 0;
-  const percentage = unlimited
-    ? 0
-    : Math.min(100, Math.round((code.usage_count / limit) * 100));
+  const percentage = unlimited ? 0 : Math.min(100, Math.round((code.usage_count / limit) * 100));
 
   return (
-    <div
-      className={
-        compact
-          ? "w-full space-y-2"
-          : "rounded-xl border bg-muted/20 p-4 md:p-5"
-      }
-    >
+    <div className={compact ? "w-full space-y-2" : "rounded-xl border bg-muted/20 p-4 md:p-5"}>
       <div className="flex items-end justify-between gap-3">
         <div>
           {!compact && (
@@ -1170,11 +996,7 @@ function CapacityMeter({
               Redemption capacity
             </p>
           )}
-          <p
-            className={
-              compact ? "text-sm font-medium" : "text-2xl font-semibold"
-            }
-          >
+          <p className={compact ? "text-sm font-medium" : "text-2xl font-semibold"}>
             {code.usage_count}
             <span
               className={
@@ -1193,9 +1015,7 @@ function CapacityMeter({
             No limit
           </span>
         ) : (
-          <span className="text-xs tabular-nums text-muted-foreground">
-            {percentage}%
-          </span>
+          <span className="text-xs tabular-nums text-muted-foreground">{percentage}%</span>
         )}
       </div>
       {!unlimited && (
@@ -1203,11 +1023,7 @@ function CapacityMeter({
           value={percentage}
           className={compact ? "h-1.5" : "h-2"}
           indicatorClassName={
-            percentage >= 100
-              ? "bg-red-500"
-              : percentage >= 80
-                ? "bg-amber-500"
-                : "bg-primary"
+            percentage >= 100 ? "bg-red-500" : percentage >= 80 ? "bg-amber-500" : "bg-primary"
           }
         />
       )}
@@ -1237,9 +1053,7 @@ function RedeemerPreview({ labels }: { labels: string[] }) {
         </p>
       ))}
       {labels.length > 2 && (
-        <p className="text-xs font-medium text-primary">
-          +{labels.length - 2} more
-        </p>
+        <p className="text-xs font-medium text-primary">+{labels.length - 2} more</p>
       )}
     </div>
   );
@@ -1284,11 +1098,7 @@ function UsageRow({
   const displayName = label.split(" (")[0] || label;
 
   return (
-    <div
-      className={`flex items-center gap-3 px-3 py-3 ${
-        showBorder ? "border-b" : ""
-      }`}
-    >
+    <div className={`flex items-center gap-3 px-3 py-3 ${showBorder ? "border-b" : ""}`}>
       <div className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
         {getInitials(displayName)}
       </div>
@@ -1296,15 +1106,11 @@ function UsageRow({
         <p className="truncate text-sm font-medium" title={label}>
           {label}
         </p>
-        <p className="truncate font-mono text-[10px] text-muted-foreground">
-          {usage.user_id}
-        </p>
+        <p className="truncate font-mono text-[10px] text-muted-foreground">{usage.user_id}</p>
       </div>
       <div className="shrink-0 text-right">
         <p className="text-xs">{formatDate(usage.created_at)}</p>
-        <p className="text-[11px] text-muted-foreground">
-          {formatTime(usage.created_at)}
-        </p>
+        <p className="text-[11px] text-muted-foreground">{formatTime(usage.created_at)}</p>
       </div>
     </div>
   );
@@ -1349,10 +1155,7 @@ function PageSkeleton() {
         </div>
         <div className="hidden xl:block">
           {Array.from({ length: 5 }).map((_, index) => (
-            <div
-              key={index}
-              className="grid grid-cols-5 gap-6 border-b px-6 py-4 last:border-0"
-            >
+            <div key={index} className="grid grid-cols-5 gap-6 border-b px-6 py-4 last:border-0">
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
@@ -1366,10 +1169,7 @@ function PageSkeleton() {
   );
 }
 
-function getUsedByLabels(
-  code: AdminPremiumCode,
-  userLabelById: Record<string, string>,
-): string[] {
+function getUsedByLabels(code: AdminPremiumCode, userLabelById: Record<string, string>): string[] {
   const labels = (code.key_usage ?? []).map(
     (usage) => userLabelById[usage.user_id] || usage.user_id,
   );

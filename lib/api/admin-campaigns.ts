@@ -4,19 +4,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
 const CAMPAIGN_URL = `${API_URL}/auth/admin/promotional-campaigns`;
 
 export type PromotionalCampaignStatus =
-  | "draft"
-  | "scheduled"
-  | "sending"
-  | "completed"
-  | "cancelled"
-  | "failed";
+  "draft" | "scheduled" | "sending" | "completed" | "cancelled" | "failed";
 
-export type PromotionalDeliveryStatus =
-  | "pending"
-  | "sending"
-  | "sent"
-  | "failed"
-  | "skipped";
+export type PromotionalDeliveryStatus = "pending" | "sending" | "sent" | "failed" | "skipped";
 
 export interface AdminPromotionalCampaign {
   id: string;
@@ -86,17 +76,11 @@ interface APIResponse<T> {
   error?: Record<string, string> | null;
 }
 
-async function request<T>(
-  url: string,
-  init?: RequestInit,
-  allowEmptyData = false,
-): Promise<T> {
+async function request<T>(url: string, init?: RequestInit, allowEmptyData = false): Promise<T> {
   const response = await fetchWithAuth(url, init);
   const result = (await response.json()) as APIResponse<T>;
   if (!response.ok || !result.success || (!allowEmptyData && !result.data)) {
-    const detail = result.error
-      ? Object.values(result.error).filter(Boolean).join(", ")
-      : "";
+    const detail = result.error ? Object.values(result.error).filter(Boolean).join(", ") : "";
     throw new Error(detail || result.message || "Campaign request failed");
   }
   return result.data as T;
@@ -107,15 +91,11 @@ export function getAdminCampaigns(page = 1, limit = 20) {
     page: String(page),
     limit: String(limit),
   });
-  return request<AdminPromotionalCampaignList>(
-    `${CAMPAIGN_URL}?${params.toString()}`,
-  );
+  return request<AdminPromotionalCampaignList>(`${CAMPAIGN_URL}?${params.toString()}`);
 }
 
 export function getAdminCampaign(id: string) {
-  return request<AdminPromotionalCampaign>(
-    `${CAMPAIGN_URL}/${encodeURIComponent(id)}`,
-  );
+  return request<AdminPromotionalCampaign>(`${CAMPAIGN_URL}/${encodeURIComponent(id)}`);
 }
 
 export function createAdminCampaign(payload: CampaignPayload) {
@@ -140,58 +120,35 @@ export function uploadAdminCampaignImage(file: File) {
   });
 }
 
-export function updateAdminCampaign(
-  id: string,
-  payload: Partial<CampaignPayload>,
-) {
-  return request<AdminPromotionalCampaign>(
-    `${CAMPAIGN_URL}/${encodeURIComponent(id)}`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    },
-  );
+export function updateAdminCampaign(id: string, payload: Partial<CampaignPayload>) {
+  return request<AdminPromotionalCampaign>(`${CAMPAIGN_URL}/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
 
 export function scheduleAdminCampaign(id: string, scheduledAt?: string) {
-  return request<AdminPromotionalCampaign>(
-    `${CAMPAIGN_URL}/${encodeURIComponent(id)}/schedule`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(
-        scheduledAt ? { scheduled_at: scheduledAt } : {},
-      ),
-    },
-  );
+  return request<AdminPromotionalCampaign>(`${CAMPAIGN_URL}/${encodeURIComponent(id)}/schedule`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(scheduledAt ? { scheduled_at: scheduledAt } : {}),
+  });
 }
 
 export function cancelAdminCampaign(id: string) {
-  return request<AdminPromotionalCampaign>(
-    `${CAMPAIGN_URL}/${encodeURIComponent(id)}/cancel`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
-    },
-  );
+  return request<AdminPromotionalCampaign>(`${CAMPAIGN_URL}/${encodeURIComponent(id)}/cancel`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({}),
+  });
 }
 
 export function deleteAdminCampaign(id: string) {
-  return request<null>(
-    `${CAMPAIGN_URL}/${encodeURIComponent(id)}`,
-    { method: "DELETE" },
-    true,
-  );
+  return request<null>(`${CAMPAIGN_URL}/${encodeURIComponent(id)}`, { method: "DELETE" }, true);
 }
 
-export function getAdminCampaignDeliveries(
-  campaignId: string,
-  page = 1,
-  limit = 20,
-  status = "",
-) {
+export function getAdminCampaignDeliveries(campaignId: string, page = 1, limit = 20, status = "") {
   const params = new URLSearchParams({
     page: String(page),
     limit: String(limit),

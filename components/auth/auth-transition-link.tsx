@@ -4,13 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
-import {
-  useEffect,
-  useRef,
-  useState,
-  type MouseEvent,
-  type ReactNode,
-} from "react";
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { IconChartBar, IconLink, IconLock } from "@tabler/icons-react";
 import { gsap } from "gsap";
 
@@ -45,12 +39,8 @@ export function AuthTransitionLink({
 
     const context = gsap.context(() => {
       const tiles = gsap.utils.toArray<HTMLElement>("[data-route-tile]");
-      const sideTiles = tiles.filter(
-        (tile) => tile.dataset.routeTile !== "focus",
-      );
-      const focusTile = overlay.querySelector<HTMLElement>(
-        '[data-route-tile="focus"]',
-      );
+      const sideTiles = tiles.filter((tile) => tile.dataset.routeTile !== "focus");
+      const focusTile = overlay.querySelector<HTMLElement>('[data-route-tile="focus"]');
 
       gsap
         .timeline({

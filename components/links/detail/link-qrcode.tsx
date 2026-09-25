@@ -5,13 +5,7 @@ import Image from "next/image";
 import QRCode from "qrcode";
 import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface LinkQRCodeProps {
   url: string;
@@ -57,9 +51,7 @@ export function LinkQRCode({ url, title }: LinkQRCodeProps) {
   return (
     <Card className="size-full flex flex-col">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          QR Code
-        </CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">QR Code</CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex items-center justify-center p-6 bg-white/5 rounded-lg mx-6 my-2 border border-dashed border-gray-200/20">
         {loading ? (

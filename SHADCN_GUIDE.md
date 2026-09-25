@@ -3,6 +3,7 @@
 ## 🎯 Apa itu shadcn/ui?
 
 shadcn/ui adalah **bukan library UI biasa**. Ini adalah **koleksi reusable components** yang:
+
 - ✅ Kamu **copy-paste** langsung ke project (bukan npm package)
 - ✅ Fully customizable - kamu **punya kontrol penuh** atas kode
 - ✅ Built with **Radix UI** + **Tailwind CSS**
@@ -11,23 +12,25 @@ shadcn/ui adalah **bukan library UI biasa**. Ini adalah **koleksi reusable compo
 ## 📦 Apa yang Sudah Diinstall?
 
 ### 1. Dependencies
+
 ```json
 {
   "dependencies": {
-    "class-variance-authority": "^0.7.1",  // Untuk variant management
-    "clsx": "^2.1.1",                       // Utility untuk className
-    "lucide-react": "^0.553.0",             // Icon library
-    "tailwind-merge": "^3.4.0"              // Merge Tailwind classes
+    "class-variance-authority": "^0.7.1", // Untuk variant management
+    "clsx": "^2.1.1", // Utility untuk className
+    "lucide-react": "^0.553.0", // Icon library
+    "tailwind-merge": "^3.4.0" // Merge Tailwind classes
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "tailwindcss": "^4",
-    "tw-animate-css": "^1.4.0"              // Tailwind animations
+    "tw-animate-css": "^1.4.0" // Tailwind animations
   }
 }
 ```
 
 ### 2. Components yang Sudah Ada
+
 ```
 components/
   ui/
@@ -38,15 +41,17 @@ components/
 ```
 
 ### 3. Utils
+
 ```typescript
 // lib/utils.ts
-import { clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 ```
+
 Fungsi `cn()` untuk merge Tailwind classes dengan smart conflict resolution.
 
 ---
@@ -65,6 +70,7 @@ import { Label } from "@/components/ui/label";
 ### 2️⃣ Pakai di JSX
 
 #### Button dengan Variants
+
 ```typescript
 // Default button
 <Button>Click me</Button>
@@ -88,6 +94,7 @@ import { Label } from "@/components/ui/label";
 ```
 
 #### Card Component
+
 ```typescript
 <Card>
   <CardHeader>
@@ -104,12 +111,13 @@ import { Label } from "@/components/ui/label";
 ```
 
 #### Input & Label (Forms)
+
 ```typescript
 <div className="space-y-2">
   <Label htmlFor="email">Email</Label>
-  <Input 
-    id="email" 
-    type="email" 
+  <Input
+    id="email"
+    type="email"
     placeholder="Enter email"
     value={email}
     onChange={(e) => setEmail(e.target.value)}
@@ -122,6 +130,7 @@ import { Label } from "@/components/ui/label";
 ## 📚 Install Component Baru
 
 ### Cara Install
+
 ```bash
 # Install satu component
 bunx shadcn@latest add dialog
@@ -134,6 +143,7 @@ bunx shadcn@latest add --all
 ```
 
 ### Component yang Populer
+
 ```bash
 # Forms
 bunx shadcn@latest add form checkbox radio-group select textarea switch
@@ -159,19 +169,20 @@ bunx shadcn@latest add accordion collapsible sidebar
 ## 🎨 Customization
 
 ### 1. Ubah Warna (Theme)
+
 File: `app/globals.css`
 
 ```css
 :root {
-  --background: oklch(1 0 0);           /* Background color */
-  --foreground: oklch(0.145 0 0);       /* Text color */
-  --primary: oklch(0.205 0 0);          /* Primary color */
+  --background: oklch(1 0 0); /* Background color */
+  --foreground: oklch(0.145 0 0); /* Text color */
+  --primary: oklch(0.205 0 0); /* Primary color */
   --primary-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.577 0.245 27.325);  /* Red for delete/danger */
-  --muted: oklch(0.97 0 0);             /* Muted background */
-  --accent: oklch(0.97 0 0);            /* Accent color */
-  --border: oklch(0.922 0 0);           /* Border color */
-  --radius: 0.625rem;                   /* Border radius */
+  --destructive: oklch(0.577 0.245 27.325); /* Red for delete/danger */
+  --muted: oklch(0.97 0 0); /* Muted background */
+  --accent: oklch(0.97 0 0); /* Accent color */
+  --border: oklch(0.922 0 0); /* Border color */
+  --radius: 0.625rem; /* Border radius */
 }
 
 .dark {
@@ -183,35 +194,34 @@ File: `app/globals.css`
 ```
 
 ### 2. Ubah Component Style
+
 Edit langsung file di `components/ui/button.tsx`:
 
 ```typescript
-const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 /* base styles */",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-input bg-background hover:bg-accent",
-        
-        // Tambah variant custom
-        success: "bg-green-500 text-white hover:bg-green-600",
-      },
-      size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 px-3",
-        lg: "h-11 px-8",
-        
-        // Tambah size custom
-        xl: "h-14 px-10 text-lg",
-      },
+const buttonVariants = cva("inline-flex items-center justify-center gap-2 /* base styles */", {
+  variants: {
+    variant: {
+      default: "bg-primary text-primary-foreground hover:bg-primary/90",
+      destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+      outline: "border border-input bg-background hover:bg-accent",
+
+      // Tambah variant custom
+      success: "bg-green-500 text-white hover:bg-green-600",
     },
-  }
-)
+    size: {
+      default: "h-10 px-4 py-2",
+      sm: "h-9 px-3",
+      lg: "h-11 px-8",
+
+      // Tambah size custom
+      xl: "h-14 px-10 text-lg",
+    },
+  },
+});
 ```
 
 ### 3. Extend dengan Tailwind
+
 ```typescript
 // Tambah custom classes
 <Button className="rounded-full shadow-lg">
@@ -229,6 +239,7 @@ const buttonVariants = cva(
 ## 🔥 Contoh Real-World
 
 ### Login Form
+
 ```typescript
 "use client";
 
@@ -278,6 +289,7 @@ export default function LoginPage() {
 ```
 
 ### Dashboard Card Grid
+
 ```typescript
 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
   <Card>
@@ -288,7 +300,7 @@ export default function LoginPage() {
       <p className="text-3xl font-bold">1,234</p>
     </CardContent>
   </Card>
-  
+
   <Card>
     <CardHeader>
       <CardTitle>Revenue</CardTitle>
@@ -297,7 +309,7 @@ export default function LoginPage() {
       <p className="text-3xl font-bold">$12,345</p>
     </CardContent>
   </Card>
-  
+
   <Card>
     <CardHeader>
       <CardTitle>Active Sessions</CardTitle>
@@ -314,7 +326,9 @@ export default function LoginPage() {
 ## 🎯 Tips & Best Practices
 
 ### 1. Pakai "use client" Directive
+
 Components shadcn/ui yang pakai interactivity harus di client:
+
 ```typescript
 "use client";
 
@@ -326,6 +340,7 @@ export default function MyComponent() {
 ```
 
 ### 2. Kombinasi dengan Tailwind
+
 ```typescript
 <Button className="bg-gradient-to-r from-purple-500 to-pink-500">
   Gradient Button
@@ -333,6 +348,7 @@ export default function MyComponent() {
 ```
 
 ### 3. Responsive Design
+
 ```typescript
 <Card className="w-full md:w-1/2 lg:w-1/3">
   Responsive Card
@@ -340,6 +356,7 @@ export default function MyComponent() {
 ```
 
 ### 4. Dark Mode Support
+
 Semua component sudah support dark mode otomatis karena pakai CSS variables!
 
 ```typescript
@@ -364,6 +381,7 @@ Semua component sudah support dark mode otomatis karena pakai CSS variables!
 ## 🚀 Next Steps
 
 1. **Explore Components**
+
    ```bash
    bunx shadcn@latest add dialog toast dropdown-menu
    ```
@@ -373,6 +391,7 @@ Semua component sudah support dark mode otomatis karena pakai CSS variables!
    - Buat halaman analytics/dashboard
 
 3. **Form Advanced**
+
    ```bash
    bunx shadcn@latest add form select checkbox radio-group
    ```
@@ -389,23 +408,26 @@ Semua component sudah support dark mode otomatis karena pakai CSS variables!
 ## 💡 Yang Sudah Dikerjakan di Project Ini
 
 ✅ **Homepage** (`app/page.tsx`)
+
 - Pakai `Card` untuk welcome message
 - `Button` dengan variants (destructive, outline)
 - `asChild` pattern untuk Link + Button
 
 ✅ **Login Page** (`app/auth/login/page.tsx`)
+
 - Form dengan `Input` + `Label`
 - `Card` layout
 - Integrated dengan `useAuth()` context
 
 ✅ **Auth Pages** (`/auth`, `/register`, `/forgot-password`)
+
 - Konsisten pakai shadcn/ui components
 - Responsive layout
 
 ✅ **Auth Layout** (`app/auth/layout.tsx`)
+
 - Sidebar dengan Tailwind styling
 - Hover effects & transitions
 
 **Jalankan project:** `bun dev`
 **Akses:** http://localhost:3000
-

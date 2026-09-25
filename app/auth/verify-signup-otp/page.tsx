@@ -6,10 +6,7 @@ import { toast } from "sonner";
 import BlobDefault from "@/components/blob/blob-default";
 import { OTPForm } from "@/components/otp-form";
 import { AuthenticatedTransition } from "@/components/auth/authenticated-transition";
-import {
-  signupResendOTP,
-  signupVerifyOTP,
-} from "@/lib/api/auth";
+import { signupResendOTP, signupVerifyOTP } from "@/lib/api/auth";
 
 function VerifySignupOTPContent() {
   const router = useRouter();
@@ -23,7 +20,7 @@ function VerifySignupOTPContent() {
 
   const challengeFromQuery = useMemo(
     () => searchParams.get("challenge_token")?.trim() || "",
-    [searchParams]
+    [searchParams],
   );
 
   useEffect(() => {
@@ -68,16 +65,11 @@ function VerifySignupOTPContent() {
         });
 
         setCompletionUrl(
-          `/auth/complete-profile?signup_token=${encodeURIComponent(
-            response.data.signup_token,
-          )}`,
+          `/auth/complete-profile?signup_token=${encodeURIComponent(response.data.signup_token)}`,
         );
       }
     } catch (err: unknown) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Invalid or expired verification code";
+      const message = err instanceof Error ? err.message : "Invalid or expired verification code";
       setError(message);
       toast.error("Verification Failed", {
         description: message,

@@ -3,12 +3,7 @@
  * 🔑 Functions to manage API keys
  */
 
-import {
-  getWithAuth,
-  postWithAuth,
-  putWithAuth,
-  deleteWithAuth,
-} from "./fetch-wrapper";
+import { getWithAuth, postWithAuth, putWithAuth, deleteWithAuth } from "./fetch-wrapper";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
 
@@ -194,9 +189,7 @@ export async function getAPIKeys(): Promise<APIResponse<APIKeyResponse[]>> {
 /**
  * Get a single API key by ID
  */
-export async function getAPIKey(
-  id: string,
-): Promise<APIResponse<APIKeyResponse>> {
+export async function getAPIKey(id: string): Promise<APIResponse<APIKeyResponse>> {
   const response = await getWithAuth(`${API_URL}/api-keys/${id}`);
   return response.json();
 }
@@ -215,9 +208,7 @@ export async function updateAPIKey(
 /**
  * Delete/revoke an API key
  */
-export async function revokeAPIKey(
-  id: string,
-): Promise<APIResponse<{ message: string }>> {
+export async function revokeAPIKey(id: string): Promise<APIResponse<{ message: string }>> {
   const response = await deleteWithAuth(`${API_URL}/api-keys/${id}`);
   return response.json();
 }
@@ -225,9 +216,7 @@ export async function revokeAPIKey(
 /**
  * Activate an API key
  */
-export async function activateAPIKey(
-  id: string,
-): Promise<APIResponse<APIKeyResponse>> {
+export async function activateAPIKey(id: string): Promise<APIResponse<APIKeyResponse>> {
   const response = await postWithAuth(`${API_URL}/api-keys/${id}/activate`, {});
   return response.json();
 }
@@ -235,22 +224,15 @@ export async function activateAPIKey(
 /**
  * Deactivate an API key
  */
-export async function deactivateAPIKey(
-  id: string,
-): Promise<APIResponse<APIKeyResponse>> {
-  const response = await postWithAuth(
-    `${API_URL}/api-keys/${id}/deactivate`,
-    {},
-  );
+export async function deactivateAPIKey(id: string): Promise<APIResponse<APIKeyResponse>> {
+  const response = await postWithAuth(`${API_URL}/api-keys/${id}/deactivate`, {});
   return response.json();
 }
 
 /**
  * Refresh/regenerate an API key (generates new secret)
  */
-export async function refreshAPIKey(
-  id: string,
-): Promise<APIResponse<APIKeyRefreshResponse>> {
+export async function refreshAPIKey(id: string): Promise<APIResponse<APIKeyRefreshResponse>> {
   const response = await postWithAuth(`${API_URL}/api-keys/${id}/refresh`, {});
   return response.json();
 }
@@ -267,18 +249,14 @@ export async function getAPIKeyUsage(
     page: page.toString(),
     limit: limit.toString(),
   });
-  const response = await getWithAuth(
-    `${API_URL}/api-keys/${id}/usage?${params}`,
-  );
+  const response = await getWithAuth(`${API_URL}/api-keys/${id}/usage?${params}`);
   return response.json();
 }
 
 /**
  * Get API key usage statistics/summary
  */
-export async function getAPIKeyUsageStats(): Promise<
-  APIResponse<APIKeyStatsResponse>
-> {
+export async function getAPIKeyUsageStats(): Promise<APIResponse<APIKeyStatsResponse>> {
   const response = await getWithAuth(`${API_URL}/api-keys/stats`);
   return response.json();
 }

@@ -9,10 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import {
-  HttpMethodBadge,
-  HttpStatusCodeBadge,
-} from "@/components/ui/app-status-badges";
+import { HttpMethodBadge, HttpStatusCodeBadge } from "@/components/ui/app-status-badges";
 import {
   Activity,
   Loader2,
@@ -32,15 +29,15 @@ interface APIKeyUsageDialogProps {
   apiKey: APIKeyResponse;
 }
 
-export function APIKeyUsageDialog({
-  open,
-  onOpenChange,
-  apiKey,
-}: APIKeyUsageDialogProps) {
+export function APIKeyUsageDialog({ open, onOpenChange, apiKey }: APIKeyUsageDialogProps) {
   const [page, setPage] = useState(1);
   const limit = 10;
 
-  const { data: usageData, isLoading, error } = useAPIKeyUsage(
+  const {
+    data: usageData,
+    isLoading,
+    error,
+  } = useAPIKeyUsage(
     apiKey.id,
     page,
     limit,
@@ -94,15 +91,13 @@ export function APIKeyUsageDialog({
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Last Used</p>
-            <p className="text-sm font-medium">
-              {formatDate(apiKey.last_used_at)}
-            </p>
+            <p className="text-sm font-medium">{formatDate(apiKey.last_used_at)}</p>
           </div>
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Rate limit berlaku bersama untuk semua key dalam akun. Request yang
-          ditolak karena izin atau rate limit tidak menambah penggunaan key.
+          Rate limit berlaku bersama untuk semua key dalam akun. Request yang ditolak karena izin
+          atau rate limit tidak menambah penggunaan key.
         </p>
 
         {/* Activity Logs */}
@@ -119,9 +114,7 @@ export function APIKeyUsageDialog({
             <div className="rounded-lg border border-dashed bg-muted/20 p-8 text-center">
               <Activity className="size-10 text-muted-foreground mx-auto mb-3" />
               <p className="text-muted-foreground">No activity yet</p>
-              <p className="text-sm text-muted-foreground">
-                API requests will appear here
-              </p>
+              <p className="text-sm text-muted-foreground">API requests will appear here</p>
             </div>
           ) : (
             <div className="space-y-2">

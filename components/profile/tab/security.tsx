@@ -1,16 +1,6 @@
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { TabsContent } from "@radix-ui/react-tabs";
-import {
-  IconKey,
-  IconShield,
-  IconUserCheck,
-} from "@tabler/icons-react";
+import { IconKey, IconShield, IconUserCheck } from "@tabler/icons-react";
 import { Label } from "recharts";
 import ChangePasswordDialog from "../modal/changePassword";
 import SetupTOTPModal from "../modal/setupTOTP";
@@ -24,16 +14,10 @@ export default function ProfileSecurityTab() {
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const isAdmin = user?.role === "admin" || user?.role === "super_admin";
-  const {
-    data: profileResponse,
-    isLoading,
-    error: profileError,
-    refetch,
-  } = useProfileQuery();
+  const { data: profileResponse, isLoading, error: profileError, refetch } = useProfileQuery();
   const profileData = profileResponse?.data ?? null;
   const shouldAutoOpenTOTP =
-    searchParams.get("openSetupTOTP") === "1" &&
-    !profileData?.auth.totp_enabled;
+    searchParams.get("openSetupTOTP") === "1" && !profileData?.auth.totp_enabled;
 
   const handlePasswordChanged = () => {
     void refetch();
@@ -43,9 +27,7 @@ export default function ProfileSecurityTab() {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
     const now = new Date();
-    const diffInDays = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
-    );
+    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
 
     if (diffInDays === 0) return "Today";
     if (diffInDays === 1) return "Yesterday";
@@ -60,9 +42,7 @@ export default function ProfileSecurityTab() {
         <Card>
           <CardHeader>
             <CardTitle>Security Settings</CardTitle>
-            <CardDescription>
-              Manage your password and security preferences
-            </CardDescription>
+            <CardDescription>Manage your password and security preferences</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Skeleton className="h-20 w-full" />
@@ -100,9 +80,7 @@ export default function ProfileSecurityTab() {
       <Card>
         <CardHeader>
           <CardTitle>Security Settings</CardTitle>
-          <CardDescription>
-            Manage your password and security preferences
-          </CardDescription>
+          <CardDescription>Manage your password and security preferences</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -113,8 +91,7 @@ export default function ProfileSecurityTab() {
                 <div>
                   <p className="text-sm font-medium">Change Password</p>
                   <p className="text-xs text-muted-foreground">
-                    Last changed{" "}
-                    {formatRelativeTime(profileData?.auth.password_changed_at)}
+                    Last changed {formatRelativeTime(profileData?.auth.password_changed_at)}
                   </p>
                 </div>
               </div>
@@ -139,10 +116,7 @@ export default function ProfileSecurityTab() {
                 </div>
               </div>
               {profileData?.auth.totp_enabled ? (
-                <DisableTOTPModal
-                  onDisableComplete={() => refetch()}
-                  disabled={isAdmin}
-                />
+                <DisableTOTPModal onDisableComplete={() => refetch()} disabled={isAdmin} />
               ) : (
                 <SetupTOTPModal
                   onSetupComplete={() => refetch()}
@@ -161,22 +135,16 @@ export default function ProfileSecurityTab() {
                   <p className="text-sm font-medium">Account Status</p>
                   <p className="text-xs text-muted-foreground">
                     Your account access is currently{" "}
-                    {profileData?.auth.account_status === "active"
-                      ? "available"
-                      : "restricted"}
+                    {profileData?.auth.account_status === "active" ? "available" : "restricted"}
                   </p>
                 </div>
               </div>
               <span
                 className={`text-sm font-medium ${
-                  profileData?.auth.account_status === "active"
-                    ? "text-green-600"
-                    : "text-red-600"
+                  profileData?.auth.account_status === "active" ? "text-green-600" : "text-red-600"
                 }`}
               >
-                {profileData?.auth.account_status === "active"
-                  ? "Active"
-                  : "Inactive"}
+                {profileData?.auth.account_status === "active" ? "Active" : "Inactive"}
               </span>
             </div>
           </div>

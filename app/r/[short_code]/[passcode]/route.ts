@@ -15,9 +15,7 @@ export const dynamic = "force-dynamic";
 
 function isClickLimitError(errorData: BackendErrorResponse): boolean {
   const message = (errorData.message || "").toLowerCase();
-  const errorKeys = Object.keys(errorData.error || {}).map((key) =>
-    key.toLowerCase()
-  );
+  const errorKeys = Object.keys(errorData.error || {}).map((key) => key.toLowerCase());
 
   return (
     errorKeys.includes("click_limit") ||
@@ -28,7 +26,7 @@ function isClickLimitError(errorData: BackendErrorResponse): boolean {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ short_code: string; passcode: string }> }
+  { params }: { params: Promise<{ short_code: string; passcode: string }> },
 ) {
   const { short_code, passcode } = await params;
   const backendBaseUrl = resolveBackendBaseUrl(request);
@@ -36,25 +34,20 @@ export async function GET(
 
   try {
     // Fetch from backend with passcode
-    const response = await fetch(
-      `${backendBaseUrl}/short/${short_code}?passcode=${passcode}`,
-      {
-        method: "GET",
-        redirect: "manual",
-        cache: "no-store",
-        headers: {
-          "User-Agent": request.headers.get("user-agent") || "NextJS-Server",
-          "X-Forwarded-For":
-            request.headers.get("x-forwarded-for") ||
-            request.headers.get("x-real-ip") ||
-            "unknown",
-          Referer: request.headers.get("referer") || "",
-          "X-Device-ID": request.headers.get("x-device-id") || "",
-          "X-Browser": request.headers.get("x-browser") || "",
-          "X-OS": request.headers.get("x-os") || "",
-        },
-      }
-    );
+    const response = await fetch(`${backendBaseUrl}/short/${short_code}?passcode=${passcode}`, {
+      method: "GET",
+      redirect: "manual",
+      cache: "no-store",
+      headers: {
+        "User-Agent": request.headers.get("user-agent") || "NextJS-Server",
+        "X-Forwarded-For":
+          request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown",
+        Referer: request.headers.get("referer") || "",
+        "X-Device-ID": request.headers.get("x-device-id") || "",
+        "X-Browser": request.headers.get("x-browser") || "",
+        "X-OS": request.headers.get("x-os") || "",
+      },
+    });
 
     // If backend returns redirect (3xx), forward it to user
     if (
@@ -76,10 +69,7 @@ export async function GET(
     const errorUrl = new URL("/link-error", redirectOrigin);
     errorUrl.searchParams.set("code", short_code);
     errorUrl.searchParams.set("status", response.status.toString());
-    errorUrl.searchParams.set(
-      "message",
-      errorData.message || "Unknown error occurred"
-    );
+    errorUrl.searchParams.set("message", errorData.message || "Unknown error occurred");
 
     switch (response.status) {
       case 401:
@@ -94,7 +84,7 @@ export async function GET(
       case 403:
         errorUrl.searchParams.set(
           "type",
-          isClickLimitError(errorData) ? "click_limit" : "forbidden"
+          isClickLimitError(errorData) ? "click_limit" : "forbidden",
         );
         break;
 
@@ -115,10 +105,7 @@ export async function GET(
     const errorUrl = new URL("/link-error", redirectOrigin);
     errorUrl.searchParams.set("code", short_code);
     errorUrl.searchParams.set("type", "network");
-    errorUrl.searchParams.set(
-      "message",
-      "Unable to reach the server. Please try again."
-    );
+    errorUrl.searchParams.set("message", "Unable to reach the server. Please try again.");
 
     return createRedirectResponse(errorUrl.toString());
   }

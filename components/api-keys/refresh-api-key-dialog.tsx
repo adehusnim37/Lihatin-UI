@@ -10,20 +10,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Loader2,
-  RefreshCw,
-  AlertTriangle,
-  Copy,
-  Check,
-  Key,
-} from "lucide-react";
+import { Loader2, RefreshCw, AlertTriangle, Copy, Check, Key } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import {
-  refreshAPIKey,
-  APIKeyResponse,
-  APIKeyRefreshResponse,
-} from "@/lib/api/api-keys";
+import { refreshAPIKey, APIKeyResponse, APIKeyRefreshResponse } from "@/lib/api/api-keys";
 import { toast } from "sonner";
 
 interface RefreshAPIKeyDialogProps {
@@ -40,8 +29,7 @@ export function RefreshAPIKeyDialog({
   onSuccess,
 }: RefreshAPIKeyDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [refreshedKey, setRefreshedKey] =
-    useState<APIKeyRefreshResponse | null>(null);
+  const [refreshedKey, setRefreshedKey] = useState<APIKeyRefreshResponse | null>(null);
   const [copied, setCopied] = useState(false);
 
   const handleRefresh = async () => {
@@ -101,9 +89,7 @@ export function RefreshAPIKeyDialog({
             <div className="flex items-start gap-3 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
               <AlertTriangle className="size-5 text-amber-500 mt-0.5 flex-shrink-0" />
               <div className="space-y-1">
-                <p className="text-sm font-medium text-amber-500">
-                  {refreshedKey.secret.warning}
-                </p>
+                <p className="text-sm font-medium text-amber-500">{refreshedKey.secret.warning}</p>
                 <p className="text-xs text-muted-foreground">
                   The old key has been invalidated and will no longer work.
                 </p>
@@ -166,9 +152,7 @@ export function RefreshAPIKeyDialog({
             </div>
             <DialogTitle>Regenerate API Key</DialogTitle>
           </div>
-          <DialogDescription>
-            Generate a new secret for this API key?
-          </DialogDescription>
+          <DialogDescription>Generate a new secret for this API key?</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -180,8 +164,7 @@ export function RefreshAPIKeyDialog({
                 This will invalidate the current key
               </p>
               <p className="text-xs text-muted-foreground">
-                Any applications using the current key will need to be updated
-                with the new key.
+                Any applications using the current key will need to be updated with the new key.
               </p>
             </div>
           </div>
@@ -193,9 +176,7 @@ export function RefreshAPIKeyDialog({
               <p className="font-medium">{apiKey.name}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">
-                Current Key Preview
-              </p>
+              <p className="text-xs text-muted-foreground">Current Key Preview</p>
               <code className="text-sm bg-muted px-2 py-0.5 rounded font-mono">
                 {apiKey.key_preview}
               </code>
@@ -204,12 +185,7 @@ export function RefreshAPIKeyDialog({
         </div>
 
         <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClose}
-            disabled={isLoading}
-          >
+          <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
             Cancel
           </Button>
           <Button onClick={handleRefresh} disabled={isLoading}>

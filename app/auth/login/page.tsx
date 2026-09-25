@@ -17,23 +17,14 @@ import {
   LoginResponse,
   startGoogleOAuth,
 } from "@/lib/api/auth";
-import {
-  buildAuthSupportURL,
-  getAuthSupportReasonFromMessage,
-} from "@/lib/auth-support";
+import { buildAuthSupportURL, getAuthSupportReasonFromMessage } from "@/lib/auth-support";
 import { useAuth } from "@/app/context/AuthContext";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthenticatedTransition } from "@/components/auth/authenticated-transition";
 
 function GoogleIcon() {
   return (
-    <svg
-      aria-hidden="true"
-      focusable="false"
-      width="18"
-      height="18"
-      viewBox="0 0 48 48"
-    >
+    <svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 48 48">
       <path
         fill="#FFC107"
         d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.3-.4-3.5z"
@@ -60,9 +51,7 @@ function LoginContent() {
   const auth = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [authenticatedDestination, setAuthenticatedDestination] = useState<
-    string | null
-  >(null);
+  const [authenticatedDestination, setAuthenticatedDestination] = useState<string | null>(null);
   // Ensure loading flags are cleared when returning from external OAuth flow.
   useEffect(() => {
     const resetLoadingState = () => {
@@ -108,8 +97,7 @@ function LoginContent() {
       });
     } else if (error === "verification_failed") {
       toast.error("Verification Failed", {
-        description:
-          "Email verification failed. The link may be expired or invalid.",
+        description: "Email verification failed. The link may be expired or invalid.",
         duration: 4000,
       });
     } else if (error === "session_expired") {
@@ -176,14 +164,8 @@ function LoginContent() {
         // Check if TOTP verification is required (NO tokens issued yet!)
         if (requiresTOTP(response.data)) {
           // Save pending auth token and user info for TOTP verification
-          sessionStorage.setItem(
-            "pending_auth_token",
-            response.data.pending_auth_token
-          );
-          sessionStorage.setItem(
-            "pending_user",
-            JSON.stringify(response.data.user)
-          );
+          sessionStorage.setItem("pending_auth_token", response.data.pending_auth_token);
+          sessionStorage.setItem("pending_user", JSON.stringify(response.data.user));
 
           toast.success("Verification Required", {
             description: "Please enter your 2FA code",
@@ -194,10 +176,7 @@ function LoginContent() {
         }
 
         if (requiresEmailOTP(response.data)) {
-          sessionStorage.setItem(
-            "pending_email_otp_challenge",
-            response.data.challenge_token
-          );
+          sessionStorage.setItem("pending_email_otp_challenge", response.data.challenge_token);
           sessionStorage.setItem("pending_email_otp_email", response.data.email);
 
           toast.success("Verification Required", {
@@ -206,9 +185,7 @@ function LoginContent() {
           });
 
           const redirectTo = searchParams.get("redirect") || "/main";
-          router.push(
-            `/auth/verify-email-otp?redirect=${encodeURIComponent(redirectTo)}`
-          );
+          router.push(`/auth/verify-email-otp?redirect=${encodeURIComponent(redirectTo)}`);
           return;
         }
 
@@ -231,17 +208,12 @@ function LoginContent() {
       }
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Invalid credentials. Please try again.";
+        error instanceof Error ? error.message : "Invalid credentials. Please try again.";
 
       // Avoid noisy console logs for expected auth/business errors
       if (
         process.env.NODE_ENV !== "production" &&
-        ![
-          "User not found",
-          "Too many requests, please try again later",
-        ].includes(errorMessage)
+        !["User not found", "Too many requests, please try again later"].includes(errorMessage)
       ) {
         console.error("Login error:", error);
       }
@@ -257,9 +229,7 @@ function LoginContent() {
         const emailForSupport = formData.email_or_username.includes("@")
           ? formData.email_or_username.trim()
           : undefined;
-        setSupportLink(
-          buildAuthSupportURL(supportReason, emailForSupport, "login"),
-        );
+        setSupportLink(buildAuthSupportURL(supportReason, emailForSupport, "login"));
       }
     } finally {
       setIsLoading(false);
@@ -282,9 +252,7 @@ function LoginContent() {
       window.location.assign(authorizationURL);
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Failed to start Google sign-in.";
+        error instanceof Error ? error.message : "Failed to start Google sign-in.";
 
       toast.error("Google Sign-in Failed", {
         description: errorMessage,
@@ -405,9 +373,7 @@ function LoginContent() {
 
       {supportLink && (
         <div className="mt-4 rounded-xl border bg-muted/30 p-3 text-center">
-          <p className="text-sm text-muted-foreground">
-            Need help accessing your account?
-          </p>
+          <p className="text-sm text-muted-foreground">Need help accessing your account?</p>
           <Link
             href={supportLink}
             className="mt-1 inline-block text-sm font-semibold text-primary hover:underline"

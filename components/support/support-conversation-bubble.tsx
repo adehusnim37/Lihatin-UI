@@ -61,9 +61,7 @@ export function SupportConversationBubble({
 
   const getUrl = (id: string, inline = false) => {
     const url = getAttachmentUrl?.(id) || "#";
-    return inline && url !== "#"
-      ? `${url}${url.includes("?") ? "&" : "?"}disposition=inline`
-      : url;
+    return inline && url !== "#" ? `${url}${url.includes("?") ? "&" : "?"}disposition=inline` : url;
   };
 
   const download = (attachment: SupportAttachment) => {
@@ -74,15 +72,19 @@ export function SupportConversationBubble({
     link.click();
   };
 
-  const mine = isAdminView 
+  const mine = isAdminView
     ? message.sender_type === "admin"
     : message.sender_type === "public" || message.sender_type === "user";
 
-  const senderLabel = mine 
-    ? "You" 
-    : isAdminView 
-      ? (message.sender_type === "system" ? "System" : "User")
-      : (message.sender_type === "admin" ? "Support Team" : "System");
+  const senderLabel = mine
+    ? "You"
+    : isAdminView
+      ? message.sender_type === "system"
+        ? "System"
+        : "User"
+      : message.sender_type === "admin"
+        ? "Support Team"
+        : "System";
 
   return (
     <div className={cn("flex", mine ? "justify-end" : "justify-start")}>
@@ -180,7 +182,9 @@ function isPdf(attachment: SupportAttachment) {
 }
 
 function isPreviewable(attachment: SupportAttachment) {
-  return isPdf(attachment) ||
+  return (
+    isPdf(attachment) ||
     attachment.content_type === "image/jpeg" ||
-    /\.jpe?g$/i.test(attachment.file_name);
+    /\.jpe?g$/i.test(attachment.file_name)
+  );
 }

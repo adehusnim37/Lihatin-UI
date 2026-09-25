@@ -7,6 +7,6 @@ export function GET() {
     {
       status: 200,
       headers: NO_STORE_HEADERS,
-    }
+    },
   );
 }

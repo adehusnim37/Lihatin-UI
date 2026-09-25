@@ -1,10 +1,7 @@
 import { StatusBadge, type StatusBadgeTone } from "@/components/ui/status-badge";
 import type { SupportPriority, SupportTicketStatus } from "@/lib/api/support";
 
-const statusMap: Record<
-  SupportTicketStatus,
-  { label: string; tone: StatusBadgeTone }
-> = {
+const statusMap: Record<SupportTicketStatus, { label: string; tone: StatusBadgeTone }> = {
   open: {
     label: "Open",
     tone: "warning",
@@ -23,10 +20,7 @@ const statusMap: Record<
   },
 };
 
-const priorityMap: Record<
-  SupportPriority,
-  { label: string; tone: StatusBadgeTone }
-> = {
+const priorityMap: Record<SupportPriority, { label: string; tone: StatusBadgeTone }> = {
   low: {
     label: "Low",
     tone: "neutral",
@@ -48,19 +42,11 @@ const priorityMap: Record<
 export function SupportStatusBadge({ status }: { status: SupportTicketStatus }) {
   const item = statusMap[status];
 
-  return (
-    <StatusBadge tone={item.tone}>
-      {item.label}
-    </StatusBadge>
-  );
+  return <StatusBadge tone={item.tone}>{item.label}</StatusBadge>;
 }
 
 export function SupportPriorityBadge({ priority }: { priority: SupportPriority }) {
   const item = priorityMap[priority];
 
-  return (
-    <StatusBadge tone={item.tone}>
-      {item.label}
-    </StatusBadge>
-  );
+  return <StatusBadge tone={item.tone}>{item.label}</StatusBadge>;
 }

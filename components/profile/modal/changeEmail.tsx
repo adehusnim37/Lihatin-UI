@@ -83,8 +83,7 @@ export default function ChangeEmailModal({
 
     if (!eligibility?.eligible) {
       setErrorMessage(
-        eligibility?.message ||
-          "You are not eligible to change your email at this time."
+        eligibility?.message || "You are not eligible to change your email at this time.",
       );
       return;
     }
@@ -95,15 +94,12 @@ export default function ChangeEmailModal({
       });
       setSuccessMessage(response.message || "Email change requested.");
       toast.success("Email change requested", {
-        description:
-          "Check your new inbox and verify the email to complete the change.",
+        description: "Check your new inbox and verify the email to complete the change.",
       });
       onEmailChanged?.();
       setTimeout(() => setIsOpen(false), 1200);
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "Failed to change email."
-      );
+      setErrorMessage(error instanceof Error ? error.message : "Failed to change email.");
     }
   };
 
@@ -152,10 +148,8 @@ export default function ChangeEmailModal({
               )}
               {!isCheckingEligibility && eligibility && !eligibility.eligible && (
                 <span>
-                  {eligibility.message ||
-                    "You cannot change your email right now."}
-                  {typeof eligibility.days_remaining === "number" &&
-                  eligibility.days_remaining > 0
+                  {eligibility.message || "You cannot change your email right now."}
+                  {typeof eligibility.days_remaining === "number" && eligibility.days_remaining > 0
                     ? ` (${eligibility.days_remaining} day(s) remaining)`
                     : ""}
                 </span>

@@ -49,8 +49,7 @@ export function CampaignEmailPreview({
         <div className="px-5 py-6 text-[15px] leading-relaxed sm:px-7">
           <p className="font-medium text-[#111827]">Hi Alex,</p>
           <p className="mt-3 whitespace-pre-line text-[#334155]">
-            {body?.trim() ||
-              "Your campaign message will appear here as you write."}
+            {body?.trim() || "Your campaign message will appear here as you write."}
           </p>
 
           {hasCTA ? (
@@ -59,17 +58,14 @@ export function CampaignEmailPreview({
                 {ctaLabel}
                 <IconExternalLink className="size-4" />
               </div>
-              <p className="mt-2 break-all text-center text-[11px] text-[#94a3b8]">
-                {ctaURL}
-              </p>
+              <p className="mt-2 break-all text-center text-[11px] text-[#94a3b8]">{ctaURL}</p>
             </div>
           ) : null}
         </div>
 
         <div className="border-t border-[#edf1f7] px-5 py-5 text-center text-xs leading-relaxed text-[#64748b] sm:px-7">
           <p>
-            Need help?{" "}
-            <span className="text-[#2f5f8c]">Support</span> ·{" "}
+            Need help? <span className="text-[#2f5f8c]">Support</span> ·{" "}
             <span className="text-[#2f5f8c]">Privacy Policy</span> ·{" "}
             <span className="text-[#2f5f8c]">Terms</span>
           </p>

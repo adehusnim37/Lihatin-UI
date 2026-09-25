@@ -32,13 +32,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -58,10 +52,7 @@ import {
 } from "@/components/ui/select";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  StatusBadge,
-  type StatusBadgeTone,
-} from "@/components/ui/status-badge";
+import { StatusBadge, type StatusBadgeTone } from "@/components/ui/status-badge";
 import {
   Table,
   TableBody,
@@ -114,8 +105,7 @@ export default function AdminEmailCampaignsPage() {
   const isAdmin = role === "admin" || role === "super_admin";
   const [page, setPage] = useState(1);
   const [editorOpen, setEditorOpen] = useState(false);
-  const [editingCampaign, setEditingCampaign] =
-    useState<AdminPromotionalCampaign | null>(null);
+  const [editingCampaign, setEditingCampaign] = useState<AdminPromotionalCampaign | null>(null);
   const [form, setForm] = useState<CampaignPayload>(EMPTY_FORM);
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedID, setSelectedID] = useState("");
@@ -123,22 +113,13 @@ export default function AdminEmailCampaignsPage() {
   const [deliveryPage, setDeliveryPage] = useState(1);
   const [deliveryStatus, setDeliveryStatus] = useState("all");
   const [scheduleOpen, setScheduleOpen] = useState(false);
-  const [scheduleCampaign, setScheduleCampaign] =
-    useState<AdminPromotionalCampaign | null>(null);
+  const [scheduleCampaign, setScheduleCampaign] = useState<AdminPromotionalCampaign | null>(null);
   const [scheduleMode, setScheduleMode] = useState<"now" | "later">("now");
   const [scheduledAt, setScheduledAt] = useState("");
-  const [confirmation, setConfirmation] =
-    useState<ConfirmationAction>(null);
+  const [confirmation, setConfirmation] = useState<ConfirmationAction>(null);
 
-  const campaignsQuery = useAdminCampaignsQuery(
-    page,
-    PAGE_LIMIT,
-    isAdmin,
-  );
-  const detailQuery = useAdminCampaignQuery(
-    selectedID,
-    detailOpen && isAdmin,
-  );
+  const campaignsQuery = useAdminCampaignsQuery(page, PAGE_LIMIT, isAdmin);
+  const detailQuery = useAdminCampaignQuery(selectedID, detailOpen && isAdmin);
   const deliveriesQuery = useAdminCampaignDeliveriesQuery(
     selectedID,
     deliveryPage,
@@ -163,17 +144,10 @@ export default function AdminEmailCampaignsPage() {
   const summary = useMemo(
     () => ({
       total: campaignsQuery.data?.total ?? 0,
-      active: campaigns.filter((campaign) =>
-        ["scheduled", "sending"].includes(campaign.status),
-      ).length,
-      sent: campaigns.reduce(
-        (total, campaign) => total + campaign.sent_count,
-        0,
-      ),
-      failed: campaigns.reduce(
-        (total, campaign) => total + campaign.failed_count,
-        0,
-      ),
+      active: campaigns.filter((campaign) => ["scheduled", "sending"].includes(campaign.status))
+        .length,
+      sent: campaigns.reduce((total, campaign) => total + campaign.sent_count, 0),
+      failed: campaigns.reduce((total, campaign) => total + campaign.failed_count, 0),
     }),
     [campaigns, campaignsQuery.data?.total],
   );
@@ -277,9 +251,7 @@ export default function AdminEmailCampaignsPage() {
         id: scheduleCampaign.id,
         scheduledAt: scheduledISO,
       });
-      toast.success(
-        scheduleMode === "now" ? "Campaign queued" : "Campaign scheduled",
-      );
+      toast.success(scheduleMode === "now" ? "Campaign queued" : "Campaign scheduled");
       setScheduleOpen(false);
     } catch (error) {
       showError("Campaign could not be scheduled", error);
@@ -325,9 +297,7 @@ export default function AdminEmailCampaignsPage() {
         <div className="flex flex-1 flex-col gap-6 p-6">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div className="space-y-1">
-              <h1 className="text-2xl font-semibold tracking-tight">
-                Email Campaigns
-              </h1>
+              <h1 className="text-2xl font-semibold tracking-tight">Email Campaigns</h1>
               <p className="text-sm text-muted-foreground">
                 Create and schedule promotional email for opted-in users.
               </p>
@@ -357,9 +327,7 @@ export default function AdminEmailCampaignsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Access denied</CardTitle>
-                <CardDescription>
-                  This page is available only to administrators.
-                </CardDescription>
+                <CardDescription>This page is available only to administrators.</CardDescription>
               </CardHeader>
             </Card>
           ) : (
@@ -383,9 +351,7 @@ export default function AdminEmailCampaignsPage() {
                     <TableSkeleton />
                   ) : campaignsQuery.isError ? (
                     <div className="rounded-lg border p-6 text-center">
-                      <p className="text-sm font-medium">
-                        Campaigns could not be loaded.
-                      </p>
+                      <p className="text-sm font-medium">Campaigns could not be loaded.</p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {campaignsQuery.error instanceof Error
                           ? campaignsQuery.error.message
@@ -395,9 +361,7 @@ export default function AdminEmailCampaignsPage() {
                   ) : campaigns.length === 0 ? (
                     <div className="rounded-lg border border-dashed p-10 text-center">
                       <IconMail className="mx-auto size-8 text-muted-foreground" />
-                      <p className="mt-3 text-sm font-medium">
-                        No email campaigns yet
-                      </p>
+                      <p className="mt-3 text-sm font-medium">No email campaigns yet</p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         Create a draft to prepare your first promotion.
                       </p>
@@ -501,9 +465,7 @@ export default function AdminEmailCampaignsPage() {
         onTabChange={setDetailTab}
         onOpenChange={setDetailOpen}
         onEdit={() => selectedCampaign && openEdit(selectedCampaign)}
-        onSchedule={() =>
-          selectedCampaign && openSchedule(selectedCampaign)
-        }
+        onSchedule={() => selectedCampaign && openSchedule(selectedCampaign)}
         deliveries={deliveriesQuery.data}
         deliveriesLoading={deliveriesQuery.isLoading}
         deliveryPage={deliveryPage}
@@ -522,9 +484,7 @@ export default function AdminEmailCampaignsPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirmation?.type === "cancel"
-                ? "Cancel this campaign?"
-                : "Delete this campaign?"}
+              {confirmation?.type === "cancel" ? "Cancel this campaign?" : "Delete this campaign?"}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {confirmation?.type === "cancel"
@@ -536,9 +496,7 @@ export default function AdminEmailCampaignsPage() {
             <AlertDialogCancel>Keep campaign</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => void confirmAction()}
-              disabled={
-                cancelMutation.isPending || deleteMutation.isPending
-              }
+              disabled={cancelMutation.isPending || deleteMutation.isPending}
             >
               Confirm
             </AlertDialogAction>
@@ -564,35 +522,27 @@ function CampaignRow({
   onCancel: () => void;
   onDelete: () => void;
 }) {
-  const schedulable =
-    campaign.status === "draft" || campaign.status === "failed";
-  const deletable =
-    campaign.status === "draft" || campaign.status === "cancelled";
+  const schedulable = campaign.status === "draft" || campaign.status === "failed";
+  const deletable = campaign.status === "draft" || campaign.status === "cancelled";
 
   return (
     <TableRow>
       <TableCell>
         <p className="font-medium">{campaign.name}</p>
-        <p className="max-w-64 truncate text-xs text-muted-foreground">
-          {campaign.subject}
-        </p>
+        <p className="max-w-64 truncate text-xs text-muted-foreground">{campaign.subject}</p>
       </TableCell>
       <TableCell>
         <CampaignStatusBadge status={campaign.status} />
       </TableCell>
       <TableCell className="text-xs text-muted-foreground">
-        {campaign.scheduled_at
-          ? formatDateTime(campaign.scheduled_at)
-          : "Not scheduled"}
+        {campaign.scheduled_at ? formatDateTime(campaign.scheduled_at) : "Not scheduled"}
       </TableCell>
       <TableCell>
         <p className="text-sm">
           {campaign.sent_count}/{campaign.recipient_count} sent
         </p>
         {campaign.failed_count > 0 ? (
-          <p className="text-xs text-destructive">
-            {campaign.failed_count} failed
-          </p>
+          <p className="text-xs text-destructive">{campaign.failed_count} failed</p>
         ) : null}
       </TableCell>
       <TableCell>
@@ -654,19 +604,14 @@ function CampaignEditorDialog({
   const update = (field: keyof CampaignPayload, value: string) =>
     onFormChange({ ...form, [field]: value });
   const applyTemplate = () => {
-    const template = campaignTemplates.find(
-      (candidate) => candidate.id === templateID,
-    );
+    const template = campaignTemplates.find((candidate) => candidate.id === templateID);
     if (!template) return;
 
     onFormChange({
       ...template.payload,
       image_url: form.image_url,
       image_alt: form.image_alt,
-      name:
-        campaign || form.name.trim()
-          ? form.name
-          : template.payload.name,
+      name: campaign || form.name.trim() ? form.name : template.payload.name,
     });
     setEditorTab("compose");
     toast.success("Template applied", {
@@ -696,9 +641,7 @@ function CampaignEditorDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="h-[90dvh] w-[calc(100vw-2rem)] grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden sm:max-w-4xl">
         <DialogHeader>
-          <DialogTitle>
-            {campaign ? "Edit campaign" : "New promotional campaign"}
-          </DialogTitle>
+          <DialogTitle>{campaign ? "Edit campaign" : "New promotional campaign"}</DialogTitle>
           <DialogDescription>
             Messages are delivered only to verified users who opted in.
           </DialogDescription>
@@ -715,10 +658,7 @@ function CampaignEditorDialog({
               Preview
             </TabsTrigger>
           </TabsList>
-          <TabsContent
-            value="compose"
-            className="grid min-w-0 gap-4 py-2"
-          >
+          <TabsContent value="compose" className="grid min-w-0 gap-4 py-2">
             <div className="rounded-lg border bg-muted/30 p-4">
               <div className="flex items-center gap-2">
                 <IconTemplate className="size-5 text-muted-foreground" />
@@ -747,11 +687,7 @@ function CampaignEditorDialog({
                 </Button>
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
-                {
-                  campaignTemplates.find(
-                    (template) => template.id === templateID,
-                  )?.description
-                }
+                {campaignTemplates.find((template) => template.id === templateID)?.description}
               </p>
             </div>
 
@@ -805,8 +741,8 @@ function CampaignEditorDialog({
                 <div>
                   <Label htmlFor="campaign-image-url">Hero image</Label>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Optional. Upload an image or use a public HTTPS URL. A
-                    1200×630 image works well across email clients.
+                    Optional. Upload an image or use a public HTTPS URL. A 1200×630 image works well
+                    across email clients.
                   </p>
                 </div>
               </div>
@@ -815,9 +751,7 @@ function CampaignEditorDialog({
                 type="url"
                 value={form.image_url}
                 maxLength={1000}
-                onChange={(event) =>
-                  update("image_url", event.target.value)
-                }
+                onChange={(event) => update("image_url", event.target.value)}
                 placeholder="https://cdn.example.com/campaign.jpg"
               />
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -878,9 +812,7 @@ function CampaignEditorDialog({
                     id="campaign-image-alt"
                     value={form.image_alt}
                     maxLength={180}
-                    onChange={(event) =>
-                      update("image_alt", event.target.value)
-                    }
+                    onChange={(event) => update("image_alt", event.target.value)}
                     placeholder="Describe the image for screen readers"
                   />
                 </div>
@@ -893,9 +825,7 @@ function CampaignEditorDialog({
                   id="campaign-cta-label"
                   value={form.cta_label}
                   maxLength={80}
-                  onChange={(event) =>
-                    update("cta_label", event.target.value)
-                  }
+                  onChange={(event) => update("cta_label", event.target.value)}
                   placeholder="Explore Premium"
                 />
               </div>
@@ -904,9 +834,7 @@ function CampaignEditorDialog({
                 <Input
                   id="campaign-cta-url"
                   value={form.cta_url}
-                  onChange={(event) =>
-                    update("cta_url", event.target.value)
-                  }
+                  onChange={(event) => update("cta_url", event.target.value)}
                   placeholder="https://lihat.in/main"
                 />
               </div>
@@ -925,11 +853,7 @@ function CampaignEditorDialog({
           </TabsContent>
         </Tabs>
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={saving}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
             Cancel
           </Button>
           <Button onClick={onSubmit} disabled={saving}>
@@ -968,19 +892,13 @@ function ScheduleDialog({
         <DialogHeader>
           <DialogTitle>Schedule campaign</DialogTitle>
           <DialogDescription>
-            {campaign?.name}. The worker checks scheduled campaigns every
-            minute.
+            {campaign?.name}. The worker checks scheduled campaigns every minute.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-2">
           <div className="grid gap-2">
             <Label>Delivery timing</Label>
-            <Select
-              value={mode}
-              onValueChange={(value) =>
-                onModeChange(value as "now" | "later")
-              }
-            >
+            <Select value={mode} onValueChange={(value) => onModeChange(value as "now" | "later")}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -997,9 +915,7 @@ function ScheduleDialog({
                 id="campaign-scheduled-at"
                 type="datetime-local"
                 value={scheduledAt}
-                onChange={(event) =>
-                  onScheduledAtChange(event.target.value)
-                }
+                onChange={(event) => onScheduledAtChange(event.target.value)}
               />
               <p className="text-xs text-muted-foreground">
                 Interpreted in your browser’s local timezone.
@@ -1008,20 +924,12 @@ function ScheduleDialog({
           ) : null}
         </div>
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={pending}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
             Cancel
           </Button>
           <Button onClick={onSubmit} disabled={pending}>
             <IconCalendarClock className="size-4" />
-            {pending
-              ? "Scheduling..."
-              : mode === "now"
-                ? "Queue campaign"
-                : "Schedule campaign"}
+            {pending ? "Scheduling..." : mode === "now" ? "Queue campaign" : "Schedule campaign"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -1053,10 +961,7 @@ function CampaignDetailDialog({
   onOpenChange: (open: boolean) => void;
   onEdit: () => void;
   onSchedule: () => void;
-  deliveries:
-    | ReturnType<
-        typeof useAdminCampaignDeliveriesQuery
-      >["data"];
+  deliveries: ReturnType<typeof useAdminCampaignDeliveriesQuery>["data"];
   deliveriesLoading: boolean;
   deliveryPage: number;
   deliveryStatus: string;
@@ -1085,9 +990,7 @@ function CampaignDetailDialog({
           >
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="deliveries">
-                Deliveries ({campaign.recipient_count})
-              </TabsTrigger>
+              <TabsTrigger value="deliveries">Deliveries ({campaign.recipient_count})</TabsTrigger>
             </TabsList>
             <TabsContent value="overview" className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-3">
@@ -1120,9 +1023,7 @@ function CampaignDetailDialog({
                     </p>
                     <p>
                       Started:{" "}
-                      {campaign.started_at
-                        ? formatDateTime(campaign.started_at)
-                        : "Not started"}
+                      {campaign.started_at ? formatDateTime(campaign.started_at) : "Not started"}
                     </p>
                     <p>
                       Completed:{" "}
@@ -1140,8 +1041,7 @@ function CampaignDetailDialog({
                     Edit
                   </Button>
                 ) : null}
-                {campaign.status === "draft" ||
-                campaign.status === "failed" ? (
+                {campaign.status === "draft" || campaign.status === "failed" ? (
                   <Button onClick={onSchedule}>
                     <IconSend className="size-4" />
                     {campaign.status === "failed" ? "Retry failed" : "Schedule"}
@@ -1151,10 +1051,7 @@ function CampaignDetailDialog({
             </TabsContent>
             <TabsContent value="deliveries" className="space-y-4">
               <div className="flex justify-end">
-                <Select
-                  value={deliveryStatus}
-                  onValueChange={onDeliveryStatusChange}
-                >
+                <Select value={deliveryStatus} onValueChange={onDeliveryStatusChange}>
                   <SelectTrigger className="w-40">
                     <SelectValue />
                   </SelectTrigger>
@@ -1187,17 +1084,13 @@ function CampaignDetailDialog({
                           <TableRow key={delivery.id}>
                             <TableCell>
                               <p className="text-sm">{delivery.email}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {delivery.user_id}
-                              </p>
+                              <p className="text-xs text-muted-foreground">{delivery.user_id}</p>
                             </TableCell>
                             <TableCell>
                               <DeliveryStatusBadge status={delivery.status} />
                             </TableCell>
                             <TableCell className="text-xs text-muted-foreground">
-                              {delivery.sent_at
-                                ? formatDateTime(delivery.sent_at)
-                                : "—"}
+                              {delivery.sent_at ? formatDateTime(delivery.sent_at) : "—"}
                             </TableCell>
                             <TableCell className="max-w-56 truncate text-xs text-destructive">
                               {delivery.error_message || "—"}
@@ -1216,9 +1109,7 @@ function CampaignDetailDialog({
                         size="sm"
                         variant="outline"
                         disabled={deliveryPage <= 1}
-                        onClick={() =>
-                          onDeliveryPageChange(deliveryPage - 1)
-                        }
+                        onClick={() => onDeliveryPageChange(deliveryPage - 1)}
                       >
                         Previous
                       </Button>
@@ -1226,9 +1117,7 @@ function CampaignDetailDialog({
                         size="sm"
                         variant="outline"
                         disabled={deliveryPage >= deliveries.total_pages}
-                        onClick={() =>
-                          onDeliveryPageChange(deliveryPage + 1)
-                        }
+                        onClick={() => onDeliveryPageChange(deliveryPage + 1)}
                       >
                         Next
                       </Button>
@@ -1248,11 +1137,7 @@ function CampaignDetailDialog({
   );
 }
 
-function CampaignStatusBadge({
-  status,
-}: {
-  status: PromotionalCampaignStatus;
-}) {
+function CampaignStatusBadge({ status }: { status: PromotionalCampaignStatus }) {
   const tones: Record<PromotionalCampaignStatus, StatusBadgeTone> = {
     draft: "neutral",
     scheduled: "info",
@@ -1264,11 +1149,7 @@ function CampaignStatusBadge({
   return <StatusBadge tone={tones[status]}>{capitalize(status)}</StatusBadge>;
 }
 
-function DeliveryStatusBadge({
-  status,
-}: {
-  status: PromotionalDeliveryStatus;
-}) {
+function DeliveryStatusBadge({ status }: { status: PromotionalDeliveryStatus }) {
   const tones: Record<PromotionalDeliveryStatus, StatusBadgeTone> = {
     pending: "neutral",
     sending: "warning",
@@ -1284,9 +1165,7 @@ function SummaryCard({ label, value }: { label: string; value: number }) {
     <Card>
       <CardContent className="p-4">
         <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="mt-1 text-2xl font-semibold">
-          {value.toLocaleString()}
-        </p>
+        <p className="mt-1 text-2xl font-semibold">{value.toLocaleString()}</p>
       </CardContent>
     </Card>
   );
@@ -1340,8 +1219,7 @@ function isHTTPURL(value: string) {
 
 function showError(title: string, error: unknown) {
   toast.error(title, {
-    description:
-      error instanceof Error ? error.message : "Please try again.",
+    description: error instanceof Error ? error.message : "Please try again.",
   });
 }
 

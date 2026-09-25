@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-import {
-  createRedirectResponse,
-  getRequestProtocol,
-} from "@/lib/security/response";
+import { createRedirectResponse, getRequestProtocol } from "@/lib/security/response";
 import { isLocalHostname } from "@/lib/security/headers";
 
 function matchesRouteNamespace(pathname: string, route: string) {
@@ -57,14 +54,11 @@ export function proxy(request: NextRequest) {
 
   // Check if this is a known app route
   const isKnownRoute =
-    pathname === "/" ||
-    knownAppRoutes.some((route) => matchesRouteNamespace(pathname, route));
+    pathname === "/" || knownAppRoutes.some((route) => matchesRouteNamespace(pathname, route));
 
   // Define protected routes
   const protectedRoutes = ["/main", "/dashboard", "/profile"];
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    matchesRouteNamespace(pathname, route)
-  );
+  const isProtectedRoute = protectedRoutes.some((route) => matchesRouteNamespace(pathname, route));
 
   // Define auth routes
   const authRoutes = ["/auth/login", "/auth/register"];

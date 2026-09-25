@@ -21,8 +21,7 @@ export const logsKeys = {
     [...logsKeys.all, "username", username, { page, limit }] as const,
   byShortLink: (code: string, page: number, limit: number) =>
     [...logsKeys.all, "short-link", code, { page, limit }] as const,
-  filtered: (filters: LogFilterParams) =>
-    [...logsKeys.all, "filter", filters] as const,
+  filtered: (filters: LogFilterParams) => [...logsKeys.all, "filter", filters] as const,
   counts: () => [...logsKeys.all, "counts"] as const,
 };
 
@@ -41,11 +40,7 @@ export function useActivityLogs(
 }
 
 // Fetch logs by username
-export function useLogsByUsername(
-  username: string,
-  page: number = 1,
-  limit: number = 20,
-) {
+export function useLogsByUsername(username: string, page: number = 1, limit: number = 20) {
   return useQuery<LogsResponse>({
     queryKey: logsKeys.byUsername(username, page, limit),
     queryFn: () => getLogsByUsername(username, page, limit),
@@ -55,11 +50,7 @@ export function useLogsByUsername(
 }
 
 // Fetch logs for a specific short link
-export function useShortLinkLogs(
-  code: string,
-  page: number = 1,
-  limit: number = 10,
-) {
+export function useShortLinkLogs(code: string, page: number = 1, limit: number = 10) {
   return useQuery<LogsResponse>({
     queryKey: logsKeys.byShortLink(code, page, limit),
     queryFn: () => getLogsByShortLink(code, page, limit),
@@ -90,7 +81,7 @@ export function useLogCounts() {
 export function useLogById(id: string) {
   return useQuery({
     queryKey: [...logsKeys.all, "detail", id] as const,
-    queryFn: () => import("@/lib/api/logs").then(m => m.getLogById(id)),
+    queryFn: () => import("@/lib/api/logs").then((m) => m.getLogById(id)),
     enabled: !!id,
   });
 }

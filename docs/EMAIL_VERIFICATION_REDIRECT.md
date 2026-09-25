@@ -1,6 +1,7 @@
 # Email Verification Redirect Implementation
 
 ## Overview
+
 Implementasi redirect otomatis ke frontend setelah user melakukan email verification melalui link yang dikirim ke email.
 
 ## Changes Made
@@ -10,10 +11,12 @@ Implementasi redirect otomatis ke frontend setelah user melakukan email verifica
 #### Modified: `controllers/auth/email/verify_email.go`
 
 **Before:**
+
 - Mengembalikan JSON response setelah verification berhasil/gagal
 - User harus manual navigate ke frontend
 
 **After:**
+
 - **Success Case**: Redirect ke `/auth/success-verify-email` di frontend
 - **Error Cases**: Redirect ke `/auth/login` dengan error query parameters
   - Token missing: `?error=token_required`
@@ -24,11 +27,13 @@ Implementasi redirect otomatis ke frontend setelah user melakukan email verifica
 #### Modified: `app/auth/login/page.tsx`
 
 **Added Features:**
+
 - Error detection dari query parameters
 - Toast notifications untuk verification errors
 - Auto-display error message saat redirect dari failed verification
 
 #### Existing: `app/auth/success-verify-email/page.tsx`
+
 - Success page dengan ilustrasi
 - "Go to Login" button
 - User-friendly success message
@@ -36,6 +41,7 @@ Implementasi redirect otomatis ke frontend setelah user melakukan email verifica
 ## User Flow
 
 ### Success Flow
+
 ```
 1. User clicks verification link in email
    ↓
@@ -53,6 +59,7 @@ Implementasi redirect otomatis ke frontend setelah user melakukan email verifica
 ```
 
 ### Error Flow - Missing Token
+
 ```
 1. User clicks invalid/incomplete verification link
    ↓
@@ -66,6 +73,7 @@ Implementasi redirect otomatis ke frontend setelah user melakukan email verifica
 ```
 
 ### Error Flow - Verification Failed
+
 ```
 1. User clicks verification link
    ↓
@@ -94,6 +102,7 @@ Default: `http://localhost:3000` (jika tidak di-set)
 ## Testing
 
 ### Test Success Verification
+
 1. Register user baru via `/auth/register`
 2. Check email untuk verification link
 3. Click verification link
@@ -102,6 +111,7 @@ Default: `http://localhost:3000` (jika tidak di-set)
 6. Should navigate to login page
 
 ### Test Error - Missing Token
+
 ```bash
 # Access verification endpoint without token
 curl -L http://localhost:8080/api/v1/auth/verify-email
@@ -109,6 +119,7 @@ curl -L http://localhost:8080/api/v1/auth/verify-email
 ```
 
 ### Test Error - Invalid Token
+
 ```bash
 # Access verification endpoint with invalid token
 curl -L http://localhost:8080/api/v1/auth/verify-email?token=invalid_token
@@ -118,6 +129,7 @@ curl -L http://localhost:8080/api/v1/auth/verify-email?token=invalid_token
 ## Technical Details
 
 ### Backend Redirect
+
 ```go
 // Success
 ctx.Redirect(http.StatusFound, frontendURL+"/auth/success-verify-email")
@@ -130,17 +142,18 @@ ctx.Redirect(http.StatusFound, frontendURL+"/auth/login?error=verification_faile
 ```
 
 ### Frontend Error Detection
+
 ```typescript
 const searchParams = useSearchParams();
 
 useEffect(() => {
-  const error = searchParams.get('error');
-  if (error === 'token_required') {
+  const error = searchParams.get("error");
+  if (error === "token_required") {
     toast.error("Verification Failed", {
       description: "Verification token is required",
       duration: 4000,
     });
-  } else if (error === 'verification_failed') {
+  } else if (error === "verification_failed") {
     toast.error("Verification Failed", {
       description: "Email verification failed. The link may be expired or invalid.",
       duration: 4000,
@@ -152,17 +165,20 @@ useEffect(() => {
 ## Production Considerations
 
 ### Security
+
 - ✅ Token validation sebelum redirect
 - ✅ Generic error messages (tidak expose details)
 - ✅ Rate limiting sudah ada di backend
 
 ### User Experience
+
 - ✅ Clear success page dengan call-to-action
 - ✅ Informative error messages via toast
 - ✅ Smooth redirect flow
 - ✅ No JSON responses - pure redirect
 
 ### Configuration
+
 - ✅ Configurable frontend URL via environment
 - ✅ Default fallback untuk development
 - ⚠️ Update `FRONTEND_URL` untuk production

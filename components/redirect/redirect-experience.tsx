@@ -52,8 +52,7 @@ function createDestinationCopy(preview: ShortLinkPreview) {
     title:
       (providedTitle
         ? providedTitle.charAt(0).toUpperCase() + providedTitle.slice(1)
-        : undefined) ||
-      (siteName ? `Open ${siteName}` : "External destination"),
+        : undefined) || (siteName ? `Open ${siteName}` : "External destination"),
     description:
       providedDescription ||
       (preview.destinationHost
@@ -184,12 +183,26 @@ function PlaneScene({ compact = false }: { compact?: boolean }) {
 
       <rect x="0" y="0" width="560" height="230" rx="26" fill="url(#plane-sky-gradient)" />
       <g aria-hidden="true">
-        <g className="sun-rays" stroke="#f4bf55" strokeWidth="3" strokeLinecap="round" opacity=".72">
+        <g
+          className="sun-rays"
+          stroke="#f4bf55"
+          strokeWidth="3"
+          strokeLinecap="round"
+          opacity=".72"
+        >
           <path d="M474 6v9M474 71v9M437 43h9M502 43h9" />
           <path d="M448 17l7 7M493 62l7 7M448 69l7-7M493 24l7-7" />
         </g>
         <circle cx="474" cy="43" r="29" fill="#fff3bd" opacity=".42" />
-        <circle className="sun-core" cx="474" cy="43" r="18" fill="#ffd66b" stroke="#fff8dc" strokeWidth="5" />
+        <circle
+          className="sun-core"
+          cx="474"
+          cy="43"
+          r="18"
+          fill="#ffd66b"
+          stroke="#fff8dc"
+          strokeWidth="5"
+        />
       </g>
 
       <g fill="#fff" opacity=".45">
@@ -275,8 +288,20 @@ function PlaneScene({ compact = false }: { compact?: boolean }) {
               strokeWidth="5"
               strokeLinejoin="round"
             />
-            <path d="M17 62L0 39h22l29 21" fill="#e55d59" stroke="#153b49" strokeWidth="5" strokeLinejoin="round" />
-            <path d="M17 88L3 109h24l25-19" fill="#e55d59" stroke="#153b49" strokeWidth="5" strokeLinejoin="round" />
+            <path
+              d="M17 62L0 39h22l29 21"
+              fill="#e55d59"
+              stroke="#153b49"
+              strokeWidth="5"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M17 88L3 109h24l25-19"
+              fill="#e55d59"
+              stroke="#153b49"
+              strokeWidth="5"
+              strokeLinejoin="round"
+            />
             <path
               d="M91 59L66 2h27l53 60z"
               fill="url(#plane-wing-gradient)"
@@ -291,7 +316,12 @@ function PlaneScene({ compact = false }: { compact?: boolean }) {
               strokeWidth="5"
               strokeLinejoin="round"
             />
-            <path d="M136 48c15 2 28 7 39 15h-44z" fill="#7fc8dc" stroke="#153b49" strokeWidth="4" />
+            <path
+              d="M136 48c15 2 28 7 39 15h-44z"
+              fill="#7fc8dc"
+              stroke="#153b49"
+              strokeWidth="4"
+            />
             <g fill="#76bfd3" stroke="#153b49" strokeWidth="3">
               <circle cx="62" cy="70" r="7" />
               <circle cx="88" cy="70" r="7" />
@@ -299,8 +329,18 @@ function PlaneScene({ compact = false }: { compact?: boolean }) {
             </g>
             <g className="plane-propeller" transform="translate(199 73)">
               <circle cx="0" cy="0" r="7" fill="#e65e58" stroke="#153b49" strokeWidth="4" />
-              <path d="M0-38c10 0 12 13 7 32L0 0l-7-6c-5-19-3-32 7-32z" fill="#fff" stroke="#153b49" strokeWidth="4" />
-              <path d="M0 38c-10 0-12-13-7-32L0 0l7 6c5 19 3 32-7 32z" fill="#fff" stroke="#153b49" strokeWidth="4" />
+              <path
+                d="M0-38c10 0 12 13 7 32L0 0l-7-6c-5-19-3-32 7-32z"
+                fill="#fff"
+                stroke="#153b49"
+                strokeWidth="4"
+              />
+              <path
+                d="M0 38c-10 0-12-13-7-32L0 0l7 6c5 19 3 32-7 32z"
+                fill="#fff"
+                stroke="#153b49"
+                strokeWidth="4"
+              />
             </g>
           </g>
         </g>
@@ -353,10 +393,7 @@ export function RedirectExperience({
 
   useEffect(() => {
     if (isPaused || countdown <= 0) return;
-    const timer = window.setTimeout(
-      () => setCountdown((value) => Math.max(0, value - 1)),
-      1000,
-    );
+    const timer = window.setTimeout(() => setCountdown((value) => Math.max(0, value - 1)), 1000);
     return () => window.clearTimeout(timer);
   }, [countdown, isPaused]);
 
@@ -390,11 +427,24 @@ export function RedirectExperience({
 
       <div className="relative mx-auto max-w-3xl">
         <header className="mb-4 flex items-center justify-between px-1 sm:mb-6">
-          <Link href="/" className="flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2e93ad]">
-            <Image src="/logo.svg" alt="" width={34} height={34} className="size-8 rounded-md" priority />
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2e93ad]"
+          >
+            <Image
+              src="/logo.svg"
+              alt=""
+              width={34}
+              height={34}
+              className="size-8 rounded-md"
+              priority
+            />
             <span className="text-sm font-bold tracking-tight">Lihatin</span>
           </Link>
-          <Badge className="border-[#b8dfe8] bg-white/70 px-3 py-1 text-[#315f6c]" variant="outline">
+          <Badge
+            className="border-[#b8dfe8] bg-white/70 px-3 py-1 text-[#315f6c]"
+            variant="outline"
+          >
             <ShieldCheck className="size-3.5 text-[#2e93ad]" />
             Destination preview
           </Badge>
@@ -409,9 +459,14 @@ export function RedirectExperience({
           </div>
 
           <div className="p-5 sm:p-8">
-            <div data-reveal className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div
+              data-reveal
+              className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
+            >
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#408399]">Before you continue</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#408399]">
+                  Before you continue
+                </p>
                 <h1 className="mt-2 text-2xl font-bold tracking-[-0.025em] text-[#102f3b] sm:text-3xl">
                   You&apos;re leaving Lihatin
                 </h1>
@@ -419,22 +474,37 @@ export function RedirectExperience({
                   Short links can hide where they lead. Take a second to review this destination.
                 </p>
               </div>
-              <Badge className="shrink-0 border-[#b8dfe8] bg-[#edf9fb] px-3 py-1.5 text-[#286d80]" variant="outline">
-                {protectedLink ? <LockKeyhole className="size-3.5" /> : <ShieldCheck className="size-3.5" />}
+              <Badge
+                className="shrink-0 border-[#b8dfe8] bg-[#edf9fb] px-3 py-1.5 text-[#286d80]"
+                variant="outline"
+              >
+                {protectedLink ? (
+                  <LockKeyhole className="size-3.5" />
+                ) : (
+                  <ShieldCheck className="size-3.5" />
+                )}
                 {protectedLink ? "Passcode verified" : "Link found"}
               </Badge>
             </div>
 
-            <section data-reveal className="mt-6 rounded-2xl border border-[#cfe4e9] bg-[#f8fcfd] p-4 sm:p-5" aria-label="Destination details">
+            <section
+              data-reveal
+              className="mt-6 rounded-2xl border border-[#cfe4e9] bg-[#f8fcfd] p-4 sm:p-5"
+              aria-label="Destination details"
+            >
               <div className="flex min-w-0 items-start gap-3.5">
                 <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[#dff3f7] text-[#247b92]">
                   <Globe2 className="size-5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#69858d]">Destination</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#69858d]">
+                    Destination
+                  </p>
                   {preview.destinationHost ? (
                     <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-2">
-                      <p className="break-all text-lg font-bold text-[#102f3b]">{preview.destinationHost}</p>
+                      <p className="break-all text-lg font-bold text-[#102f3b]">
+                        {preview.destinationHost}
+                      </p>
                       <Badge
                         variant="outline"
                         className={
@@ -443,21 +513,33 @@ export function RedirectExperience({
                             : "border-amber-200 bg-amber-50 text-amber-800"
                         }
                       >
-                        {isSecure ? <LockKeyhole className="size-3" /> : <TriangleAlert className="size-3" />}
+                        {isSecure ? (
+                          <LockKeyhole className="size-3" />
+                        ) : (
+                          <TriangleAlert className="size-3" />
+                        )}
                         {isSecure ? "HTTPS" : "Not HTTPS"}
                       </Badge>
                     </div>
                   ) : (
-                    <p className="mt-1.5 font-semibold text-amber-800">Destination preview unavailable</p>
+                    <p className="mt-1.5 font-semibold text-amber-800">
+                      Destination preview unavailable
+                    </p>
                   )}
                   <div className="mt-3 border-l-2 border-[#b8dfe8] pl-3">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#69858d]">Link title</p>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#69858d]">
+                        Link title
+                      </p>
                       <span className="text-[10px] font-medium text-[#7b939a]">
-                        {destinationCopy.isGeneratedTitle ? "Generated from domain" : "Provided by link creator"}
+                        {destinationCopy.isGeneratedTitle
+                          ? "Generated from domain"
+                          : "Provided by link creator"}
                       </span>
                     </div>
-                    <p className="mt-1 text-base font-semibold text-[#294b55]">{destinationCopy.title}</p>
+                    <p className="mt-1 text-base font-semibold text-[#294b55]">
+                      {destinationCopy.title}
+                    </p>
                     <p className="mt-1 line-clamp-3 text-sm leading-5 text-[#668087]">
                       {destinationCopy.description}
                     </p>
@@ -472,15 +554,21 @@ export function RedirectExperience({
 
               <dl className="mt-4 grid gap-2 border-t border-[#dbecef] pt-4 min-[480px]:grid-cols-3">
                 <div className="rounded-xl bg-white px-3 py-2.5">
-                  <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#7a9299]">Connection</dt>
+                  <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#7a9299]">
+                    Connection
+                  </dt>
                   <dd className="mt-1 text-xs font-semibold text-[#315f6c]">{connectionSummary}</dd>
                 </div>
                 <div className="rounded-xl bg-white px-3 py-2.5">
-                  <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#7a9299]">Opens</dt>
+                  <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#7a9299]">
+                    Opens
+                  </dt>
                   <dd className="mt-1 text-xs font-semibold text-[#315f6c]">External website</dd>
                 </div>
                 <div className="rounded-xl bg-white px-3 py-2.5">
-                  <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#7a9299]">Access</dt>
+                  <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#7a9299]">
+                    Access
+                  </dt>
                   <dd className="mt-1 text-xs font-semibold text-[#315f6c]">
                     {protectedLink ? "Passcode protected" : "Public short link"}
                   </dd>
@@ -506,17 +594,22 @@ export function RedirectExperience({
               <TriangleAlert className="mt-0.5 size-5 shrink-0 text-amber-600" />
               <div className="text-sm leading-5">
                 <p className="font-semibold">
-                  {preview.destinationHost ? "Check the domain carefully" : "Continue only if you trust the sender"}
+                  {preview.destinationHost
+                    ? "Check the domain carefully"
+                    : "Continue only if you trust the sender"}
                 </p>
                 <p className="mt-1 text-amber-900/75">
-                  Lihatin shortens this link but does not endorse the destination. Never enter a password or payment
-                  details on a site you do not recognize.
+                  Lihatin shortens this link but does not endorse the destination. Never enter a
+                  password or payment details on a site you do not recognize.
                 </p>
               </div>
             </div>
 
             <div data-reveal className="mt-6">
-              <div className="mb-2 flex items-center justify-between gap-3 text-xs font-medium text-[#607c84]" aria-live="polite">
+              <div
+                className="mb-2 flex items-center justify-between gap-3 text-xs font-medium text-[#607c84]"
+                aria-live="polite"
+              >
                 <span>
                   {isPaused
                     ? preview.destinationHost
@@ -555,8 +648,14 @@ export function RedirectExperience({
               </Button>
             </div>
 
-            <div data-reveal className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-[#69858d]">
-              <Link href="/" className="inline-flex items-center gap-1.5 hover:text-[#244f5c] hover:underline">
+            <div
+              data-reveal
+              className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-[#69858d]"
+            >
+              <Link
+                href="/"
+                className="inline-flex items-center gap-1.5 hover:text-[#244f5c] hover:underline"
+              >
                 Stay on Lihatin
               </Link>
               <Link

@@ -73,13 +73,7 @@ export const linksKeys = {
   stats: (code: string) => [...linksKeys.all, "stats", code] as const,
 
   // Untuk views/analytics history
-  views: (
-    code: string,
-    page: number,
-    limit: number,
-    sort: string,
-    orderBy: string
-  ) =>
+  views: (code: string, page: number, limit: number, sort: string, orderBy: string) =>
     [...linksKeys.all, "views", code, { page, limit, sort, orderBy }] as const,
 };
 
@@ -105,7 +99,7 @@ export function useLinks(
   page: number = 1,
   limit: number = 9,
   sort: string = "created_at",
-  orderBy: string = "desc"
+  orderBy: string = "desc",
 ) {
   return useQuery({
     queryKey: linksKeys.list(page, limit, sort, orderBy),
@@ -174,19 +168,13 @@ export function useShortLinkViews(
   page: number = 1,
   limit: number = 10,
   sort: string = "created_at",
-  orderBy: string = "desc"
+  orderBy: string = "desc",
 ) {
   return useQuery({
     queryKey: linksKeys.views(code, page, limit, sort, orderBy),
     queryFn: async () => {
       const { getShortLinkViews } = await import("@/lib/api/shortlinks");
-      const response = await getShortLinkViews(
-        code,
-        page,
-        limit,
-        sort,
-        orderBy
-      );
+      const response = await getShortLinkViews(code, page, limit, sort, orderBy);
 
       if (!response.success) {
         throw new Error(response.message || "Gagal fetch views");
@@ -305,13 +293,7 @@ export function useUpdateLink() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      code,
-      data,
-    }: {
-      code: string;
-      data: UpdateShortLinkRequest;
-    }) => {
+    mutationFn: async ({ code, data }: { code: string; data: UpdateShortLinkRequest }) => {
       const response = await updateShortLink(code, data);
 
       if (!response.success) {

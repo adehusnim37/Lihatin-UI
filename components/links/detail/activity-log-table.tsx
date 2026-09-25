@@ -15,10 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import {
-  HttpMethodBadge,
-  HttpStatusCodeBadge,
-} from "@/components/ui/app-status-badges";
+import { HttpMethodBadge, HttpStatusCodeBadge } from "@/components/ui/app-status-badges";
 import {
   Sheet,
   SheetContent,
@@ -59,9 +56,7 @@ export function ActivityLogTable({ code }: ActivityLogTableProps) {
   }
 
   if (error) {
-    return (
-      <div className="p-8 text-center text-red-500">Failed to load logs.</div>
-    );
+    return <div className="p-8 text-center text-red-500">Failed to load logs.</div>;
   }
 
   if (logs.length === 0) {
@@ -100,10 +95,7 @@ export function ActivityLogTable({ code }: ActivityLogTableProps) {
                   />
                 </TableCell>
                 <TableCell>
-                  <HttpMethodBadge
-                    method={log.method}
-                    className="text-[10px] px-1.5 h-5"
-                  />
+                  <HttpMethodBadge method={log.method} className="text-[10px] px-1.5 h-5" />
                 </TableCell>
                 <TableCell
                   className="font-mono text-xs text-muted-foreground max-w-[200px] truncate"
@@ -185,9 +177,7 @@ function LogDetailSheet({ log }: { log: ActivityLog }) {
             <HttpStatusCodeBadge statusCode={log.status_code} className="font-mono" />
             <HttpMethodBadge method={log.method} className="font-mono" />
           </SheetTitle>
-          <SheetDescription>
-            Recorded at {format(new Date(log.timestamp), "PPpp")}
-          </SheetDescription>
+          <SheetDescription>Recorded at {format(new Date(log.timestamp), "PPpp")}</SheetDescription>
         </SheetHeader>
 
         <ScrollArea className="flex-1 min-h-0">

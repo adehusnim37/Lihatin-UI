@@ -47,9 +47,7 @@ export function InAppAnnouncementDialog({ blocked = false }: { blocked?: boolean
             Product update
           </p>
           <DialogTitle>{announcement?.title}</DialogTitle>
-          <DialogDescription className="pt-2 leading-6">
-            {announcement?.body}
-          </DialogDescription>
+          <DialogDescription className="pt-2 leading-6">{announcement?.body}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button
@@ -60,10 +58,7 @@ export function InAppAnnouncementDialog({ blocked = false }: { blocked?: boolean
             {markRead.isPending && <Loader2 className="size-4 animate-spin" />}
             Got it
           </Button>
-          <Button
-            disabled={markRead.isPending}
-            onClick={() => void acknowledge(true)}
-          >
+          <Button disabled={markRead.isPending} onClick={() => void acknowledge(true)}>
             <BookOpen className="size-4" />
             View API docs
           </Button>

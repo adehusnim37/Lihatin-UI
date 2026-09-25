@@ -3,12 +3,7 @@
  * 🔗 Functions to manage short links
  */
 
-import {
-  getWithAuth,
-  postWithAuth,
-  putWithAuth,
-  deleteWithAuth,
-} from "./fetch-wrapper";
+import { getWithAuth, postWithAuth, putWithAuth, deleteWithAuth } from "./fetch-wrapper";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
 
@@ -138,7 +133,7 @@ export async function getShortLinks(
   page: number = 1,
   limit: number = 10,
   sort: string = "created_at",
-  orderBy: string = "desc"
+  orderBy: string = "desc",
 ): Promise<ShortLinksApiResponse> {
   const params = new URLSearchParams({
     page: page.toString(),
@@ -162,9 +157,7 @@ export async function getShortLink(code: string): Promise<ShortLinkResponse> {
 /**
  * Create a new short link (single or bulk)
  */
-export async function createShortLink(
-  data: CreateShortLinkRequest
-): Promise<ShortLinkResponse> {
+export async function createShortLink(data: CreateShortLinkRequest): Promise<ShortLinkResponse> {
   // Send with format: { is_bulky: boolean, links: [...] }
   const response = await postWithAuth(`${API_URL}/users/me/shorts`, data);
   return response.json();
@@ -175,12 +168,9 @@ export async function createShortLink(
  */
 export async function updateShortLink(
   code: string,
-  data: UpdateShortLinkRequest
+  data: UpdateShortLinkRequest,
 ): Promise<ShortLinkResponse> {
-  const response = await putWithAuth(
-    `${API_URL}/users/me/shorts/${code}`,
-    data
-  );
+  const response = await putWithAuth(`${API_URL}/users/me/shorts/${code}`, data);
   return response.json();
 }
 
@@ -188,11 +178,9 @@ export async function updateShortLink(
  * Remove passcode from a short link
  */
 export async function removeShortLinkPasscode(
-  code: string
+  code: string,
 ): Promise<{ success: boolean; message: string }> {
-  const response = await deleteWithAuth(
-    `${API_URL}/users/me/shorts/${code}/passcode`
-  );
+  const response = await deleteWithAuth(`${API_URL}/users/me/shorts/${code}/passcode`);
   return response.json();
 }
 
@@ -200,7 +188,7 @@ export async function removeShortLinkPasscode(
  * Delete a short link
  */
 export async function deleteShortLink(
-  code: string
+  code: string,
 ): Promise<{ success: boolean; message: string }> {
   const response = await deleteWithAuth(`${API_URL}/users/me/shorts/${code}`);
   return response.json();
@@ -210,12 +198,10 @@ export async function deleteShortLink(
  * Toggle short link active status
  * Calls the toggle endpoint which auto-toggles based on current DB state
  */
-export async function toggleShortLinkStatus(
-  code: string
-): Promise<ShortLinkResponse> {
+export async function toggleShortLinkStatus(code: string): Promise<ShortLinkResponse> {
   const response = await postWithAuth(
     `${API_URL}/users/me/shorts/${code}/toggle-active-inactive`,
-    {}
+    {},
   );
   return response.json();
 }
@@ -278,12 +264,8 @@ export interface ShortLinkStatsResponse {
 /**
  * Get short link stats
  */
-export async function getShortLinkStats(
-  code: string
-): Promise<ShortLinkStatsResponse> {
-  const response = await getWithAuth(
-    `${API_URL}/users/me/shorts/${code}/stats`
-  );
+export async function getShortLinkStats(code: string): Promise<ShortLinkStatsResponse> {
+  const response = await getWithAuth(`${API_URL}/users/me/shorts/${code}/stats`);
   return response.json();
 }
 
@@ -314,7 +296,7 @@ export async function getShortLinkViews(
   page: number = 1,
   limit: number = 10,
   sort: string = "created_at",
-  orderBy: string = "desc"
+  orderBy: string = "desc",
 ): Promise<ShortLinkViewsResponse> {
   const params = new URLSearchParams({
     page: page.toString(),
@@ -323,9 +305,7 @@ export async function getShortLinkViews(
     order_by: orderBy,
   });
 
-  const response = await getWithAuth(
-    `${API_URL}/users/me/shorts/${code}/views?${params}`
-  );
+  const response = await getWithAuth(`${API_URL}/users/me/shorts/${code}/views?${params}`);
   return response.json();
 }
 
@@ -334,14 +314,12 @@ export async function getShortLinkViews(
  */
 export async function getDashboardStats(
   startDate?: string,
-  endDate?: string
+  endDate?: string,
 ): Promise<DashboardStatsResponse> {
   const params = new URLSearchParams();
   if (startDate) params.append("start_date", startDate);
   if (endDate) params.append("end_date", endDate);
 
-  const response = await getWithAuth(
-    `${API_URL}/users/me/shorts/stats?${params}`
-  );
+  const response = await getWithAuth(`${API_URL}/users/me/shorts/stats?${params}`);
   return response.json();
 }

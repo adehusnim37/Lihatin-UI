@@ -22,9 +22,7 @@ export function SiteHeader() {
       {
         label: "Main",
         href: "/main",
-        active:
-          segments.length === 0 ||
-          (segments.length === 1 && segments[0] === "main"),
+        active: segments.length === 0 || (segments.length === 1 && segments[0] === "main"),
       },
     ];
 
@@ -35,8 +33,7 @@ export function SiteHeader() {
       if (segment === "main") return; // Skip display for 'main' as it is hardcoded
 
       const isLast = index === segments.length - 1;
-      const label =
-        segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");
+      const label = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");
 
       items.push({
         label,
@@ -52,10 +49,7 @@ export function SiteHeader() {
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
         <SidebarTrigger className="-ml-1" />
-        <Separator
-          orientation="vertical"
-          className="mx-2 data-[orientation=vertical]:h-4"
-        />
+        <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4" />
         <Breadcrumb>
           <BreadcrumbList>
             {breadcrumbs.map((item, index) => (
@@ -64,9 +58,7 @@ export function SiteHeader() {
                   {item.active ? (
                     <BreadcrumbPage>{item.label}</BreadcrumbPage>
                   ) : (
-                    <BreadcrumbLink href={item.href}>
-                      {item.label}
-                    </BreadcrumbLink>
+                    <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
                   )}
                 </BreadcrumbItem>
                 {index < breadcrumbs.length - 1 && (

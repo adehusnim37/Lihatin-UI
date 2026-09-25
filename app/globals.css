@@ -52,11 +52,10 @@
 
 :root {
   --font-geist-sans:
-    "Inter", "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji",
-    "Segoe UI Emoji", sans-serif;
+    "Inter", "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
   --font-geist-mono:
-    "JetBrains Mono", "SFMono-Regular", Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+    "JetBrains Mono", "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
   --radius: 0.65rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
@@ -66,7 +65,7 @@
   --popover-foreground: oklch(0.141 0.005 285.823);
   --primary: oklch(0.78 0.09 220);
   --primary-foreground: oklch(0.15 0.02 220);
-  --secondary:  oklch(0.8419 0.0652 218.7);
+  --secondary: oklch(0.8419 0.0652 218.7);
   --secondary-foreground: oklch(0.15 0.02 220);
   --third: oklch(0.88 0.06 180);
   --third-foreground: oklch(0.2 0.01 180);
@@ -106,7 +105,7 @@
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.72 0.1 220);
   --primary-foreground: oklch(0.95 0.01 220);
-  --secondary:  oklch(0.8419 0.0652 218.7);
+  --secondary: oklch(0.8419 0.0652 218.7);
   --secondary-foreground: oklch(0.96 0.01 260);
   --third: oklch(0.35 0.03 180);
   --third-foreground: oklch(0.96 0.01 180);

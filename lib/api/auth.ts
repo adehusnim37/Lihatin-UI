@@ -117,10 +117,7 @@ export interface PremiumAccess {
   updated_at: string;
 }
 
-export function hasActivePremiumAccess(
-  access?: PremiumAccess | null,
-  now = Date.now(),
-): boolean {
+export function hasActivePremiumAccess(access?: PremiumAccess | null, now = Date.now()): boolean {
   if (!access || access.status !== "active") return false;
   if (!access.expires_at) return true;
   const expiresAt = new Date(access.expires_at).getTime();
@@ -161,24 +158,15 @@ export interface PendingEmailOTPResponse {
 }
 
 // Union type for login response - can be either full login or pending TOTP
-export type LoginResult =
-  | LoginResponse
-  | PendingTOTPResponse
-  | PendingEmailOTPResponse;
+export type LoginResult = LoginResponse | PendingTOTPResponse | PendingEmailOTPResponse;
 
 // Type guard to check if response requires TOTP
-export function requiresTOTP(
-  response: LoginResult
-): response is PendingTOTPResponse {
+export function requiresTOTP(response: LoginResult): response is PendingTOTPResponse {
   return "requires_totp" in response && response.requires_totp === true;
 }
 
-export function requiresEmailOTP(
-  response: LoginResult
-): response is PendingEmailOTPResponse {
-  return (
-    "requires_email_otp" in response && response.requires_email_otp === true
-  );
+export function requiresEmailOTP(response: LoginResult): response is PendingEmailOTPResponse {
+  return "requires_email_otp" in response && response.requires_email_otp === true;
 }
 
 export interface AuthProfileData {
@@ -554,12 +542,7 @@ export interface AdminUserShortLinksResponse {
 }
 
 export type AdminUserShortLinkSort =
-  | "created_at"
-  | "updated_at"
-  | "short_code"
-  | "title"
-  | "original_url"
-  | "is_active";
+  "created_at" | "updated_at" | "short_code" | "title" | "original_url" | "is_active";
 
 export interface EmailChangeEligibilityResponse {
   eligible: boolean;
@@ -613,10 +596,7 @@ export function getErrorMessage(response: APIResponse): string {
  * Use authenticated fetch wrapper for protected endpoints.
  * This automatically attaches CSRF token on mutating methods.
  */
-async function fetchProtected(
-  input: RequestInfo | URL,
-  init?: RequestInit
-): Promise<Response> {
+async function fetchProtected(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const { fetchWithAuth } = await import("./fetch-wrapper");
   return fetchWithAuth(input, init);
 }
@@ -626,9 +606,7 @@ async function fetchProtected(
  * 🔐 If TOTP is enabled, returns pending_auth_token (NO JWT cookies yet!)
  * 🔐 If TOTP is disabled, tokens are set as HTTP-Only cookies
  */
-export async function login(
-  credentials: LoginRequest
-): Promise<APIResponse<LoginResult>> {
+export async function login(credentials: LoginRequest): Promise<APIResponse<LoginResult>> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -670,14 +648,12 @@ export async function login(
 /**
  * Start Google OAuth flow and return provider authorization URL.
  */
-export async function startGoogleOAuth(): Promise<
-  APIResponse<GoogleOAuthStartResponse>
->;
+export async function startGoogleOAuth(): Promise<APIResponse<GoogleOAuthStartResponse>>;
 export async function startGoogleOAuth(
-  request: GoogleOAuthStartRequest
+  request: GoogleOAuthStartRequest,
 ): Promise<APIResponse<GoogleOAuthStartResponse>>;
 export async function startGoogleOAuth(
-  request?: GoogleOAuthStartRequest
+  request?: GoogleOAuthStartRequest,
 ): Promise<APIResponse<GoogleOAuthStartResponse>> {
   const response = await fetch(`${API_URL}/auth/oauth/google/start`, {
     method: "POST",
@@ -702,7 +678,7 @@ export async function startGoogleOAuth(
  * Google sign-in always finishes as full authenticated session.
  */
 export async function completeGoogleOAuthCallback(
-  request: GoogleOAuthCallbackRequest
+  request: GoogleOAuthCallbackRequest,
 ): Promise<APIResponse<LoginResponse>> {
   const response = await fetch(`${API_URL}/auth/oauth/google/callback`, {
     method: "POST",
@@ -715,9 +691,7 @@ export async function completeGoogleOAuthCallback(
 
   const data: APIResponse<LoginResponse> = await response.json();
   if (!response.ok) {
-    throw new Error(
-      getErrorMessage(data) || "Google OAuth callback verification failed"
-    );
+    throw new Error(getErrorMessage(data) || "Google OAuth callback verification failed");
   }
 
   if (data.data) {
@@ -730,11 +704,11 @@ export async function completeGoogleOAuthCallback(
 
 /**
  * Update user profile
- * @param userData 
- * @returns 
+ * @param userData
+ * @returns
  */
 export async function updateProfile(
-  userData: UpdateProfileRequest
+  userData: UpdateProfileRequest,
 ): Promise<APIResponse<UserProfile>> {
   const response = await fetchProtected(`${API_URL}/auth/profile`, {
     method: "POST",
@@ -756,9 +730,7 @@ export async function updateProfile(
 /**
  * Upload user avatar image (multipart/form-data)
  */
-export async function uploadProfileAvatar(
-  file: File
-): Promise<APIResponse<UploadAvatarResponse>> {
+export async function uploadProfileAvatar(file: File): Promise<APIResponse<UploadAvatarResponse>> {
   const formData = new FormData();
   formData.append("avatar", file);
 
@@ -780,7 +752,7 @@ export async function uploadProfileAvatar(
  * Start email-first signup by sending OTP to email.
  */
 export async function signupStart(
-  request: SignupStartRequest
+  request: SignupStartRequest,
 ): Promise<APIResponse<SignupStartResponse>> {
   const response = await fetch(`${API_URL}/auth/signup/start`, {
     method: "POST",
@@ -802,7 +774,7 @@ export async function signupStart(
  * Resend OTP for pending signup challenge.
  */
 export async function signupResendOTP(
-  request: SignupResendOTPRequest
+  request: SignupResendOTPRequest,
 ): Promise<APIResponse<ResendOTPResponse>> {
   const response = await fetch(`${API_URL}/auth/signup/resend-otp`, {
     method: "POST",
@@ -824,7 +796,7 @@ export async function signupResendOTP(
  * Verify signup OTP and receive one-time signup token.
  */
 export async function signupVerifyOTP(
-  request: SignupVerifyOTPRequest
+  request: SignupVerifyOTPRequest,
 ): Promise<APIResponse<SignupVerifyOTPResponse>> {
   const response = await fetch(`${API_URL}/auth/signup/verify-otp`, {
     method: "POST",
@@ -846,7 +818,7 @@ export async function signupVerifyOTP(
  * Complete signup profile after OTP verification.
  */
 export async function signupComplete(
-  request: SignupCompleteRequest
+  request: SignupCompleteRequest,
 ): Promise<APIResponse<SignupCompleteResponse>> {
   const response = await fetch(`${API_URL}/auth/signup/complete`, {
     method: "POST",
@@ -868,9 +840,7 @@ export async function signupComplete(
  * Register new user account
  * Note: Registration doesn't set cookies (email verification required first)
  */
-export async function register(
-  userData: RegisterRequest
-): Promise<APIResponse<RegisterResponse>> {
+export async function register(userData: RegisterRequest): Promise<APIResponse<RegisterResponse>> {
   const response = await fetch(`${API_URL}/auth/register`, {
     method: "POST",
     headers: {
@@ -893,7 +863,7 @@ export async function register(
  * Redeem premium code for authenticated user
  */
 export async function redeemPremiumCode(
-  payload: RedeemPremiumCodeRequest
+  payload: RedeemPremiumCodeRequest,
 ): Promise<APIResponse<RedeemPremiumCodeResponse>> {
   const response = await fetchProtected(`${API_URL}/auth/redeem-premium-code`, {
     method: "POST",
@@ -914,9 +884,7 @@ export async function redeemPremiumCode(
 /**
  * Request password reset email
  */
-export async function forgotPassword(
-  request: ForgotPasswordRequest
-): Promise<APIResponse<null>> {
+export async function forgotPassword(request: ForgotPasswordRequest): Promise<APIResponse<null>> {
   const response = await fetch(`${API_URL}/auth/forgot-password`, {
     method: "POST",
     headers: {
@@ -939,9 +907,7 @@ export async function forgotPassword(
 /**
  * Validate password reset token
  */
-export async function validateResetToken(
-  token: string
-): Promise<APIResponse<null>> {
+export async function validateResetToken(token: string): Promise<APIResponse<null>> {
   const response = await fetch(
     `${API_URL}/auth/validate-reset?token=${encodeURIComponent(token)}`,
     {
@@ -950,7 +916,7 @@ export async function validateResetToken(
         "Content-Type": "application/json",
       },
       credentials: "include",
-    }
+    },
   );
 
   const data: APIResponse<null> = await response.json();
@@ -971,9 +937,7 @@ export interface ResetPasswordRequest {
   confirm_password: string;
 }
 
-export async function resetPassword(
-  request: ResetPasswordRequest
-): Promise<APIResponse<null>> {
+export async function resetPassword(request: ResetPasswordRequest): Promise<APIResponse<null>> {
   const response = await fetch(`${API_URL}/auth/reset-password`, {
     method: "POST",
     headers: {
@@ -1025,9 +989,7 @@ export async function refreshToken(): Promise<APIResponse<null>> {
       const errorData = (await response.clone().json()) as APIResponse<unknown>;
       looksLikeCSRFError =
         errorData.message?.includes("CSRF") ||
-        Object.values(errorData.error || {}).some((value) =>
-          String(value).includes("CSRF"),
-        );
+        Object.values(errorData.error || {}).some((value) => String(value).includes("CSRF"));
     } catch {
       looksLikeCSRFError = false;
     }
@@ -1087,7 +1049,9 @@ export async function logout(): Promise<APIResponse<LogoutResponse>> {
   // if session/token already invalid, still treat as successful logout.
   if (response.status === 401 || response.status === 403) {
     const message = (data?.message || "").toLowerCase();
-    const errorText = Object.values(data?.error || {}).join(" ").toLowerCase();
+    const errorText = Object.values(data?.error || {})
+      .join(" ")
+      .toLowerCase();
     if (
       message.includes("session") ||
       message.includes("token") ||
@@ -1172,9 +1136,7 @@ export interface ChangePasswordRequest {
   new_password: string;
 }
 
-export async function changePassword(
-  data: ChangePasswordRequest
-): Promise<APIResponse<null>> {
+export async function changePassword(data: ChangePasswordRequest): Promise<APIResponse<null>> {
   const response = await fetchProtected(`${API_URL}/auth/change-password`, {
     method: "POST",
     headers: {
@@ -1206,8 +1168,7 @@ export async function checkEmailChangeEligibility(): Promise<
     credentials: "include",
   });
 
-  const result: APIResponse<EmailChangeEligibilityResponse> =
-    await response.json();
+  const result: APIResponse<EmailChangeEligibilityResponse> = await response.json();
 
   if (!response.ok) {
     throw new Error(getErrorMessage(result) || "Failed to check eligibility");
@@ -1219,9 +1180,7 @@ export async function checkEmailChangeEligibility(): Promise<
 /**
  * Request email change for authenticated user.
  */
-export async function changeEmail(
-  data: ChangeEmailRequest
-): Promise<APIResponse<string>> {
+export async function changeEmail(data: ChangeEmailRequest): Promise<APIResponse<string>> {
   const response = await fetchProtected(`${API_URL}/auth/change-email`, {
     method: "POST",
     headers: {
@@ -1242,9 +1201,7 @@ export async function changeEmail(
 /**
  * Check whether current user can change username right now.
  */
-export async function checkUsernameChangeEligibility(): Promise<
-  APIResponse<null>
-> {
+export async function checkUsernameChangeEligibility(): Promise<APIResponse<null>> {
   const response = await fetch(`${API_URL}/auth/username/check-eligibility`, {
     method: "GET",
     headers: {
@@ -1266,7 +1223,7 @@ export async function checkUsernameChangeEligibility(): Promise<
  * Request username change for authenticated user.
  */
 export async function changeUsername(
-  data: ChangeUsernameRequest
+  data: ChangeUsernameRequest,
 ): Promise<APIResponse<ChangeUsernameResponse>> {
   const response = await fetchProtected(`${API_URL}/auth/username/change`, {
     method: "POST",
@@ -1299,8 +1256,7 @@ export async function getAdminDisposableEmailPolicy(): Promise<
     credentials: "include",
   });
 
-  const result: APIResponse<AdminDisposableEmailPolicyResponse> =
-    await response.json();
+  const result: APIResponse<AdminDisposableEmailPolicyResponse> = await response.json();
 
   if (!response.ok) {
     throw new Error(getErrorMessage(result) || "Failed to get admin policy");
@@ -1313,21 +1269,17 @@ export async function getAdminDisposableEmailPolicy(): Promise<
  * Update disposable email policy (admin only).
  */
 export async function updateAdminDisposableEmailPolicy(
-  data: UpdateAdminDisposableEmailPolicyRequest
+  data: UpdateAdminDisposableEmailPolicyRequest,
 ): Promise<APIResponse<AdminDisposableEmailPolicyResponse>> {
-  const response = await fetchProtected(
-    `${API_URL}/auth/admin/security/disposable-email`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    }
-  );
+  const response = await fetchProtected(`${API_URL}/auth/admin/security/disposable-email`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
 
-  const result: APIResponse<AdminDisposableEmailPolicyResponse> =
-    await response.json();
+  const result: APIResponse<AdminDisposableEmailPolicyResponse> = await response.json();
 
   if (!response.ok) {
     throw new Error(getErrorMessage(result) || "Failed to update admin policy");
@@ -1352,16 +1304,13 @@ export async function getAdminPremiumCodes(params?: {
   if (params?.order_by) query.set("order_by", params.order_by);
 
   const suffix = query.toString();
-  const response = await fetch(
-    `${API_URL}/auth/admin/premium-codes${suffix ? `?${suffix}` : ""}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    }
-  );
+  const response = await fetch(`${API_URL}/auth/admin/premium-codes${suffix ? `?${suffix}` : ""}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
 
   const result: APIResponse<AdminPremiumCodesResponse> = await response.json();
   if (!response.ok) {
@@ -1375,7 +1324,7 @@ export async function getAdminPremiumCodes(params?: {
  * Generate premium code(s) (admin only).
  */
 export async function generateAdminPremiumCodes(
-  data: AdminGeneratePremiumCodeRequest
+  data: AdminGeneratePremiumCodeRequest,
 ): Promise<APIResponse<AdminPremiumCode | AdminGeneratePremiumCodeBulkResponse>> {
   const response = await fetchProtected(`${API_URL}/auth/admin/premium-codes`, {
     method: "POST",
@@ -1418,7 +1367,7 @@ export async function getAdminUserById(userId: string): Promise<APIResponse<Admi
  * Get paginated admin users list.
  */
 export async function getAdminUsers(
-  params?: AdminUsersQueryParams
+  params?: AdminUsersQueryParams,
 ): Promise<APIResponse<AdminUsersListResponse>> {
   const query = new URLSearchParams();
   if (params?.page) query.set("page", String(params.page));
@@ -1433,16 +1382,13 @@ export async function getAdminUsers(
   if (params?.lock_status) query.set("lock_status", params.lock_status);
 
   const suffix = query.toString();
-  const response = await fetch(
-    `${API_URL}/auth/admin/users${suffix ? `?${suffix}` : ""}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    }
-  );
+  const response = await fetch(`${API_URL}/auth/admin/users${suffix ? `?${suffix}` : ""}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
 
   const result: APIResponse<AdminUsersListResponse> = await response.json();
   if (!response.ok) {
@@ -1478,15 +1424,12 @@ export async function getAdminUserEmailOptions(params?: {
         "Content-Type": "application/json",
       },
       credentials: "include",
-    }
+    },
   );
 
-  const result: APIResponse<AdminUserEmailOptionsResponse> =
-    await response.json();
+  const result: APIResponse<AdminUserEmailOptionsResponse> = await response.json();
   if (!response.ok) {
-    throw new Error(
-      getErrorMessage(result) || "Failed to get eligible premium recipients"
-    );
+    throw new Error(getErrorMessage(result) || "Failed to get eligible premium recipients");
   }
 
   return result;
@@ -1497,7 +1440,7 @@ export async function getAdminUserEmailOptions(params?: {
  */
 export async function updateAdminUser(
   userId: string,
-  payload: AdminUpdateUserRequest
+  payload: AdminUpdateUserRequest,
 ): Promise<APIResponse<AdminUserResponse>> {
   const response = await fetchProtected(
     `${API_URL}/auth/admin/users/${encodeURIComponent(userId)}`,
@@ -1507,7 +1450,7 @@ export async function updateAdminUser(
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
-    }
+    },
   );
 
   const result: APIResponse<AdminUserResponse> = await response.json();
@@ -1523,7 +1466,7 @@ export async function updateAdminUser(
  */
 export async function lockAdminUser(
   userId: string,
-  payload: AdminLockUserRequest
+  payload: AdminLockUserRequest,
 ): Promise<APIResponse<null>> {
   const response = await fetchProtected(
     `${API_URL}/auth/admin/users/${encodeURIComponent(userId)}/lock`,
@@ -1533,7 +1476,7 @@ export async function lockAdminUser(
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
-    }
+    },
   );
 
   const result: APIResponse<null> = await response.json();
@@ -1549,7 +1492,7 @@ export async function lockAdminUser(
  */
 export async function unlockAdminUser(
   userId: string,
-  payload?: AdminUnlockUserRequest
+  payload?: AdminUnlockUserRequest,
 ): Promise<APIResponse<null>> {
   const response = await fetchProtected(
     `${API_URL}/auth/admin/users/${encodeURIComponent(userId)}/unlock`,
@@ -1559,7 +1502,7 @@ export async function unlockAdminUser(
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload ?? {}),
-    }
+    },
   );
 
   const result: APIResponse<null> = await response.json();
@@ -1575,7 +1518,7 @@ export async function unlockAdminUser(
  */
 export async function revokeAdminUserPremiumAccess(
   userId: string,
-  payload: AdminRevokePremiumAccessRequest
+  payload: AdminRevokePremiumAccessRequest,
 ): Promise<APIResponse<AdminPremiumAccessMutationResponse>> {
   const response = await fetchProtected(
     `${API_URL}/auth/admin/users/${encodeURIComponent(userId)}/revoke-premium`,
@@ -1585,11 +1528,10 @@ export async function revokeAdminUserPremiumAccess(
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
-    }
+    },
   );
 
-  const result: APIResponse<AdminPremiumAccessMutationResponse> =
-    await response.json();
+  const result: APIResponse<AdminPremiumAccessMutationResponse> = await response.json();
   if (!response.ok) {
     throw new Error(getErrorMessage(result) || "Failed to revoke premium access");
   }
@@ -1602,7 +1544,7 @@ export async function revokeAdminUserPremiumAccess(
  */
 export async function reactivateAdminUserPremiumAccess(
   userId: string,
-  payload: AdminReactivatePremiumAccessRequest
+  payload: AdminReactivatePremiumAccessRequest,
 ): Promise<APIResponse<AdminPremiumAccessMutationResponse>> {
   const response = await fetchProtected(
     `${API_URL}/auth/admin/users/${encodeURIComponent(userId)}/reactivate-premium`,
@@ -1612,11 +1554,10 @@ export async function reactivateAdminUserPremiumAccess(
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
-    }
+    },
   );
 
-  const result: APIResponse<AdminPremiumAccessMutationResponse> =
-    await response.json();
+  const result: APIResponse<AdminPremiumAccessMutationResponse> = await response.json();
   if (!response.ok) {
     throw new Error(getErrorMessage(result) || "Failed to reactivate premium access");
   }
@@ -1629,7 +1570,7 @@ export async function reactivateAdminUserPremiumAccess(
  */
 export async function getAdminUserPremiumAccessEvents(
   userId: string,
-  params?: { limit?: number }
+  params?: { limit?: number },
 ): Promise<APIResponse<AdminPremiumAccessEventsListResponse>> {
   const query = new URLSearchParams();
   if (params?.limit) query.set("limit", String(params.limit));
@@ -1643,11 +1584,10 @@ export async function getAdminUserPremiumAccessEvents(
         "Content-Type": "application/json",
       },
       credentials: "include",
-    }
+    },
   );
 
-  const result: APIResponse<AdminPremiumAccessEventsListResponse> =
-    await response.json();
+  const result: APIResponse<AdminPremiumAccessEventsListResponse> = await response.json();
   if (!response.ok) {
     throw new Error(getErrorMessage(result) || "Failed to get premium access events");
   }
@@ -1667,7 +1607,7 @@ export async function getAdminUserShortLinks(
     order_by?: "asc" | "desc";
     detail?: boolean;
     search?: string;
-  }
+  },
 ): Promise<APIResponse<AdminUserShortLinksResponse>> {
   const query = new URLSearchParams();
   if (params?.page) query.set("page", String(params.page));
@@ -1686,7 +1626,7 @@ export async function getAdminUserShortLinks(
         "Content-Type": "application/json",
       },
       credentials: "include",
-    }
+    },
   );
 
   const result: APIResponse<AdminUserShortLinksResponse> = await response.json();
@@ -1702,7 +1642,7 @@ export async function getAdminUserShortLinks(
  */
 export async function sendAdminPremiumCodeEmail(
   premiumCodeId: number,
-  payload: AdminSendPremiumCodeEmailRequest
+  payload: AdminSendPremiumCodeEmailRequest,
 ): Promise<APIResponse<AdminSendPremiumCodeEmailResponse>> {
   const response = await fetchProtected(
     `${API_URL}/auth/admin/premium-codes/${premiumCodeId}/send-email`,
@@ -1712,11 +1652,10 @@ export async function sendAdminPremiumCodeEmail(
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
-    }
+    },
   );
 
-  const result: APIResponse<AdminSendPremiumCodeEmailResponse> =
-    await response.json();
+  const result: APIResponse<AdminSendPremiumCodeEmailResponse> = await response.json();
   if (!response.ok) {
     throw new Error(getErrorMessage(result) || "Failed to send premium code email");
   }
@@ -1768,9 +1707,9 @@ export async function checkAuth(): Promise<{ isAuthenticated: boolean; error?: s
     // Try to parse error message from response
     try {
       const data = await response.json();
-      return { 
-        isAuthenticated: false, 
-        error: data.message || data.error?.session || "Authentication failed" 
+      return {
+        isAuthenticated: false,
+        error: data.message || data.error?.session || "Authentication failed",
       };
     } catch {
       return { isAuthenticated: false, error: "Authentication failed" };
@@ -1810,7 +1749,7 @@ export interface ResendLoginEmailOTPRequest {
 }
 
 export async function verifyTOTPLogin(
-  request: VerifyTOTPLoginRequest
+  request: VerifyTOTPLoginRequest,
 ): Promise<APIResponse<LoginResponse>> {
   const response = await fetch(`${API_URL}/auth/verify-totp-login`, {
     method: "POST",
@@ -1838,7 +1777,7 @@ export async function verifyTOTPLogin(
  * Verify login email OTP challenge and complete login session.
  */
 export async function verifyLoginEmailOTP(
-  request: VerifyLoginEmailOTPRequest
+  request: VerifyLoginEmailOTPRequest,
 ): Promise<APIResponse<LoginResult>> {
   const response = await fetch(`${API_URL}/auth/login/email-otp/verify`, {
     method: "POST",
@@ -1866,7 +1805,7 @@ export async function verifyLoginEmailOTP(
  * Resend login email OTP challenge code.
  */
 export async function resendLoginEmailOTP(
-  request: ResendLoginEmailOTPRequest
+  request: ResendLoginEmailOTPRequest,
 ): Promise<APIResponse<ResendOTPResponse>> {
   const response = await fetch(`${API_URL}/auth/login/email-otp/resend`, {
     method: "POST",
@@ -1910,9 +1849,7 @@ export async function setupTOTP(): Promise<APIResponse<TOTPSetupResponse>> {
  * Verify TOTP code during setup
  * 🔐 Enables 2FA after successful verification
  */
-export async function verifyTOTP(
-  totp_code: string
-): Promise<APIResponse<null>> {
+export async function verifyTOTP(totp_code: string): Promise<APIResponse<null>> {
   const response = await fetchProtected(`${API_URL}/auth/totp/verify`, {
     method: "POST",
     headers: {
@@ -1936,7 +1873,7 @@ export async function verifyTOTP(
  */
 export async function disableTOTP(
   password?: string,
-  totpCode?: string
+  totpCode?: string,
 ): Promise<APIResponse<{ message: string }>> {
   const response = await fetchProtected(`${API_URL}/auth/totp/disable`, {
     method: "POST",
@@ -1963,18 +1900,15 @@ export async function disableTOTP(
  * Scoped to the signed-in user's own sessions on the backend.
  */
 export async function revokeDevice(
-  deviceId: string
+  deviceId: string,
 ): Promise<APIResponse<{ revoked_sessions: number; device_id: string }>> {
-  const response = await fetchProtected(
-    `${API_URL}/auth/sessions/revoke-device`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ device_id: deviceId }),
-    }
-  );
+  const response = await fetchProtected(`${API_URL}/auth/sessions/revoke-device`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ device_id: deviceId }),
+  });
 
   const result: APIResponse<{ revoked_sessions: number; device_id: string }> =
     await response.json();
@@ -1987,9 +1921,7 @@ export async function revokeDevice(
 }
 
 /** List the signed-in user's active sessions/devices. */
-export async function listSessions(): Promise<
-  APIResponse<SessionsListResponse>
-> {
+export async function listSessions(): Promise<APIResponse<SessionsListResponse>> {
   const response = await fetchProtected(`${API_URL}/auth/sessions`, {
     method: "GET",
     headers: {
@@ -2006,7 +1938,7 @@ export async function listSessions(): Promise<
 
 /** Revoke a single session by its session_id. */
 export async function revokeSession(
-  sessionId: string
+  sessionId: string,
 ): Promise<APIResponse<RevokeSessionsResponse>> {
   const response = await fetchProtected(`${API_URL}/auth/sessions/revoke`, {
     method: "POST",
@@ -2024,18 +1956,13 @@ export async function revokeSession(
 }
 
 /** Revoke every session for the user (logs out all devices). */
-export async function revokeAllSessions(): Promise<
-  APIResponse<RevokeSessionsResponse>
-> {
-  const response = await fetchProtected(
-    `${API_URL}/auth/sessions/revoke-all`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
+export async function revokeAllSessions(): Promise<APIResponse<RevokeSessionsResponse>> {
+  const response = await fetchProtected(`${API_URL}/auth/sessions/revoke-all`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
   const result: APIResponse<RevokeSessionsResponse> = await response.json();
   if (!response.ok) {

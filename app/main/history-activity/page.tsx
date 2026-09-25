@@ -33,11 +33,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import {
-  useActivityLogs,
-  useLogCounts,
-  useLogsWithFilter,
-} from "@/lib/hooks/queries/useLogsQuery";
+import { useActivityLogs, useLogCounts, useLogsWithFilter } from "@/lib/hooks/queries/useLogsQuery";
 import { LogDetailDialog } from "../../../components/logs/LogDetailDialog";
 import { DateTimePicker24hForm } from "@/components/ui/datepickerhour";
 
@@ -64,12 +60,10 @@ const getActivityColor = (level: string, method: string) => {
   const levelLower = level.toLowerCase();
   if (levelLower === "error") return "bg-red-500/10 text-red-500";
   if (levelLower === "warning") return "bg-amber-500/10 text-amber-500";
-  if (levelLower === "success" || method === "POST")
-    return "bg-green-500/10 text-green-500";
+  if (levelLower === "success" || method === "POST") return "bg-green-500/10 text-green-500";
   if (method === "DELETE") return "bg-red-500/10 text-red-500";
   if (method === "GET") return "bg-blue-500/10 text-blue-500";
-  if (method === "PUT" || method === "PATCH")
-    return "bg-amber-500/10 text-amber-500";
+  if (method === "PUT" || method === "PATCH") return "bg-amber-500/10 text-amber-500";
   return "bg-muted text-muted-foreground";
 };
 
@@ -159,8 +153,7 @@ export default function HistoryActivityPage() {
   const putCounts = countsData?.data?.PUT || 0;
   const patchCounts = countsData?.data?.PATCH || 0;
   const deleteCounts = countsData?.data?.DELETE || 0;
-  const totalAllCounts =
-    getCounts + postCounts + putCounts + patchCounts + deleteCounts;
+  const totalAllCounts = getCounts + postCounts + putCounts + patchCounts + deleteCounts;
 
   const clearAllFilters = () => {
     setFilter("all");
@@ -192,28 +185,21 @@ export default function HistoryActivityPage() {
         <div className="flex flex-1 flex-col gap-8 p-6">
           {/* Header */}
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-bold tracking-tight">
-              History & Activity
-            </h1>
-            <p className="text-muted-foreground">
-              Track all actions and events in your account.
-            </p>
+            <h1 className="text-3xl font-bold tracking-tight">History & Activity</h1>
+            <p className="text-muted-foreground">Track all actions and events in your account.</p>
           </div>
 
           {/* Filter Actions */}
           <div className="flex items-center justify-between gap-4">
-            <Dialog
-              open={showAdvancedFilter}
-              onOpenChange={setShowAdvancedFilter}
-            >
+            <Dialog open={showAdvancedFilter} onOpenChange={setShowAdvancedFilter}>
               <DialogTrigger asChild>
                 <button className="flex items-center gap-2 px-4 py-2 rounded-lg border bg-card hover:bg-accent transition-colors">
                   <SlidersHorizontal className="size-4" />
                   <span className="text-sm font-medium">Filters</span>
                   {(hasActiveFilters || filter !== "all") && (
                     <span className="px-2 py-0.5 text-xs rounded-full bg-primary text-primary-foreground">
-                      {Object.values(advancedFilters).filter((v) => v !== "")
-                        .length + (filter !== "all" ? 1 : 0)}
+                      {Object.values(advancedFilters).filter((v) => v !== "").length +
+                        (filter !== "all" ? 1 : 0)}
                     </span>
                   )}
                 </button>
@@ -225,18 +211,14 @@ export default function HistoryActivityPage() {
                     <SlidersHorizontal className="size-5" />
                     Filter Logs
                   </DialogTitle>
-                  <DialogDescription>
-                    Narrow down your activity logs
-                  </DialogDescription>
+                  <DialogDescription>Narrow down your activity logs</DialogDescription>
                 </DialogHeader>
 
                 <div className="mt-4 space-y-5">
                   {/* User & Action */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-medium mb-1.5 block">
-                        Username
-                      </label>
+                      <label className="text-xs font-medium mb-1.5 block">Username</label>
                       <input
                         type="text"
                         placeholder="Filter by user..."
@@ -252,9 +234,7 @@ export default function HistoryActivityPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-medium mb-1.5 block">
-                        Action
-                      </label>
+                      <label className="text-xs font-medium mb-1.5 block">Action</label>
                       <input
                         type="text"
                         placeholder="e.g., login..."
@@ -274,9 +254,7 @@ export default function HistoryActivityPage() {
                   {/* HTTP Details */}
                   <div className="space-y-3">
                     <div>
-                      <label className="text-xs font-medium mb-1.5 block">
-                        Route/Path
-                      </label>
+                      <label className="text-xs font-medium mb-1.5 block">Route/Path</label>
                       <input
                         type="text"
                         placeholder="/api/auth/login"
@@ -293,9 +271,7 @@ export default function HistoryActivityPage() {
                     </div>
                     <div className="grid grid-cols-3 gap-3">
                       <div>
-                        <label className="text-xs font-medium mb-1.5 block">
-                          Level
-                        </label>
+                        <label className="text-xs font-medium mb-1.5 block">Level</label>
                         <select
                           value={advancedFilters.level}
                           onChange={(e) => {
@@ -316,9 +292,7 @@ export default function HistoryActivityPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="text-xs font-medium mb-1.5 block">
-                          Status
-                        </label>
+                        <label className="text-xs font-medium mb-1.5 block">Status</label>
                         <input
                           type="number"
                           placeholder="200"
@@ -334,9 +308,7 @@ export default function HistoryActivityPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium mb-1.5 block">
-                          IP Address
-                        </label>
+                        <label className="text-xs font-medium mb-1.5 block">IP Address</label>
                         <input
                           type="text"
                           placeholder="192.168.1.1"
@@ -357,44 +329,47 @@ export default function HistoryActivityPage() {
                   {/* Date Range */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-medium mb-1.5 block">
-                        From Date & Time
-                      </label>
+                      <label className="text-xs font-medium mb-1.5 block">From Date & Time</label>
                       <DateTimePicker24hForm
-                        value={advancedFilters.date_from ? new Date(advancedFilters.date_from) : undefined}
+                        value={
+                          advancedFilters.date_from
+                            ? new Date(advancedFilters.date_from)
+                            : undefined
+                        }
                         onChange={(date) => {
                           if (date) {
                             // Format dengan timezone offset (e.g., 2026-02-02T15:00:00+07:00)
                             const offset = -date.getTimezoneOffset();
-                            const offsetHours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
-                            const offsetMinutes = String(Math.abs(offset) % 60).padStart(2, '0');
-                            const offsetSign = offset >= 0 ? '+' : '-';
-                            
+                            const offsetHours = String(Math.floor(Math.abs(offset) / 60)).padStart(
+                              2,
+                              "0",
+                            );
+                            const offsetMinutes = String(Math.abs(offset) % 60).padStart(2, "0");
+                            const offsetSign = offset >= 0 ? "+" : "-";
+
                             const year = date.getFullYear();
-                            const month = String(date.getMonth() + 1).padStart(2, '0');
-                            const day = String(date.getDate()).padStart(2, '0');
-                            const hours = String(date.getHours()).padStart(2, '0');
-                            const minutes = String(date.getMinutes()).padStart(2, '0');
-                            const seconds = String(date.getSeconds()).padStart(2, '0');
-                            
+                            const month = String(date.getMonth() + 1).padStart(2, "0");
+                            const day = String(date.getDate()).padStart(2, "0");
+                            const hours = String(date.getHours()).padStart(2, "0");
+                            const minutes = String(date.getMinutes()).padStart(2, "0");
+                            const seconds = String(date.getSeconds()).padStart(2, "0");
+
                             const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${offsetSign}${offsetHours}:${offsetMinutes}`;
-                            
+
                             // Clear to_date if it becomes invalid
                             const newFilters: typeof advancedFilters = {
                               ...advancedFilters,
                               date_from: formattedDate,
                             };
-                            
+
                             if (advancedFilters.date_to) {
                               const toDate = new Date(advancedFilters.date_to);
                               if (!Number.isNaN(toDate.getTime()) && toDate < date) {
                                 newFilters.date_to = "";
-                                toast.error(
-                                  "To date cleared because it was before from date",
-                                );
+                                toast.error("To date cleared because it was before from date");
                               }
                             }
-                            
+
                             setAdvancedFilters(newFilters);
                           } else {
                             setAdvancedFilters({
@@ -407,13 +382,17 @@ export default function HistoryActivityPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-medium mb-1.5 block">
-                        To Date & Time
-                      </label>
+                      <label className="text-xs font-medium mb-1.5 block">To Date & Time</label>
                       <DateTimePicker24hForm
-                        disableBefore={advancedFilters.date_from ? new Date(advancedFilters.date_from) : undefined}
+                        disableBefore={
+                          advancedFilters.date_from
+                            ? new Date(advancedFilters.date_from)
+                            : undefined
+                        }
                         disabledPast2Dates={true}
-                        value={advancedFilters.date_to ? new Date(advancedFilters.date_to) : undefined}
+                        value={
+                          advancedFilters.date_to ? new Date(advancedFilters.date_to) : undefined
+                        }
                         onChange={(date) => {
                           if (date) {
                             // Validate that to_date is after from_date
@@ -424,22 +403,25 @@ export default function HistoryActivityPage() {
                                 return;
                               }
                             }
-                            
+
                             // Format dengan timezone offset (e.g., 2026-02-02T16:45:00+07:00)
                             const offset = -date.getTimezoneOffset();
-                            const offsetHours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
-                            const offsetMinutes = String(Math.abs(offset) % 60).padStart(2, '0');
-                            const offsetSign = offset >= 0 ? '+' : '-';
-                            
+                            const offsetHours = String(Math.floor(Math.abs(offset) / 60)).padStart(
+                              2,
+                              "0",
+                            );
+                            const offsetMinutes = String(Math.abs(offset) % 60).padStart(2, "0");
+                            const offsetSign = offset >= 0 ? "+" : "-";
+
                             const year = date.getFullYear();
-                            const month = String(date.getMonth() + 1).padStart(2, '0');
-                            const day = String(date.getDate()).padStart(2, '0');
-                            const hours = String(date.getHours()).padStart(2, '0');
-                            const minutes = String(date.getMinutes()).padStart(2, '0');
-                            const seconds = String(date.getSeconds()).padStart(2, '0');
-                            
+                            const month = String(date.getMonth() + 1).padStart(2, "0");
+                            const day = String(date.getDate()).padStart(2, "0");
+                            const hours = String(date.getHours()).padStart(2, "0");
+                            const minutes = String(date.getMinutes()).padStart(2, "0");
+                            const seconds = String(date.getSeconds()).padStart(2, "0");
+
                             const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${offsetSign}${offsetHours}:${offsetMinutes}`;
-                            
+
                             setAdvancedFilters({
                               ...advancedFilters,
                               date_to: formattedDate,
@@ -460,11 +442,7 @@ export default function HistoryActivityPage() {
                   {(hasActiveFilters || filter !== "all") && (
                     <>
                       <Separator />
-                      <Button
-                        onClick={clearAllFilters}
-                        variant="outline"
-                        className="w-full"
-                      >
+                      <Button onClick={clearAllFilters} variant="outline" className="w-full">
                         <X className="size-4 mr-2" />
                         Clear All
                       </Button>
@@ -477,9 +455,7 @@ export default function HistoryActivityPage() {
             {/* Active Filters Display */}
             {(hasActiveFilters || filter !== "all") && (
               <div className="flex-1 flex items-center gap-2 overflow-x-auto">
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  Active:
-                </span>
+                <span className="text-xs text-muted-foreground whitespace-nowrap">Active:</span>
                 <div className="flex gap-1.5">
                   {filter !== "all" && (
                     <Badge variant="default" className="gap-1.5">
@@ -569,11 +545,12 @@ export default function HistoryActivityPage() {
                   )}
                   {advancedFilters.date_from && (
                     <Badge variant="secondary" className="gap-1.5">
-                      From: {new Date(advancedFilters.date_from).toLocaleString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
+                      From:{" "}
+                      {new Date(advancedFilters.date_from).toLocaleString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
                       })}
                       <button
                         type="button"
@@ -593,11 +570,12 @@ export default function HistoryActivityPage() {
                   )}
                   {advancedFilters.date_to && (
                     <Badge variant="secondary" className="gap-1.5">
-                      To: {new Date(advancedFilters.date_to).toLocaleString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
+                      To:{" "}
+                      {new Date(advancedFilters.date_to).toLocaleString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
                       })}
                       <button
                         type="button"
@@ -645,18 +623,14 @@ export default function HistoryActivityPage() {
                     <History className="size-6 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">
-                      Total Activity
-                    </p>
+                    <p className="text-sm text-muted-foreground">Total Activity</p>
                     <p className="text-2xl font-bold">
                       {countsLoading ? "..." : totalAllCounts.toLocaleString()}
                     </p>
                   </div>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                All HTTP requests logged
-              </p>
+              <p className="text-xs text-muted-foreground">All HTTP requests logged</p>
             </div>
 
             {/* HTTP Methods Group */}
@@ -678,24 +652,21 @@ export default function HistoryActivityPage() {
                     method: "POST",
                     count: postCounts,
                     icon: <Link2 className="size-4" />,
-                    color:
-                      "from-green-500/10 to-green-500/5 border-green-500/20",
+                    color: "from-green-500/10 to-green-500/5 border-green-500/20",
                     textColor: "text-green-600 dark:text-green-400",
                   },
                   {
                     method: "PUT",
                     count: putCounts,
                     icon: <Edit3 className="size-4" />,
-                    color:
-                      "from-amber-500/10 to-amber-500/5 border-amber-500/20",
+                    color: "from-amber-500/10 to-amber-500/5 border-amber-500/20",
                     textColor: "text-amber-600 dark:text-amber-400",
                   },
                   {
                     method: "PATCH",
                     count: patchCounts,
                     icon: <Settings className="size-4" />,
-                    color:
-                      "from-purple-500/10 to-purple-500/5 border-purple-500/20",
+                    color: "from-purple-500/10 to-purple-500/5 border-purple-500/20",
                     textColor: "text-purple-600 dark:text-purple-400",
                   },
                   {
@@ -725,9 +696,7 @@ export default function HistoryActivityPage() {
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <div className={`${textColor}`}>{icon}</div>
-                      <span className="text-xs font-medium text-muted-foreground">
-                        {method}
-                      </span>
+                      <span className="text-xs font-medium text-muted-foreground">{method}</span>
                     </div>
                     <p className={`text-lg font-bold ${textColor}`}>
                       {countsLoading ? "..." : count.toLocaleString()}
@@ -748,9 +717,7 @@ export default function HistoryActivityPage() {
               <div className="flex flex-col items-center justify-center p-12 text-destructive">
                 <AlertCircle className="size-12 mb-4" />
                 <p className="text-lg font-semibold">Failed to load logs</p>
-                <p className="text-sm text-muted-foreground">
-                  Please try again later
-                </p>
+                <p className="text-sm text-muted-foreground">Please try again later</p>
               </div>
             ) : logs.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-12 text-muted-foreground">
@@ -764,21 +731,11 @@ export default function HistoryActivityPage() {
                   <table className="w-full">
                     <thead className="border-b bg-muted/50">
                       <tr>
-                        <th className="text-left p-4 font-semibold text-sm">
-                          Action
-                        </th>
-                        <th className="text-left p-4 font-semibold text-sm">
-                          User
-                        </th>
-                        <th className="text-left p-4 font-semibold text-sm">
-                          Route
-                        </th>
-                        <th className="text-left p-4 font-semibold text-sm">
-                          Status
-                        </th>
-                        <th className="text-left p-4 font-semibold text-sm">
-                          Time
-                        </th>
+                        <th className="text-left p-4 font-semibold text-sm">Action</th>
+                        <th className="text-left p-4 font-semibold text-sm">User</th>
+                        <th className="text-left p-4 font-semibold text-sm">Route</th>
+                        <th className="text-left p-4 font-semibold text-sm">Status</th>
+                        <th className="text-left p-4 font-semibold text-sm">Time</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -803,13 +760,9 @@ export default function HistoryActivityPage() {
                                 {getActivityIcon(log.method)}
                               </div>
                               <div>
-                                <p className="font-medium text-sm">
-                                  {log.action || log.message}
-                                </p>
+                                <p className="font-medium text-sm">{log.action || log.message}</p>
                                 <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                  <span className="font-mono font-semibold">
-                                    {log.method}
-                                  </span>
+                                  <span className="font-mono font-semibold">{log.method}</span>
                                   <span>•</span>
                                   <span>{log.level}</span>
                                 </p>
@@ -821,9 +774,7 @@ export default function HistoryActivityPage() {
                               <div className="p-1.5 rounded-full bg-primary/10">
                                 <User className="size-3 text-primary" />
                               </div>
-                              <span className="text-sm">
-                                {log.username || "Anonymous"}
-                              </span>
+                              <span className="text-sm">{log.username || "Anonymous"}</span>
                             </div>
                           </td>
                           <td className="p-4">
@@ -857,10 +808,7 @@ export default function HistoryActivityPage() {
                 <div className="px-6 py-4 border-t bg-muted/30 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <p className="text-sm text-muted-foreground">
                     Showing{" "}
-                    <span className="font-medium text-foreground">
-                      {(page - 1) * limit + 1}
-                    </span>{" "}
-                    -{" "}
+                    <span className="font-medium text-foreground">{(page - 1) * limit + 1}</span> -{" "}
                     <span className="font-medium text-foreground">
                       {Math.min(page * limit, totalCount)}
                     </span>{" "}
@@ -899,10 +847,7 @@ export default function HistoryActivityPage() {
           </div>
 
           {/* Detail Log Dialog */}
-          <LogDetailDialog
-            logId={selectedLogId}
-            onClose={() => setSelectedLogId(null)}
-          />
+          <LogDetailDialog logId={selectedLogId} onClose={() => setSelectedLogId(null)} />
         </div>
       </SidebarInset>
     </SidebarProvider>

@@ -179,9 +179,7 @@ const formatAPIError = (error: unknown): string => {
 
   if (error.error && typeof error.error === "object") {
     // Collect all validation messages
-    const messages = Object.values(error.error).filter(
-      (msg) => typeof msg === "string",
-    );
+    const messages = Object.values(error.error).filter((msg) => typeof msg === "string");
     if (messages.length > 0) {
       return messages.join("\n");
     }
@@ -250,13 +248,7 @@ export function useUpdateAPIKey() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      id,
-      data,
-    }: {
-      id: string;
-      data: UpdateAPIKeyRequest;
-    }) => {
+    mutationFn: async ({ id, data }: { id: string; data: UpdateAPIKeyRequest }) => {
       const response = await updateAPIKey(id, data);
 
       if (!response.success) {
@@ -339,9 +331,7 @@ export function useToggleAPIKeyStatus() {
         queryClient.invalidateQueries({
           queryKey: apiKeysKeys.detail(apiKey.id),
         });
-        toast.success(
-          apiKey.is_active ? "API key deactivated" : "API key activated",
-        );
+        toast.success(apiKey.is_active ? "API key deactivated" : "API key activated");
       } else {
         toast.error(response.message || "Failed to update API key status");
       }

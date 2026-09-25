@@ -26,12 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ViewsTableProps {
   code: string;
@@ -41,11 +36,7 @@ export function ViewsTable({ code }: ViewsTableProps) {
   const [page, setPage] = useState(1);
   const limit = 10;
   // Note: we use 'views' query key in the hook, ensure it matches the one we updated
-  const {
-    data: viewsData,
-    isLoading,
-    error,
-  } = useShortLinkViews(code, page, limit);
+  const { data: viewsData, isLoading, error } = useShortLinkViews(code, page, limit);
 
   const views = viewsData?.recent_views || [];
   const meta = viewsData;
@@ -76,12 +67,10 @@ export function ViewsTable({ code }: ViewsTableProps) {
         <div className="size-16 bg-muted/20 rounded-full flex items-center justify-center mb-4">
           <Globe className="size-8 text-muted-foreground opacity-50" />
         </div>
-        <h3 className="text-lg font-semibold text-foreground">
-          No Traffic Yet
-        </h3>
+        <h3 className="text-lg font-semibold text-foreground">No Traffic Yet</h3>
         <p className="text-muted-foreground text-sm mt-1 max-w-sm text-center">
-          Share your link to start collecting enhanced traffic insights like
-          location, device, and referral data.
+          Share your link to start collecting enhanced traffic insights like location, device, and
+          referral data.
         </p>
       </div>
     );
@@ -97,9 +86,7 @@ export function ViewsTable({ code }: ViewsTableProps) {
             <TableRow>
               <TableHead className="w-[30%] pl-6">Visitor</TableHead>
               <TableHead className="w-[25%]">Device & OS</TableHead>
-              <TableHead className="w-[25%] hidden md:table-cell">
-                Source / Referer
-              </TableHead>
+              <TableHead className="w-[25%] hidden md:table-cell">Source / Referer</TableHead>
               <TableHead className="text-right pr-6">Time</TableHead>
             </TableRow>
           </TableHeader>
@@ -107,10 +94,7 @@ export function ViewsTable({ code }: ViewsTableProps) {
             {views.map((view) => {
               const ua = parseUserAgent(view.user_agent);
               return (
-                <TableRow
-                  key={view.id}
-                  className="hover:bg-muted/30 transition-colors"
-                >
+                <TableRow key={view.id} className="hover:bg-muted/30 transition-colors">
                   <TableCell className="pl-6">
                     <div className="flex items-center gap-3">
                       <div className="size-9 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 text-blue-600">
@@ -169,10 +153,7 @@ export function ViewsTable({ code }: ViewsTableProps) {
                         </Tooltip>
                       </TooltipProvider>
                     ) : (
-                      <Badge
-                        variant="secondary"
-                        className="font-normal opacity-70"
-                      >
+                      <Badge variant="secondary" className="font-normal opacity-70">
                         Direct / Unknown
                       </Badge>
                     )}
@@ -290,11 +271,7 @@ function parseUserAgent(ua: string) {
   else if (ua.includes("like Mac")) os = "iOS";
 
   // Detect Device Type (Icon)
-  if (
-    ua.includes("Mobile") ||
-    ua.includes("Android") ||
-    ua.includes("iPhone")
-  ) {
+  if (ua.includes("Mobile") || ua.includes("Android") || ua.includes("iPhone")) {
     deviceIcon = <Smartphone className="size-3.5 text-purple-500" />;
   } else if (ua.includes("Tablet") || ua.includes("iPad")) {
     deviceIcon = <Tablet className="size-3.5 text-blue-500" />;

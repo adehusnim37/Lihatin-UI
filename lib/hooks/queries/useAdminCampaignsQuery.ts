@@ -13,26 +13,13 @@ import {
 
 export const adminCampaignKeys = {
   all: ["admin", "promotional-campaigns"] as const,
-  list: (page: number, limit: number) =>
-    [...adminCampaignKeys.all, "list", page, limit] as const,
-  detail: (id: string) =>
-    [...adminCampaignKeys.all, "detail", id] as const,
+  list: (page: number, limit: number) => [...adminCampaignKeys.all, "list", page, limit] as const,
+  detail: (id: string) => [...adminCampaignKeys.all, "detail", id] as const,
   deliveries: (id: string, page: number, limit: number, status: string) =>
-    [
-      ...adminCampaignKeys.all,
-      "deliveries",
-      id,
-      page,
-      limit,
-      status,
-    ] as const,
+    [...adminCampaignKeys.all, "deliveries", id, page, limit, status] as const,
 };
 
-export function useAdminCampaignsQuery(
-  page: number,
-  limit: number,
-  enabled = true,
-) {
+export function useAdminCampaignsQuery(page: number, limit: number, enabled = true) {
   return useQuery({
     queryKey: adminCampaignKeys.list(page, limit),
     queryFn: () => getAdminCampaigns(page, limit),
@@ -58,8 +45,7 @@ export function useAdminCampaignDeliveriesQuery(
 ) {
   return useQuery({
     queryKey: adminCampaignKeys.deliveries(id, page, limit, status),
-    queryFn: () =>
-      getAdminCampaignDeliveries(id, page, limit, status),
+    queryFn: () => getAdminCampaignDeliveries(id, page, limit, status),
     enabled: enabled && Boolean(id),
     placeholderData: (previous) => previous,
   });
@@ -80,8 +66,7 @@ function useCampaignMutationInvalidation() {
 export function useCreateAdminCampaignMutation() {
   const invalidate = useCampaignMutationInvalidation();
   return useMutation({
-    mutationFn: (payload: CampaignPayload) =>
-      createAdminCampaign(payload),
+    mutationFn: (payload: CampaignPayload) => createAdminCampaign(payload),
     onSuccess: (campaign) => invalidate(campaign.id),
   });
 }
@@ -89,13 +74,8 @@ export function useCreateAdminCampaignMutation() {
 export function useUpdateAdminCampaignMutation() {
   const invalidate = useCampaignMutationInvalidation();
   return useMutation({
-    mutationFn: ({
-      id,
-      payload,
-    }: {
-      id: string;
-      payload: Partial<CampaignPayload>;
-    }) => updateAdminCampaign(id, payload),
+    mutationFn: ({ id, payload }: { id: string; payload: Partial<CampaignPayload> }) =>
+      updateAdminCampaign(id, payload),
     onSuccess: (campaign) => invalidate(campaign.id),
   });
 }
@@ -103,13 +83,8 @@ export function useUpdateAdminCampaignMutation() {
 export function useScheduleAdminCampaignMutation() {
   const invalidate = useCampaignMutationInvalidation();
   return useMutation({
-    mutationFn: ({
-      id,
-      scheduledAt,
-    }: {
-      id: string;
-      scheduledAt?: string;
-    }) => scheduleAdminCampaign(id, scheduledAt),
+    mutationFn: ({ id, scheduledAt }: { id: string; scheduledAt?: string }) =>
+      scheduleAdminCampaign(id, scheduledAt),
     onSuccess: (campaign) => invalidate(campaign.id),
   });
 }

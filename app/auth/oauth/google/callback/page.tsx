@@ -4,10 +4,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  completeGoogleOAuthCallback,
-  saveUserData,
-} from "@/lib/api/auth";
+import { completeGoogleOAuthCallback, saveUserData } from "@/lib/api/auth";
 import { useAuth } from "@/app/context/AuthContext";
 import { AuthenticatedTransition } from "@/components/auth/authenticated-transition";
 
@@ -16,9 +13,7 @@ function GoogleOAuthCallbackContent() {
   const searchParams = useSearchParams();
   const auth = useAuth();
   const handledRef = useRef(false);
-  const [authenticatedDestination, setAuthenticatedDestination] = useState<
-    string | null
-  >(null);
+  const [authenticatedDestination, setAuthenticatedDestination] = useState<string | null>(null);
 
   useEffect(() => {
     if (handledRef.current) {
@@ -29,8 +24,7 @@ function GoogleOAuthCallbackContent() {
     const code = searchParams.get("code")?.trim() || "";
     const state = searchParams.get("state")?.trim() || "";
     const oauthError = searchParams.get("error")?.trim() || "";
-    const oauthErrorDescription =
-      searchParams.get("error_description")?.trim() || "";
+    const oauthErrorDescription = searchParams.get("error_description")?.trim() || "";
 
     if (oauthError) {
       const userMessage =
@@ -78,9 +72,7 @@ function GoogleOAuthCallbackContent() {
       } catch (error: unknown) {
         sessionStorage.removeItem("post_login_redirect");
         const errorMessage =
-          error instanceof Error
-            ? error.message
-            : "Failed to complete Google sign-in.";
+          error instanceof Error ? error.message : "Failed to complete Google sign-in.";
 
         toast.error("Google Sign-in Failed", {
           description: errorMessage,

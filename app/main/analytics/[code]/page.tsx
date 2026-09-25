@@ -2,14 +2,7 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  Activity,
-  BarChart2,
-  Copy,
-  Check,
-  Link as LinkIcon,
-  Users,
-} from "lucide-react";
+import { Activity, BarChart2, Copy, Check, Link as LinkIcon, Users } from "lucide-react";
 import { useLink } from "@/lib/hooks/queries/useLinksQuery";
 import { OverviewStats } from "@/components/links/detail/overview-stats";
 import { ActivityLogTable } from "@/components/links/detail/activity-log-table";
@@ -53,14 +46,8 @@ export default function AnalyticsDetailPage() {
         <SidebarInset>
           <SiteHeader />
           <div className="flex flex-1 flex-col items-center justify-center p-10">
-            <h2 className="text-xl font-bold text-destructive">
-              Error Loading Analytics
-            </h2>
-            <Button
-              variant="outline"
-              className="mt-4"
-              onClick={() => router.back()}
-            >
+            <h2 className="text-xl font-bold text-destructive">Error Loading Analytics</h2>
+            <Button variant="outline" className="mt-4" onClick={() => router.back()}>
               Go Back
             </Button>
           </div>
@@ -87,7 +74,6 @@ export default function AnalyticsDetailPage() {
         <SiteHeader />
         <div className="flex flex-1 flex-col gap-6 p-6">
           <div className="flex flex-col gap-4">
-
             <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2">

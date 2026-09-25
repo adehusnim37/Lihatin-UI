@@ -57,8 +57,7 @@ export function SupportTurnstileField({
     const renderWidget = () => {
       if (disposed || !window.turnstile || !captchaRef.current) return;
 
-      const nextSize =
-        captchaRef.current.clientWidth < 300 ? "compact" : "flexible";
+      const nextSize = captchaRef.current.clientWidth < 300 ? "compact" : "flexible";
       if (captchaWidgetIdRef.current && renderedSize === nextSize) return;
 
       if (captchaWidgetIdRef.current) {
@@ -89,8 +88,7 @@ export function SupportTurnstileField({
     } else {
       const script = document.createElement("script");
       script.id = scriptId;
-      script.src =
-        "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
       script.async = true;
       script.defer = true;
       script.addEventListener("load", renderWidget, { once: true });
@@ -104,9 +102,7 @@ export function SupportTurnstileField({
       disposed = true;
       resizeObserver.disconnect();
       existing?.removeEventListener("load", renderWidget);
-      document
-        .getElementById(scriptId)
-        ?.removeEventListener("load", renderWidget);
+      document.getElementById(scriptId)?.removeEventListener("load", renderWidget);
       removeWidget();
     };
   }, [onTokenChange]);

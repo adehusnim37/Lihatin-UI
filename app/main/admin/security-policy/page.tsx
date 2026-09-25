@@ -5,10 +5,7 @@ import { ShieldAlert } from "lucide-react";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
-import {
-  EnabledDisabledBadge,
-  EnvironmentEffectiveBadge,
-} from "@/components/ui/app-status-badges";
+import { EnabledDisabledBadge, EnvironmentEffectiveBadge } from "@/components/ui/app-status-badges";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -69,7 +66,9 @@ export default function AdminSecurityPolicyPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Access Denied</CardTitle>
-                <CardDescription>This page is available only for admin and super admin roles.</CardDescription>
+                <CardDescription>
+                  This page is available only for admin and super admin roles.
+                </CardDescription>
               </CardHeader>
             </Card>
           )}
@@ -91,8 +90,8 @@ export default function AdminSecurityPolicyPage() {
                   Disposable Email Protection
                 </CardTitle>
                 <CardDescription>
-                  When enabled, disposable email addresses are blocked for signup, Google signup account creation,
-                  and change-email flow.
+                  When enabled, disposable email addresses are blocked for signup, Google signup
+                  account creation, and change-email flow.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">

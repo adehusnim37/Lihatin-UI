@@ -5,11 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2, Lock } from "lucide-react";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 export default function EnterPasscodePage() {
   const params = useParams<{ short_code: string }>();
@@ -33,15 +29,11 @@ export default function EnterPasscodePage() {
           <div className="inline-flex items-center justify-center size-16 rounded-full bg-primary/10 mb-4">
             <Lock className="size-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">
-            Protected Link
-          </h1>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Protected Link</h1>
           <p className="text-muted-foreground text-sm">
             This link requires a 6-digit passcode to access.
           </p>
-          <p className="text-xs text-muted-foreground/60 mt-2">
-            /{params.short_code}
-          </p>
+          <p className="text-xs text-muted-foreground/60 mt-2">/{params.short_code}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -68,11 +60,7 @@ export default function EnterPasscodePage() {
             </div>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={passcode.length !== 6 || isSubmitting}
-          >
+          <Button type="submit" className="w-full" disabled={passcode.length !== 6 || isSubmitting}>
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />

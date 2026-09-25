@@ -18,10 +18,7 @@ const waveStart = "M 0 100 V 100 Q 50 100 100 100 V 100 Z";
 const waveMiddle = "M 0 100 V 48 Q 50 -4 100 48 V 100 Z";
 const waveEnd = "M 0 100 V 0 Q 50 0 100 0 V 100 Z";
 
-export function LogoutTransition({
-  active,
-  onComplete,
-}: LogoutTransitionProps) {
+export function LogoutTransition({ active, onComplete }: LogoutTransitionProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const onCompleteRef = useRef(onComplete);
 
@@ -188,7 +185,6 @@ export function LogoutTransition({
         data-logout-content
         className="absolute inset-0 flex flex-col p-5 text-primary-foreground sm:p-8 lg:p-10"
       >
-
         <div className="flex flex-1 flex-col items-center justify-center text-center">
           <span
             data-logout-logo
@@ -226,7 +222,6 @@ export function LogoutTransition({
             />
           </span>
         </div>
-
       </div>
     </div>,
     document.body,

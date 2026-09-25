@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type CSSProperties,
-  type ReactNode,
-} from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   IconArrowLeft,
@@ -30,11 +24,7 @@ import {
 import { AppSidebar } from "@/components/app-sidebar";
 import { ChartAreaInteractive } from "@/components/chart-area-interactive";
 import { SiteHeader } from "@/components/site-header";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   PremiumEventActionBadge,
   PremiumStateBadge,
@@ -47,13 +37,7 @@ import {
 } from "@/components/ui/app-status-badges";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -99,14 +83,11 @@ export default function AdminUserDetailPage() {
   const router = useRouter();
   const userId = decodeURIComponent(String(params.id ?? ""));
   const [auditView, setAuditView] = useState<AuditHistoryView>("premium");
-  const [roleFromStorage, setRoleFromStorage] = useState<
-    string | null | undefined
-  >(undefined);
+  const [roleFromStorage, setRoleFromStorage] = useState<string | null | undefined>(undefined);
   const [copiedId, setCopiedId] = useState(false);
   const [shortsPage, setShortsPage] = useState(1);
   const [shortsLimit, setShortsLimit] = useState(10);
-  const [shortsSort, setShortsSort] =
-    useState<AdminUserShortLinkSort>("created_at");
+  const [shortsSort, setShortsSort] = useState<AdminUserShortLinkSort>("created_at");
   const [shortsOrder, setShortsOrder] = useState<"asc" | "desc">("desc");
   const [shortsSearchInput, setShortsSearchInput] = useState("");
   const [shortsSearch, setShortsSearch] = useState("");
@@ -158,18 +139,12 @@ export default function AdminUserDetailPage() {
   });
 
   const user = detailQuery.data;
-  const events = useMemo(
-    () => eventsQuery.data?.items ?? [],
-    [eventsQuery.data?.items],
-  );
+  const events = useMemo(() => eventsQuery.data?.items ?? [], [eventsQuery.data?.items]);
   const userShorts = useMemo(
     () => userShortsQuery.data?.short_links ?? [],
     [userShortsQuery.data?.short_links],
   );
-  const recentHistory = useMemo(
-    () => user?.recent_history ?? [],
-    [user?.recent_history],
-  );
+  const recentHistory = useMemo(() => user?.recent_history ?? [], [user?.recent_history]);
   const recentLoginAttempts = useMemo(
     () => user?.recent_login_attempts ?? [],
     [user?.recent_login_attempts],
@@ -187,12 +162,8 @@ export default function AdminUserDetailPage() {
   const eventStats = useMemo(() => {
     const total = events.length;
     const revoked = events.filter((item) => item.action === "revoke").length;
-    const reactivated = events.filter(
-      (item) => item.action === "reactivate",
-    ).length;
-    const permanent = events.filter(
-      (item) => item.revoke_type === "permanent",
-    ).length;
+    const reactivated = events.filter((item) => item.action === "reactivate").length;
+    const permanent = events.filter((item) => item.revoke_type === "permanent").length;
     return { total, revoked, reactivated, permanent };
   }, [events]);
 
@@ -226,12 +197,9 @@ export default function AdminUserDetailPage() {
                 <IconFingerprint className="size-3.5" />
                 Account file
               </div>
-              <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
-                User detail
-              </h1>
+              <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">User detail</h1>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Identity, access posture, owned links, and the audit record in
-                one operational view.
+                Identity, access posture, owned links, and the audit record in one operational view.
               </p>
             </div>
             <div className="flex gap-2">
@@ -257,18 +225,13 @@ export default function AdminUserDetailPage() {
                 }}
                 disabled={detailQuery.isLoading || detailQuery.isFetching}
               >
-                <IconRefresh
-                  className={
-                    detailQuery.isFetching ? "animate-spin" : ""
-                  }
-                />
+                <IconRefresh className={detailQuery.isFetching ? "animate-spin" : ""} />
                 Refresh
               </Button>
             </div>
           </header>
 
-          {(typeof roleFromStorage === "undefined" ||
-            detailQuery.isLoading) && <PageSkeleton />}
+          {(typeof roleFromStorage === "undefined" || detailQuery.isLoading) && <PageSkeleton />}
 
           {typeof roleFromStorage !== "undefined" && !isAdmin && (
             <Card>
@@ -311,23 +274,19 @@ export default function AdminUserDetailPage() {
                           ) : null}
                           <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
                             {getInitials(
-                              `${user.first_name} ${user.last_name}`.trim() ||
-                                user.username,
+                              `${user.first_name} ${user.last_name}`.trim() || user.username,
                             )}
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <h2 className="truncate text-xl font-semibold tracking-tight">
-                              {[user.first_name, user.last_name]
-                                .filter(Boolean)
-                                .join(" ") || user.username}
+                              {[user.first_name, user.last_name].filter(Boolean).join(" ") ||
+                                user.username}
                             </h2>
                             <RoleBadge role={user.role} />
                           </div>
-                          <p className="mt-1 text-sm text-muted-foreground">
-                            @{user.username}
-                          </p>
+                          <p className="mt-1 text-sm text-muted-foreground">@{user.username}</p>
                           <div className="mt-3 flex min-w-0 items-center gap-2 text-sm">
                             <IconMail className="size-4 shrink-0 text-muted-foreground" />
                             <span className="truncate">{user.email}</span>
@@ -337,18 +296,14 @@ export default function AdminUserDetailPage() {
 
                       <div className="flex flex-wrap gap-2 lg:max-w-72 lg:justify-end">
                         <PremiumStateBadge
-                          isPremium={hasActivePremiumAccess(
-                            user.premium_access,
-                          )}
+                          isPremium={hasActivePremiumAccess(user.premium_access)}
                           isRevoked={isUserCurrentlyRevoked(user)}
                         />
                         <ActiveInactiveBadge
                           isActive={user.account_status === "active"}
                           activeLabel="Account active"
                           inactiveLabel={
-                            user.account_status === "locked"
-                              ? "Admin locked"
-                              : "Account disabled"
+                            user.account_status === "locked" ? "Admin locked" : "Account disabled"
                           }
                         />
                         <EnabledDisabledBadge
@@ -364,9 +319,7 @@ export default function AdminUserDetailPage() {
                         label="User ID"
                         valueNode={
                           <div className="flex min-w-0 items-center gap-1.5">
-                            <span className="truncate font-mono text-xs">
-                              {user.id}
-                            </span>
+                            <span className="truncate font-mono text-xs">{user.id}</span>
                             <Button
                               variant="ghost"
                               size="icon"
@@ -376,10 +329,7 @@ export default function AdminUserDetailPage() {
                                   await navigator.clipboard.writeText(user.id);
                                   setCopiedId(true);
                                   toast.success("User ID copied");
-                                  window.setTimeout(
-                                    () => setCopiedId(false),
-                                    2000,
-                                  );
+                                  window.setTimeout(() => setCopiedId(false), 2000);
                                 } catch {
                                   toast.error("User ID could not be copied");
                                 }
@@ -420,10 +370,7 @@ export default function AdminUserDetailPage() {
                       <div className="grid gap-3 border-t px-5 py-4 text-sm md:grid-cols-2 md:px-6">
                         <InfoLine
                           label="Lock reason"
-                          value={
-                            user.account_status_reason ||
-                            "No lock reason recorded"
-                          }
+                          value={user.account_status_reason || "No lock reason recorded"}
                         />
                         <InfoLine
                           label="Premium access reason"
@@ -457,8 +404,7 @@ export default function AdminUserDetailPage() {
                       <div>
                         <CardTitle>Authentication posture</CardTitle>
                         <CardDescription className="mt-1">
-                          Current controls, recent login state, and account
-                          counters.
+                          Current controls, recent login state, and account counters.
                         </CardDescription>
                       </div>
                     </div>
@@ -472,9 +418,7 @@ export default function AdminUserDetailPage() {
                           disabledLabel="TOTP disabled"
                         />
                         <ActiveInactiveBadge
-                          isActive={
-                            user.user_auth?.account_status === "active"
-                          }
+                          isActive={user.user_auth?.account_status === "active"}
                           activeLabel="Account active"
                           inactiveLabel={
                             user.user_auth?.account_status === "locked"
@@ -482,40 +426,26 @@ export default function AdminUserDetailPage() {
                               : "Account disabled"
                           }
                         />
-                        {isLockoutActive(
-                          user.user_auth?.login_blocked_until,
-                        ) ? (
-                          <StatusBadge tone="danger">
-                            TEMP LOGIN BLOCK ACTIVE
-                          </StatusBadge>
+                        {isLockoutActive(user.user_auth?.login_blocked_until) ? (
+                          <StatusBadge tone="danger">TEMP LOGIN BLOCK ACTIVE</StatusBadge>
                         ) : (
-                          <StatusBadge tone="neutral">
-                            TEMP LOGIN BLOCK CLEAR
-                          </StatusBadge>
+                          <StatusBadge tone="neutral">TEMP LOGIN BLOCK CLEAR</StatusBadge>
                         )}
                       </div>
 
                       <div className="mt-4 grid gap-2 sm:grid-cols-2">
                         <AuthMetricItem
                           label="Failed attempts"
-                          value={String(
-                            user.user_auth?.failed_login_attempts ?? 0,
-                          )}
-                          emphasize={Boolean(
-                            (user.user_auth?.failed_login_attempts ?? 0) > 0,
-                          )}
+                          value={String(user.user_auth?.failed_login_attempts ?? 0)}
+                          emphasize={Boolean((user.user_auth?.failed_login_attempts ?? 0) > 0)}
                         />
                         <AuthMetricItem
                           label="Last login"
-                          value={formatDateTime(
-                            user.user_auth?.last_login_at,
-                          )}
+                          value={formatDateTime(user.user_auth?.last_login_at)}
                         />
                         <AuthMetricItem
                           label="Temporary login block until"
-                          value={formatDateTime(
-                            user.user_auth?.login_blocked_until,
-                          )}
+                          value={formatDateTime(user.user_auth?.login_blocked_until)}
                         />
                         <AuthMetricItem
                           label="Last IP"
@@ -525,14 +455,8 @@ export default function AdminUserDetailPage() {
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                      <StatBox
-                        label="API keys"
-                        value={user.stats?.api_keys_total ?? 0}
-                      />
-                      <StatBox
-                        label="Active keys"
-                        value={user.stats?.api_keys_active ?? 0}
-                      />
+                      <StatBox label="API keys" value={user.stats?.api_keys_total ?? 0} />
+                      <StatBox label="Active keys" value={user.stats?.api_keys_active ?? 0} />
                       <StatBox
                         label="Account events"
                         value={user.stats?.history_events_total ?? 0}
@@ -562,9 +486,7 @@ export default function AdminUserDetailPage() {
                   </CardHeader>
                   <CardContent>
                     {!user.auth_methods || user.auth_methods.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">
-                        No auth methods available.
-                      </p>
+                      <p className="text-sm text-muted-foreground">No auth methods available.</p>
                     ) : (
                       <Table>
                         <TableHeader>
@@ -580,14 +502,10 @@ export default function AdminUserDetailPage() {
                           {user.auth_methods.map((method) => (
                             <TableRow key={method.id}>
                               <TableCell>
-                                <StatusBadge tone="info">
-                                  {method.type.toUpperCase()}
-                                </StatusBadge>
+                                <StatusBadge tone="info">{method.type.toUpperCase()}</StatusBadge>
                               </TableCell>
                               <TableCell>
-                                <EnabledDisabledBadge
-                                  enabled={method.is_enabled}
-                                />
+                                <EnabledDisabledBadge enabled={method.is_enabled} />
                               </TableCell>
                               <TableCell>
                                 <EnabledDisabledBadge
@@ -596,12 +514,8 @@ export default function AdminUserDetailPage() {
                                   disabledLabel="Unverified"
                                 />
                               </TableCell>
-                              <TableCell>
-                                {formatDateTime(method.last_used_at)}
-                              </TableCell>
-                              <TableCell>
-                                {method.friendly_name || "-"}
-                              </TableCell>
+                              <TableCell>{formatDateTime(method.last_used_at)}</TableCell>
+                              <TableCell>{method.friendly_name || "-"}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -611,228 +525,201 @@ export default function AdminUserDetailPage() {
                 </Card>
 
                 <Card>
-                    <CardHeader className="space-y-3">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="space-y-1">
-                          <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-tight">
-                            <IconLink className="size-5 text-primary" />
-                            User short links
-                          </CardTitle>
-                          <CardDescription>
-                            Browse and search short links created by this user.
-                          </CardDescription>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            setIsShortsSectionOpen((previous) => !previous)
-                          }
-                        >
-                          {isShortsSectionOpen ? (
-                            <IconChevronUp className="mr-2 size-4" />
-                          ) : (
-                            <IconChevronDown className="mr-2 size-4" />
-                          )}
-                          {isShortsSectionOpen ? "Collapse" : "Expand"}
-                        </Button>
+                  <CardHeader className="space-y-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-tight">
+                          <IconLink className="size-5 text-primary" />
+                          User short links
+                        </CardTitle>
+                        <CardDescription>
+                          Browse and search short links created by this user.
+                        </CardDescription>
                       </div>
-                    </CardHeader>
-
-                    {isShortsSectionOpen ? (
-                      <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                          <StatBox
-                            label="Total Links"
-                            value={shortPagination.totalCount}
-                          />
-                          <StatBox label="Showing" value={userShorts.length} />
-                          <StatBox
-                            label="Active"
-                            value={userShorts.filter((item) => item.is_active).length}
-                          />
-                          <StatBox
-                            label="Banned"
-                            value={userShorts.filter((item) => item.detail?.is_banned).length}
-                          />
-                        </div>
-
-                        <div className="grid gap-3 lg:grid-cols-[minmax(260px,1fr)_220px_140px]">
-                          <div className="relative">
-                            <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                            <Input
-                              value={shortsSearchInput}
-                              maxLength={100}
-                              onChange={(event) =>
-                                setShortsSearchInput(event.target.value)
-                              }
-                              placeholder="Search short code, title, description, or URL..."
-                              className="h-9 pl-9"
-                            />
-                          </div>
-
-                          <Select
-                            value={`${shortsSort}:${shortsOrder}`}
-                            onValueChange={(value) => {
-                              const [nextSort, nextOrder] = value.split(":");
-                              setShortsSort(
-                                nextSort as AdminUserShortLinkSort,
-                              );
-                              setShortsOrder(nextOrder as "asc" | "desc");
-                              setShortsPage(1);
-                            }}
-                          >
-                            <SelectTrigger className="h-9 w-full">
-                              <SelectValue placeholder="Sort links" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="created_at:desc">
-                                Newest links
-                              </SelectItem>
-                              <SelectItem value="created_at:asc">
-                                Oldest links
-                              </SelectItem>
-                              <SelectItem value="short_code:asc">
-                                Short code A–Z
-                              </SelectItem>
-                              <SelectItem value="title:asc">
-                                Title A–Z
-                              </SelectItem>
-                              <SelectItem value="is_active:desc">
-                                Active first
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-
-                          <Select
-                            value={String(shortsLimit)}
-                            onValueChange={(value) => {
-                              setShortsLimit(Number(value));
-                              setShortsPage(1);
-                            }}
-                          >
-                            <SelectTrigger className="h-9 w-full">
-                              <SelectValue placeholder="Page size" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="10">10 per page</SelectItem>
-                              <SelectItem value="25">25 per page</SelectItem>
-                              <SelectItem value="50">50 per page</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        {userShortsQuery.isLoading ? (
-                          <div className="space-y-2">
-                            <Skeleton className="h-16 w-full" />
-                            <Skeleton className="h-16 w-full" />
-                          </div>
-                        ) : userShortsQuery.isError ? (
-                          <p className="text-sm text-muted-foreground">
-                            Failed to load user short links.
-                          </p>
-                        ) : userShorts.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">
-                            {shortsSearch
-                              ? "No short links match your search."
-                              : "No short links found for this user."}
-                          </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsShortsSectionOpen((previous) => !previous)}
+                      >
+                        {isShortsSectionOpen ? (
+                          <IconChevronUp className="mr-2 size-4" />
                         ) : (
-                          <div className="overflow-x-auto rounded-md border">
-                            <Table>
-                              <TableHeader>
-                                <TableRow>
-                                  <TableHead>Short Code</TableHead>
-                                  <TableHead>Original URL</TableHead>
-                                  <TableHead>Status</TableHead>
-                                  <TableHead>Clicks</TableHead>
-                                  <TableHead>Created</TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {userShorts.map((short) => (
-                                  <TableRow key={short.id}>
-                                    <TableCell className="align-top">
-                                      <div className="space-y-1">
-                                        <p className="font-mono text-[15px] font-semibold leading-tight">
-                                          /{short.short_code}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground line-clamp-1">
-                                          {short.title || short.description || "-"}
-                                        </p>
-                                      </div>
-                                    </TableCell>
-                                    <TableCell className="align-top max-w-[360px]">
-                                      <a
-                                        href={short.original_url}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="text-sm text-foreground hover:text-primary hover:underline break-all line-clamp-2"
-                                        title={short.original_url}
-                                      >
-                                        {short.original_url}
-                                      </a>
-                                    </TableCell>
-                                    <TableCell className="align-top">
-                                      {renderShortLinkStatusBadge(short)}
-                                    </TableCell>
-                                    <TableCell className="align-top">
-                                      <div className="space-y-1">
-                                        <p className="text-sm font-semibold">
-                                          {short.detail?.current_clicks ?? 0}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                          Limit: {short.detail?.click_limit ?? "Unlimited"}
-                                        </p>
-                                      </div>
-                                    </TableCell>
-                                    <TableCell className="align-top text-xs text-muted-foreground">
-                                      {formatDateTime(short.created_at)}
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          </div>
+                          <IconChevronDown className="mr-2 size-4" />
                         )}
+                        {isShortsSectionOpen ? "Collapse" : "Expand"}
+                      </Button>
+                    </div>
+                  </CardHeader>
 
-                        <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-                          <p className="text-muted-foreground">
-                            Page {shortsPage} of {shortPagination.totalPages}
-                          </p>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              disabled={
-                                !shortPagination.hasPrevious ||
-                                userShortsQuery.isFetching
-                              }
-                              onClick={() =>
-                                setShortsPage((previous) => Math.max(1, previous - 1))
-                              }
-                            >
-                              Previous
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              disabled={
-                                !shortPagination.hasNext ||
-                                userShortsQuery.isFetching
-                              }
-                              onClick={() =>
-                                setShortsPage((previous) =>
-                                  Math.min(shortPagination.totalPages, previous + 1),
-                                )
-                              }
-                            >
-                              Next
-                            </Button>
-                          </div>
+                  {isShortsSectionOpen ? (
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                        <StatBox label="Total Links" value={shortPagination.totalCount} />
+                        <StatBox label="Showing" value={userShorts.length} />
+                        <StatBox
+                          label="Active"
+                          value={userShorts.filter((item) => item.is_active).length}
+                        />
+                        <StatBox
+                          label="Banned"
+                          value={userShorts.filter((item) => item.detail?.is_banned).length}
+                        />
+                      </div>
+
+                      <div className="grid gap-3 lg:grid-cols-[minmax(260px,1fr)_220px_140px]">
+                        <div className="relative">
+                          <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            value={shortsSearchInput}
+                            maxLength={100}
+                            onChange={(event) => setShortsSearchInput(event.target.value)}
+                            placeholder="Search short code, title, description, or URL..."
+                            className="h-9 pl-9"
+                          />
                         </div>
-                      </CardContent>
-                    ) : null}
+
+                        <Select
+                          value={`${shortsSort}:${shortsOrder}`}
+                          onValueChange={(value) => {
+                            const [nextSort, nextOrder] = value.split(":");
+                            setShortsSort(nextSort as AdminUserShortLinkSort);
+                            setShortsOrder(nextOrder as "asc" | "desc");
+                            setShortsPage(1);
+                          }}
+                        >
+                          <SelectTrigger className="h-9 w-full">
+                            <SelectValue placeholder="Sort links" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="created_at:desc">Newest links</SelectItem>
+                            <SelectItem value="created_at:asc">Oldest links</SelectItem>
+                            <SelectItem value="short_code:asc">Short code A–Z</SelectItem>
+                            <SelectItem value="title:asc">Title A–Z</SelectItem>
+                            <SelectItem value="is_active:desc">Active first</SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        <Select
+                          value={String(shortsLimit)}
+                          onValueChange={(value) => {
+                            setShortsLimit(Number(value));
+                            setShortsPage(1);
+                          }}
+                        >
+                          <SelectTrigger className="h-9 w-full">
+                            <SelectValue placeholder="Page size" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="10">10 per page</SelectItem>
+                            <SelectItem value="25">25 per page</SelectItem>
+                            <SelectItem value="50">50 per page</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {userShortsQuery.isLoading ? (
+                        <div className="space-y-2">
+                          <Skeleton className="h-16 w-full" />
+                          <Skeleton className="h-16 w-full" />
+                        </div>
+                      ) : userShortsQuery.isError ? (
+                        <p className="text-sm text-muted-foreground">
+                          Failed to load user short links.
+                        </p>
+                      ) : userShorts.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                          {shortsSearch
+                            ? "No short links match your search."
+                            : "No short links found for this user."}
+                        </p>
+                      ) : (
+                        <div className="overflow-x-auto rounded-md border">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Short Code</TableHead>
+                                <TableHead>Original URL</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Clicks</TableHead>
+                                <TableHead>Created</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {userShorts.map((short) => (
+                                <TableRow key={short.id}>
+                                  <TableCell className="align-top">
+                                    <div className="space-y-1">
+                                      <p className="font-mono text-[15px] font-semibold leading-tight">
+                                        /{short.short_code}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground line-clamp-1">
+                                        {short.title || short.description || "-"}
+                                      </p>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="align-top max-w-[360px]">
+                                    <a
+                                      href={short.original_url}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-sm text-foreground hover:text-primary hover:underline break-all line-clamp-2"
+                                      title={short.original_url}
+                                    >
+                                      {short.original_url}
+                                    </a>
+                                  </TableCell>
+                                  <TableCell className="align-top">
+                                    {renderShortLinkStatusBadge(short)}
+                                  </TableCell>
+                                  <TableCell className="align-top">
+                                    <div className="space-y-1">
+                                      <p className="text-sm font-semibold">
+                                        {short.detail?.current_clicks ?? 0}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground">
+                                        Limit: {short.detail?.click_limit ?? "Unlimited"}
+                                      </p>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="align-top text-xs text-muted-foreground">
+                                    {formatDateTime(short.created_at)}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      )}
+
+                      <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+                        <p className="text-muted-foreground">
+                          Page {shortsPage} of {shortPagination.totalPages}
+                        </p>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={!shortPagination.hasPrevious || userShortsQuery.isFetching}
+                            onClick={() => setShortsPage((previous) => Math.max(1, previous - 1))}
+                          >
+                            Previous
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={!shortPagination.hasNext || userShortsQuery.isFetching}
+                            onClick={() =>
+                              setShortsPage((previous) =>
+                                Math.min(shortPagination.totalPages, previous + 1),
+                              )
+                            }
+                          >
+                            Next
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  ) : null}
                 </Card>
 
                 <Card>
@@ -856,21 +743,15 @@ export default function AdminUserDetailPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => setAuditView("premium")}
-                          >
+                          <DropdownMenuItem onClick={() => setAuditView("premium")}>
                             <IconCrown className="mr-2 size-4" />
                             Premium Lifecycle
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => setAuditView("account")}
-                          >
+                          <DropdownMenuItem onClick={() => setAuditView("account")}>
                             <IconArrowRight className="mr-2 size-4" />
                             Account Changes
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => setAuditView("login")}
-                          >
+                          <DropdownMenuItem onClick={() => setAuditView("login")}>
                             <IconUserCircle className="mr-2 size-4" />
                             Login Security
                           </DropdownMenuItem>
@@ -883,14 +764,8 @@ export default function AdminUserDetailPage() {
                       <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
                         <StatBox label="Total" value={eventStats.total} />
                         <StatBox label="Revoke" value={eventStats.revoked} />
-                        <StatBox
-                          label="Reactivate"
-                          value={eventStats.reactivated}
-                        />
-                        <StatBox
-                          label="Permanent"
-                          value={eventStats.permanent}
-                        />
+                        <StatBox label="Reactivate" value={eventStats.reactivated} />
+                        <StatBox label="Permanent" value={eventStats.permanent} />
                       </div>
                     )}
 
@@ -903,21 +778,14 @@ export default function AdminUserDetailPage() {
                           <Skeleton className="h-20 w-full" />
                         </div>
                       ) : events.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                          No premium events found.
-                        </p>
+                        <p className="text-sm text-muted-foreground">No premium events found.</p>
                       ) : (
                         <div className="space-y-2">
                           {events.map((event) => (
-                            <div
-                              key={event.id}
-                              className="rounded-md border p-3"
-                            >
+                            <div key={event.id} className="rounded-md border p-3">
                               <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div className="flex flex-wrap items-center gap-2">
-                                  <PremiumEventActionBadge
-                                    action={event.action}
-                                  />
+                                  <PremiumEventActionBadge action={event.action} />
                                   <div className="flex items-center gap-1.5 rounded-md border border-dashed bg-muted/10 p-1">
                                     <StatusBadge
                                       tone={getStatusTone(event.old_status)}
@@ -926,15 +794,11 @@ export default function AdminUserDetailPage() {
                                       {event.old_status.toLocaleUpperCase()}
                                     </StatusBadge>
                                     <IconArrowRight className="size-3 text-muted-foreground" />
-                                    <StatusBadge
-                                      tone={getStatusTone(event.new_status)}
-                                    >
+                                    <StatusBadge tone={getStatusTone(event.new_status)}>
                                       {event.new_status.toLocaleUpperCase()}
                                     </StatusBadge>
                                   </div>
-                                  <RevokeTypeBadge
-                                    revokeType={event.revoke_type?.toUpperCase()}
-                                  />
+                                  <RevokeTypeBadge revokeType={event.revoke_type?.toUpperCase()} />
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                   {formatDateTime(event.created_at)}
@@ -949,41 +813,28 @@ export default function AdminUserDetailPage() {
                       )
                     ) : auditView === "account" ? (
                       recentHistory.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                          No account history found.
-                        </p>
+                        <p className="text-sm text-muted-foreground">No account history found.</p>
                       ) : (
                         <div className="space-y-2">
                           {recentHistory.map((item) => (
-                            <div
-                              key={item.id}
-                              className="rounded-md border p-3"
-                            >
+                            <div key={item.id} className="rounded-md border p-3">
                               <div className="flex flex-wrap items-center justify-between gap-2">
-                                <AccountHistoryActionBadge
-                                  action={item.action_type}
-                                />
+                                <AccountHistoryActionBadge action={item.action_type} />
                                 <p className="text-xs text-muted-foreground">
                                   {formatDateTime(item.changed_at)}
                                 </p>
                               </div>
-                              <p className="mt-2 text-sm">
-                                {item.reason || "No reason provided."}
-                              </p>
+                              <p className="mt-2 text-sm">{item.reason || "No reason provided."}</p>
                               <p className="mt-1 text-xs text-muted-foreground break-all">
-                                {item.changed_by
-                                  ? shortenID(item.changed_by)
-                                  : "system"}{" "}
-                                | IP: {item.ip_address || "-"}
+                                {item.changed_by ? shortenID(item.changed_by) : "system"} | IP:{" "}
+                                {item.ip_address || "-"}
                               </p>
                             </div>
                           ))}
                         </div>
                       )
                     ) : recentLoginAttempts.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">
-                        No login attempts found.
-                      </p>
+                      <p className="text-sm text-muted-foreground">No login attempts found.</p>
                     ) : (
                       <div className="space-y-2">
                         {recentLoginAttempts.map((item) => (
@@ -997,12 +848,9 @@ export default function AdminUserDetailPage() {
                                 </div>
                               </div>
                             </div>
-                            <p className="mt-2 text-sm break-all">
-                              {item.email_or_username}
-                            </p>
+                            <p className="mt-2 text-sm break-all">{item.email_or_username}</p>
                             <p className="mt-1 text-xs text-muted-foreground break-words">
-                              IP: {item.ip_address} | UA:{" "}
-                              {item.user_agent || "-"}
+                              IP: {item.ip_address} | UA: {item.user_agent || "-"}
                             </p>
                           </div>
                         ))}
@@ -1032,9 +880,7 @@ function CaseFileField({
       <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
         {label}
       </p>
-      <div className="mt-1 min-w-0 text-sm font-medium">
-        {valueNode ?? value ?? "-"}
-      </div>
+      <div className="mt-1 min-w-0 text-sm font-medium">{valueNode ?? value ?? "-"}</div>
     </div>
   );
 }
@@ -1051,9 +897,7 @@ function getInitials(value: string): string {
   );
 }
 
-function getLatestTimestamp(
-  values: Array<string | null | undefined>,
-): string | null {
+function getLatestTimestamp(values: Array<string | null | undefined>): string | null {
   const validValues = values.filter((value): value is string => {
     if (!value) return false;
     return !Number.isNaN(new Date(value).getTime());
@@ -1072,9 +916,7 @@ function buildUserActivityGraphData(...dateGroups: string[][]) {
 
   if (timestamps.length === 0) return [];
 
-  const referenceDate = new Date(
-    Math.max(...timestamps.map((value) => value.getTime())),
-  );
+  const referenceDate = new Date(Math.max(...timestamps.map((value) => value.getTime())));
   referenceDate.setUTCHours(0, 0, 0, 0);
   const startDate = new Date(referenceDate);
   startDate.setUTCDate(startDate.getUTCDate() - 89);
@@ -1117,9 +959,7 @@ function InfoLine({
     return (
       <p className="text-sm">
         <span className="text-muted-foreground">{label}: </span>
-        <span className="inline-flex items-center align-middle">
-          {renderedValue}
-        </span>
+        <span className="inline-flex items-center align-middle">{renderedValue}</span>
       </p>
     );
   }
@@ -1127,9 +967,7 @@ function InfoLine({
   return (
     <div>
       <p className="text-xs text-muted-foreground">{label}</p>
-      <div className={truncate ? "text-sm break-all" : "text-sm"}>
-        {renderedValue}
-      </div>
+      <div className={truncate ? "text-sm break-all" : "text-sm"}>{renderedValue}</div>
     </div>
   );
 }
@@ -1264,11 +1102,8 @@ function isLockoutActive(lockoutUntil?: string | null): boolean {
 function getHistoryActionTone(action: string) {
   const normalized = action.toLowerCase();
   // Check unlock/reactivate first to avoid conflict with lock/revoke
-  if (normalized.includes("unlock") || normalized.includes("reactivate"))
-    return "success";
-  if (normalized.includes("revoke") || normalized.includes("lock"))
-    return "danger";
-  if (normalized.includes("verification") || normalized.includes("change"))
-    return "warning";
+  if (normalized.includes("unlock") || normalized.includes("reactivate")) return "success";
+  if (normalized.includes("revoke") || normalized.includes("lock")) return "danger";
+  if (normalized.includes("verification") || normalized.includes("change")) return "warning";
   return "neutral";
 }

@@ -15,10 +15,7 @@ import {
   saveUserData,
   verifyLoginEmailOTP,
 } from "@/lib/api/auth";
-import {
-  buildAuthSupportURL,
-  getAuthSupportReasonFromMessage,
-} from "@/lib/auth-support";
+import { buildAuthSupportURL, getAuthSupportReasonFromMessage } from "@/lib/auth-support";
 import { useAuth } from "@/app/context/AuthContext";
 const TOTP_PROMPT_PENDING_KEY = "totp_migration_prompt_pending";
 
@@ -33,13 +30,9 @@ function VerifyEmailOTPContent() {
   const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [supportLink, setSupportLink] = useState<string | null>(null);
-  const [isAuthenticatedTransitioning, setIsAuthenticatedTransitioning] =
-    useState(false);
+  const [isAuthenticatedTransitioning, setIsAuthenticatedTransitioning] = useState(false);
 
-  const redirectTo = useMemo(
-    () => searchParams.get("redirect") || "/main",
-    [searchParams]
-  );
+  const redirectTo = useMemo(() => searchParams.get("redirect") || "/main", [searchParams]);
 
   useEffect(() => {
     const token = sessionStorage.getItem("pending_email_otp_challenge") || "";
@@ -80,10 +73,7 @@ function VerifyEmailOTPContent() {
 
       if (response.success && response.data) {
         if (requiresTOTP(response.data)) {
-          sessionStorage.setItem(
-            "pending_auth_token",
-            response.data.pending_auth_token
-          );
+          sessionStorage.setItem("pending_auth_token", response.data.pending_auth_token);
           sessionStorage.setItem("pending_user", JSON.stringify(response.data.user));
           cleanupPendingOTP();
           router.push("/auth/verify-login");
@@ -92,10 +82,7 @@ function VerifyEmailOTPContent() {
 
         if (requiresEmailOTP(response.data)) {
           // Defensive fallback, should not happen on verify endpoint.
-          sessionStorage.setItem(
-            "pending_email_otp_challenge",
-            response.data.challenge_token
-          );
+          sessionStorage.setItem("pending_email_otp_challenge", response.data.challenge_token);
           return;
         }
 
@@ -112,8 +99,7 @@ function VerifyEmailOTPContent() {
         setIsAuthenticatedTransitioning(true);
       }
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Invalid verification code";
+      const message = err instanceof Error ? err.message : "Invalid verification code";
       setError(message);
       toast.error("Verification Failed", {
         description: message,
@@ -121,9 +107,7 @@ function VerifyEmailOTPContent() {
       });
       const supportReason = getAuthSupportReasonFromMessage(message);
       if (supportReason) {
-        setSupportLink(
-          buildAuthSupportURL(supportReason, email, "email_otp"),
-        );
+        setSupportLink(buildAuthSupportURL(supportReason, email, "email_otp"));
       }
 
       if (message.toLowerCase().includes("expired")) {
@@ -190,9 +174,7 @@ function VerifyEmailOTPContent() {
         />
         {supportLink && (
           <div className="text-center mt-4">
-            <p className="text-sm text-muted-foreground mb-2">
-              Need help accessing your account?
-            </p>
+            <p className="text-sm text-muted-foreground mb-2">Need help accessing your account?</p>
             <Link href={supportLink} className="text-sm text-primary hover:underline">
               Contact Support →
             </Link>

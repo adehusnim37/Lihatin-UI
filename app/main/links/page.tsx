@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Search,
-  Filter,
-  Loader2,
-  LinkIcon,
-  RefreshCw,
-} from "lucide-react";
+import { Search, Filter, Loader2, LinkIcon, RefreshCw } from "lucide-react";
 
 import ShortLinkCard from "@/components/links/cards";
 import { Button } from "@/components/ui/button";
@@ -24,10 +18,7 @@ import { SiteHeader } from "@/components/site-header";
 import CreateLink from "@/components/links/create";
 
 // TanStack Query & Zustand
-import {
-  useLinks,
-  useToggleLinkStatus,
-} from "@/lib/hooks/queries/useLinksQuery";
+import { useLinks, useToggleLinkStatus } from "@/lib/hooks/queries/useLinksQuery";
 import { useLinksUIStore } from "@/lib/stores/useLinksUIStore";
 
 export default function LinksPage() {
@@ -45,12 +36,7 @@ export default function LinksPage() {
   } = useLinksUIStore();
 
   // TanStack Query untuk server state
-  const { data, isLoading, error, refetch, isFetching } = useLinks(
-    page,
-    limit,
-    sortBy,
-    orderBy
-  );
+  const { data, isLoading, error, refetch, isFetching } = useLinks(page, limit, sortBy, orderBy);
 
   // Toggle mutation
   const toggleMutation = useToggleLinkStatus();
@@ -65,7 +51,7 @@ export default function LinksPage() {
     (link) =>
       link.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       link.short_code?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      link.original_url?.toLowerCase().includes(searchQuery.toLowerCase())
+      link.original_url?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const hasPrev = page > 1;
@@ -94,25 +80,15 @@ export default function LinksPage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => refetch()}
-                disabled={isFetching}
-              >
-                <RefreshCw
-                  className={`size-4 ${isFetching ? "animate-spin" : ""}`}
-                />
+              <Button variant="outline" size="icon" onClick={() => refetch()} disabled={isFetching}>
+                <RefreshCw className={`size-4 ${isFetching ? "animate-spin" : ""}`} />
               </Button>
               <CreateLink />
             </div>
           </div>
 
           {/* Filters */}
-          <div
-            className="flex flex-col gap-4 sm:flex-row sm:items-center"
-            suppressHydrationWarning
-          >
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center" suppressHydrationWarning>
             <div className="relative flex-1">
               <Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
               <Input
@@ -154,9 +130,7 @@ export default function LinksPage() {
           ) : error ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-4 py-20">
               <p className="text-destructive text-center">
-                {error instanceof Error
-                  ? error.message
-                  : "Failed to load links"}
+                {error instanceof Error ? error.message : "Failed to load links"}
               </p>
               <Button variant="outline" onClick={() => refetch()}>
                 <RefreshCw className="mr-2 size-4" />

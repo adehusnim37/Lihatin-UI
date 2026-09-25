@@ -95,7 +95,7 @@ export default function ChangeUsernameModal({
       setErrorMessage(
         eligibilityError instanceof Error
           ? eligibilityError.message
-          : "You are not eligible to change username at this time."
+          : "You are not eligible to change username at this time.",
       );
       return;
     }
@@ -112,9 +112,7 @@ export default function ChangeUsernameModal({
       onUsernameChanged?.();
       setTimeout(() => setIsOpen(false), 1200);
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "Failed to change username."
-      );
+      setErrorMessage(error instanceof Error ? error.message : "Failed to change username.");
     }
   };
 
@@ -126,9 +124,7 @@ export default function ChangeUsernameModal({
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Change Username</DialogTitle>
-            <DialogDescription>
-              You can only change your username once.
-            </DialogDescription>
+            <DialogDescription>You can only change your username once.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
@@ -157,10 +153,7 @@ export default function ChangeUsernameModal({
             >
               {isCheckingEligibility && "Checking eligibility..."}
               {!isCheckingEligibility && isEligible && (
-                <span>
-                  {eligibilityResponse?.message ||
-                    "You can change your username now."}
-                </span>
+                <span>{eligibilityResponse?.message || "You can change your username now."}</span>
               )}
               {!isCheckingEligibility && !isEligible && (
                 <span>

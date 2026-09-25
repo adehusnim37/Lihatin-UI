@@ -14,22 +14,22 @@ A beautiful and robust password strength indicator with real-time validation fee
 
 ```typescript
 interface PasswordIndicatorProps {
-  password: string;              // The password to analyze
-  showRequirements?: boolean;    // Show/hide requirements list (default: true)
-  minLength?: number;            // Minimum password length (default: 8)
-  className?: string;            // Additional CSS classes
+  password: string; // The password to analyze
+  showRequirements?: boolean; // Show/hide requirements list (default: true)
+  minLength?: number; // Minimum password length (default: 8)
+  className?: string; // Additional CSS classes
 }
 ```
 
 ## Password Strength Levels
 
-| Score | Label     | Color  | Requirements                                    |
-|-------|-----------|--------|-------------------------------------------------|
-| 0     | Too weak  | Red    | Less than minimum length                        |
-| 1     | Weak      | Orange | Minimum length only                             |
-| 2     | Fair      | Yellow | Length + uppercase/lowercase                    |
-| 3     | Good      | Blue   | Length + mixed case + numbers                   |
-| 4     | Strong    | Green  | Length + mixed case + numbers + special chars   |
+| Score | Label    | Color  | Requirements                                  |
+| ----- | -------- | ------ | --------------------------------------------- |
+| 0     | Too weak | Red    | Less than minimum length                      |
+| 1     | Weak     | Orange | Minimum length only                           |
+| 2     | Fair     | Yellow | Length + uppercase/lowercase                  |
+| 3     | Good     | Blue   | Length + mixed case + numbers                 |
+| 4     | Strong   | Green  | Length + mixed case + numbers + special chars |
 
 ## Password Requirements
 
@@ -51,11 +51,7 @@ function MyForm() {
 
   return (
     <div>
-      <input 
-        type="password" 
-        value={password} 
-        onChange={(e) => setPassword(e.target.value)} 
-      />
+      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
       <PasswordIndicator password={password} />
     </div>
   );
@@ -65,28 +61,19 @@ function MyForm() {
 ### Without Requirements List
 
 ```tsx
-<PasswordIndicator 
-  password={password} 
-  showRequirements={false} 
-/>
+<PasswordIndicator password={password} showRequirements={false} />
 ```
 
 ### Custom Minimum Length
 
 ```tsx
-<PasswordIndicator 
-  password={password} 
-  minLength={12} 
-/>
+<PasswordIndicator password={password} minLength={12} />
 ```
 
 ### With Custom Styling
 
 ```tsx
-<PasswordIndicator 
-  password={password} 
-  className="mt-4 p-3 bg-gray-50 rounded-lg" 
-/>
+<PasswordIndicator password={password} className="mt-4 p-3 bg-gray-50 rounded-lg" />
 ```
 
 ## Exported Utilities
@@ -113,12 +100,13 @@ Returns array of password requirements with their status:
   { label: "At least 8 characters", met: true },
   { label: "Contains uppercase letter", met: false },
   // ...
-]
+];
 ```
 
 ## Integration with Forms
 
 See `changePassword.tsx` for a complete example of integrating the password indicator with:
+
 - Form validation
 - Real-time feedback
 - Submit button state management

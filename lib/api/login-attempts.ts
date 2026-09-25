@@ -19,12 +19,7 @@ export interface LoginAttempt {
 export interface LoginAttemptsPaginationParams {
   page?: number;
   limit?: number;
-  sort?:
-    | "created_at"
-    | "updated_at"
-    | "email_or_username"
-    | "ip_address"
-    | "success";
+  sort?: "created_at" | "updated_at" | "email_or_username" | "ip_address" | "success";
   order_by?: "asc" | "desc";
 }
 
@@ -137,9 +132,7 @@ export async function getLoginAttempts(
   params?: LoginAttemptsQueryParams,
 ): Promise<LoginAttemptsResponse> {
   const queryString = params ? buildQueryString(params) : "";
-  const response = await getWithAuth(
-    `${API_URL}/auth/login-attempts${queryString}`,
-  );
+  const response = await getWithAuth(`${API_URL}/auth/login-attempts${queryString}`);
   const json = await response.json();
   return json.data;
 }
@@ -152,9 +145,7 @@ export async function getLoginAttemptsAdmin(
   params?: LoginAttemptsQueryParams,
 ): Promise<LoginAttemptsResponse> {
   const queryString = params ? buildQueryString(params) : "";
-  const response = await getWithAuth(
-    `${API_URL}/auth/admin/login-attempts${queryString}`,
-  );
+  const response = await getWithAuth(`${API_URL}/auth/admin/login-attempts${queryString}`);
   const json = await response.json();
   return json.data;
 }
@@ -164,10 +155,7 @@ export async function getLoginAttemptsAdmin(
  * Users: Can only access their own attempts
  * Admins: Can access any attempt
  */
-export async function getLoginAttemptById(
-  id: string,
-  isAdmin = false,
-): Promise<LoginAttempt> {
+export async function getLoginAttemptById(id: string, isAdmin = false): Promise<LoginAttempt> {
   const endpoint = isAdmin
     ? `${API_URL}/auth/admin/login-attempts/${id}`
     : `${API_URL}/auth/login-attempts/${id}`;
@@ -200,9 +188,7 @@ export async function getLoginStats(
  * Users: See only their own activity
  * Admins: See system-wide activity
  */
-export async function getRecentActivity(
-  isAdmin = false,
-): Promise<RecentActivityResponse> {
+export async function getRecentActivity(isAdmin = false): Promise<RecentActivityResponse> {
   const endpoint = isAdmin
     ? `${API_URL}/auth/admin/login-attempts/recent-activity`
     : `${API_URL}/auth/login-attempts/recent-activity`;
@@ -216,9 +202,7 @@ export async function getRecentActivity(
  * Users: See only their own attempts
  * Admins: See all attempts
  */
-export async function getAttemptsByHour(
-  isAdmin = false,
-): Promise<AttemptsByHourResponse> {
+export async function getAttemptsByHour(isAdmin = false): Promise<AttemptsByHourResponse> {
   const endpoint = isAdmin
     ? `${API_URL}/auth/admin/login-attempts/attempts-by-hour`
     : `${API_URL}/auth/login-attempts/attempts-by-hour`;
@@ -232,9 +216,7 @@ export async function getAttemptsByHour(
  * Admin only
  */
 export async function getTopFailedIPs(): Promise<TopFailedIPsResponse> {
-  const response = await getWithAuth(
-    `${API_URL}/auth/admin/login-attempts/top-failed-ips`,
-  );
+  const response = await getWithAuth(`${API_URL}/auth/admin/login-attempts/top-failed-ips`);
   const json = await response.json();
   return json.data;
 }
@@ -244,9 +226,7 @@ export async function getTopFailedIPs(): Promise<TopFailedIPsResponse> {
  * Admin only
  */
 export async function getSuspiciousActivity(): Promise<SuspiciousActivityResponse> {
-  const response = await getWithAuth(
-    `${API_URL}/auth/admin/login-attempts/suspicious-activity`,
-  );
+  const response = await getWithAuth(`${API_URL}/auth/admin/login-attempts/suspicious-activity`);
   const json = await response.json();
   return json.data;
 }
@@ -318,9 +298,7 @@ export function getDateRange(
 /**
  * Get risk level color for badges
  */
-export function getRiskLevelColor(
-  riskLevel: "critical" | "high" | "medium",
-): string {
+export function getRiskLevelColor(riskLevel: "critical" | "high" | "medium"): string {
   switch (riskLevel) {
     case "critical":
       return "destructive";

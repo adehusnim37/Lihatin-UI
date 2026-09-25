@@ -37,9 +37,7 @@ export default function ApiIntegrationsPage() {
         <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6">
           {/* Header */}
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              API & Documentation
-            </h1>
+            <h1 className="text-3xl font-bold flex items-center gap-3">API & Documentation</h1>
             <p className="text-muted-foreground">
               Manage your API keys and explore the API documentation.
             </p>
@@ -52,10 +50,7 @@ export default function ApiIntegrationsPage() {
                 <Key className="size-4" />
                 API Keys
               </TabsTrigger>
-              <TabsTrigger
-                value="documentation"
-                className="flex items-center gap-2"
-              >
+              <TabsTrigger value="documentation" className="flex items-center gap-2">
                 <BookOpen className="size-4" />
                 Documentation
               </TabsTrigger>
@@ -108,8 +103,8 @@ export default function ApiIntegrationsPage() {
                         </Badge>
                       </div>
                       <p className="text-xs leading-relaxed text-muted-foreground">
-                        All API keys in your account share this rate limit. Each
-                        key can also have its own optional total-use cap.
+                        All API keys in your account share this rate limit. Each key can also have
+                        its own optional total-use cap.
                       </p>
                     </div>
                   </div>
@@ -118,8 +113,8 @@ export default function ApiIntegrationsPage() {
                   <APIKeyList />
 
                   <p className="text-xs text-muted-foreground">
-                    ⚠️ Keep your API keys secure. Never share them in public
-                    repositories or client-side code.
+                    ⚠️ Keep your API keys secure. Never share them in public repositories or
+                    client-side code.
                   </p>
                 </div>
               </div>

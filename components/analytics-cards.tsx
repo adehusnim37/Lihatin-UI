@@ -1,14 +1,13 @@
-import { IconDeviceDesktop, IconDeviceMobile, IconWorld, IconExternalLink } from "@tabler/icons-react"
-
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Progress } from "@/components/ui/progress"
+  IconDeviceDesktop,
+  IconDeviceMobile,
+  IconWorld,
+  IconExternalLink,
+} from "@tabler/icons-react";
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 
 interface AnalyticsCardsProps {
   topCountries?: Array<{ country: string; count: number }>;
@@ -30,9 +29,10 @@ export function AnalyticsCards({
   const totalDevices = topDevices.reduce((sum, item) => sum + item.count, 0);
   const totalReferrers = topReferrers.reduce((sum, item) => sum + item.count, 0);
 
-  const containerClass = variant === "stack" 
-    ? "space-y-4" 
-    : "grid grid-cols-1 gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3";
+  const containerClass =
+    variant === "stack"
+      ? "space-y-4"
+      : "grid grid-cols-1 gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-3";
 
   if (isLoading) {
     return (

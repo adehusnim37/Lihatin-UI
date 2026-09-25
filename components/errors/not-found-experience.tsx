@@ -286,9 +286,7 @@ export function NotFoundExperience() {
     }
 
     gsap.to(
-      scene.querySelectorAll(
-        "[data-scene-card], [data-parallax-far], [data-parallax-near]",
-      ),
+      scene.querySelectorAll("[data-scene-card], [data-parallax-far], [data-parallax-near]"),
       {
         duration: 0.85,
         ease: "power3.out",
@@ -326,9 +324,7 @@ export function NotFoundExperience() {
             </span>
           </div>
 
-          <p className="mb-3 font-mono text-sm font-semibold text-primary">
-            Lost in the current
-          </p>
+          <p className="mb-3 font-mono text-sm font-semibold text-primary">Lost in the current</p>
           <h1
             id="error-title"
             className="max-w-lg text-balance text-5xl font-semibold tracking-[-0.055em] text-foreground sm:text-6xl lg:text-7xl"
@@ -336,8 +332,8 @@ export function NotFoundExperience() {
             This link swam away.
           </h1>
           <p className="mt-6 max-w-lg text-pretty text-base leading-7 text-muted-foreground sm:text-lg">
-            The page you&apos;re looking for drifted beyond our waters. Head
-            home, or sign in and we&apos;ll get you back on course.
+            The page you&apos;re looking for drifted beyond our waters. Head home, or sign in and
+            we&apos;ll get you back on course.
           </p>
 
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -442,20 +438,8 @@ export function NotFoundExperience() {
                   <ellipse cx="587" cy="90" rx="36" ry="11" />
                 </g>
 
-                <circle
-                  cx="586"
-                  cy="128"
-                  r="38"
-                  fill="var(--primary)"
-                  opacity="0.16"
-                />
-                <circle
-                  cx="586"
-                  cy="128"
-                  r="24"
-                  fill="var(--primary)"
-                  opacity="0.2"
-                />
+                <circle cx="586" cy="128" r="38" fill="var(--primary)" opacity="0.16" />
+                <circle cx="586" cy="128" r="24" fill="var(--primary)" opacity="0.2" />
 
                 <path
                   d="M0 299C82 246 143 257 214 295C301 220 384 234 451 288C530 231 614 240 720 297V373H0Z"
@@ -509,24 +493,9 @@ export function NotFoundExperience() {
                 </g>
 
                 <g fill="none" stroke="white" strokeLinecap="round">
-                  <path
-                    data-glint
-                    d="M72 389H142"
-                    opacity="0.38"
-                    strokeWidth="3"
-                  />
-                  <path
-                    data-glint
-                    d="M296 430H363"
-                    opacity="0.26"
-                    strokeWidth="2"
-                  />
-                  <path
-                    data-glint
-                    d="M514 391H612"
-                    opacity="0.3"
-                    strokeWidth="3"
-                  />
+                  <path data-glint d="M72 389H142" opacity="0.38" strokeWidth="3" />
+                  <path data-glint d="M296 430H363" opacity="0.26" strokeWidth="2" />
+                  <path data-glint d="M514 391H612" opacity="0.3" strokeWidth="3" />
                 </g>
               </g>
 
@@ -582,24 +551,10 @@ export function NotFoundExperience() {
                   filter="url(#fish-shadow)"
                   transform="translate(0 24) rotate(-48)"
                 >
-                  <path
-                    d="M-30 0L-61-23L-57 1L-63 24Z"
-                    fill="var(--third)"
-                  />
-                  <path
-                    d="M-16-15C-5-40 17-43 30-18"
-                    fill="var(--primary)"
-                    opacity="0.72"
-                  />
-                  <path
-                    d="M-33 0C-19-28 23-34 59-2C27 30-18 27-33 0Z"
-                    fill="url(#fish-body)"
-                  />
-                  <path
-                    d="M-21 7C2 20 30 16 49 2C30 26-5 31-25 11Z"
-                    fill="white"
-                    opacity="0.2"
-                  />
+                  <path d="M-30 0L-61-23L-57 1L-63 24Z" fill="var(--third)" />
+                  <path d="M-16-15C-5-40 17-43 30-18" fill="var(--primary)" opacity="0.72" />
+                  <path d="M-33 0C-19-28 23-34 59-2C27 30-18 27-33 0Z" fill="url(#fish-body)" />
+                  <path d="M-21 7C2 20 30 16 49 2C30 26-5 31-25 11Z" fill="white" opacity="0.2" />
                   <circle cx="39" cy="-9" r="4.5" fill="var(--card)" />
                   <circle cx="40" cy="-9" r="2" fill="var(--foreground)" />
                   <path
@@ -624,8 +579,7 @@ export function NotFoundExperience() {
               </g>
             </svg>
 
-            <div className="pointer-events-none absolute inset-x-5 top-5 flex items-center justify-between">
-            </div>
+            <div className="pointer-events-none absolute inset-x-5 top-5 flex items-center justify-between"></div>
           </div>
         </div>
       </div>

@@ -3,24 +3,13 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  IconCrown,
-  IconUserQuestion,
-  IconCamera,
-  IconEye,
-} from "@tabler/icons-react";
+import { IconCrown, IconUserQuestion, IconCamera, IconEye } from "@tabler/icons-react";
 import { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import {
@@ -30,10 +19,7 @@ import {
   uploadProfileAvatar,
   type UpdateProfileRequest,
 } from "@/lib/api/auth";
-import {
-  useProfileQuery,
-  useUpdateProfileMutation,
-} from "@/lib/hooks/queries/useProfileQuery";
+import { useProfileQuery, useUpdateProfileMutation } from "@/lib/hooks/queries/useProfileQuery";
 import { toast } from "sonner";
 import { BadgeCheckIcon, Loader2 } from "lucide-react";
 import { ProfileGeneralTab } from "@/components/profile/tab/general";
@@ -42,11 +28,7 @@ import { Item, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
 import { TooltipTrigger } from "@radix-ui/react-tooltip";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import SessionTab from "@/components/profile/tab/session";
 import {
   Dialog,
@@ -66,9 +48,7 @@ import ProfileNotificationsTab from "@/components/profile/tab/notifications";
  */
 function ProfilePageContent() {
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState(
-    searchParams.get("tab") || "general",
-  );
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "general");
   const [isRedeemOpen, setIsRedeemOpen] = useState(false);
   const [secretCode, setSecretCode] = useState("");
   const [isRedeeming, setIsRedeeming] = useState(false);
@@ -87,11 +67,7 @@ function ProfilePageContent() {
   const closePopoverWithDelay = () => {
     hoverTimeoutRef.current = setTimeout(() => setIsPopoverOpen(false), 150);
   };
-  const {
-    data: profileResponse,
-    isLoading: isProfileLoading,
-    refetch,
-  } = useProfileQuery();
+  const { data: profileResponse, isLoading: isProfileLoading, refetch } = useProfileQuery();
   const updateProfileMutation = useUpdateProfileMutation();
   const refreshProfile = () => {
     void refetch();
@@ -129,8 +105,7 @@ function ProfilePageContent() {
     if (!user) return;
 
     const payload: UpdateProfileRequest = {};
-    if (firstName && firstName !== user.first_name)
-      payload.first_name = firstName;
+    if (firstName && firstName !== user.first_name) payload.first_name = firstName;
     if (lastName && lastName !== user.last_name) payload.last_name = lastName;
 
     if (Object.keys(payload).length === 0) return;
@@ -161,10 +136,7 @@ function ProfilePageContent() {
       });
     } catch (error) {
       toast.error("Redeem failed", {
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to redeem premium code.",
+        description: error instanceof Error ? error.message : "Failed to redeem premium code.",
       });
     } finally {
       setIsRedeeming(false);
@@ -175,18 +147,11 @@ function ProfilePageContent() {
     avatarInputRef.current?.click();
   };
 
-  const handleAvatarSelected = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleAvatarSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const allowedMimeTypes = new Set([
-      "image/jpeg",
-      "image/png",
-      "image/webp",
-      "image/gif",
-    ]);
+    const allowedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
     if (!allowedMimeTypes.has(file.type)) {
       toast.error("Invalid image format", {
         description: "Only JPG, PNG, WEBP, or GIF are allowed.",
@@ -220,10 +185,7 @@ function ProfilePageContent() {
       });
     } catch (error) {
       toast.error("Avatar upload failed", {
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to upload avatar image.",
+        description: error instanceof Error ? error.message : "Failed to upload avatar image.",
       });
     } finally {
       setIsUploadingAvatar(false);
@@ -352,9 +314,7 @@ function ProfilePageContent() {
             <Card className="w-full max-w-md">
               <CardHeader>
                 <CardTitle>No Profile Data</CardTitle>
-                <CardDescription>
-                  Please log in to view your profile
-                </CardDescription>
+                <CardDescription>Please log in to view your profile</CardDescription>
               </CardHeader>
             </Card>
           </div>
@@ -382,9 +342,7 @@ function ProfilePageContent() {
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-3xl font-bold tracking-tight">
-                      Profile
-                    </h1>
+                    <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
                     <p className="text-muted-foreground">
                       Manage your account settings and preferences
                     </p>
@@ -398,10 +356,7 @@ function ProfilePageContent() {
                 <Card className="md:col-span-1 mx-auto w-full max-w-md">
                   <CardHeader className="text-center">
                     <div className="flex flex-col items-center gap-3 mb-2">
-                      <Popover
-                        open={isPopoverOpen}
-                        onOpenChange={setIsPopoverOpen}
-                      >
+                      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                         <PopoverTrigger asChild>
                           <div
                             className="relative cursor-pointer rounded-full transition-all duration-300 ease-out hover:scale-105 ring-2 ring-border hover:ring-4 hover:ring-primary/40 hover:shadow-xl hover:shadow-primary/20"
@@ -467,31 +422,22 @@ function ProfilePageContent() {
                               }}
                               className="flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors duration-150 w-full text-left"
                               aria-label={
-                                user.avatar
-                                  ? "Change profile photo"
-                                  : "Upload profile photo"
+                                user.avatar ? "Change profile photo" : "Upload profile photo"
                               }
                             >
                               <IconCamera className="size-4" />
-                              <span>
-                                {user.avatar ? "Change Photo" : "Upload Photo"}
-                              </span>
+                              <span>{user.avatar ? "Change Photo" : "Upload Photo"}</span>
                             </button>
                           </div>
                         </PopoverContent>
                       </Popover>
 
                       {/* View Photo Dialog */}
-                      <Dialog
-                        open={isViewPhotoOpen}
-                        onOpenChange={setIsViewPhotoOpen}
-                      >
+                      <Dialog open={isViewPhotoOpen} onOpenChange={setIsViewPhotoOpen}>
                         <DialogContent className="sm:max-w-2xl p-0 overflow-hidden rounded-2xl border-0 shadow-2xl">
                           <DialogHeader className="sr-only">
                             <DialogTitle>Profile Photo</DialogTitle>
-                            <DialogDescription>
-                              Full-size profile photo preview
-                            </DialogDescription>
+                            <DialogDescription>Full-size profile photo preview</DialogDescription>
                           </DialogHeader>
                           {avatarURL ? (
                             <div className="relative">
@@ -508,9 +454,7 @@ function ProfilePageContent() {
                                 <p className="text-white font-semibold text-sm">
                                   {user.first_name} {user.last_name}
                                 </p>
-                                <p className="text-white/70 text-xs">
-                                  @{user.username}
-                                </p>
+                                <p className="text-white/70 text-xs">@{user.username}</p>
                               </div>
                             </div>
                           ) : (
@@ -553,8 +497,7 @@ function ProfilePageContent() {
                               </span>
                             </TooltipTrigger>
                             <TooltipContent>
-                              Verified Email Address. Enjoy access to all
-                              features.
+                              Verified Email Address. Enjoy access to all features.
                             </TooltipContent>
                           </Tooltip>
                         </ItemMedia>
@@ -566,9 +509,7 @@ function ProfilePageContent() {
                                 <IconUserQuestion className="size-5" />
                               </span>
                             </TooltipTrigger>
-                            <TooltipContent>
-                              Unverified Email Address
-                            </TooltipContent>
+                            <TooltipContent>Unverified Email Address</TooltipContent>
                           </Tooltip>
                         </ItemMedia>
                       )}
@@ -581,19 +522,12 @@ function ProfilePageContent() {
                         </ItemTitle>
                       </ItemContent>
                       {premiumAccessActive ? (
-                        <StatusBadge
-                          tone="success"
-                          withIcon={false}
-                          className="gap-1"
-                        >
+                        <StatusBadge tone="success" withIcon={false} className="gap-1">
                           <IconCrown className="size-3" />
                           Premium
                         </StatusBadge>
                       ) : (
-                        <Dialog
-                          open={isRedeemOpen}
-                          onOpenChange={setIsRedeemOpen}
-                        >
+                        <Dialog open={isRedeemOpen} onOpenChange={setIsRedeemOpen}>
                           <StatusBadge
                             tone="neutral"
                             withIcon={false}
@@ -614,8 +548,7 @@ function ProfilePageContent() {
                             <DialogHeader>
                               <DialogTitle>Redeem Premium Code</DialogTitle>
                               <DialogDescription>
-                                Enter your secret code to upgrade this account
-                                to premium.
+                                Enter your secret code to upgrade this account to premium.
                               </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-2">
@@ -634,10 +567,7 @@ function ProfilePageContent() {
                               >
                                 Cancel
                               </Button>
-                              <Button
-                                onClick={handleRedeemPremium}
-                                disabled={isRedeeming}
-                              >
+                              <Button onClick={handleRedeemPremium} disabled={isRedeeming}>
                                 {isRedeeming ? (
                                   <>
                                     <Loader2 className="mr-2 size-4 animate-spin" />
@@ -658,9 +588,7 @@ function ProfilePageContent() {
                           Member Since
                         </ItemTitle>
                       </ItemContent>
-                      <span className="text-sm font-medium">
-                        {formatDate(user.created_at)}
-                      </span>
+                      <span className="text-sm font-medium">{formatDate(user.created_at)}</span>
                     </Item>
                   </CardContent>
                 </Card>
@@ -676,9 +604,7 @@ function ProfilePageContent() {
                       <TabsTrigger value="general">General</TabsTrigger>
                       <TabsTrigger value="security">Security</TabsTrigger>
                       <TabsTrigger value="session">Sessions</TabsTrigger>
-                      <TabsTrigger value="notifications">
-                        Notifications
-                      </TabsTrigger>
+                      <TabsTrigger value="notifications">Notifications</TabsTrigger>
                     </TabsList>
 
                     {/* General Tab */}

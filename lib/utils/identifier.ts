@@ -6,10 +6,7 @@ export function encodeIdentifierForQuery(value: string): string {
     binary += String.fromCharCode(byte);
   });
 
-  return btoa(binary)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "");
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 
 export function decodeIdentifierFromQuery(value: string): string | null {

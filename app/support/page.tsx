@@ -52,16 +52,11 @@ function SupportChooserContent() {
       return;
     }
 
-    if (
-      searchParams.has("email") ||
-      searchParams.has("code") ||
-      searchParams.has("access_token")
-    ) {
+    if (searchParams.has("email") || searchParams.has("code") || searchParams.has("access_token")) {
       redirectedRef.current = true;
       router.replace("/support");
       return;
     }
-
   }, [router, searchParams]);
 
   return (

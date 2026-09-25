@@ -10,10 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  HttpMethodBadge,
-  HttpStatusCodeBadge,
-} from "@/components/ui/app-status-badges";
+import { HttpMethodBadge, HttpStatusCodeBadge } from "@/components/ui/app-status-badges";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLogById } from "@/lib/hooks/queries/useLogsQuery";
 import { LogDetailContent } from "@/components/logs/LogDetailContent";

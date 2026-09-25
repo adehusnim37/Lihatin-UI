@@ -16,9 +16,7 @@ export const dynamic = "force-dynamic";
 
 function isClickLimitError(errorData: BackendErrorResponse): boolean {
   const message = (errorData.message || "").toLowerCase();
-  const errorKeys = Object.keys(errorData.error || {}).map((key) =>
-    key.toLowerCase()
-  );
+  const errorKeys = Object.keys(errorData.error || {}).map((key) => key.toLowerCase());
 
   return (
     errorKeys.includes("click_limit") ||
@@ -29,7 +27,7 @@ function isClickLimitError(errorData: BackendErrorResponse): boolean {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ short_code: string }> }
+  { params }: { params: Promise<{ short_code: string }> },
 ) {
   const { short_code } = await params;
   const backendBaseUrl = resolveBackendBaseUrl(request);
@@ -45,9 +43,7 @@ export async function GET(
       headers: {
         "User-Agent": request.headers.get("user-agent") || "NextJS-Server",
         "X-Forwarded-For":
-          request.headers.get("x-forwarded-for") ||
-          request.headers.get("x-real-ip") ||
-          "unknown",
+          request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown",
         Referer: request.headers.get("referer") || "",
         "X-Device-ID": request.headers.get("x-device-id") || "",
         "X-Browser": request.headers.get("x-browser") || "",
@@ -76,10 +72,7 @@ export async function GET(
     const errorUrl = new URL("/link-error", redirectOrigin);
     errorUrl.searchParams.set("code", short_code);
     errorUrl.searchParams.set("status", response.status.toString());
-    errorUrl.searchParams.set(
-      "message",
-      errorData.message || "Unknown error occurred"
-    );
+    errorUrl.searchParams.set("message", errorData.message || "Unknown error occurred");
 
     // Map status codes to specific error types
     switch (response.status) {
@@ -95,7 +88,7 @@ export async function GET(
       case 403:
         errorUrl.searchParams.set(
           "type",
-          isClickLimitError(errorData) ? "click_limit" : "forbidden"
+          isClickLimitError(errorData) ? "click_limit" : "forbidden",
         );
         break;
 
@@ -117,10 +110,7 @@ export async function GET(
     const errorUrl = new URL("/link-error", redirectOrigin);
     errorUrl.searchParams.set("code", short_code);
     errorUrl.searchParams.set("type", "network");
-    errorUrl.searchParams.set(
-      "message",
-      "Unable to reach the server. Please try again."
-    );
+    errorUrl.searchParams.set("message", "Unable to reach the server. Please try again.");
 
     return createRedirectResponse(errorUrl.toString());
   }

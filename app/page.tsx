@@ -99,19 +99,14 @@ function MorphingLinkVisual() {
     const visual = visualRef.current;
     if (!visual) return;
 
-    const paths = Array.from(
-      visual.querySelectorAll<SVGPathElement>("[data-morph-path]"),
-    );
+    const paths = Array.from(visual.querySelectorAll<SVGPathElement>("[data-morph-path]"));
     const media = gsap.matchMedia();
 
     media.add("(prefers-reduced-motion: no-preference)", () => {
       const context = gsap.context(() => {
         const layers = paths.map((path, layerIndex) => {
           const points = Array.from({ length: 10 }, (_, pointIndex) => ({
-            value:
-              56 +
-              layerIndex * 14 +
-              Math.sin(pointIndex * 1.45 + layerIndex) * 8,
+            value: 56 + layerIndex * 14 + Math.sin(pointIndex * 1.45 + layerIndex) * 8,
           }));
 
           path.setAttribute("d", buildWavePath(points));
@@ -135,9 +130,7 @@ function MorphingLinkVisual() {
             points,
             {
               value: (pointIndex: number) =>
-                38 +
-                layerIndex * 18 +
-                Math.sin(pointIndex * 1.2 + layerIndex * 2.4) * 14,
+                38 + layerIndex * 18 + Math.sin(pointIndex * 1.2 + layerIndex * 2.4) * 14,
               stagger: {
                 each: 0.045,
                 from: layerIndex === 0 ? "start" : "end",
@@ -234,9 +227,7 @@ function MorphingLinkVisual() {
             Redirect ready
           </Badge>
         </div>
-        <p className="text-xs font-medium text-muted-foreground">
-          Your new short link
-        </p>
+        <p className="text-xs font-medium text-muted-foreground">Your new short link</p>
         <p className="mt-1 truncate text-lg font-bold tracking-tight text-foreground sm:text-xl">
           lihat.in/launch-day
         </p>
@@ -325,10 +316,7 @@ function BouncyFooter() {
           trigger: footer,
           start: "top bottom",
           onEnter: (self) => {
-            const variation = Math.min(
-              Math.abs(self.getVelocity()) / 9000,
-              0.65,
-            );
+            const variation = Math.min(Math.abs(self.getVelocity()) / 9000, 0.65);
 
             gsap.fromTo(
               path,
@@ -336,10 +324,7 @@ function BouncyFooter() {
               {
                 morphSVG: centerPath,
                 duration: 2.1,
-                ease: `elastic.out(${1 + variation}, ${Math.max(
-                  0.28,
-                  0.72 - variation,
-                )})`,
+                ease: `elastic.out(${1 + variation}, ${Math.max(0.28, 0.72 - variation)})`,
                 overwrite: true,
               },
             );
@@ -378,8 +363,8 @@ function BouncyFooter() {
               <span className="text-lg font-bold tracking-tight">Lihat.in</span>
             </Link>
             <p className="mt-4 max-w-sm text-sm leading-6 text-background/60">
-              Shorter links. Clearer signals. A calmer way to understand how
-              people move through the web.
+              Shorter links. Clearer signals. A calmer way to understand how people move through the
+              web.
             </p>
           </div>
           <div>
@@ -387,22 +372,13 @@ function BouncyFooter() {
               Product
             </p>
             <div className="mt-4 flex flex-col items-start gap-3 text-sm text-background/70">
-              <Link
-                href="/auth/register"
-                className="transition-colors hover:text-background"
-              >
+              <Link href="/auth/register" className="transition-colors hover:text-background">
                 Create account
               </Link>
-              <Link
-                href="/auth/login"
-                className="transition-colors hover:text-background"
-              >
+              <Link href="/auth/login" className="transition-colors hover:text-background">
                 Sign in
               </Link>
-              <Link
-                href="/main"
-                className="transition-colors hover:text-background"
-              >
+              <Link href="/main" className="transition-colors hover:text-background">
                 Dashboard
               </Link>
             </div>
@@ -412,22 +388,13 @@ function BouncyFooter() {
               Legal
             </p>
             <div className="mt-4 flex flex-col items-start gap-3 text-sm text-background/70">
-              <Link
-                href="/terms"
-                className="transition-colors hover:text-background"
-              >
+              <Link href="/terms" className="transition-colors hover:text-background">
                 Terms
               </Link>
-              <Link
-                href="/privacy"
-                className="transition-colors hover:text-background"
-              >
+              <Link href="/privacy" className="transition-colors hover:text-background">
                 Privacy
               </Link>
-              <Link
-                href="/support"
-                className="transition-colors hover:text-background"
-              >
+              <Link href="/support" className="transition-colors hover:text-background">
                 Support
               </Link>
             </div>
@@ -464,9 +431,7 @@ export default function Index() {
 
   const previewCode = sanitizedAlias || "your-custom-code";
   const previewShortURL = `lihat.in/${previewCode}`;
-  const createdShortURL = createdShortCode
-    ? `lihat.in/${createdShortCode}`
-    : null;
+  const createdShortURL = createdShortCode ? `lihat.in/${createdShortCode}` : null;
 
   useEffect(() => {
     const page = pageRef.current;
@@ -537,66 +502,62 @@ export default function Index() {
           });
         });
 
-        gsap.utils
-          .toArray<HTMLElement>("[data-section-reveal]")
-          .forEach((section) => {
-            gsap.from(section, {
-              y: 48,
-              autoAlpha: 0,
-              duration: 0.85,
-              ease: "power3.out",
-              scrollTrigger: {
-                trigger: section,
-                start: "top 84%",
-                once: true,
-              },
-            });
+        gsap.utils.toArray<HTMLElement>("[data-section-reveal]").forEach((section) => {
+          gsap.from(section, {
+            y: 48,
+            autoAlpha: 0,
+            duration: 0.85,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: section,
+              start: "top 84%",
+              once: true,
+            },
           });
+        });
 
-        gsap.utils
-          .toArray<HTMLElement>("[data-feature-card]")
-          .forEach((card) => {
-            const icon = card.querySelector("[data-feature-icon]");
+        gsap.utils.toArray<HTMLElement>("[data-feature-card]").forEach((card) => {
+          const icon = card.querySelector("[data-feature-icon]");
 
-            const enter = () => {
-              gsap.to(card, {
-                y: -8,
-                duration: 0.35,
-                ease: "power2.out",
-                overwrite: true,
-              });
-              gsap.to(icon, {
-                rotation: -8,
-                scale: 1.08,
-                duration: 0.35,
-                ease: "back.out(2)",
-                overwrite: true,
-              });
-            };
-
-            const leave = () => {
-              gsap.to(card, {
-                y: 0,
-                duration: 0.4,
-                ease: "power2.out",
-                overwrite: true,
-              });
-              gsap.to(icon, {
-                rotation: 0,
-                scale: 1,
-                duration: 0.4,
-                ease: "power2.out",
-                overwrite: true,
-              });
-            };
-
-            card.addEventListener("mouseenter", enter);
-            card.addEventListener("mouseleave", leave);
-            removeCardListeners.push(() => {
-              card.removeEventListener("mouseenter", enter);
-              card.removeEventListener("mouseleave", leave);
+          const enter = () => {
+            gsap.to(card, {
+              y: -8,
+              duration: 0.35,
+              ease: "power2.out",
+              overwrite: true,
             });
+            gsap.to(icon, {
+              rotation: -8,
+              scale: 1.08,
+              duration: 0.35,
+              ease: "back.out(2)",
+              overwrite: true,
+            });
+          };
+
+          const leave = () => {
+            gsap.to(card, {
+              y: 0,
+              duration: 0.4,
+              ease: "power2.out",
+              overwrite: true,
+            });
+            gsap.to(icon, {
+              rotation: 0,
+              scale: 1,
+              duration: 0.4,
+              ease: "power2.out",
+              overwrite: true,
+            });
+          };
+
+          card.addEventListener("mouseenter", enter);
+          card.addEventListener("mouseleave", leave);
+          removeCardListeners.push(() => {
+            card.removeEventListener("mouseenter", enter);
+            card.removeEventListener("mouseleave", leave);
           });
+        });
 
         return () => removeCardListeners.forEach((remove) => remove());
       }, page);
@@ -607,9 +568,7 @@ export default function Index() {
     return () => media.revert();
   }, []);
 
-  const handleTryCreateLink = async (
-    event: React.FormEvent<HTMLFormElement>,
-  ) => {
+  const handleTryCreateLink = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const trimmedURL = demoUrl.trim();
@@ -653,8 +612,7 @@ export default function Index() {
       });
     } catch (error) {
       setCutTransition(null);
-      const message =
-        error instanceof Error ? error.message : "Unable to create short link.";
+      const message = error instanceof Error ? error.message : "Unable to create short link.";
       const lowered = message.toLowerCase();
 
       if (
@@ -695,16 +653,9 @@ export default function Index() {
       ref={pageRef}
       className="min-h-screen overflow-x-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground"
     >
-      <header
-        data-header
-        className="sticky top-0 z-50 border-b bg-background/85 backdrop-blur-xl"
-      >
+      <header data-header className="sticky top-0 z-50 border-b bg-background/85 backdrop-blur-xl">
         <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:h-[72px] sm:px-6">
-          <Link
-            href="/"
-            className="flex items-center gap-2.5"
-            aria-label="Lihatin home"
-          >
+          <Link href="/" className="flex items-center gap-2.5" aria-label="Lihatin home">
             <Image
               src="/logo.svg"
               alt=""
@@ -715,10 +666,7 @@ export default function Index() {
             />
             <span className="text-base font-bold tracking-tight">Lihat.in</span>
           </Link>
-          <nav
-            className="flex items-center gap-1.5 sm:gap-2"
-            aria-label="Account navigation"
-          >
+          <nav className="flex items-center gap-1.5 sm:gap-2" aria-label="Account navigation">
             <AuthTransitionLink
               href="/auth/login"
               variant="ghost"
@@ -727,11 +675,7 @@ export default function Index() {
             >
               Sign in
             </AuthTransitionLink>
-            <AuthTransitionLink
-              href="/auth/register"
-              size="sm"
-              className="rounded-full px-4"
-            >
+            <AuthTransitionLink href="/auth/register" size="sm" className="rounded-full px-4">
               Start free
             </AuthTransitionLink>
           </nav>
@@ -768,8 +712,8 @@ export default function Index() {
                 data-hero-reveal
                 className="mt-6 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8"
               >
-                Build short, memorable links and turn every visit into a clear
-                signal—without adding noise to your workflow.
+                Build short, memorable links and turn every visit into a clear signal—without adding
+                noise to your workflow.
               </p>
               <div
                 data-hero-reveal
@@ -796,11 +740,7 @@ export default function Index() {
                 data-hero-reveal
                 className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-muted-foreground"
               >
-                {[
-                  "No credit card",
-                  "Free forever plan",
-                  "Setup in seconds",
-                ].map((item) => (
+                {["No credit card", "Free forever plan", "Setup in seconds"].map((item) => (
                   <span key={item} className="flex items-center gap-1.5">
                     <IconCheck className="size-3.5 text-primary" />
                     {item}
@@ -834,8 +774,8 @@ export default function Index() {
                   <span className="block text-primary">made effortless.</span>
                 </h2>
                 <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground sm:text-base">
-                  Enter a destination and choose an alias. We&apos;ll create a
-                  real short link using your account session.
+                  Enter a destination and choose an alias. We&apos;ll create a real short link using
+                  your account session.
                 </p>
               </div>
 
@@ -941,9 +881,7 @@ export default function Index() {
               </p>
               <h2 className="mt-4 text-3xl font-bold leading-tight tracking-[-0.045em] text-foreground sm:text-5xl">
                 Everything you need.
-                <span className="block text-muted-foreground">
-                  Nothing you don&apos;t.
-                </span>
+                <span className="block text-muted-foreground">Nothing you don&apos;t.</span>
               </h2>
             </div>
 
@@ -994,10 +932,7 @@ export default function Index() {
         </section>
 
         <section className="py-20 sm:py-28">
-          <div
-            data-section-reveal
-            className="container mx-auto max-w-4xl px-4 text-center sm:px-6"
-          >
+          <div data-section-reveal className="container mx-auto max-w-4xl px-4 text-center sm:px-6">
             <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
               <IconBolt className="size-5" />
             </span>
@@ -1005,8 +940,8 @@ export default function Index() {
               Ready to move faster?
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-muted-foreground">
-              Create a free account and turn your next long URL into something
-              useful, measurable, and easy to share.
+              Create a free account and turn your next long URL into something useful, measurable,
+              and easy to share.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 min-[430px]:flex-row">
               <AuthTransitionLink

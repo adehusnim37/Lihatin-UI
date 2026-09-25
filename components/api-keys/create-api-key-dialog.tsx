@@ -17,15 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Loader2,
-  Key,
-  Copy,
-  Check,
-  AlertTriangle,
-  Shield,
-  Ban,
-} from "lucide-react";
+import { Loader2, Key, Copy, Check, AlertTriangle, Shield, Ban } from "lucide-react";
 import { createAPIKey, CreateAPIKeyResponse } from "@/lib/api/api-keys";
 import { toast } from "sonner";
 
@@ -58,15 +50,9 @@ const PERMISSIONS = [
   { id: "delete", label: "Delete", description: "Remove data" },
 ] as const;
 
-export function CreateAPIKeyDialog({
-  open,
-  onOpenChange,
-  onSuccess,
-}: CreateAPIKeyDialogProps) {
+export function CreateAPIKeyDialog({ open, onOpenChange, onSuccess }: CreateAPIKeyDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [createdKey, setCreatedKey] = useState<CreateAPIKeyResponse | null>(
-    null,
-  );
+  const [createdKey, setCreatedKey] = useState<CreateAPIKeyResponse | null>(null);
   const [copied, setCopied] = useState(false);
 
   const form = useForm<FormData>({
@@ -147,8 +133,7 @@ export function CreateAPIKeyDialog({
               <DialogTitle>API Key Created!</DialogTitle>
             </div>
             <DialogDescription>
-              Your API key has been created successfully. Make sure to copy it
-              now.
+              Your API key has been created successfully. Make sure to copy it now.
             </DialogDescription>
           </DialogHeader>
 
@@ -157,12 +142,9 @@ export function CreateAPIKeyDialog({
             <div className="flex items-start gap-3 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
               <AlertTriangle className="size-5 text-amber-500 mt-0.5 flex-shrink-0" />
               <div className="space-y-1">
-                <p className="text-sm font-medium text-amber-500">
-                  {createdKey.warning}
-                </p>
+                <p className="text-sm font-medium text-amber-500">{createdKey.warning}</p>
                 <p className="text-xs text-muted-foreground">
-                  Store this key securely. You won&apos;t be able to see it
-                  again.
+                  Store this key securely. You won&apos;t be able to see it again.
                 </p>
               </div>
             </div>
@@ -197,9 +179,7 @@ export function CreateAPIKeyDialog({
               </div>
               <div>
                 <p className="text-muted-foreground">Permissions</p>
-                <p className="font-medium capitalize">
-                  {createdKey.permissions.join(", ")}
-                </p>
+                <p className="font-medium capitalize">{createdKey.permissions.join(", ")}</p>
               </div>
             </div>
           </div>
@@ -225,24 +205,16 @@ export function CreateAPIKeyDialog({
             </div>
             <DialogTitle>Create API Key</DialogTitle>
           </div>
-          <DialogDescription>
-            Generate a new API key to access the Lihatin API.
-          </DialogDescription>
+          <DialogDescription>Generate a new API key to access the Lihatin API.</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
           {/* Name */}
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
-            <Input
-              id="name"
-              placeholder="My API Key"
-              {...form.register("name")}
-            />
+            <Input id="name" placeholder="My API Key" {...form.register("name")} />
             {form.formState.errors.name && (
-              <p className="text-xs text-destructive">
-                {form.formState.errors.name.message}
-              </p>
+              <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
 
@@ -260,10 +232,7 @@ export function CreateAPIKeyDialog({
                     onCheckedChange={(checked) => {
                       const current = form.getValues("permissions");
                       if (checked) {
-                        form.setValue("permissions", [
-                          ...current,
-                          permission.id,
-                        ]);
+                        form.setValue("permissions", [...current, permission.id]);
                       } else {
                         form.setValue(
                           "permissions",
@@ -274,9 +243,7 @@ export function CreateAPIKeyDialog({
                   />
                   <div>
                     <p className="text-sm font-medium">{permission.label}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {permission.description}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{permission.description}</p>
                   </div>
                 </label>
               ))}
@@ -301,8 +268,8 @@ export function CreateAPIKeyDialog({
               })}
             />
             <p className="text-xs text-muted-foreground">
-              Optional safety cap for this key. It does not change your
-              account&apos;s rate limit. Leave empty for no cap.
+              Optional safety cap for this key. It does not change your account&apos;s rate limit.
+              Leave empty for no cap.
             </p>
           </div>
 
@@ -312,10 +279,7 @@ export function CreateAPIKeyDialog({
             <Tabs
               value={form.watch("ip_mode")}
               onValueChange={(value) =>
-                form.setValue(
-                  "ip_mode",
-                  value as "none" | "allowlist" | "blocklist",
-                )
+                form.setValue("ip_mode", value as "none" | "allowlist" | "blocklist")
               }
               className="w-full"
             >
@@ -351,12 +315,7 @@ export function CreateAPIKeyDialog({
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={isLoading}
-            >
+            <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>

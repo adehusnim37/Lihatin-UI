@@ -24,11 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { useRemovePasscode } from "@/lib/hooks/queries/useLinksQuery";
 import { hasRepeatedConsecutiveDigits } from "@/lib/validators/passcode";
 
@@ -112,8 +108,8 @@ export function UpdatePasscodeDialog({
             Set Passcode
           </DialogTitle>
           <DialogDescription>
-            Protect your link with a 6-digit numeric passcode. Users will need
-            to enter this code to access the link.
+            Protect your link with a 6-digit numeric passcode. Users will need to enter this code to
+            access the link.
           </DialogDescription>
         </DialogHeader>
 
@@ -135,18 +131,34 @@ export function UpdatePasscodeDialog({
                       containerClassName="mx-auto w-full max-w-[21rem] justify-center overflow-hidden"
                     >
                       <InputOTPGroup className="w-full gap-1.5 sm:gap-2">
-                        <InputOTPSlot index={0} className="w-auto min-w-0 flex-1 max-w-[2.75rem] h-10 sm:h-11 rounded-md border border-border bg-muted/20 text-base font-semibold" />
-                        <InputOTPSlot index={1} className="w-auto min-w-0 flex-1 max-w-[2.75rem] h-10 sm:h-11 rounded-md border border-border bg-muted/20 text-base font-semibold" />
-                        <InputOTPSlot index={2} className="w-auto min-w-0 flex-1 max-w-[2.75rem] h-10 sm:h-11 rounded-md border border-border bg-muted/20 text-base font-semibold" />
-                        <InputOTPSlot index={3} className="w-auto min-w-0 flex-1 max-w-[2.75rem] h-10 sm:h-11 rounded-md border border-border bg-muted/20 text-base font-semibold" />
-                        <InputOTPSlot index={4} className="w-auto min-w-0 flex-1 max-w-[2.75rem] h-10 sm:h-11 rounded-md border border-border bg-muted/20 text-base font-semibold" />
-                        <InputOTPSlot index={5} className="w-auto min-w-0 flex-1 max-w-[2.75rem] h-10 sm:h-11 rounded-md border border-border bg-muted/20 text-base font-semibold" />
+                        <InputOTPSlot
+                          index={0}
+                          className="w-auto min-w-0 flex-1 max-w-[2.75rem] h-10 sm:h-11 rounded-md border border-border bg-muted/20 text-base font-semibold"
+                        />
+                        <InputOTPSlot
+                          index={1}
+                          className="w-auto min-w-0 flex-1 max-w-[2.75rem] h-10 sm:h-11 rounded-md border border-border bg-muted/20 text-base font-semibold"
+                        />
+                        <InputOTPSlot
+                          index={2}
+                          className="w-auto min-w-0 flex-1 max-w-[2.75rem] h-10 sm:h-11 rounded-md border border-border bg-muted/20 text-base font-semibold"
+                        />
+                        <InputOTPSlot
+                          index={3}
+                          className="w-auto min-w-0 flex-1 max-w-[2.75rem] h-10 sm:h-11 rounded-md border border-border bg-muted/20 text-base font-semibold"
+                        />
+                        <InputOTPSlot
+                          index={4}
+                          className="w-auto min-w-0 flex-1 max-w-[2.75rem] h-10 sm:h-11 rounded-md border border-border bg-muted/20 text-base font-semibold"
+                        />
+                        <InputOTPSlot
+                          index={5}
+                          className="w-auto min-w-0 flex-1 max-w-[2.75rem] h-10 sm:h-11 rounded-md border border-border bg-muted/20 text-base font-semibold"
+                        />
                       </InputOTPGroup>
                     </InputOTP>
                   </FormControl>
-                  <FormDescription>
-                    Only numbers are allowed. exactly 6 digits.
-                  </FormDescription>
+                  <FormDescription>Only numbers are allowed. exactly 6 digits.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

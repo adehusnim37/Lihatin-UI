@@ -17,13 +17,7 @@ import PasswordIndicator, {
   calculatePasswordStrength,
 } from "@/components/forms/input/PasswordIndicator";
 import { useState } from "react";
-import {
-  IconEye,
-  IconEyeOff,
-  IconLock,
-  IconCheck,
-  IconAlertCircle,
-} from "@tabler/icons-react";
+import { IconEye, IconEyeOff, IconLock, IconCheck, IconAlertCircle } from "@tabler/icons-react";
 import { changePassword } from "@/lib/api/auth";
 
 interface PasswordFormData {
@@ -85,8 +79,7 @@ export default function ChangePasswordDialog({
     } else {
       const strength = calculatePasswordStrength(formData.newPassword, 8);
       if (strength.score < 2) {
-        newErrors.newPassword =
-          "Password is too weak. Please choose a stronger password.";
+        newErrors.newPassword = "Password is too weak. Please choose a stronger password.";
       }
     }
 
@@ -97,8 +90,7 @@ export default function ChangePasswordDialog({
     }
 
     if (formData.currentPassword === formData.newPassword) {
-      newErrors.newPassword =
-        "New password must be different from current password";
+      newErrors.newPassword = "New password must be different from current password";
     }
 
     setErrors(newErrors);
@@ -152,8 +144,7 @@ export default function ChangePasswordDialog({
         ) {
           errorMsg = "New password does not meet security requirements.";
         } else if (error.message.includes("same password")) {
-          errorMsg =
-            "New password must be different from your current password.";
+          errorMsg = "New password must be different from your current password.";
         } else {
           errorMsg = error.message;
         }
@@ -180,10 +171,8 @@ export default function ChangePasswordDialog({
     }
   };
 
-  const isPasswordStrong =
-    calculatePasswordStrength(formData.newPassword, 8).score >= 2;
-  const passwordsMatch =
-    formData.newPassword && formData.newPassword === formData.confirmPassword;
+  const isPasswordStrong = calculatePasswordStrength(formData.newPassword, 8).score >= 2;
+  const passwordsMatch = formData.newPassword && formData.newPassword === formData.confirmPassword;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -228,9 +217,7 @@ export default function ChangePasswordDialog({
                   id="current-password"
                   type={showPassword.current ? "text" : "password"}
                   value={formData.currentPassword}
-                  onChange={(e) =>
-                    handleInputChange("currentPassword", e.target.value)
-                  }
+                  onChange={(e) => handleInputChange("currentPassword", e.target.value)}
                   placeholder="Enter your current password"
                   className={errors.currentPassword ? "border-red-500" : ""}
                   disabled={isLoading}
@@ -262,9 +249,7 @@ export default function ChangePasswordDialog({
                   id="new-password"
                   type={showPassword.new ? "text" : "password"}
                   value={formData.newPassword}
-                  onChange={(e) =>
-                    handleInputChange("newPassword", e.target.value)
-                  }
+                  onChange={(e) => handleInputChange("newPassword", e.target.value)}
                   placeholder="Enter your new password"
                   className={errors.newPassword ? "border-red-500" : ""}
                   disabled={isLoading}
@@ -283,13 +268,8 @@ export default function ChangePasswordDialog({
                   )}
                 </button>
               </div>
-              {errors.newPassword && (
-                <p className="text-xs text-red-500">{errors.newPassword}</p>
-              )}
-              <PasswordIndicator
-                password={formData.newPassword}
-                minLength={8}
-              />
+              {errors.newPassword && <p className="text-xs text-red-500">{errors.newPassword}</p>}
+              <PasswordIndicator password={formData.newPassword} minLength={8} />
             </div>
 
             {/* Confirm Password */}
@@ -300,9 +280,7 @@ export default function ChangePasswordDialog({
                   id="confirm-password"
                   type={showPassword.confirm ? "text" : "password"}
                   value={formData.confirmPassword}
-                  onChange={(e) =>
-                    handleInputChange("confirmPassword", e.target.value)
-                  }
+                  onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                   placeholder="Confirm your new password"
                   className={errors.confirmPassword ? "border-red-500" : ""}
                   disabled={isLoading}
@@ -325,9 +303,7 @@ export default function ChangePasswordDialog({
                 <p className="text-xs text-red-500">{errors.confirmPassword}</p>
               )}
               {formData.confirmPassword && passwordsMatch && (
-                <p className="text-xs text-green-600 flex items-center gap-1">
-                  ✓ Passwords match
-                </p>
+                <p className="text-xs text-green-600 flex items-center gap-1">✓ Passwords match</p>
               )}
             </div>
           </div>

@@ -11,9 +11,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
-const baseURL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1"
-).replace(/\/$/, "");
+const baseURL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1").replace(/\/$/, "");
 function CodeBlock({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState(false);
@@ -38,10 +36,7 @@ function CodeBlock({ code }: { code: string }) {
       <pre className="overflow-x-auto p-4 text-xs leading-relaxed" tabIndex={0}>
         <code>{code}</code>
       </pre>
-      <span
-        role="status"
-        className={error ? "block p-2 text-sm text-destructive" : "sr-only"}
-      >
+      <span role="status" className={error ? "block p-2 text-sm text-destructive" : "sr-only"}>
         {error
           ? "Tidak bisa menyalin. Pilih dan salin kode secara manual."
           : copied
@@ -62,10 +57,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section
-      id={id}
-      className="scroll-mt-20 space-y-4 rounded-xl border bg-card p-4 sm:p-6"
-    >
+    <section id={id} className="scroll-mt-20 space-y-4 rounded-xl border bg-card p-4 sm:p-6">
       <h2 className="text-xl font-semibold">{title}</h2>
       {children}
     </section>
@@ -80,12 +72,8 @@ function FieldList({ rows }: { rows: [string, string][] }) {
           key={name}
           className="grid min-w-0 gap-1 p-3 sm:grid-cols-[minmax(0,12rem)_minmax(0,1fr)] sm:gap-4"
         >
-          <dt className="break-words font-mono text-xs font-semibold leading-6">
-            {name}
-          </dt>
-          <dd className="min-w-0 break-words text-muted-foreground">
-            {description}
-          </dd>
+          <dt className="break-words font-mono text-xs font-semibold leading-6">{name}</dt>
+          <dd className="min-w-0 break-words text-muted-foreground">{description}</dd>
         </div>
       ))}
     </dl>
@@ -114,17 +102,14 @@ export function APIReference() {
       </Breadcrumb>
       <Section id="quick-start" title="1. Mulai menggunakan API">
         <ol className="list-decimal space-y-2 pl-5">
+          <li>Buka tab API Keys. Akun harus aktif dan email sudah terverifikasi.</li>
           <li>
-            Buka tab API Keys. Akun harus aktif dan email sudah terverifikasi.
+            Akun non-premium mendapat 50 request per jam. Akses premium aktif meningkatkan limit
+            menjadi 100 request per 10 menit. Semua key dalam satu akun berbagi batas ini.
           </li>
           <li>
-            Akun non-premium mendapat 50 request per jam. Akses premium aktif
-            meningkatkan limit menjadi 100 request per 10 menit. Semua key dalam
-            satu akun berbagi batas ini.
-          </li>
-          <li>
-            Buat key dan pilih izin akses sesuai kebutuhan. Simpan key lengkap
-            saat pertama ditampilkan.
+            Buat key dan pilih izin akses sesuai kebutuhan. Simpan key lengkap saat pertama
+            ditampilkan.
           </li>
           <li>
             Kirim key melalui header <code>X-API-Key</code> pada setiap request.
@@ -142,31 +127,27 @@ export function APIReference() {
           ]}
         />
         <div className="rounded-lg bg-muted p-3">
-          <span className="text-muted-foreground">
-            Alamat dasar API (base URL)
-          </span>
+          <span className="text-muted-foreground">Alamat dasar API (base URL)</span>
           <code className="mt-1 block break-all">{baseURL}</code>
         </div>
         <p>
-          Simpan key di environment server. Jangan memasukkannya ke kode
-          frontend atau variabel NEXT_PUBLIC. Endpoint API key tidak membutuhkan
-          cookie login atau token CSRF.
+          Simpan key di environment server. Jangan memasukkannya ke kode frontend atau variabel
+          NEXT_PUBLIC. Endpoint API key tidak membutuhkan cookie login atau token CSRF.
         </p>
         <CodeBlock
           code={`# Isi LIHATIN_API_KEY melalui environment server terlebih dahulu\nexport LIHATIN_API_URL='${baseURL}'\n\ncurl "$LIHATIN_API_URL/api/short?page=1&limit=10" \\\n  --header "X-API-Key: $LIHATIN_API_KEY"`}
         />
         <p>
-          Akun biasa hanya mengakses link miliknya. Key milik admin dapat
-          mengakses data yang lebih luas sesuai operasi. Gunakan akun biasa jika
-          integrasi hanya membutuhkan link sendiri.
+          Akun biasa hanya mengakses link miliknya. Key milik admin dapat mengakses data yang lebih
+          luas sesuai operasi. Gunakan akun biasa jika integrasi hanya membutuhkan link sendiri.
         </p>
       </Section>
       <Section id="payload" title="2. Mengirim data dan membaca respons">
         <h3 className="font-semibold">Membuat satu link</h3>
         <p>
-          Gunakan POST /api/short. Body adalah data JSON yang dikirim ke API.
-          Untuk satu link, letakkan data di dalam objek <code>link</code>. Kirim
-          header autentikasi dan tipe konten seperti contoh berikut.
+          Gunakan POST /api/short. Body adalah data JSON yang dikirim ke API. Untuk satu link,
+          letakkan data di dalam objek <code>link</code>. Kirim header autentikasi dan tipe konten
+          seperti contoh berikut.
         </p>
         <CodeBlock
           code={`curl -X POST "${baseURL}/api/short" \\
@@ -202,10 +183,7 @@ export function APIReference() {
           rows={[
             ["original_url", "Wajib. URL tujuan yang ingin dipendekkan."],
             ["title", "Opsional. Judul link, maksimal 255 karakter."],
-            [
-              "description",
-              "Opsional. Keterangan link, maksimal 1.000 karakter.",
-            ],
+            ["description", "Opsional. Keterangan link, maksimal 1.000 karakter."],
             [
               "custom_code",
               "Opsional. Kode pilihan, 3–100 karakter; gunakan huruf, angka, tanda hubung, atau underscore tanpa spasi.",
@@ -222,9 +200,9 @@ export function APIReference() {
         />
         <h3 className="font-semibold">Membuat beberapa link sekaligus</h3>
         <p>
-          Gunakan endpoint POST yang sama. Isi <code>is_bulky</code> dengan true
-          dan masukkan daftar link ke dalam <code>links</code>. Setiap item
-          minimal harus memiliki <code>original_url</code>.
+          Gunakan endpoint POST yang sama. Isi <code>is_bulky</code> dengan true dan masukkan daftar
+          link ke dalam <code>links</code>. Setiap item minimal harus memiliki{" "}
+          <code>original_url</code>.
         </p>
         <CodeBlock
           code={`curl -X POST "${baseURL}/api/short" \\
@@ -259,16 +237,14 @@ export function APIReference() {
           )}
         />
         <p className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-3">
-          Saat membuat satu link, limit, enable_stats, dan tags belum
-          diterapkan. Setelah link dibuat, gunakan PUT untuk mengatur
-          click_limit, enable_stats, dan field utm_*.
+          Saat membuat satu link, limit, enable_stats, dan tags belum diterapkan. Setelah link
+          dibuat, gunakan PUT untuk mengatur click_limit, enable_stats, dan field utm_*.
         </p>
         <h3 className="font-semibold">Mengubah link</h3>
         <p>
-          Gunakan PUT /api/short/&#123;code&#125;. Kirim field langsung di body,
-          tanpa objek link. Field yang tidak dikirim tetap menggunakan nilai
-          sebelumnya. URL tujuan (original_url) tidak dapat diubah lewat
-          endpoint ini.
+          Gunakan PUT /api/short/&#123;code&#125;. Kirim field langsung di body, tanpa objek link.
+          Field yang tidak dikirim tetap menggunakan nilai sebelumnya. URL tujuan (original_url)
+          tidak dapat diubah lewat endpoint ini.
         </p>
         <CodeBlock
           code={JSON.stringify(
@@ -288,10 +264,7 @@ export function APIReference() {
               "title / description",
               "Minimal 3 karakter bila dikirim. Maksimal 255 untuk judul dan 1.000 untuk deskripsi.",
             ],
-            [
-              "short_code",
-              "Kode pengganti untuk link. Ikuti aturan custom_code di atas.",
-            ],
+            ["short_code", "Kode pengganti untuk link. Ikuti aturan custom_code di atas."],
             ["is_active", "true mengaktifkan link; false menonaktifkannya."],
             ["click_limit", "Batas jumlah klik. Isi 0 untuk menghapus batas."],
             [
@@ -311,8 +284,8 @@ export function APIReference() {
         />
         <h3 className="font-semibold">Membaca balasan API</h3>
         <p>
-          Responses adalah balasan API. Periksa status HTTP dan nilai success
-          sebelum menggunakan data. Contoh berikut memakai nilai ilustrasi.
+          Responses adalah balasan API. Periksa status HTTP dan nilai success sebelum menggunakan
+          data. Contoh berikut memakai nilai ilustrasi.
         </p>
         <CodeBlock
           code={JSON.stringify(
@@ -347,9 +320,7 @@ export function APIReference() {
           ]}
         />
         <details className="rounded-lg border p-4">
-          <summary className="cursor-pointer font-semibold">
-            Contoh JavaScript untuk server
-          </summary>
+          <summary className="cursor-pointer font-semibold">Contoh JavaScript untuk server</summary>
           <div className="mt-4">
             <CodeBlock
               code={`const response = await fetch(process.env.LIHATIN_API_URL + "/api/short", {\n  method: "POST",\n  headers: {\n    "X-API-Key": process.env.LIHATIN_API_KEY,\n    "Content-Type": "application/json",\n  },\n  body: JSON.stringify({ link: { original_url: "https://example.com" } }),\n});\nconst result = await response.json();\nif (!response.ok || !result.success) {\n  throw new Error(result.message || "Request API gagal");\n}\nconsole.log(result.data.short_code);`}
@@ -359,29 +330,27 @@ export function APIReference() {
       </Section>
       <Section id="key-management" title="3. Mengelola API key">
         <p>
-          Gunakan tab API Keys untuk membuat, menonaktifkan, dan mengganti key.
-          Endpoint pengelolaan memakai sesi login dengan email terverifikasi.
-          Header X-API-Key saja tidak cukup untuk mengelola key.
+          Gunakan tab API Keys untuk membuat, menonaktifkan, dan mengganti key. Endpoint pengelolaan
+          memakai sesi login dengan email terverifikasi. Header X-API-Key saja tidak cukup untuk
+          mengelola key.
         </p>
         <ul className="list-disc space-y-2 pl-5">
           <li>Saat membuat key, jumlah key aktif dibatasi menjadi 3.</li>
           <li>
-            Form memilih read secara default. Tambahkan write untuk membuat
-            link. Jika permissions kosong pada request API, backend memberikan
-            keempat izin.
+            Form memilih read secara default. Tambahkan write untuk membuat link. Jika permissions
+            kosong pada request API, backend memberikan keempat izin.
           </li>
           <li>
-            Refresh mengganti secret dan langsung membatalkan key lama. Kuota
-            penggunaan dan tanggal kedaluwarsa tetap.
+            Refresh mengganti secret dan langsung membatalkan key lama. Kuota penggunaan dan tanggal
+            kedaluwarsa tetap.
           </li>
           <li>
-            Usage count adalah jumlah penggunaan key, bukan jumlah klik link.
-            Request yang gagal pada endpoint setelah kuota key direservasi tetap
-            ikut dihitung.
+            Usage count adalah jumlah penggunaan key, bukan jumlah klik link. Request yang gagal
+            pada endpoint setelah kuota key direservasi tetap ikut dihitung.
           </li>
           <li>
-            Batas total penggunaan per key boleh diubah atau dihapus. Ini
-            pembatas tambahan milik key, bukan rate limit akun berdasarkan tier.
+            Batas total penggunaan per key boleh diubah atau dihapus. Ini pembatas tambahan milik
+            key, bukan rate limit akun berdasarkan tier.
           </li>
         </ul>
         <details className="rounded-lg border p-4">
@@ -390,17 +359,13 @@ export function APIReference() {
           </summary>
           <div className="mt-4 space-y-4">
             <p>
-              Semua path berikut relatif terhadap base URL. Ganti :id dengan ID
-              record dari respons, bukan bagian keyID pada secret. Request yang
-              mengubah data melalui sesi browser mengikuti mekanisme CSRF
-              aplikasi.
+              Semua path berikut relatif terhadap base URL. Ganti :id dengan ID record dari respons,
+              bukan bagian keyID pada secret. Request yang mengubah data melalui sesi browser
+              mengikuti mekanisme CSRF aplikasi.
             </p>
             <FieldList
               rows={[
-                [
-                  "GET /api-keys/",
-                  "Daftar key. Secret tidak ditampilkan kembali.",
-                ],
+                ["GET /api-keys/", "Daftar key. Secret tidak ditampilkan kembali."],
                 [
                   "POST /api-keys/",
                   "Buat key: name wajib. permissions, expires_at, allowed_ips, blocked_ips, limit_usage opsional. Key lengkap tersedia pada data.key.",
@@ -435,16 +400,13 @@ export function APIReference() {
           </summary>
           <ul className="mt-3 list-disc space-y-2 pl-5">
             <li>
-              Perubahan allowed_ips dan blocked_ips belum disimpan melalui
-              update. Atur pembatasan IP ketika membuat key.
+              Perubahan allowed_ips dan blocked_ips belum disimpan melalui update. Atur pembatasan
+              IP ketika membuat key.
             </li>
           </ul>
         </details>
       </Section>
-      <Section
-        id="limits-errors"
-        title="4. Batas penggunaan dan penanganan error"
-      >
+      <Section id="limits-errors" title="4. Batas penggunaan dan penanganan error">
         <FieldList
           rows={[
             [
@@ -476,10 +438,7 @@ export function APIReference() {
               "400",
               "Periksa format key, JSON, field, dan parameter halaman. Endpoint views masih memiliki kendala validasi sorting; lihat catatan pada endpoint tersebut.",
             ],
-            [
-              "401 / 403",
-              "Periksa header X-API-Key, izin akses, status akun, dan pembatasan IP.",
-            ],
+            ["401 / 403", "Periksa header X-API-Key, izin akses, status akun, dan pembatasan IP."],
             [
               "404",
               "Periksa kode link atau key. Key yang tidak aktif atau kedaluwarsa juga dapat dianggap tidak ditemukan.",
@@ -496,9 +455,9 @@ export function APIReference() {
           ]}
         />
         <p>
-          Jangan otomatis mengulang request pembuatan link tanpa memeriksa hasil
-          sebelumnya. API belum mendukung idempotency key untuk mencegah
-          duplikasi, sehingga retry dapat membuat link tambahan.
+          Jangan otomatis mengulang request pembuatan link tanpa memeriksa hasil sebelumnya. API
+          belum mendukung idempotency key untuk mencegah duplikasi, sehingga retry dapat membuat
+          link tambahan.
         </p>
       </Section>
     </div>

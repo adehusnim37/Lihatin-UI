@@ -2,13 +2,7 @@
 
 import BlobDefault from "@/components/blob/blob-default";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -65,9 +59,7 @@ function RevokeEmailChangeContent() {
           <div className="flex justify-center">
             <div
               className={`rounded-full p-3 ${
-                isSuccess
-                  ? "bg-green-500/10 text-green-600"
-                  : "bg-destructive/10 text-destructive"
+                isSuccess ? "bg-green-500/10 text-green-600" : "bg-destructive/10 text-destructive"
               }`}
             >
               {isSuccess ? (

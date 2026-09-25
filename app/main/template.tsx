@@ -19,8 +19,7 @@ export default function MainTemplate({ children }: { children: ReactNode }) {
     const root = rootRef.current;
     if (!root) return;
 
-    const shouldReveal =
-      sessionStorage.getItem("lihatin-main-entry") === "1";
+    const shouldReveal = sessionStorage.getItem("lihatin-main-entry") === "1";
     sessionStorage.removeItem("lihatin-main-entry");
 
     const content = root.querySelector("[data-main-entry-content]");

@@ -102,9 +102,7 @@ function isCSRFErrorPayload(payload: unknown): boolean {
         ? Object.values(response.error).join(" ")
         : "";
 
-  return `${String(response.message || "")} ${errorText}`
-    .toLowerCase()
-    .includes("csrf");
+  return `${String(response.message || "")} ${errorText}`.toLowerCase().includes("csrf");
 }
 
 /**
@@ -246,10 +244,7 @@ export async function getWithAuth(url: string): Promise<Response> {
 /**
  * Helper for POST requests with automatic auth handling + CSRF
  */
-export async function postWithAuth(
-  url: string,
-  body?: unknown,
-): Promise<Response> {
+export async function postWithAuth(url: string, body?: unknown): Promise<Response> {
   return fetchWithAuth(url, {
     method: "POST",
     headers: {
@@ -262,10 +257,7 @@ export async function postWithAuth(
 /**
  * Helper for PUT requests with automatic auth handling + CSRF
  */
-export async function putWithAuth(
-  url: string,
-  body?: unknown,
-): Promise<Response> {
+export async function putWithAuth(url: string, body?: unknown): Promise<Response> {
   return fetchWithAuth(url, {
     method: "PUT",
     headers: {
@@ -278,10 +270,7 @@ export async function putWithAuth(
 /**
  * Helper for PATCH requests with automatic auth handling + CSRF
  */
-export async function patchWithAuth(
-  url: string,
-  body?: unknown,
-): Promise<Response> {
+export async function patchWithAuth(url: string, body?: unknown): Promise<Response> {
   return fetchWithAuth(url, {
     method: "PATCH",
     headers: {

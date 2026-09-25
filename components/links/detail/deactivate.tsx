@@ -46,8 +46,8 @@ export default function DeactivateLink({
         <DialogHeader>
           <DialogTitle>Deactivate Link</DialogTitle>
           <DialogDescription>
-            Are you sure you want to deactivate this link? The link will no
-            longer redirect visitors to the original URL.
+            Are you sure you want to deactivate this link? The link will no longer redirect visitors
+            to the original URL.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -56,11 +56,7 @@ export default function DeactivateLink({
               Cancel
             </Button>
           </DialogClose>
-          <Button
-            variant="destructive"
-            onClick={handleDeactivate}
-            disabled={isLoading}
-          >
+          <Button variant="destructive" onClick={handleDeactivate} disabled={isLoading}>
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />

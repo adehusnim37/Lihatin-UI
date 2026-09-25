@@ -12,15 +12,10 @@ export type AuthSupportReason =
 
 export type AuthSupportSource = "login" | "totp" | "email_otp";
 
-export function getAuthSupportReasonFromMessage(
-  message: string
-): AuthSupportReason | null {
+export function getAuthSupportReasonFromMessage(message: string): AuthSupportReason | null {
   const normalized = message.toLowerCase();
 
-  if (
-    normalized.includes("has been locked") ||
-    normalized.includes("locked by admin")
-  ) {
+  if (normalized.includes("has been locked") || normalized.includes("locked by admin")) {
     return "USER_LOCKED";
   }
 

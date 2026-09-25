@@ -39,10 +39,7 @@ interface UpdateClickLimitDialogProps {
   currentLimit?: number | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onUpdate: (
-    code: string,
-    data: { click_limit: number | null },
-  ) => Promise<unknown>;
+  onUpdate: (code: string, data: { click_limit: number | null }) => Promise<unknown>;
 }
 
 export function UpdateClickLimitDialog({
@@ -89,9 +86,7 @@ export function UpdateClickLimitDialog({
             <MousePointerClick className="size-5" />
             Set Click Limit
           </DialogTitle>
-          <DialogDescription>
-            Limit the number of times this link can be visited.
-          </DialogDescription>
+          <DialogDescription>Limit the number of times this link can be visited.</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -108,10 +103,7 @@ export function UpdateClickLimitDialog({
                     </FormDescription>
                   </div>
                   <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
                   </FormControl>
                 </FormItem>
               )}
@@ -125,16 +117,10 @@ export function UpdateClickLimitDialog({
                   <FormItem>
                     <div className="flex items-center justify-between mb-2">
                       <FormLabel>Maximum Clicks</FormLabel>
-                      <span className="text-xs text-muted-foreground">
-                        Target limit
-                      </span>
+                      <span className="text-xs text-muted-foreground">Target limit</span>
                     </div>
                     <FormControl>
-                      <CounterInput
-                        min={1}
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
+                      <CounterInput min={1} value={field.value} onChange={field.onChange} />
                     </FormControl>
                     <FormMessage />
                     <FormDescription>

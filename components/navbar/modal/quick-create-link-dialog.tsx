@@ -16,18 +16,14 @@ import { useCreateLink } from "@/lib/hooks/queries/useLinksQuery";
 import { hasRepeatedConsecutiveDigits } from "@/lib/validators/passcode";
 import { ShortLinkCutTransition } from "@/components/links/short-link-cut-transition";
 
-const FRONTEND_BASE_URL =
-  process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
+const FRONTEND_BASE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
 
 interface QuickCreateLinkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function QuickCreateLinkDialog({
-  open,
-  onOpenChange,
-}: QuickCreateLinkDialogProps) {
+export default function QuickCreateLinkDialog({ open, onOpenChange }: QuickCreateLinkDialogProps) {
   const [linkName, setLinkName] = useState("");
   const [linkURL, setLinkURL] = useState("");
   const [passcode, setPasscode] = useState<string>("");
@@ -40,8 +36,7 @@ export default function QuickCreateLinkDialog({
   const createLinkMutation = useCreateLink();
 
   const isPasscodeValid =
-    passcode.length === 0 ||
-    (/^\d{6}$/.test(passcode) && !hasRepeatedConsecutiveDigits(passcode));
+    passcode.length === 0 || (/^\d{6}$/.test(passcode) && !hasRepeatedConsecutiveDigits(passcode));
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
@@ -147,24 +142,17 @@ export default function QuickCreateLinkDialog({
             </div>
             <div className="flex flex-col space-y-1">
               <p className="text-sm text-muted-foreground">
-                Note: Quick links are created instantly but can be edited or
-                deleted later from your links dashboard.
+                Note: Quick links are created instantly but can be edited or deleted later from your
+                links dashboard.
               </p>
             </div>
           </div>
           <DialogFooter>
             <Button
               onClick={handleCreateLink}
-              disabled={
-                createLinkMutation.isPending ||
-                !linkName ||
-                !linkURL ||
-                !isPasscodeValid
-              }
+              disabled={createLinkMutation.isPending || !linkName || !linkURL || !isPasscodeValid}
             >
-              {createLinkMutation.isPending ? (
-                <Loader2 className="animate-spin mr-2" />
-              ) : null}
+              {createLinkMutation.isPending ? <Loader2 className="animate-spin mr-2" /> : null}
               Create Link
             </Button>
           </DialogFooter>

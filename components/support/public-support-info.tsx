@@ -6,20 +6,10 @@ import {
   IconTicket,
 } from "@tabler/icons-react";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export function PublicSupportInfoCard({
-  className,
-}: {
-  className?: string;
-}) {
+export function PublicSupportInfoCard({ className }: { className?: string }) {
   const items = [
     {
       icon: IconClock,
@@ -45,25 +35,17 @@ export function PublicSupportInfoCard({
 
   return (
     <Card
-      className={[
-        "min-w-0 gap-4 border-primary/20 bg-primary/[0.03] py-5 shadow-none",
-        className,
-      ]
+      className={["min-w-0 gap-4 border-primary/20 bg-primary/[0.03] py-5 shadow-none", className]
         .filter(Boolean)
         .join(" ")}
     >
       <CardHeader className="gap-1.5 px-5">
-        <Badge
-          variant="outline"
-          className="mb-1 border-primary/25 bg-primary/5 text-primary"
-        >
+        <Badge variant="outline" className="mb-1 border-primary/25 bg-primary/5 text-primary">
           <IconInfoCircle />
           Good to know
         </Badge>
         <CardTitle className="text-base">Support information</CardTitle>
-        <CardDescription>
-          What to expect when contacting the support team.
-        </CardDescription>
+        <CardDescription>What to expect when contacting the support team.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-x-6 gap-y-4 px-5 sm:grid-cols-2">
         {items.map((item) => {

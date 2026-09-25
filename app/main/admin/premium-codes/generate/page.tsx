@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type CSSProperties,
-  type ReactNode,
-} from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import {
   IconArrowRight,
   IconCalendar,
@@ -24,13 +18,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CounterInput } from "@/components/ui/counter-input";
 import { DateTimePicker24hForm } from "@/components/ui/datepickerhour";
 import { Label } from "@/components/ui/label";
@@ -58,15 +46,14 @@ const EXPIRY_PRESETS = [
 ] as const;
 
 export default function AdminGeneratePremiumCodesPage() {
-  const [roleFromStorage, setRoleFromStorage] = useState<
-    string | null | undefined
-  >(undefined);
+  const [roleFromStorage, setRoleFromStorage] = useState<string | null | undefined>(undefined);
   const [mode, setMode] = useState<GenerationMode>("single");
   const [validUntilDate, setValidUntilDate] = useState<Date | undefined>(() =>
-    addDays(new Date(), DEFAULT_EXPIRY_DAYS)
+    addDays(new Date(), DEFAULT_EXPIRY_DAYS),
   );
-  const [selectedExpiryPreset, setSelectedExpiryPreset] =
-    useState<number | null>(DEFAULT_EXPIRY_DAYS);
+  const [selectedExpiryPreset, setSelectedExpiryPreset] = useState<number | null>(
+    DEFAULT_EXPIRY_DAYS,
+  );
   const [limitUsage, setLimitUsage] = useState(1);
   const [amount, setAmount] = useState(5);
   const [isLifetime, setIsLifetime] = useState(false);
@@ -75,10 +62,7 @@ export default function AdminGeneratePremiumCodesPage() {
   const [lastGeneratedAt, setLastGeneratedAt] = useState<string | null>(null);
 
   useEffect(() => {
-    const timer = window.setTimeout(
-      () => setRoleFromStorage(getStoredRole()),
-      0
-    );
+    const timer = window.setTimeout(() => setRoleFromStorage(getStoredRole()), 0);
     return () => window.clearTimeout(timer);
   }, []);
 
@@ -89,7 +73,7 @@ export default function AdminGeneratePremiumCodesPage() {
   const generatedCount = generatedCodes.length;
   const expirySummary = useMemo(
     () => getExpirySummary(validUntilDate, isLifetime),
-    [validUntilDate, isLifetime]
+    [validUntilDate, isLifetime],
   );
 
   const handleExpiryPresetChange = (days: number) => {
@@ -123,10 +107,7 @@ export default function AdminGeneratePremiumCodesPage() {
       toast.error("Usage limit must be at least 1");
       return;
     }
-    if (
-      isBatch &&
-      (!Number.isFinite(amount) || amount < 1 || amount > MAX_BATCH_SIZE)
-    ) {
+    if (isBatch && (!Number.isFinite(amount) || amount < 1 || amount > MAX_BATCH_SIZE)) {
       toast.error("Batch size must be between 1 and 100");
       return;
     }
@@ -134,9 +115,7 @@ export default function AdminGeneratePremiumCodesPage() {
     setIsSubmitting(true);
     try {
       const response = await generateAdminPremiumCodes({
-        valid_until: isLifetime
-          ? undefined
-          : validUntilDate?.toISOString(),
+        valid_until: isLifetime ? undefined : validUntilDate?.toISOString(),
         limit_usage: limitUsage,
         is_bulk: isBatch,
         amount: isBatch ? amount : undefined,
@@ -145,14 +124,11 @@ export default function AdminGeneratePremiumCodesPage() {
       const normalized = normalizeGeneratedCodes(response.data);
       setGeneratedCodes(normalized);
       setLastGeneratedAt(new Date().toISOString());
-      toast.success(
-        normalized.length === 1 ? "Premium code issued" : "Code batch issued",
-        {
-          description: `${normalized.length} code${
-            normalized.length === 1 ? "" : "s"
-          } generated successfully.`,
-        }
-      );
+      toast.success(normalized.length === 1 ? "Premium code issued" : "Code batch issued", {
+        description: `${normalized.length} code${
+          normalized.length === 1 ? "" : "s"
+        } generated successfully.`,
+      });
     } catch (error) {
       toast.error("Codes could not be generated", {
         description: error instanceof Error ? error.message : "Try again.",
@@ -181,8 +157,7 @@ export default function AdminGeneratePremiumCodesPage() {
                 Generate premium codes
               </h1>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Define one entitlement policy, then issue a single code or a
-                controlled batch.
+                Define one entitlement policy, then issue a single code or a controlled batch.
               </p>
             </div>
           </header>
@@ -194,8 +169,7 @@ export default function AdminGeneratePremiumCodesPage() {
               <CardHeader>
                 <CardTitle>Access denied</CardTitle>
                 <CardDescription>
-                  This issuance desk is available only to admins and super
-                  admins.
+                  This issuance desk is available only to admins and super admins.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -214,15 +188,10 @@ export default function AdminGeneratePremiumCodesPage() {
                       <Label>Generation mode</Label>
                       <Tabs
                         value={mode}
-                        onValueChange={(value) =>
-                          setMode(value as GenerationMode)
-                        }
+                        onValueChange={(value) => setMode(value as GenerationMode)}
                       >
                         <TabsList className="grid h-auto w-full grid-cols-2 p-1">
-                          <TabsTrigger
-                            value="single"
-                            className="h-auto justify-start px-3 py-3"
-                          >
+                          <TabsTrigger value="single" className="h-auto justify-start px-3 py-3">
                             <IconKey />
                             <span className="text-left">
                               <span className="block">Single code</span>
@@ -231,10 +200,7 @@ export default function AdminGeneratePremiumCodesPage() {
                               </span>
                             </span>
                           </TabsTrigger>
-                          <TabsTrigger
-                            value="batch"
-                            className="h-auto justify-start px-3 py-3"
-                          >
+                          <TabsTrigger value="batch" className="h-auto justify-start px-3 py-3">
                             <IconPackages />
                             <span className="text-left">
                               <span className="block">Batch</span>
@@ -276,12 +242,10 @@ export default function AdminGeneratePremiumCodesPage() {
                             <IconSparkles className="size-4" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium">
-                              These codes never expire
-                            </p>
+                            <p className="text-sm font-medium">These codes never expire</p>
                             <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                              Redemption remains available until the codes are
-                              disabled or fully used.
+                              Redemption remains available until the codes are disabled or fully
+                              used.
                             </p>
                           </div>
                         </div>
@@ -309,8 +273,7 @@ export default function AdminGeneratePremiumCodesPage() {
                               aria-label="Expiration presets"
                             >
                               {EXPIRY_PRESETS.map(({ days, label }) => {
-                                const isSelected =
-                                  selectedExpiryPreset === days;
+                                const isSelected = selectedExpiryPreset === days;
                                 return (
                                   <Button
                                     key={days}
@@ -318,9 +281,7 @@ export default function AdminGeneratePremiumCodesPage() {
                                     variant={isSelected ? "default" : "outline"}
                                     className="h-auto min-h-14 flex-col gap-0.5 rounded-lg px-2 py-2.5 last:col-span-2 sm:last:col-span-1"
                                     aria-pressed={isSelected}
-                                    onClick={() =>
-                                      handleExpiryPresetChange(days)
-                                    }
+                                    onClick={() => handleExpiryPresetChange(days)}
                                   >
                                     <span>{label}</span>
                                     <span
@@ -349,12 +310,9 @@ export default function AdminGeneratePremiumCodesPage() {
                     <div className="rounded-xl border bg-muted/20 p-4">
                       <div className="grid gap-4 sm:grid-cols-[1fr_220px] sm:items-center">
                         <div>
-                          <Label htmlFor="limit_usage">
-                            Redemptions per code
-                          </Label>
+                          <Label htmlFor="limit_usage">Redemptions per code</Label>
                           <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                            Maximum successful activations allowed for each
-                            code.
+                            Maximum successful activations allowed for each code.
                           </p>
                         </div>
                         <CounterInput
@@ -373,8 +331,7 @@ export default function AdminGeneratePremiumCodesPage() {
                           <div>
                             <Label htmlFor="amount">Number of codes</Label>
                             <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                              Each code is unique and follows the same expiry
-                              and redemption limit.
+                              Each code is unique and follows the same expiry and redemption limit.
                             </p>
                           </div>
                           <CounterInput
@@ -444,10 +401,8 @@ export default function AdminGeneratePremiumCodesPage() {
                         size="sm"
                         onClick={() =>
                           copyText(
-                            generatedCodes
-                              .map((code) => code.secret_code)
-                              .join("\n"),
-                            `${generatedCount} premium codes copied.`
+                            generatedCodes.map((code) => code.secret_code).join("\n"),
+                            `${generatedCount} premium codes copied.`,
                           )
                         }
                       >
@@ -463,12 +418,9 @@ export default function AdminGeneratePremiumCodesPage() {
                       <div className="grid size-11 place-items-center rounded-full bg-muted">
                         <IconKey className="size-5 text-muted-foreground" />
                       </div>
-                      <p className="mt-3 text-sm font-medium">
-                        No codes issued in this session
-                      </p>
+                      <p className="mt-3 text-sm font-medium">No codes issued in this session</p>
                       <p className="mt-1 max-w-sm text-xs leading-5 text-muted-foreground">
-                        Configure the issuance rules above, then generate your
-                        first code or batch.
+                        Configure the issuance rules above, then generate your first code or batch.
                       </p>
                     </div>
                   ) : generatedCount > 5 ? (
@@ -518,27 +470,17 @@ function IssuanceManifest({
         <div className="flex items-center justify-between gap-3">
           <div>
             <CardTitle className="text-base">Issuance manifest</CardTitle>
-            <CardDescription className="mt-1">
-              Live summary before generation
-            </CardDescription>
+            <CardDescription className="mt-1">Live summary before generation</CardDescription>
           </div>
-          <StatusBadge tone="info">
-            {mode === "batch" ? "Batch" : "Single"}
-          </StatusBadge>
+          <StatusBadge tone="info">{mode === "batch" ? "Batch" : "Single"}</StatusBadge>
         </div>
       </CardHeader>
       <CardContent className="space-y-0 px-5 py-2">
-        <ManifestRow
-          icon={<IconStack2 />}
-          label="Codes"
-          value={codeCount.toLocaleString()}
-        />
+        <ManifestRow icon={<IconStack2 />} label="Codes" value={codeCount.toLocaleString()} />
         <ManifestRow
           icon={<IconUsers />}
           label="Per code"
-          value={`${limitUsage.toLocaleString()} redemption${
-            limitUsage === 1 ? "" : "s"
-          }`}
+          value={`${limitUsage.toLocaleString()} redemption${limitUsage === 1 ? "" : "s"}`}
         />
         <ManifestRow
           icon={<IconSparkles />}
@@ -549,11 +491,7 @@ function IssuanceManifest({
           icon={<IconCalendar />}
           label="Expires"
           value={
-            isLifetime
-              ? "Never"
-              : validUntil
-                ? formatDateTime(validUntil.toISOString())
-                : "Not set"
+            isLifetime ? "Never" : validUntil ? formatDateTime(validUntil.toISOString()) : "Not set"
           }
           detail={isLifetime ? "Lifetime access" : expirySummary}
         />
@@ -585,9 +523,7 @@ function ManifestRow({
       <div className="min-w-0 flex-1">
         <p className="text-xs text-muted-foreground">{label}</p>
         <p className="mt-0.5 break-words text-sm font-medium">{value}</p>
-        {detail && (
-          <p className="mt-0.5 text-xs text-muted-foreground">{detail}</p>
-        )}
+        {detail && <p className="mt-0.5 text-xs text-muted-foreground">{detail}</p>}
       </div>
     </div>
   );
@@ -647,7 +583,7 @@ function GeneratePageSkeleton() {
 }
 
 function normalizeGeneratedCodes(
-  data: AdminPremiumCode | AdminGeneratePremiumCodeBulkResponse | null
+  data: AdminPremiumCode | AdminGeneratePremiumCodeBulkResponse | null,
 ): AdminPremiumCode[] {
   if (!data) return [];
   return "items" in data ? (data.items ?? []) : [data];
@@ -679,10 +615,7 @@ function formatDateTime(value?: string | null): string {
   });
 }
 
-async function copyText(
-  value: string,
-  description = "Premium code copied."
-): Promise<void> {
+async function copyText(value: string, description = "Premium code copied."): Promise<void> {
   try {
     await navigator.clipboard.writeText(value);
     toast.success("Copied", { description });

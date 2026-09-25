@@ -29,8 +29,14 @@ export default function PasswordIndicator({
   minLength = 8,
   className,
 }: PasswordIndicatorProps) {
-  const strength = useMemo(() => calculatePasswordStrength(password, minLength), [password, minLength]);
-  const requirements = useMemo(() => getPasswordRequirements(password, minLength), [password, minLength]);
+  const strength = useMemo(
+    () => calculatePasswordStrength(password, minLength),
+    [password, minLength],
+  );
+  const requirements = useMemo(
+    () => getPasswordRequirements(password, minLength),
+    [password, minLength],
+  );
 
   if (!password) return null;
 
@@ -43,7 +49,7 @@ export default function PasswordIndicator({
           <span
             className={cn(
               "font-medium",
-              strength.color.split(" ").find((c) => c.startsWith("text-"))
+              strength.color.split(" ").find((c) => c.startsWith("text-")),
             )}
           >
             {strength.label}
@@ -61,19 +67,18 @@ export default function PasswordIndicator({
       {showRequirements && (
         <div className="space-y-2">
           {requirements.map((req, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-2 text-xs transition-colors"
-            >
+            <div key={index} className="flex items-center gap-2 text-xs transition-colors">
               {req.met ? (
                 <IconCheck className="size-4 text-green-600 shrink-0" />
               ) : (
                 <IconX className="size-4 text-muted-foreground shrink-0" />
               )}
-              <span className={cn(
-                "transition-colors",
-                req.met ? "text-green-600" : "text-muted-foreground"
-              )}>
+              <span
+                className={cn(
+                  "transition-colors",
+                  req.met ? "text-green-600" : "text-muted-foreground",
+                )}
+              >
                 {req.label}
               </span>
             </div>
@@ -103,7 +108,10 @@ function calculatePasswordStrength(password: string, minLength: number): Passwor
   // Cap at 4
   const finalScore = Math.min(score, 4) as 0 | 1 | 2 | 3 | 4;
 
-  const strengthMap: Record<0 | 1 | 2 | 3 | 4, { label: string; color: string; percentage: number }> = {
+  const strengthMap: Record<
+    0 | 1 | 2 | 3 | 4,
+    { label: string; color: string; percentage: number }
+  > = {
     0: { label: "Too weak", color: "bg-red-500 text-red-600", percentage: 20 },
     1: { label: "Weak", color: "bg-orange-500 text-orange-600", percentage: 40 },
     2: { label: "Fair", color: "bg-yellow-500 text-yellow-600", percentage: 60 },

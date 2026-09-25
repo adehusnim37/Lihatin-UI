@@ -28,8 +28,7 @@ export function ShortLinkCutTransition({
   const rootRef = useRef<HTMLDivElement>(null);
   const onFinishRef = useRef(onFinish);
   const cuttingStartedAtRef = useRef(0);
-  const [displayedPhase, setDisplayedPhase] =
-    useState<CutTransitionPhase>(phase);
+  const [displayedPhase, setDisplayedPhase] = useState<CutTransitionPhase>(phase);
 
   useEffect(() => {
     onFinishRef.current = onFinish;
@@ -86,11 +85,7 @@ export function ShortLinkCutTransition({
 
         gsap
           .timeline({ defaults: { ease: "power3.out" } })
-          .fromTo(
-            root,
-            { autoAlpha: 0 },
-            { autoAlpha: 1, duration: 0.2 },
-          )
+          .fromTo(root, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 })
           .fromTo(
             "[data-cut-panel]",
             { scale: 0.94, y: 18 },
@@ -136,7 +131,7 @@ export function ShortLinkCutTransition({
               },
             )
             .to(scissor, {
-                duration: 1.32,
+              duration: 1.32,
               ease: "sine.inOut",
               rotation: 5,
               x: travel,
@@ -312,8 +307,7 @@ export function ShortLinkCutTransition({
   }
 
   const multiple = count > 1;
-  const displayResult =
-    resultUrl || (multiple ? `${count} short links ready` : "Short link ready");
+  const displayResult = resultUrl || (multiple ? `${count} short links ready` : "Short link ready");
 
   return (
     <div
@@ -334,9 +328,7 @@ export function ShortLinkCutTransition({
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-              {displayedPhase === "cutting"
-                ? "Shortening route"
-                : "Cut complete"}
+              {displayedPhase === "cutting" ? "Shortening route" : "Cut complete"}
             </p>
             <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">
               {displayedPhase === "cutting"
@@ -367,8 +359,7 @@ export function ShortLinkCutTransition({
           >
             <span className="absolute inset-x-0 top-0 flex h-14 items-center px-4">
               <span className="block min-w-0 truncate font-mono text-xs font-semibold text-foreground/80">
-                {sourceUrl ||
-                  "https://your-very-long-destination.example/path"}
+                {sourceUrl || "https://your-very-long-destination.example/path"}
               </span>
             </span>
           </div>
@@ -378,8 +369,7 @@ export function ShortLinkCutTransition({
           >
             <span className="absolute -top-7 inset-x-0 flex h-14 items-center px-4">
               <span className="block min-w-0 truncate font-mono text-xs font-semibold text-foreground/80">
-                {sourceUrl ||
-                  "https://your-very-long-destination.example/path"}
+                {sourceUrl || "https://your-very-long-destination.example/path"}
               </span>
             </span>
           </div>

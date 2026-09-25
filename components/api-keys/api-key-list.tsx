@@ -73,9 +73,7 @@ export function APIKeyList() {
       <div className="rounded-lg border border-dashed bg-muted/20 p-8 text-center">
         <Key className="size-10 text-muted-foreground mx-auto mb-3" />
         <p className="text-muted-foreground">No API keys yet</p>
-        <p className="text-sm text-muted-foreground">
-          Create your first API key to get started
-        </p>
+        <p className="text-sm text-muted-foreground">Create your first API key to get started</p>
       </div>
     );
   }

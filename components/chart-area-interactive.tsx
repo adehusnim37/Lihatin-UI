@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import * as React from "react";
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
-import { useIsMobile } from "@/hooks/use-mobile"
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Card,
   CardAction,
@@ -11,27 +11,24 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
+} from "@/components/ui/chart";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group"
-import { Skeleton } from "@/components/ui/skeleton"
+} from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export const description = "An interactive area chart showing click history"
+export const description = "An interactive area chart showing click history";
 
 interface ChartDataPoint {
   date: string;
@@ -49,8 +46,8 @@ interface ChartAreaInteractiveProps {
   curveType?: React.ComponentProps<typeof Area>["type"];
 }
 
-export function ChartAreaInteractive({ 
-  data = [], 
+export function ChartAreaInteractive({
+  data = [],
   isLoading = false,
   title = "Click History",
   description: desc = "Total clicks over time",
@@ -59,8 +56,8 @@ export function ChartAreaInteractive({
   emptyMessage = "No data available for the selected period",
   curveType = "natural",
 }: ChartAreaInteractiveProps) {
-  const isMobile = useIsMobile()
-  const [timeRange, setTimeRange] = React.useState("90d")
+  const isMobile = useIsMobile();
+  const [timeRange, setTimeRange] = React.useState("90d");
   const chartConfig = React.useMemo(
     () =>
       ({
@@ -69,39 +66,39 @@ export function ChartAreaInteractive({
           color: "var(--primary)",
         },
       }) satisfies ChartConfig,
-    [valueLabel]
-  )
+    [valueLabel],
+  );
 
   React.useEffect(() => {
     if (isMobile) {
-      setTimeRange("30d")
+      setTimeRange("30d");
     }
-  }, [isMobile])
+  }, [isMobile]);
 
   const chartData = React.useMemo(() => {
-    return data.map(item => ({
+    return data.map((item) => ({
       date: item.date,
-      clicks: item.count
+      clicks: item.count,
     }));
   }, [data]);
 
   const filteredData = React.useMemo(() => {
     if (chartData.length === 0) return [];
-    
+
     // Get the most recent date from the data
-    const dates = chartData.map(item => new Date(item.date));
-    const referenceDate = new Date(Math.max(...dates.map(d => d.getTime())));
-    
+    const dates = chartData.map((item) => new Date(item.date));
+    const referenceDate = new Date(Math.max(...dates.map((d) => d.getTime())));
+
     let daysToSubtract = 90;
     if (timeRange === "30d") {
       daysToSubtract = 30;
     } else if (timeRange === "7d") {
       daysToSubtract = 7;
     }
-    
+
     const startDate = new Date(referenceDate);
     startDate.setDate(startDate.getDate() - daysToSubtract);
-    
+
     return chartData.filter((item) => {
       const date = new Date(item.date);
       return date >= startDate;
@@ -135,7 +132,7 @@ export function ChartAreaInteractive({
             type="single"
             value={timeRange}
             onValueChange={(value) => {
-              if (value) setTimeRange(value)
+              if (value) setTimeRange(value);
             }}
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
@@ -179,16 +176,8 @@ export function ChartAreaInteractive({
             <AreaChart data={filteredData}>
               <defs>
                 <linearGradient id="fillClicks" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="5%"
-                    stopColor="var(--color-clicks)"
-                    stopOpacity={1.0}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="var(--color-clicks)"
-                    stopOpacity={0.1}
-                  />
+                  <stop offset="5%" stopColor="var(--color-clicks)" stopOpacity={1.0} />
+                  <stop offset="95%" stopColor="var(--color-clicks)" stopOpacity={0.1} />
                 </linearGradient>
               </defs>
               <CartesianGrid vertical={false} />
@@ -199,11 +188,11 @@ export function ChartAreaInteractive({
                 tickMargin={8}
                 minTickGap={32}
                 tickFormatter={(value) => {
-                  const date = new Date(value)
+                  const date = new Date(value);
                   return date.toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
-                  })
+                  });
                 }}
               />
               <ChartTooltip
@@ -211,14 +200,14 @@ export function ChartAreaInteractive({
                 content={
                   <ChartTooltipContent
                     labelFormatter={(value) => {
-                      if (typeof value === 'string') {
+                      if (typeof value === "string") {
                         return new Date(value).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
                           year: "numeric",
-                        })
+                        });
                       }
-                      return value
+                      return value;
                     }}
                     indicator="dot"
                   />
@@ -236,5 +225,5 @@ export function ChartAreaInteractive({
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

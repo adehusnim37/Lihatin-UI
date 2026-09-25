@@ -24,9 +24,7 @@ function UnsubscribeContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const categoryLabel =
-    category === "weekly_summary"
-      ? "weekly analytics summaries"
-      : "promotional emails";
+    category === "weekly_summary" ? "weekly analytics summaries" : "promotional emails";
 
   const unsubscribe = async () => {
     if (!token) {
@@ -48,11 +46,7 @@ function UnsubscribeContent() {
         `/email-preferences/unsubscribed?status=success&category=${encodeURIComponent(category || "promotional")}`,
       );
     } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "Unable to unsubscribe. Please try again.",
-      );
+      setError(cause instanceof Error ? cause.message : "Unable to unsubscribe. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -65,14 +59,12 @@ function UnsubscribeContent() {
           <IconMailOff className="mx-auto size-10 text-muted-foreground" />
           <CardTitle>Unsubscribe from email?</CardTitle>
           <CardDescription>
-            Confirm that you no longer want to receive {categoryLabel}.
-            Essential account and security emails will continue.
+            Confirm that you no longer want to receive {categoryLabel}. Essential account and
+            security emails will continue.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {error ? (
-            <p className="text-center text-sm text-destructive">{error}</p>
-          ) : null}
+          {error ? <p className="text-center text-sm text-destructive">{error}</p> : null}
         </CardContent>
         <CardFooter className="flex-col gap-2">
           <Button

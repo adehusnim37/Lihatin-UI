@@ -1,9 +1,4 @@
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  useInfiniteQuery,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   getAdminUsers,
@@ -45,31 +40,14 @@ export const adminKeys = {
   all: ["admin"] as const,
   users: {
     all: () => [...adminKeys.all, "users"] as const,
-    list: (params: AdminUsersQueryParams) =>
-      [...adminKeys.all, "users", "list", params] as const,
-    detail: (userId: string) =>
-      [...adminKeys.all, "users", "detail", userId] as const,
+    list: (params: AdminUsersQueryParams) => [...adminKeys.all, "users", "list", params] as const,
+    detail: (userId: string) => [...adminKeys.all, "users", "detail", userId] as const,
     emailOptions: (page: number, limit: number, search: string) =>
-      [
-        ...adminKeys.all,
-        "users",
-        "email-options",
-        page,
-        limit,
-        search,
-      ] as const,
+      [...adminKeys.all, "users", "email-options", page, limit, search] as const,
     emailOptionsInfinite: (limit: number, search: string) =>
-      [
-        ...adminKeys.all,
-        "users",
-        "email-options",
-        "infinite",
-        limit,
-        search,
-      ] as const,
+      [...adminKeys.all, "users", "email-options", "infinite", limit, search] as const,
   },
-  disposableEmailPolicy: () =>
-    [...adminKeys.all, "disposable-email-policy"] as const,
+  disposableEmailPolicy: () => [...adminKeys.all, "disposable-email-policy"] as const,
   premiumCodes: {
     all: () => [...adminKeys.all, "premium-codes"] as const,
     list: (page?: number, limit?: number) =>
@@ -86,7 +64,17 @@ export const adminKeys = {
     detail?: boolean,
     search?: string,
   ) =>
-    [...adminKeys.all, "user-short-links", userId, page, limit, sort, orderBy, detail, search] as const,
+    [
+      ...adminKeys.all,
+      "user-short-links",
+      userId,
+      page,
+      limit,
+      sort,
+      orderBy,
+      detail,
+      search,
+    ] as const,
 };
 
 export function useAdminUsersQuery(params: AdminUsersQueryParams = {}) {
@@ -112,12 +100,7 @@ export function useAdminUsersQuery(params: AdminUsersQueryParams = {}) {
   });
 }
 
-export function useAdminUserEmailOptionsQuery(
-  page = 1,
-  limit = 20,
-  search = "",
-  enabled = true
-) {
+export function useAdminUserEmailOptionsQuery(page = 1, limit = 20, search = "", enabled = true) {
   return useQuery({
     queryKey: adminKeys.users.emailOptions(page, limit, search),
     queryFn: async () => {
@@ -138,11 +121,7 @@ export function useAdminUserEmailOptionsQuery(
   });
 }
 
-export function useAdminUserEmailOptionsInfiniteQuery(
-  limit = 20,
-  search = "",
-  enabled = true,
-) {
+export function useAdminUserEmailOptionsInfiniteQuery(limit = 20, search = "", enabled = true) {
   return useInfiniteQuery({
     queryKey: adminKeys.users.emailOptionsInfinite(limit, search),
     queryFn: async ({ pageParam }) => {
@@ -211,13 +190,7 @@ export function useLockAdminUserMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      userId,
-      payload,
-    }: {
-      userId: string;
-      payload: AdminLockUserRequest;
-    }) => {
+    mutationFn: async ({ userId, payload }: { userId: string; payload: AdminLockUserRequest }) => {
       const response = await lockAdminUser(userId, payload);
       return response.data;
     },
@@ -301,7 +274,12 @@ export function useAdminPremiumCodesQuery(page = 1, limit = 10) {
   return useQuery({
     queryKey: adminKeys.premiumCodes.list(page, limit),
     queryFn: async () => {
-      const response = await getAdminPremiumCodes({ page, limit, sort: "created_at", order_by: "desc" });
+      const response = await getAdminPremiumCodes({
+        page,
+        limit,
+        sort: "created_at",
+        order_by: "desc",
+      });
       if (!response.success) throw new Error(response.message || "Failed to load premium codes");
       return response.data as AdminPremiumCodesResponse;
     },

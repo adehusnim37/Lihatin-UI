@@ -1,6 +1,6 @@
-import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
+import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react";
 
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardAction,
@@ -8,8 +8,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface SectionCardsProps {
   totalLinks?: number;
@@ -70,9 +70,7 @@ export function SectionCards({
           <div className="line-clamp-1 flex gap-2 font-medium">
             {activeLinks} active short links
           </div>
-          <div className="text-muted-foreground">
-            Total short links created
-          </div>
+          <div className="text-muted-foreground">Total short links created</div>
         </CardFooter>
       </Card>
       <Card className="@container/card">
@@ -90,7 +88,8 @@ export function SectionCards({
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            {clicksLast24h} clicks in last 24h {clicksLast24h > 0 && <IconTrendingUp className="size-4" />}
+            {clicksLast24h} clicks in last 24h{" "}
+            {clicksLast24h > 0 && <IconTrendingUp className="size-4" />}
           </div>
           <div className="text-muted-foreground">
             {uniqueVisitors.toLocaleString()} unique visitors
@@ -111,9 +110,7 @@ export function SectionCards({
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Total API activity tracked
-          </div>
+          <div className="line-clamp-1 flex gap-2 font-medium">Total API activity tracked</div>
           <div className="text-muted-foreground">System-wide request logs</div>
         </CardFooter>
       </Card>
@@ -131,12 +128,10 @@ export function SectionCards({
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Recent security events
-          </div>
+          <div className="line-clamp-1 flex gap-2 font-medium">Recent security events</div>
           <div className="text-muted-foreground">Login attempts monitored</div>
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }

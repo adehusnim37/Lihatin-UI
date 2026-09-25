@@ -23,7 +23,10 @@ import {
   type AdminSupportTicketItem,
   type SupportMessageResponse,
 } from "@/lib/api/support";
-import { formatDate, SupportConversationBubble } from "@/components/support/support-conversation-bubble";
+import {
+  formatDate,
+  SupportConversationBubble,
+} from "@/components/support/support-conversation-bubble";
 import {
   useSendUserSupportMessageMutation,
   useUserSupportConversationQuery,
@@ -36,10 +39,7 @@ export default function UserSupportPage() {
   const [draftFiles, setDraftFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const ticketsQuery = useUserSupportTicketsQuery({ page: 1, limit: 50 });
-  const tickets = useMemo(
-    () => ticketsQuery.data?.items ?? [],
-    [ticketsQuery.data?.items],
-  );
+  const tickets = useMemo(() => ticketsQuery.data?.items ?? [], [ticketsQuery.data?.items]);
   const activeTicket = useMemo(() => {
     if (tickets.length === 0) {
       return null;
@@ -61,9 +61,7 @@ export default function UserSupportPage() {
 
     toast.error("Failed to load support tickets", {
       description:
-        ticketsQuery.error instanceof Error
-          ? ticketsQuery.error.message
-          : "Please try again.",
+        ticketsQuery.error instanceof Error ? ticketsQuery.error.message : "Please try again.",
     });
   }, [ticketsQuery.error]);
 
@@ -145,7 +143,9 @@ export default function UserSupportPage() {
 
             <Button
               variant="outline"
-              onClick={() => void Promise.all([ticketsQuery.refetch(), conversationQuery.refetch()])}
+              onClick={() =>
+                void Promise.all([ticketsQuery.refetch(), conversationQuery.refetch()])
+              }
               disabled={ticketsQuery.isFetching}
             >
               <IconRefresh className="mr-2 size-4" />
@@ -187,7 +187,9 @@ export default function UserSupportPage() {
                       <p className="line-clamp-1 text-xs text-muted-foreground">{ticket.subject}</p>
                       <div className="mt-2 flex items-center justify-between gap-2">
                         <SupportStatusBadge status={ticket.status} />
-                        <p className="text-[11px] text-muted-foreground">{formatDate(ticket.created_at)}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {formatDate(ticket.created_at)}
+                        </p>
                       </div>
                     </button>
                   ))
@@ -202,7 +204,9 @@ export default function UserSupportPage() {
                   Conversation
                 </CardTitle>
                 <CardDescription>
-                  {conversation?.ticket_code || activeTicket?.ticket_code || "Select ticket from left panel"}
+                  {conversation?.ticket_code ||
+                    activeTicket?.ticket_code ||
+                    "Select ticket from left panel"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -232,9 +236,9 @@ export default function UserSupportPage() {
                         <p className="text-sm text-muted-foreground">No message yet.</p>
                       ) : (
                         (conversation?.messages || []).map((message) => (
-                          <SupportConversationBubble 
-                            key={message.id} 
-                            message={message} 
+                          <SupportConversationBubble
+                            key={message.id}
+                            message={message}
                             getAttachmentUrl={getUserSupportAttachmentURL}
                           />
                         ))
@@ -246,7 +250,9 @@ export default function UserSupportPage() {
                         <IconMessage2 className="size-4 stroke-emerald-600" />
                         <AlertTitle>Conversation Closed</AlertTitle>
                         <AlertDescription className="text-emerald-800">
-                          This ticket has been marked as {conversation.status} on {formatDate(conversation.updated_at)} and cannot receive or send new messages.
+                          This ticket has been marked as {conversation.status} on{" "}
+                          {formatDate(conversation.updated_at)} and cannot receive or send new
+                          messages.
                         </AlertDescription>
                       </Alert>
                     ) : (
@@ -265,7 +271,9 @@ export default function UserSupportPage() {
                             accept="application/pdf,image/jpeg,image/png,image/webp,image/gif"
                             multiple
                             className="hidden"
-                            onChange={(event) => setDraftFiles(Array.from(event.target.files || []))}
+                            onChange={(event) =>
+                              setDraftFiles(Array.from(event.target.files || []))
+                            }
                           />
                           <Button
                             type="button"
@@ -275,7 +283,11 @@ export default function UserSupportPage() {
                             <IconPaperclip className="mr-2 size-4" />
                             Attach Files
                           </Button>
-                          <Button type="button" onClick={() => void handleSend()} disabled={sendMessageMutation.isPending}>
+                          <Button
+                            type="button"
+                            onClick={() => void handleSend()}
+                            disabled={sendMessageMutation.isPending}
+                          >
                             <IconSend className="mr-2 size-4" />
                             {sendMessageMutation.isPending ? "Sending..." : "Send"}
                           </Button>
@@ -298,4 +310,3 @@ export default function UserSupportPage() {
     </SidebarProvider>
   );
 }
-

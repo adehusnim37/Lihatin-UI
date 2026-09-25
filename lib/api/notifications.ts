@@ -32,9 +32,7 @@ interface APIResponse<T> {
 async function parseResponse<T>(response: Response): Promise<APIResponse<T>> {
   const result = (await response.json()) as APIResponse<T>;
   if (!response.ok || !result.success || !result.data) {
-    const detail = result.error
-      ? Object.values(result.error).filter(Boolean).join(", ")
-      : "";
+    const detail = result.error ? Object.values(result.error).filter(Boolean).join(", ") : "";
     throw new Error(detail || result.message || "Notification request failed");
   }
   return result;
@@ -48,9 +46,7 @@ export async function getNotificationPreferences() {
   return parseResponse<NotificationPreferences>(response);
 }
 
-export async function updateNotificationPreferences(
-  payload: UpdateNotificationPreferences,
-) {
+export async function updateNotificationPreferences(payload: UpdateNotificationPreferences) {
   const response = await fetchWithAuth(`${API_URL}/notifications/preferences`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },

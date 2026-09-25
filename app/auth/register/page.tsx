@@ -15,13 +15,7 @@ import { AuthShell } from "@/components/auth/auth-shell";
 
 function GoogleIcon() {
   return (
-    <svg
-      aria-hidden="true"
-      focusable="false"
-      width="18"
-      height="18"
-      viewBox="0 0 48 48"
-    >
+    <svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 48 48">
       <path
         fill="#FFC107"
         d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.3-.4-3.5z"
@@ -131,23 +125,15 @@ export default function RegisterPage() {
       });
 
       if (response.success && response.data) {
-        sessionStorage.setItem(
-          "pending_signup_email",
-          formData.email.trim().toLowerCase()
-        );
+        sessionStorage.setItem("pending_signup_email", formData.email.trim().toLowerCase());
 
-        if (
-          response.data.requires_profile_completion &&
-          response.data.signup_token
-        ) {
+        if (response.data.requires_profile_completion && response.data.signup_token) {
           toast.success("Signup Session Found", {
             description: "Email already verified. Continue completing your profile.",
             duration: 3500,
           });
           router.push(
-            `/auth/complete-profile?signup_token=${encodeURIComponent(
-              response.data.signup_token
-            )}`
+            `/auth/complete-profile?signup_token=${encodeURIComponent(response.data.signup_token)}`,
           );
           return;
         }
@@ -163,15 +149,13 @@ export default function RegisterPage() {
 
         router.push(
           `/auth/verify-signup-otp?challenge_token=${encodeURIComponent(
-            response.data.challenge_token
-          )}`
+            response.data.challenge_token,
+          )}`,
         );
       }
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "An error occurred. Please try again.";
+        error instanceof Error ? error.message : "An error occurred. Please try again.";
 
       toast.error("Signup Failed", {
         description: errorMessage,
@@ -205,9 +189,7 @@ export default function RegisterPage() {
       window.location.assign(authorizationURL);
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Failed to start Google sign-up.";
+        error instanceof Error ? error.message : "Failed to start Google sign-up.";
 
       toast.error("Google Sign-up Failed", {
         description: errorMessage,
@@ -258,11 +240,7 @@ export default function RegisterPage() {
           </Label>
         </div>
 
-        <Button
-          className="h-11 w-full"
-          disabled={isAnyLoading}
-          type="submit"
-        >
+        <Button className="h-11 w-full" disabled={isAnyLoading} type="submit">
           {isLoading ? (
             <>
               <Loader2 className="mr-2 size-4 animate-spin" />

@@ -7,11 +7,7 @@ import { format, isSameDay, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 interface DateTimePicker24hFormProps {
@@ -23,13 +19,7 @@ interface DateTimePicker24hFormProps {
 }
 
 export function DateTimePicker24hForm(props: DateTimePicker24hFormProps) {
-  const {
-    disablePast = false,
-    disableBefore,
-    value,
-    onChange,
-    disabledPast2Dates = false,
-  } = props;
+  const { disablePast = false, disableBefore, value, onChange, disabledPast2Dates = false } = props;
   const hasExternalValue = Object.prototype.hasOwnProperty.call(props, "value");
   const [isOpen, setIsOpen] = React.useState(false);
   const [internalValue, setInternalValue] = React.useState<Date | undefined>(value);
@@ -105,8 +95,7 @@ export function DateTimePicker24hForm(props: DateTimePicker24hFormProps) {
 
     const isToday = isSameDay(selectedValue, now);
     const isCurrentHour = selectedValue.getHours() === now.getHours();
-    const isPastTodayMinute =
-      disablePast && isToday && isCurrentHour && minute <= now.getMinutes();
+    const isPastTodayMinute = disablePast && isToday && isCurrentHour && minute <= now.getMinutes();
 
     const sameAsDisableBeforeDay =
       disabledPast2Dates &&
@@ -116,7 +105,9 @@ export function DateTimePicker24hForm(props: DateTimePicker24hFormProps) {
     const disableBeforeHour = disableBefore?.getHours();
     const disableBeforeMinute = disableBefore?.getMinutes();
     const sameHourAsDisableBefore =
-      sameAsDisableBeforeDay && disableBeforeHour !== undefined && selectedValue.getHours() === disableBeforeHour;
+      sameAsDisableBeforeDay &&
+      disableBeforeHour !== undefined &&
+      selectedValue.getHours() === disableBeforeHour;
     const beforeDisableMinute =
       sameHourAsDisableBefore && disableBeforeMinute !== undefined && minute <= disableBeforeMinute;
 
@@ -131,14 +122,18 @@ export function DateTimePicker24hForm(props: DateTimePicker24hFormProps) {
             type="button"
             variant="outline"
             className={cn(
-            "w-full justify-start text-left font-normal",
-            !selectedValue && "text-muted-foreground"
-          )}
-        >
-          <IconCalendarClock className="mr-2 size-4" />
-          {selectedValue ? format(selectedValue, "dd/MM/yyyy HH:mm") : <span>DD/MM/YYYY HH:mm</span>}
-        </Button>
-      </PopoverTrigger>
+              "w-full justify-start text-left font-normal",
+              !selectedValue && "text-muted-foreground",
+            )}
+          >
+            <IconCalendarClock className="mr-2 size-4" />
+            {selectedValue ? (
+              format(selectedValue, "dd/MM/yyyy HH:mm")
+            ) : (
+              <span>DD/MM/YYYY HH:mm</span>
+            )}
+          </Button>
+        </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <div className="sm:flex">
             <Calendar
@@ -162,7 +157,9 @@ export function DateTimePicker24hForm(props: DateTimePicker24hFormProps) {
                       key={hour}
                       type="button"
                       size="icon"
-                      variant={selectedValue && selectedValue.getHours() === hour ? "default" : "ghost"}
+                      variant={
+                        selectedValue && selectedValue.getHours() === hour ? "default" : "ghost"
+                      }
                       className="aspect-square shrink-0 sm:w-full"
                       onClick={() => handleTimeChange("hour", String(hour))}
                       disabled={isHourDisabled(hour)}
@@ -181,7 +178,9 @@ export function DateTimePicker24hForm(props: DateTimePicker24hFormProps) {
                       key={minute}
                       type="button"
                       size="icon"
-                      variant={selectedValue && selectedValue.getMinutes() === minute ? "default" : "ghost"}
+                      variant={
+                        selectedValue && selectedValue.getMinutes() === minute ? "default" : "ghost"
+                      }
                       className="aspect-square shrink-0 sm:w-full"
                       onClick={() => handleTimeChange("minute", String(minute))}
                       disabled={isMinuteDisabled(minute)}

@@ -52,10 +52,7 @@ export function NavMain({
                 <IconCirclePlusFilled />
                 <span>Quick Create</span>
               </SidebarMenuButton>
-              <QuickCreateLinkDialog
-                open={isDialogOpen}
-                onOpenChange={setIsDialogOpen}
-              />
+              <QuickCreateLinkDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
             </SidebarMenuItem>
           </SidebarMenu>
         )}
@@ -64,9 +61,7 @@ export function NavMain({
             const children = item.children ?? [];
             const hasChildren = children.length > 0;
             const isAnyChildActive = hasChildren
-              ? children.some((child) =>
-                  isRouteActive(pathname, child.url, { exact: true })
-                )
+              ? children.some((child) => isRouteActive(pathname, child.url, { exact: true }))
               : false;
             const isActive = hasChildren
               ? isAnyChildActive || isRouteActive(pathname, item.url, { exact: true })
@@ -75,11 +70,7 @@ export function NavMain({
             return (
               <SidebarMenuItem key={item.title}>
                 {item.url ? (
-                  <SidebarMenuButton
-                    asChild
-                    tooltip={item.title}
-                    isActive={isActive}
-                  >
+                  <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
                     <Link href={item.url}>
                       {item.icon && <item.icon />}
                       <span>{item.title}</span>
@@ -101,10 +92,7 @@ export function NavMain({
                       return (
                         <SidebarMenuSubItem key={`${item.title}-${child.title}`}>
                           {child.url ? (
-                            <SidebarMenuSubButton
-                              asChild
-                              isActive={isChildActive}
-                            >
+                            <SidebarMenuSubButton asChild isActive={isChildActive}>
                               <Link href={child.url}>
                                 {child.icon && <child.icon />}
                                 <span>{child.title}</span>
@@ -133,7 +121,7 @@ export function NavMain({
 function isRouteActive(
   pathname: string | null,
   url?: string,
-  options?: { exact?: boolean }
+  options?: { exact?: boolean },
 ): boolean {
   if (!pathname || !url) {
     return false;

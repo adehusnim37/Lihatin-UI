@@ -1,42 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Loader2,
-  Lock,
-  Unlock,
-} from "lucide-react";
+import { Loader2, Lock, Unlock } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { hasRepeatedConsecutiveDigits } from "@/lib/validators/passcode";
 
-import {
-  useUpdateLink,
-  useRemovePasscode,
-} from "@/lib/hooks/queries/useLinksQuery"; // Assuming hooks are available
+import { useUpdateLink, useRemovePasscode } from "@/lib/hooks/queries/useLinksQuery"; // Assuming hooks are available
 import { toast } from "sonner";
 
 // Schema
@@ -57,11 +34,7 @@ interface SettingsSecurityProps {
   className?: string;
 }
 
-export function SettingsSecurity({
-  shortCode,
-  currentPasscode,
-  className,
-}: SettingsSecurityProps) {
+export function SettingsSecurity({ shortCode, currentPasscode, className }: SettingsSecurityProps) {
   // We treat this as two separate sections: Passcode and Expiration
 
   return (
@@ -118,12 +91,7 @@ function PasscodeSection({
     "w-auto min-w-0 flex-1 max-w-[2.85rem] h-10 sm:h-12 rounded-md border border-border bg-muted/20 text-base sm:text-lg font-semibold";
 
   return (
-    <Card
-      className={cn(
-        "h-full flex flex-col relative overflow-hidden group",
-        className
-      )}
-    >
+    <Card className={cn("h-full flex flex-col relative overflow-hidden group", className)}>
       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
         <svg
           width="100"
@@ -157,9 +125,7 @@ function PasscodeSection({
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <CardTitle className="text-base">Passcode</CardTitle>
-            <CardDescription className="text-xs">
-              Restrict access with a PIN.
-            </CardDescription>
+            <CardDescription className="text-xs">Restrict access with a PIN.</CardDescription>
           </div>
           {hasPasscode && !isEditing && (
             <div className="flex items-center gap-2">
@@ -184,10 +150,7 @@ function PasscodeSection({
                   </div>
                   <div className="flex justify-center gap-1 opacity-50">
                     {[1, 2, 3, 4, 5, 6].map((i) => (
-                      <div
-                        key={i}
-                        className="size-1.5 rounded-full bg-foreground"
-                      />
+                      <div key={i} className="size-1.5 rounded-full bg-foreground" />
                     ))}
                   </div>
                 </div>
@@ -207,9 +170,7 @@ function PasscodeSection({
                 </div>
                 <div className="text-center space-y-0.5 w-full">
                   <p className="text-sm font-medium">Public Access</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    No restrictions
-                  </p>
+                  <p className="text-[10px] text-muted-foreground">No restrictions</p>
                 </div>
                 <Button
                   variant="default"
@@ -241,10 +202,7 @@ function PasscodeSection({
               </Button>
             </div>
             <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4"
-              >
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="passcode"
@@ -252,12 +210,8 @@ function PasscodeSection({
                     <FormItem>
                       <div className="rounded-md border bg-muted/40 p-3 space-y-2">
                         <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-muted-foreground">
-                            PIN completeness
-                          </span>
-                          <span className="font-medium">
-                            {passcodeValue.length}/6
-                          </span>
+                          <span className="text-muted-foreground">PIN completeness</span>
+                          <span className="font-medium">{passcodeValue.length}/6</span>
                         </div>
                         <div className="grid grid-cols-6 gap-1.5">
                           {Array.from({ length: 6 }).map((_, i) => (
@@ -265,9 +219,7 @@ function PasscodeSection({
                               key={i}
                               className={cn(
                                 "h-1.5 rounded-full transition-colors",
-                                i < passcodeValue.length
-                                  ? "bg-primary"
-                                  : "bg-muted-foreground/25"
+                                i < passcodeValue.length ? "bg-primary" : "bg-muted-foreground/25",
                               )}
                             />
                           ))}
@@ -304,9 +256,7 @@ function PasscodeSection({
                     disabled={updateMutation.isPending}
                     className="min-w-20"
                   >
-                    {updateMutation.isPending && (
-                      <Loader2 className="mr-2 size-3 animate-spin" />
-                    )}
+                    {updateMutation.isPending && <Loader2 className="mr-2 size-3 animate-spin" />}
                     Save
                   </Button>
                   {hasPasscode && (

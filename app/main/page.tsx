@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { ChartAreaInteractive } from "@/components/chart-area-interactive";
@@ -30,11 +30,11 @@ import { InAppAnnouncementDialog } from "@/components/notifications/in-app-annou
  * Main Dashboard Page
  * 🔐 Protected by Next.js middleware (middleware.ts)
  * 🔐 AuthContext checks authentication status
- * 
+ *
  * Layout Options:
  * - OPTION_2: Full-width analytics cards (no table)
  * - OPTION_3: Hybrid layout (table + analytics cards side by side)
- * 
+ *
  * Toggle between options by changing LAYOUT constant below
  */
 
@@ -75,9 +75,7 @@ export default function Page() {
       return;
     }
 
-    const dismissedUntil = Number(
-      localStorage.getItem(TOTP_PROMPT_DISMISS_KEY) || "0"
-    );
+    const dismissedUntil = Number(localStorage.getItem(TOTP_PROMPT_DISMISS_KEY) || "0");
     if (dismissedUntil > Date.now()) {
       sessionStorage.removeItem(TOTP_PROMPT_PENDING_KEY);
       return;
@@ -94,10 +92,7 @@ export default function Page() {
   }, [auth]);
 
   const dismissPrompt = () => {
-    localStorage.setItem(
-      TOTP_PROMPT_DISMISS_KEY,
-      String(Date.now() + TOTP_PROMPT_DISMISS_MS)
-    );
+    localStorage.setItem(TOTP_PROMPT_DISMISS_KEY, String(Date.now() + TOTP_PROMPT_DISMISS_MS));
     sessionStorage.removeItem(TOTP_PROMPT_PENDING_KEY);
     setShowMigrateDialog(false);
   };
@@ -202,8 +197,8 @@ export default function Page() {
               Aktifin Autentikasi Biar Akun Lebih Aman
             </DialogTitle>
             <DialogDescription className="pt-2 text-sm leading-6">
-              Kamu baru login pakai OTP email. Upgrade ke TOTP bikin akun lebih tahan
-              phishing dan kode tidak bergantung inbox.
+              Kamu baru login pakai OTP email. Upgrade ke TOTP bikin akun lebih tahan phishing dan
+              kode tidak bergantung inbox.
             </DialogDescription>
           </DialogHeader>
 

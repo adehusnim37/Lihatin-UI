@@ -62,19 +62,13 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
     }
 
     // Detect device
-    const isMobile =
-      ua.includes("mobile") || ua.includes("android") || ua.includes("iphone");
+    const isMobile = ua.includes("mobile") || ua.includes("android") || ua.includes("iphone");
     const DeviceIcon = isMobile ? IconDeviceMobile : IconDeviceDesktop;
 
     // Detect OS (simple detection)
     let os = "Unknown OS";
     if (ua.includes("android")) os = "Android";
-    else if (
-      ua.includes("ios") ||
-      ua.includes("iphone") ||
-      ua.includes("ipad")
-    )
-      os = "iOS";
+    else if (ua.includes("ios") || ua.includes("iphone") || ua.includes("ipad")) os = "iOS";
     else if (ua.includes("win")) os = "Windows";
     else if (ua.includes("mac")) os = "macOS";
     else if (ua.includes("linux")) os = "Linux";
@@ -82,9 +76,7 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
     return { browser, os, BrowserIcon, DeviceIcon };
   };
 
-  const { browser, os, BrowserIcon, DeviceIcon } = parseUserAgent(
-    attempt.user_agent,
-  );
+  const { browser, os, BrowserIcon, DeviceIcon } = parseUserAgent(attempt.user_agent);
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -155,17 +147,13 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
             <div className="group flex min-w-0 items-center justify-between gap-3 rounded-lg border bg-card p-3">
               <div className="min-w-0 space-y-1">
                 <div className="text-xs text-muted-foreground">IP Address</div>
-                <code className="block break-all font-mono text-sm">
-                  {attempt.ip_address}
-                </code>
+                <code className="block break-all font-mono text-sm">{attempt.ip_address}</code>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
                 className="size-8 shrink-0 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
-                onClick={() =>
-                  copyToClipboard(attempt.ip_address, "IP Address")
-                }
+                onClick={() => copyToClipboard(attempt.ip_address, "IP Address")}
               >
                 {copiedField === "IP Address" ? (
                   <IconCheckCopied className="size-4 text-green-600" />
@@ -184,14 +172,10 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
             </h4>
             <div className="space-y-3">
               <div className="min-w-0 space-y-1 rounded-lg border bg-card p-3">
-                <div className="text-xs text-muted-foreground">
-                  Account Identifier
-                </div>
+                <div className="text-xs text-muted-foreground">Account Identifier</div>
                 <div className="flex min-w-0 items-start gap-2 text-sm font-medium">
                   <IconUser className="mt-0.5 size-4 shrink-0 text-primary" />
-                  <span className="min-w-0 break-all">
-                    {attempt.email_or_username}
-                  </span>
+                  <span className="min-w-0 break-all">{attempt.email_or_username}</span>
                 </div>
               </div>
 
@@ -216,16 +200,12 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
             </h4>
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-3">
-                <div className="text-xs text-muted-foreground">
-                  User Agent String
-                </div>
+                <div className="text-xs text-muted-foreground">User Agent String</div>
                 <Button
                   variant="ghost"
                   size="sm"
                   className="h-6 px-2"
-                  onClick={() =>
-                    copyToClipboard(attempt.user_agent, "User Agent")
-                  }
+                  onClick={() => copyToClipboard(attempt.user_agent, "User Agent")}
                 >
                   {copiedField === "User Agent" ? (
                     <IconCheckCopied className="size-3 text-green-600" />

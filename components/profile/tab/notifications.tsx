@@ -1,20 +1,9 @@
 "use client";
 
-import {
-  IconChartBar,
-  IconMail,
-  IconShieldCheck,
-  IconSpeakerphone,
-} from "@tabler/icons-react";
+import { IconChartBar, IconMail, IconShieldCheck, IconSpeakerphone } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { TabsContent } from "@/components/ui/tabs";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -49,16 +38,12 @@ function PreferenceRow({
         <div className="mt-0.5 text-muted-foreground">{icon}</div>
         <div className="space-y-1">
           <p className="text-sm font-medium">{title}</p>
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            {description}
-          </p>
+          <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
         {statusLabel ? (
-          <span className="text-xs font-medium text-muted-foreground">
-            {statusLabel}
-          </span>
+          <span className="text-xs font-medium text-muted-foreground">{statusLabel}</span>
         ) : null}
         <Switch
           checked={checked}
@@ -85,8 +70,7 @@ export default function ProfileNotificationsTab() {
       toast.success(successMessage);
     } catch (error) {
       toast.error("Preference could not be updated", {
-        description:
-          error instanceof Error ? error.message : "Please try again.",
+        description: error instanceof Error ? error.message : "Please try again.",
       });
     }
   };
@@ -99,9 +83,7 @@ export default function ProfileNotificationsTab() {
             <IconMail className="size-5 text-muted-foreground" />
             <div>
               <CardTitle>Notification Preferences</CardTitle>
-              <CardDescription>
-                Choose the optional emails you want to receive.
-              </CardDescription>
+              <CardDescription>Choose the optional emails you want to receive.</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -114,9 +96,7 @@ export default function ProfileNotificationsTab() {
             </>
           ) : preferencesQuery.isError || !preferences ? (
             <div className="rounded-lg border border-destructive/40 p-4">
-              <p className="text-sm font-medium">
-                Notification preferences could not be loaded.
-              </p>
+              <p className="text-sm font-medium">Notification preferences could not be loaded.</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {preferencesQuery.error instanceof Error
                   ? preferencesQuery.error.message
@@ -150,9 +130,7 @@ export default function ProfileNotificationsTab() {
                 onCheckedChange={(checked) =>
                   void updatePreference(
                     { weekly_summary_email: checked },
-                    checked
-                      ? "Weekly summaries enabled"
-                      : "Weekly summaries disabled",
+                    checked ? "Weekly summaries enabled" : "Weekly summaries disabled",
                   )
                 }
               />
@@ -165,9 +143,7 @@ export default function ProfileNotificationsTab() {
                 onCheckedChange={(checked) =>
                   void updatePreference(
                     { promotional_email: checked },
-                    checked
-                      ? "Promotional emails enabled"
-                      : "Promotional emails disabled",
+                    checked ? "Promotional emails enabled" : "Promotional emails disabled",
                   )
                 }
               />

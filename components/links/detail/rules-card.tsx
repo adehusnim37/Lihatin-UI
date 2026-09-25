@@ -13,10 +13,7 @@ interface RulesCardProps {
   shortCode: string;
   expiresAt: string | null;
   detail?: DetailLink;
-  onUpdateExpiration: (
-    code: string,
-    data: { expires_at: string | null }
-  ) => Promise<void>;
+  onUpdateExpiration: (code: string, data: { expires_at: string | null }) => Promise<void>;
   className?: string; // Allow passing height classes
 }
 
@@ -64,10 +61,7 @@ export function RulesCard({
                 </span>
               </div>
             ) : (
-              <Badge
-                variant="outline"
-                className="text-muted-foreground font-normal"
-              >
+              <Badge variant="outline" className="text-muted-foreground font-normal">
                 Never
               </Badge>
             )}

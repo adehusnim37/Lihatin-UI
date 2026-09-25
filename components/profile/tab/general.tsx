@@ -1,16 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Card, CardContent, CardDescription, CardHeader, CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { TabsContent } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import {
-  IconUser, IconMail, IconCalendar, IconShield, IconPencil, IconCheck, IconX, IconAt,
+  IconUser,
+  IconMail,
+  IconCalendar,
+  IconShield,
+  IconPencil,
+  IconCheck,
+  IconX,
+  IconAt,
 } from "@tabler/icons-react";
 import ChangeEmailModal from "../modal/changeEmail";
 import ChangeUsernameModal from "../modal/changeUsername";
@@ -58,9 +63,7 @@ export function ProfileGeneralTab({
         <Card>
           <CardHeader>
             <CardTitle>Personal Information</CardTitle>
-            <CardDescription>
-              Update your personal details and contact information
-            </CardDescription>
+            <CardDescription>Update your personal details and contact information</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -97,7 +100,12 @@ export function ProfileGeneralTab({
               </Label>
               <div className="flex items-center gap-2">
                 <Input value={user.username} disabled readOnly className="flex-1" />
-                <Button variant="outline" size="icon" className="shrink-0" onClick={() => setIsChangeUsernameOpen(true)}>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  onClick={() => setIsChangeUsernameOpen(true)}
+                >
                   <IconPencil className="size-4" />
                 </Button>
               </div>
@@ -110,7 +118,12 @@ export function ProfileGeneralTab({
               </Label>
               <div className="flex items-center gap-2">
                 <Input value={user.email} disabled readOnly className="flex-1" />
-                <Button variant="outline" size="icon" className="shrink-0" onClick={() => setIsChangeEmailOpen(true)}>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  onClick={() => setIsChangeEmailOpen(true)}
+                >
                   <IconPencil className="size-4" />
                 </Button>
               </div>

@@ -36,36 +36,26 @@ export default function SettingsPage() {
                 <div className="p-4 rounded-lg bg-muted/50 border text-left">
                   <User className="size-5 text-muted-foreground mb-2" />
                   <p className="font-medium">Profile</p>
-                  <p className="text-xs text-muted-foreground">
-                    Account details
-                  </p>
+                  <p className="text-xs text-muted-foreground">Account details</p>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50 border text-left">
                   <Bell className="size-5 text-muted-foreground mb-2" />
                   <p className="font-medium">Notifications</p>
-                  <p className="text-xs text-muted-foreground">
-                    Email & alerts
-                  </p>
+                  <p className="text-xs text-muted-foreground">Email & alerts</p>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50 border text-left">
                   <Shield className="size-5 text-muted-foreground mb-2" />
                   <p className="font-medium">Security</p>
-                  <p className="text-xs text-muted-foreground">
-                    Password & 2FA
-                  </p>
+                  <p className="text-xs text-muted-foreground">Password & 2FA</p>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50 border text-left">
                   <Palette className="size-5 text-muted-foreground mb-2" />
                   <p className="font-medium">Appearance</p>
-                  <p className="text-xs text-muted-foreground">
-                    Theme & display
-                  </p>
+                  <p className="text-xs text-muted-foreground">Theme & display</p>
                 </div>
               </div>
 
-              <p className="text-sm text-muted-foreground mt-6">
-                🚧 Coming Soon
-              </p>
+              <p className="text-sm text-muted-foreground mt-6">🚧 Coming Soon</p>
             </div>
           </div>
         </div>

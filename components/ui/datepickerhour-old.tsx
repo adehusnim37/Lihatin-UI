@@ -9,18 +9,8 @@ import { z } from "zod";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 
@@ -93,7 +83,7 @@ export function DateTimePicker24hForm({
                       variant={"outline"}
                       className={cn(
                         "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
+                        !field.value && "text-muted-foreground",
                       )}
                     >
                       {field.value ? (
@@ -111,35 +101,28 @@ export function DateTimePicker24hForm({
                       mode="single"
                       selected={field.value}
                       onSelect={handleDateSelect}
-                      disabled={
-                        disablePast ? { before: startOfDay(now) } : undefined
-                      }
+                      disabled={disablePast ? { before: startOfDay(now) } : undefined}
                       autoFocus
                     />
                     <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
                       <ScrollArea className="w-64 h-[200px] sm:w-auto sm:h-[300px] overflow-y-auto">
-                        <div className="flex sm:flex-col p-2" style={{ minHeight: 'fit-content' }}>
+                        <div className="flex sm:flex-col p-2" style={{ minHeight: "fit-content" }}>
                           {Array.from({ length: 24 }, (_, i) => i)
                             .reverse()
                             .map((hour) => {
-                              const isToday =
-                                field.value && isSameDay(field.value, now);
-                              const isDisabled =
-                                disablePast && isToday && hour < now.getHours();
+                              const isToday = field.value && isSameDay(field.value, now);
+                              const isDisabled = disablePast && isToday && hour < now.getHours();
                               return (
                                 <Button
                                   key={hour}
                                   size="icon"
                                   variant={
-                                    field.value &&
-                                    field.value.getHours() === hour
+                                    field.value && field.value.getHours() === hour
                                       ? "default"
                                       : "ghost"
                                   }
                                   className="sm:w-full shrink-0 aspect-square"
-                                  onClick={() =>
-                                    handleTimeChange("hour", hour.toString())
-                                  }
+                                  onClick={() => handleTimeChange("hour", hour.toString())}
                                   disabled={isDisabled}
                                 >
                                   {hour}
@@ -147,62 +130,37 @@ export function DateTimePicker24hForm({
                               );
                             })}
                         </div>
-                        <ScrollBar
-                          orientation="horizontal"
-                          className="sm:hidden"
-                        />
-                        <ScrollBar
-                          orientation="vertical"
-                          className="hidden sm:block"
-                        />
+                        <ScrollBar orientation="horizontal" className="sm:hidden" />
+                        <ScrollBar orientation="vertical" className="hidden sm:block" />
                       </ScrollArea>
                       <ScrollArea className="w-64 h-[200px] sm:w-auto sm:h-[300px] overflow-y-auto">
-                        <div className="flex sm:flex-col p-2" style={{ minHeight: 'fit-content' }}>
-                          {Array.from({ length: 12 }, (_, i) => i * 5).map(
-                            (minute) => {
-                              const isToday =
-                                field.value && isSameDay(field.value, now);
-                              const isSameHour =
-                                field.value &&
-                                field.value.getHours() === now.getHours();
-                              const isDisabled =
-                                disablePast &&
-                                isToday &&
-                                isSameHour &&
-                                minute <= now.getMinutes();
-                              return (
-                                <Button
-                                  key={minute}
-                                  size="icon"
-                                  variant={
-                                    field.value &&
-                                    field.value.getMinutes() === minute
-                                      ? "default"
-                                      : "ghost"
-                                  }
-                                  className="sm:w-full shrink-0 aspect-square"
-                                  onClick={() =>
-                                    handleTimeChange(
-                                      "minute",
-                                      minute.toString()
-                                    )
-                                  }
-                                  disabled={isDisabled}
-                                >
-                                  {minute.toString().padStart(2, "0")}
-                                </Button>
-                              );
-                            }
-                          )}
+                        <div className="flex sm:flex-col p-2" style={{ minHeight: "fit-content" }}>
+                          {Array.from({ length: 12 }, (_, i) => i * 5).map((minute) => {
+                            const isToday = field.value && isSameDay(field.value, now);
+                            const isSameHour =
+                              field.value && field.value.getHours() === now.getHours();
+                            const isDisabled =
+                              disablePast && isToday && isSameHour && minute <= now.getMinutes();
+                            return (
+                              <Button
+                                key={minute}
+                                size="icon"
+                                variant={
+                                  field.value && field.value.getMinutes() === minute
+                                    ? "default"
+                                    : "ghost"
+                                }
+                                className="sm:w-full shrink-0 aspect-square"
+                                onClick={() => handleTimeChange("minute", minute.toString())}
+                                disabled={isDisabled}
+                              >
+                                {minute.toString().padStart(2, "0")}
+                              </Button>
+                            );
+                          })}
                         </div>
-                        <ScrollBar
-                          orientation="horizontal"
-                          className="sm:hidden"
-                        />
-                        <ScrollBar
-                          orientation="vertical"
-                          className="hidden sm:block"
-                        />
+                        <ScrollBar orientation="horizontal" className="sm:hidden" />
+                        <ScrollBar orientation="vertical" className="hidden sm:block" />
                       </ScrollArea>
                     </div>
                   </div>

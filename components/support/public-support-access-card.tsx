@@ -7,13 +7,7 @@ import { toast } from "sonner";
 
 import { SupportTurnstileField } from "@/components/support/support-turnstile-field";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -81,11 +75,7 @@ export function PublicSupportAccessCard() {
 
   useEffect(() => {
     clearLegacyPublicSupportAccessTokens();
-    if (
-      searchParams.has("email") ||
-      searchParams.has("code") ||
-      searchParams.has("access_token")
-    ) {
+    if (searchParams.has("email") || searchParams.has("code") || searchParams.has("access_token")) {
       router.replace(
         queryTicket
           ? `/support/access?ticket=${encodeURIComponent(queryTicket)}`
@@ -132,10 +122,7 @@ export function PublicSupportAccessCard() {
       openConversation(response.ticket.ticket_code || ticket);
     } catch (error: unknown) {
       toast.error("Failed to verify access code", {
-        description:
-          error instanceof Error
-            ? error.message
-            : "Please request OTP instead.",
+        description: error instanceof Error ? error.message : "Please request OTP instead.",
       });
     } finally {
       setLinkCode("");
@@ -169,13 +156,11 @@ export function PublicSupportAccessCard() {
       setOtpCooldownRemaining(Math.max(0, response.cooldown_seconds || 0));
       setOtpTargetEmail(ticketEmail);
       toast.success("OTP sent", {
-        description:
-          "If the ticket details match, a verification code will arrive by email.",
+        description: "If the ticket details match, a verification code will arrive by email.",
       });
     } catch (error: unknown) {
       toast.error("Failed to request OTP", {
-        description:
-          error instanceof Error ? error.message : "Please try again.",
+        description: error instanceof Error ? error.message : "Please try again.",
       });
     } finally {
       setCaptchaToken("");
@@ -204,8 +189,7 @@ export function PublicSupportAccessCard() {
       openConversation(response.ticket.ticket_code || ticket);
     } catch (error: unknown) {
       toast.error("Failed to verify OTP", {
-        description:
-          error instanceof Error ? error.message : "Please try again.",
+        description: error instanceof Error ? error.message : "Please try again.",
       });
     } finally {
       setOtpCode("");
@@ -246,8 +230,7 @@ export function PublicSupportAccessCard() {
       });
     } catch (error: unknown) {
       toast.error("Failed to resend OTP", {
-        description:
-          error instanceof Error ? error.message : "Please try again.",
+        description: error instanceof Error ? error.message : "Please try again.",
       });
     } finally {
       setCaptchaToken("");
@@ -300,184 +283,156 @@ export function PublicSupportAccessCard() {
             />
           </div>
 
-          <Button
-            type="submit"
-            variant="outline"
-            className="w-full sm:w-auto"
-          >
+          <Button type="submit" variant="outline" className="w-full sm:w-auto">
             Continue
           </Button>
         </form>
 
-          <Dialog
-            open={isAccessDialogOpen}
-            onOpenChange={setIsAccessDialogOpen}
-          >
-            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Verify Access</DialogTitle>
-                <DialogDescription>
-                  Ticket {trackTicket.trim().toUpperCase()}. Use the access code from
-                  your email, or verify with OTP.
-                </DialogDescription>
-              </DialogHeader>
-          {!showOTPSection ? (
-            <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
-              <div className="space-y-2">
-                <Label htmlFor="support-link-code">Access code</Label>
-                <Input
-                  id="support-link-code"
-                  value={linkCode}
-                  onChange={(event) => setLinkCode(event.target.value)}
-                  placeholder="Paste code from ticket email"
-                />
-              </div>
+        <Dialog open={isAccessDialogOpen} onOpenChange={setIsAccessDialogOpen}>
+          <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Verify Access</DialogTitle>
+              <DialogDescription>
+                Ticket {trackTicket.trim().toUpperCase()}. Use the access code from your email, or
+                verify with OTP.
+              </DialogDescription>
+            </DialogHeader>
+            {!showOTPSection ? (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                <div className="space-y-2">
+                  <Label htmlFor="support-link-code">Access code</Label>
+                  <Input
+                    id="support-link-code"
+                    value={linkCode}
+                    onChange={(event) => setLinkCode(event.target.value)}
+                    placeholder="Paste code from ticket email"
+                  />
+                </div>
 
-              <Button
-                onClick={() => void handleVerifyCode()}
-                className="w-full"
-                disabled={verifyCodeMutation.isPending}
-              >
-                <IconKey className="mr-2 size-4" />
-                {verifyCodeMutation.isPending
-                  ? "Verifying..."
-                  : "Open with Access Code"}
-              </Button>
-
-              <div className="pt-4 border-t border-border/50 flex flex-wrap items-center justify-center gap-1.5 text-sm">
-                <p className="font-medium text-foreground">
-                  Have you lost the access code?
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setShowOTPSection(true)}
-                  className="font-medium text-primary underline-offset-4 hover:underline"
-                >
-                  Verify with OTP instead
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
-              <div className="flex items-center justify-between pb-3 border-b border-border/50">
-                <p className="text-sm font-medium">OTP Verification</p>
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowOTPSection(false)}
-                  className="h-8 text-xs"
+                  onClick={() => void handleVerifyCode()}
+                  className="w-full"
+                  disabled={verifyCodeMutation.isPending}
                 >
-                  Use Access Code
+                  <IconKey className="mr-2 size-4" />
+                  {verifyCodeMutation.isPending ? "Verifying..." : "Open with Access Code"}
                 </Button>
-              </div>
 
-              {!otpChallengeToken ? (
-                <div className="space-y-4 py-2">
-                  <p className="text-sm text-muted-foreground text-center">
-                    Complete the security check below to receive a 6-digit
-                    verification code in your email.
-                  </p>
-
-                  <div className="flex justify-center py-2">
-                    <SupportTurnstileField
-                      token={captchaToken}
-                      onTokenChange={setCaptchaToken}
-                      resetSignal={captchaResetSignal}
-                    />
-                  </div>
-
-                  <Button
-                    className="w-full"
-                    onClick={() => void handleRequestOTP()}
-                    disabled={requestOTPMutation.isPending}
+                <div className="pt-4 border-t border-border/50 flex flex-wrap items-center justify-center gap-1.5 text-sm">
+                  <p className="font-medium text-foreground">Have you lost the access code?</p>
+                  <button
+                    type="button"
+                    onClick={() => setShowOTPSection(true)}
+                    className="font-medium text-primary underline-offset-4 hover:underline"
                   >
-                    {requestOTPMutation.isPending
-                      ? "Sending OTP..."
-                      : "Send OTP to Email"}
+                    Verify with OTP instead
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center justify-between pb-3 border-b border-border/50">
+                  <p className="text-sm font-medium">OTP Verification</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowOTPSection(false)}
+                    className="h-8 text-xs"
+                  >
+                    Use Access Code
                   </Button>
                 </div>
-              ) : (
-                <div className="space-y-5 py-2">
-                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-center">
-                    <p className="text-sm">
-                      Code sent to{" "}
-                      <span className="font-semibold">{otpTargetEmail}</span>
-                    </p>
-                  </div>
 
-                  <div className="space-y-3">
-                    <Label htmlFor="otp-input" className="sr-only">
-                      Enter OTP
-                    </Label>
-                    <Input
-                      id="otp-input"
-                      value={otpCode}
-                      onChange={(event) =>
-                        setOtpCode(event.target.value.replace(/\D/g, ""))
-                      }
-                      placeholder="• • • • • •"
-                      className="h-12 text-center text-2xl tracking-[0.5em] font-medium transition-all focus:tracking-[0.7em]"
-                      maxLength={6}
-                      inputMode="numeric"
-                      autoComplete="one-time-code"
-                    />
+                {!otpChallengeToken ? (
+                  <div className="space-y-4 py-2">
+                    <p className="text-sm text-muted-foreground text-center">
+                      Complete the security check below to receive a 6-digit verification code in
+                      your email.
+                    </p>
+
+                    <div className="flex justify-center py-2">
+                      <SupportTurnstileField
+                        token={captchaToken}
+                        onTokenChange={setCaptchaToken}
+                        resetSignal={captchaResetSignal}
+                      />
+                    </div>
+
                     <Button
-                      onClick={() => void handleVerifyOTP()}
-                      className="w-full h-11"
-                      disabled={
-                        verifyOTPMutation.isPending || otpCode.trim().length < 6
-                      }
+                      className="w-full"
+                      onClick={() => void handleRequestOTP()}
+                      disabled={requestOTPMutation.isPending}
                     >
-                      {verifyOTPMutation.isPending
-                        ? "Verifying..."
-                        : "Verify & Open Ticket"}
+                      {requestOTPMutation.isPending ? "Sending OTP..." : "Send OTP to Email"}
                     </Button>
                   </div>
-
-                  <div className="space-y-4 pt-4 border-t border-border/50">
-                    <div className="text-center">
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Didn&apos;t receive the code?
+                ) : (
+                  <div className="space-y-5 py-2">
+                    <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-center">
+                      <p className="text-sm">
+                        Code sent to <span className="font-semibold">{otpTargetEmail}</span>
                       </p>
+                    </div>
 
-                      {otpCooldownRemaining <= 0 ? (
-                        <div className="flex flex-col items-center gap-3">
-                          <SupportTurnstileField
-                            token={captchaToken}
-                            onTokenChange={setCaptchaToken}
-                            resetSignal={captchaResetSignal}
-                          />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => void handleResendOTP()}
-                            disabled={resendOTPMutation.isPending}
-                            className="w-full sm:w-auto"
-                          >
-                            {resendOTPMutation.isPending
-                              ? "Resending..."
-                              : "Resend OTP Code"}
+                    <div className="space-y-3">
+                      <Label htmlFor="otp-input" className="sr-only">
+                        Enter OTP
+                      </Label>
+                      <Input
+                        id="otp-input"
+                        value={otpCode}
+                        onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, ""))}
+                        placeholder="• • • • • •"
+                        className="h-12 text-center text-2xl tracking-[0.5em] font-medium transition-all focus:tracking-[0.7em]"
+                        maxLength={6}
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                      />
+                      <Button
+                        onClick={() => void handleVerifyOTP()}
+                        className="w-full h-11"
+                        disabled={verifyOTPMutation.isPending || otpCode.trim().length < 6}
+                      >
+                        {verifyOTPMutation.isPending ? "Verifying..." : "Verify & Open Ticket"}
+                      </Button>
+                    </div>
+
+                    <div className="space-y-4 pt-4 border-t border-border/50">
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Didn&apos;t receive the code?
+                        </p>
+
+                        {otpCooldownRemaining <= 0 ? (
+                          <div className="flex flex-col items-center gap-3">
+                            <SupportTurnstileField
+                              token={captchaToken}
+                              onTokenChange={setCaptchaToken}
+                              resetSignal={captchaResetSignal}
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => void handleResendOTP()}
+                              disabled={resendOTPMutation.isPending}
+                              className="w-full sm:w-auto"
+                            >
+                              {resendOTPMutation.isPending ? "Resending..." : "Resend OTP Code"}
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button variant="outline" size="sm" disabled className="w-full sm:w-auto">
+                            Resend available in {otpCooldownRemaining}s
                           </Button>
-                        </div>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled
-                          className="w-full sm:w-auto"
-                        >
-                          Resend available in {otpCooldownRemaining}s
-                        </Button>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          )}
-            </DialogContent>
-          </Dialog>
-
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );

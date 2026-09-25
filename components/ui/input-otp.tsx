@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { OTPInput, OTPInputContext } from "input-otp"
-import { MinusIcon } from "lucide-react"
+import * as React from "react";
+import { OTPInput, OTPInputContext } from "input-otp";
+import { MinusIcon } from "lucide-react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 function InputOTP({
   className,
@@ -12,7 +12,7 @@ function InputOTP({
   pushPasswordManagerStrategy = "increase-width",
   ...props
 }: React.ComponentProps<typeof OTPInput> & {
-  containerClassName?: string
+  containerClassName?: string;
 }) {
   return (
     <OTPInput
@@ -24,13 +24,12 @@ function InputOTP({
       pushPasswordManagerStrategy={pushPasswordManagerStrategy}
       containerClassName={cn(
         "flex w-full max-w-full items-center gap-2 overflow-visible has-disabled:opacity-50",
-        containerClassName
+        containerClassName,
       )}
       className={cn("disabled:cursor-not-allowed", className)}
     />
-  )
+  );
 }
-
 
 function InputOTPGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -39,7 +38,7 @@ function InputOTPGroup({ className, ...props }: React.ComponentProps<"div">) {
       className={cn("flex items-center justify-center gap-1.5 sm:gap-2", className)}
       {...props}
     />
-  )
+  );
 }
 
 function InputOTPSlot({
@@ -47,10 +46,10 @@ function InputOTPSlot({
   className,
   ...props
 }: React.ComponentProps<"div"> & {
-  index: number
+  index: number;
 }) {
-  const inputOTPContext = React.useContext(OTPInputContext)
-  const { char, hasFakeCaret, isActive } = inputOTPContext?.slots[index] ?? {}
+  const inputOTPContext = React.useContext(OTPInputContext);
+  const { char, hasFakeCaret, isActive } = inputOTPContext?.slots[index] ?? {};
 
   return (
     <div
@@ -59,7 +58,7 @@ function InputOTPSlot({
       data-filled={Boolean(char)}
       className={cn(
         "relative flex h-10 w-9 items-center justify-center rounded-lg border border-input bg-background/70 text-sm font-semibold shadow-xs outline-none transition-all duration-200 data-[filled=true]:border-primary/30 data-[filled=true]:bg-primary/5 data-[active=true]:z-10 data-[active=true]:border-primary data-[active=true]:bg-background data-[active=true]:ring-[3px] data-[active=true]:ring-primary/15 aria-invalid:border-destructive data-[active=true]:aria-invalid:border-destructive data-[active=true]:aria-invalid:ring-destructive/20 dark:bg-input/30 dark:data-[active=true]:aria-invalid:ring-destructive/40 sm:h-11 sm:w-10 sm:text-base",
-        className
+        className,
       )}
       {...props}
     >
@@ -70,7 +69,7 @@ function InputOTPSlot({
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function InputOTPSeparator({ className, ...props }: React.ComponentProps<"div">) {
@@ -83,7 +82,7 @@ function InputOTPSeparator({ className, ...props }: React.ComponentProps<"div">)
     >
       <MinusIcon className="size-4 sm:h-5 sm:w-5" />
     </div>
-  )
+  );
 }
 
-export { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator }
+export { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator };

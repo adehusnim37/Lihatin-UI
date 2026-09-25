@@ -100,16 +100,12 @@ export async function getLogsByShortLink(
   page: number = 1,
   limit: number = 10,
 ): Promise<LogsResponse> {
-  const response = await getWithAuth(
-    `${API_URL}/logs/short/${code}?page=${page}&limit=${limit}`,
-  );
+  const response = await getWithAuth(`${API_URL}/logs/short/${code}?page=${page}&limit=${limit}`);
   return response.json();
 }
 
 // Get logs with advanced filtering
-export async function getLogsWithFilter(
-  filters: LogFilterParams,
-): Promise<LogsResponse> {
+export async function getLogsWithFilter(filters: LogFilterParams): Promise<LogsResponse> {
   const params = new URLSearchParams();
 
   if (filters.page) params.append("page", filters.page.toString());
@@ -121,15 +117,12 @@ export async function getLogsWithFilter(
   if (filters.method) params.append("method", filters.method);
   if (filters.route) params.append("route", filters.route);
   if (filters.level) params.append("level", filters.level);
-  if (filters.status_code)
-    params.append("status_code", filters.status_code.toString());
+  if (filters.status_code) params.append("status_code", filters.status_code.toString());
   if (filters.ip_address) params.append("ip_address", filters.ip_address);
   if (filters.date_from) params.append("date_from", filters.date_from);
   if (filters.date_to) params.append("date_to", filters.date_to);
 
-  const response = await getWithAuth(
-    `${API_URL}/logs/filter?${params.toString()}`,
-  );
+  const response = await getWithAuth(`${API_URL}/logs/filter?${params.toString()}`);
   return response.json();
 }
 
@@ -140,7 +133,9 @@ export async function getLogCounts(): Promise<LogCountsResponse> {
 }
 
 // Get single log by ID
-export async function getLogById(id: string): Promise<{ success: boolean; data: ActivityLog; message: string }> {
+export async function getLogById(
+  id: string,
+): Promise<{ success: boolean; data: ActivityLog; message: string }> {
   const response = await getWithAuth(`${API_URL}/logs/${id}`);
   return response.json();
 }

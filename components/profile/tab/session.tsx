@@ -2,19 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useLoginAttemptsQuery,
   useRecentActivityQuery,
@@ -103,8 +92,7 @@ export default function SessionTab() {
   const revokeAllMutation = useRevokeAllSessionsMutation();
 
   const activeSessions = sessionsResponse?.data?.sessions ?? [];
-  const activeSessionCount =
-    sessionsResponse?.data?.total ?? activeSessions.length;
+  const activeSessionCount = sessionsResponse?.data?.total ?? activeSessions.length;
 
   const isAdmin = user?.role === "admin" || user?.role === "super_admin";
 
@@ -125,8 +113,9 @@ export default function SessionTab() {
   const { data: recentActivity } = useRecentActivityQuery(isAdmin);
 
   // Fetch detail for selected attempt
-  const { data: selectedAttempt, isLoading: isLoadingDetail } =
-    useLoginAttemptDetailQuery(selectedId || "");
+  const { data: selectedAttempt, isLoading: isLoadingDetail } = useLoginAttemptDetailQuery(
+    selectedId || "",
+  );
 
   // Helper function to parse user agent
   const parseUserAgent = (userAgent: string) => {
@@ -150,8 +139,7 @@ export default function SessionTab() {
     }
 
     // Detect device
-    const isMobile =
-      ua.includes("mobile") || ua.includes("android") || ua.includes("iphone");
+    const isMobile = ua.includes("mobile") || ua.includes("android") || ua.includes("iphone");
     const DeviceIcon = isMobile ? IconDeviceMobile : IconDeviceDesktop;
 
     return { browser, isMobile, BrowserIcon, DeviceIcon };
@@ -170,9 +158,7 @@ export default function SessionTab() {
     revokeSessionMutation.mutate(sessionId, {
       onSuccess: (response) => {
         const wasCurrent = response.data?.was_current;
-        toast.success(
-          wasCurrent ? "You've been signed out." : "Session signed out.",
-        );
+        toast.success(wasCurrent ? "You've been signed out." : "Session signed out.");
 
         if (wasCurrent) {
           setTimeout(() => router.push("/auth/login"), 800);
@@ -181,9 +167,7 @@ export default function SessionTab() {
         }
       },
       onError: (error) => {
-        toast.error(
-          error instanceof Error ? error.message : "Failed to sign out session",
-        );
+        toast.error(error instanceof Error ? error.message : "Failed to sign out session");
       },
     });
   };
@@ -195,11 +179,7 @@ export default function SessionTab() {
         setTimeout(() => router.push("/auth/login"), 800);
       },
       onError: (error) => {
-        toast.error(
-          error instanceof Error
-            ? error.message
-            : "Failed to sign out active sessions",
-        );
+        toast.error(error instanceof Error ? error.message : "Failed to sign out active sessions");
       },
     });
   };
@@ -242,9 +222,7 @@ export default function SessionTab() {
                     disabled={sessionsRefetching}
                     aria-label="Refresh active sessions"
                   >
-                    <IconRefresh
-                      className={sessionsRefetching ? "animate-spin" : ""}
-                    />
+                    <IconRefresh className={sessionsRefetching ? "animate-spin" : ""} />
                     <span className="sr-only">Refresh active sessions</span>
                   </Button>
                   <AlertDialog>
@@ -254,15 +232,11 @@ export default function SessionTab() {
                         size="sm"
                         className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                         disabled={
-                          revokeAllMutation.isPending ||
-                          sessionsLoading ||
-                          activeSessionCount === 0
+                          revokeAllMutation.isPending || sessionsLoading || activeSessionCount === 0
                         }
                       >
                         <IconTrash />
-                        {activeSessionCount === 1
-                          ? "Sign out"
-                          : "Sign out all devices"}
+                        {activeSessionCount === 1 ? "Sign out" : "Sign out all devices"}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
@@ -274,9 +248,8 @@ export default function SessionTab() {
                         </AlertDialogTitle>
                         <AlertDialogDescription>
                           This will end {activeSessionCount} active{" "}
-                          {activeSessionCount === 1 ? "session" : "sessions"},
-                          including your current session. You&apos;ll need to
-                          sign in again.
+                          {activeSessionCount === 1 ? "session" : "sessions"}, including your
+                          current session. You&apos;ll need to sign in again.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -285,8 +258,7 @@ export default function SessionTab() {
                           className="bg-destructive text-white hover:bg-destructive/90 dark:bg-destructive/60"
                           onClick={handleRevokeAll}
                         >
-                          Sign out{" "}
-                          {activeSessionCount === 1 ? "session" : "all"}
+                          Sign out {activeSessionCount === 1 ? "session" : "all"}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -309,9 +281,7 @@ export default function SessionTab() {
               ) : activeSessions.length > 0 ? (
                 <div className="grid grid-cols-1 gap-2">
                   {activeSessions.map((session) => {
-                    const { browser, BrowserIcon, isMobile } = parseUserAgent(
-                      session.user_agent,
-                    );
+                    const { browser, BrowserIcon, isMobile } = parseUserAgent(session.user_agent);
 
                     return (
                       <div
@@ -323,8 +293,7 @@ export default function SessionTab() {
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
                               <p className="truncate text-sm font-medium">
-                                {browser}{" "}
-                                {isMobile ? "(Mobile)" : "(Desktop)"}
+                                {browser} {isMobile ? "(Mobile)" : "(Desktop)"}
                               </p>
                               {session.is_current && (
                                 <span className="rounded-full bg-green-600/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-green-600">
@@ -333,8 +302,7 @@ export default function SessionTab() {
                               )}
                             </div>
                             <p className="truncate text-xs text-muted-foreground">
-                              {session.ip_address} · last seen{" "}
-                              {formatDate(session.last_seen)}
+                              {session.ip_address} · last seen {formatDate(session.last_seen)}
                             </p>
                           </div>
                         </div>
@@ -342,9 +310,7 @@ export default function SessionTab() {
                           variant="outline"
                           size="sm"
                           className="w-full shrink-0 sm:w-auto"
-                          onClick={() =>
-                            handleRevokeSession(session.session_id)
-                          }
+                          onClick={() => handleRevokeSession(session.session_id)}
                           disabled={revokeSessionMutation.isPending}
                         >
                           <IconLogout />
@@ -365,9 +331,7 @@ export default function SessionTab() {
               {recentActivity && (
                 <div className="grid grid-cols-2 overflow-hidden rounded-lg border sm:grid-cols-4">
                   <div className="border-b border-r p-3 sm:border-b-0">
-                    <p className="text-xs text-muted-foreground">
-                      Attempts (24h)
-                    </p>
+                    <p className="text-xs text-muted-foreground">Attempts (24h)</p>
                     <p className="mt-1 text-xl font-semibold tabular-nums">
                       {recentActivity.total_attempts}
                     </p>
@@ -407,9 +371,7 @@ export default function SessionTab() {
                   onClick={() => refetch()}
                   disabled={isRefetching}
                 >
-                  <IconRefresh
-                    className={isRefetching ? "animate-spin" : ""}
-                  />
+                  <IconRefresh className={isRefetching ? "animate-spin" : ""} />
                   <span className="hidden sm:inline">Refresh</span>
                 </Button>
               </div>
@@ -424,12 +386,9 @@ export default function SessionTab() {
                 <>
                   <div className="space-y-2 lg:hidden">
                     {attemptsData.attempts.map((attempt) => {
-                      const {
-                        browser,
-                        isMobile,
-                        BrowserIcon,
-                        DeviceIcon,
-                      } = parseUserAgent(attempt.user_agent);
+                      const { browser, isMobile, BrowserIcon, DeviceIcon } = parseUserAgent(
+                        attempt.user_agent,
+                      );
 
                       return (
                         <button
@@ -460,9 +419,7 @@ export default function SessionTab() {
                               {attempt.ip_address}
                             </code>
                             {!attempt.success && attempt.fail_reason && (
-                              <span className="line-clamp-1 min-w-0">
-                                {attempt.fail_reason}
-                              </span>
+                              <span className="line-clamp-1 min-w-0">{attempt.fail_reason}</span>
                             )}
                           </div>
                         </button>
@@ -474,29 +431,18 @@ export default function SessionTab() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="min-w-[100px]">
-                            Status
-                          </TableHead>
-                          <TableHead className="min-w-[180px]">
-                            Device & Browser
-                          </TableHead>
-                          <TableHead className="min-w-[120px]">
-                            IP Address
-                          </TableHead>
+                          <TableHead className="min-w-[100px]">Status</TableHead>
+                          <TableHead className="min-w-[180px]">Device & Browser</TableHead>
+                          <TableHead className="min-w-[120px]">IP Address</TableHead>
                           <TableHead className="min-w-[120px]">Time</TableHead>
-                          <TableHead className="hidden lg:table-cell">
-                            Reason
-                          </TableHead>
+                          <TableHead className="hidden lg:table-cell">Reason</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {attemptsData.attempts.map((attempt) => {
-                          const {
-                            browser,
-                            isMobile,
-                            BrowserIcon,
-                            DeviceIcon,
-                          } = parseUserAgent(attempt.user_agent);
+                          const { browser, isMobile, BrowserIcon, DeviceIcon } = parseUserAgent(
+                            attempt.user_agent,
+                          );
 
                           return (
                             <TableRow
@@ -515,8 +461,7 @@ export default function SessionTab() {
                                   <DeviceIcon className="size-4 text-muted-foreground" />
                                   <BrowserIcon className="size-4 text-muted-foreground" />
                                   <span className="text-sm">
-                                    {browser}{" "}
-                                    {isMobile ? "(Mobile)" : "(Desktop)"}
+                                    {browser} {isMobile ? "(Mobile)" : "(Desktop)"}
                                   </span>
                                 </div>
                               </TableCell>

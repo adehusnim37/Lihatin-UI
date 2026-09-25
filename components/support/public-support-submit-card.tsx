@@ -10,7 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { type SupportCategory } from "@/lib/api/support";
 import { useCreateSupportTicketMutation } from "@/lib/hooks/queries/useSupportQuery";
 import {
@@ -25,11 +31,11 @@ const IS_DEV = process.env.NODE_ENV === "development";
 
 export function PublicSupportSubmitCard() {
   const searchParams = useSearchParams();
-  const queryEmail = useMemo(
-    () => (searchParams.get("email") || "").trim(),
+  const queryEmail = useMemo(() => (searchParams.get("email") || "").trim(), [searchParams]);
+  const reason = useMemo(
+    () => getSupportReasonFromSearch(searchParams.get("reason")),
     [searchParams],
   );
-  const reason = useMemo(() => getSupportReasonFromSearch(searchParams.get("reason")), [searchParams]);
   const source = useMemo(
     () => getAuthSupportSourceFromSearch(searchParams.get("source")),
     [searchParams],
@@ -131,7 +137,10 @@ export function PublicSupportSubmitCard() {
 
             <div className="space-y-2">
               <Label>Category</Label>
-              <Select value={category} onValueChange={(value) => setCategory(value as SupportCategory)}>
+              <Select
+                value={category}
+                onValueChange={(value) => setCategory(value as SupportCategory)}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
@@ -191,8 +200,8 @@ export function PublicSupportSubmitCard() {
 
           {submittedCode && (
             <div className="rounded-lg border bg-muted/40 p-3 text-sm leading-6">
-              Ticket <strong>{submittedCode}</strong> was created. Check your
-              email for the secure conversation link.
+              Ticket <strong>{submittedCode}</strong> was created. Check your email for the secure
+              conversation link.
             </div>
           )}
         </form>

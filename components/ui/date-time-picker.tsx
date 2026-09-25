@@ -7,11 +7,7 @@ import { format, isSameDay, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 interface DateTimePickerProps {
@@ -20,11 +16,7 @@ interface DateTimePickerProps {
   disablePast?: boolean;
 }
 
-export function DateTimePicker({
-  date,
-  setDate,
-  disablePast = false,
-}: DateTimePickerProps) {
+export function DateTimePicker({ date, setDate, disablePast = false }: DateTimePickerProps) {
   const now = new Date();
 
   function handleDateSelect(newDate: Date | undefined) {
@@ -55,16 +47,9 @@ export function DateTimePicker({
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
-          className={cn(
-            "w-full pl-3 text-left font-normal",
-            !date && "text-muted-foreground"
-          )}
+          className={cn("w-full pl-3 text-left font-normal", !date && "text-muted-foreground")}
         >
-          {date ? (
-            format(date, "MM/dd/yyyy HH:mm")
-          ) : (
-            <span>MM/DD/YYYY HH:mm</span>
-          )}
+          {date ? format(date, "MM/dd/yyyy HH:mm") : <span>MM/DD/YYYY HH:mm</span>}
           <IconCalendarClock className="ml-auto size-4 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -89,19 +74,14 @@ export function DateTimePicker({
                   .reverse()
                   .map((hour) => {
                     const isToday = date && isSameDay(date, now);
-                    const isDisabled =
-                      disablePast && isToday && hour < now.getHours();
+                    const isDisabled = disablePast && isToday && hour < now.getHours();
                     return (
                       <Button
                         key={hour}
                         size="icon"
-                        variant={
-                          date && date.getHours() === hour ? "default" : "ghost"
-                        }
+                        variant={date && date.getHours() === hour ? "default" : "ghost"}
                         className="sm:w-full shrink-0 aspect-square"
-                        onClick={() =>
-                          handleTimeChange("hour", hour.toString())
-                        }
+                        onClick={() => handleTimeChange("hour", hour.toString())}
                         disabled={!!isDisabled}
                       >
                         {hour}
@@ -117,23 +97,14 @@ export function DateTimePicker({
                   const isToday = date && isSameDay(date, now);
                   const isSameHour = date && date.getHours() === now.getHours();
                   const isDisabled =
-                    disablePast &&
-                    isToday &&
-                    isSameHour &&
-                    minute <= now.getMinutes();
+                    disablePast && isToday && isSameHour && minute <= now.getMinutes();
                   return (
                     <Button
                       key={minute}
                       size="icon"
-                      variant={
-                        date && date.getMinutes() === minute
-                          ? "default"
-                          : "ghost"
-                      }
+                      variant={date && date.getMinutes() === minute ? "default" : "ghost"}
                       className="sm:w-full shrink-0 aspect-square"
-                      onClick={() =>
-                        handleTimeChange("minute", minute.toString())
-                      }
+                      onClick={() => handleTimeChange("minute", minute.toString())}
                       disabled={!!isDisabled}
                     >
                       {minute.toString().padStart(2, "0")}

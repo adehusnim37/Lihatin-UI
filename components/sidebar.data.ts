@@ -77,7 +77,7 @@ export const SidebarData = {
         },
       ],
     },
-     {
+    {
       title: "Email Campaigns",
       url: "/main/admin/email-campaigns",
       icon: IconMail,
@@ -87,12 +87,11 @@ export const SidebarData = {
       url: "/main/admin/support-tickets",
       icon: IconLifebuoy,
     },
-     {
+    {
       title: "Admin Security Policy",
       url: "/main/admin/security-policy",
       icon: IconShield,
     },
-   
   ],
   navSecondary: [
     {
@@ -106,4 +105,4 @@ export const SidebarData = {
       icon: IconHelp,
     },
   ],
-}
+};

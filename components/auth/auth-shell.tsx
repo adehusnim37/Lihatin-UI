@@ -72,8 +72,7 @@ export function AuthShell({
     const shell = shellRef.current;
     if (!shell) return;
 
-    const arrivedFromLanding =
-      sessionStorage.getItem("lihatin-auth-transition") === "1";
+    const arrivedFromLanding = sessionStorage.getItem("lihatin-auth-transition") === "1";
     sessionStorage.removeItem("lihatin-auth-transition");
 
     const media = gsap.matchMedia();
@@ -87,26 +86,14 @@ export function AuthShell({
             scale: arrivedFromLanding ? 0.985 : 0.995,
             duration: 0.35,
           })
-          .from(
-            "[data-auth-brand]",
-            { y: -14, autoAlpha: 0, duration: 0.45 },
-            "-=0.15",
-          )
+          .from("[data-auth-brand]", { y: -14, autoAlpha: 0, duration: 0.45 }, "-=0.15")
           .from(
             "[data-auth-copy] > *",
             { y: 24, autoAlpha: 0, duration: 0.55, stagger: 0.07 },
             "-=0.28",
           )
-          .from(
-            "[data-auth-form-content]",
-            { y: 30, autoAlpha: 0, duration: 0.65 },
-            "-=0.35",
-          )
-          .from(
-            "[data-auth-visual]",
-            { xPercent: 8, autoAlpha: 0, duration: 0.75 },
-            "-=0.65",
-          )
+          .from("[data-auth-form-content]", { y: 30, autoAlpha: 0, duration: 0.65 }, "-=0.35")
+          .from("[data-auth-visual]", { xPercent: 8, autoAlpha: 0, duration: 0.75 }, "-=0.65")
           .from(
             "[data-auth-stage-card], [data-auth-float-node]",
             {
@@ -175,10 +162,7 @@ export function AuthShell({
 
   const handleStageMove = (event: ReactPointerEvent<HTMLDivElement>) => {
     const stage = stageRef.current;
-    if (
-      !stage ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
+    if (!stage || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return;
     }
 
@@ -260,9 +244,7 @@ export function AuthShell({
 
           <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10 sm:py-12">
             <div data-auth-copy>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-                {eyebrow}
-              </p>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">{eyebrow}</p>
               <h1 className="mt-3 text-3xl font-bold tracking-[-0.045em] text-foreground sm:text-4xl">
                 {title}
               </h1>
@@ -372,9 +354,7 @@ export function AuthShell({
                 <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
                   Short link
                 </p>
-                <p className="text-xs font-semibold text-foreground">
-                  lihat.in/launch
-                </p>
+                <p className="text-xs font-semibold text-foreground">lihat.in/launch</p>
               </div>
             </div>
 
@@ -389,9 +369,7 @@ export function AuthShell({
                 <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
                   Top region
                 </p>
-                <p className="text-xs font-semibold text-foreground">
-                  Indonesia · 72%
-                </p>
+                <p className="text-xs font-semibold text-foreground">Indonesia · 72%</p>
               </div>
             </div>
 
@@ -410,9 +388,7 @@ export function AuthShell({
                 <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
                   Live traffic
                 </p>
-                <p className="text-xs font-semibold text-foreground">
-                  24 people now
-                </p>
+                <p className="text-xs font-semibold text-foreground">24 people now</p>
               </div>
             </div>
 
@@ -427,9 +403,7 @@ export function AuthShell({
                 <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
                   Top device
                 </p>
-                <p className="text-xs font-semibold text-foreground">
-                  Mobile · 68%
-                </p>
+                <p className="text-xs font-semibold text-foreground">Mobile · 68%</p>
               </div>
             </div>
 
@@ -444,9 +418,7 @@ export function AuthShell({
                 <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
                   Conversion
                 </p>
-                <p className="text-xs font-semibold text-foreground">
-                  +12.4% today
-                </p>
+                <p className="text-xs font-semibold text-foreground">+12.4% today</p>
               </div>
             </div>
 
@@ -463,9 +435,7 @@ export function AuthShell({
                     <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                       Campaign pulse
                     </p>
-                    <p className="text-xs font-semibold text-foreground">
-                      Product launch
-                    </p>
+                    <p className="text-xs font-semibold text-foreground">Product launch</p>
                   </div>
                 </div>
                 <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold text-primary">
@@ -482,10 +452,7 @@ export function AuthShell({
                   {selectedProof.metric}
                 </p>
                 <div className="mt-1 flex items-center justify-between gap-3">
-                  <p
-                    data-auth-metric-detail
-                    className="text-xs text-muted-foreground"
-                  >
+                  <p data-auth-metric-detail className="text-xs text-muted-foreground">
                     {selectedProof.detail}
                   </p>
                   <span className="text-[10px] font-semibold text-primary">
@@ -516,7 +483,14 @@ export function AuthShell({
                   strokeLinecap="round"
                   strokeWidth="2.5"
                 />
-                <circle cx="300" cy="7" r="4" fill="var(--background)" stroke="var(--primary)" strokeWidth="2" />
+                <circle
+                  cx="300"
+                  cy="7"
+                  r="4"
+                  fill="var(--background)"
+                  stroke="var(--primary)"
+                  strokeWidth="2"
+                />
               </svg>
             </div>
           </div>
@@ -556,9 +530,7 @@ export function AuthShell({
                       )}
                     />
                   </div>
-                  <p className="mt-2 text-xs font-semibold text-foreground">
-                    {item.label}
-                  </p>
+                  <p className="mt-2 text-xs font-semibold text-foreground">{item.label}</p>
                   <p className="mt-0.5 hidden text-[10px] text-muted-foreground xl:block">
                     {item.detail}
                   </p>

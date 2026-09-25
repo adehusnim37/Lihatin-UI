@@ -19,8 +19,7 @@ export default function ForgotPassword() {
   const [switchOn, setSwitchOn] = useState(false);
   const [username, setUsername] = useState("");
   const [isRequestSent, setIsRequestSent] = useState(false);
-  const [isRecoveryTransitioning, setIsRecoveryTransitioning] =
-    useState(false);
+  const [isRecoveryTransitioning, setIsRecoveryTransitioning] = useState(false);
 
   const handleForgotPassword = async (event: FormEvent) => {
     event.preventDefault();
@@ -80,9 +79,7 @@ export default function ForgotPassword() {
     } catch (error: unknown) {
       console.error("Forgot password error:", error);
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Unable to send reset link. Please try again.";
+        error instanceof Error ? error.message : "Unable to send reset link. Please try again.";
 
       toast.error("Request Failed", {
         description: errorMessage,
@@ -111,10 +108,8 @@ export default function ForgotPassword() {
           </h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
             If an account matches{" "}
-            <span className="font-semibold text-foreground">
-              {switchOn ? username : email}
-            </span>
-            , reset instructions are on the way.
+            <span className="font-semibold text-foreground">{switchOn ? username : email}</span>,
+            reset instructions are on the way.
           </p>
           <div className="mt-5 grid gap-2">
             <Button asChild className="h-11">
@@ -135,17 +130,13 @@ export default function ForgotPassword() {
           <form onSubmit={handleForgotPassword} className="space-y-5">
             <div className="flex items-center justify-between rounded-xl border bg-muted/30 p-3">
               <div>
-                <p className="text-sm font-semibold text-foreground">
-                  Find account by
-                </p>
+                <p className="text-sm font-semibold text-foreground">Find account by</p>
                 <p className="text-xs text-muted-foreground">
                   {switchOn ? "Username" : "Email address"}
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground">
-                  Email
-                </span>
+                <span className="text-xs font-medium text-muted-foreground">Email</span>
                 <Switch
                   id="recovery-mode"
                   aria-label="Use username instead of email"
@@ -153,9 +144,7 @@ export default function ForgotPassword() {
                   onCheckedChange={setSwitchOn}
                   disabled={isLoading}
                 />
-                <span className="text-xs font-medium text-muted-foreground">
-                  Username
-                </span>
+                <span className="text-xs font-medium text-muted-foreground">Username</span>
               </div>
             </div>
 
@@ -189,11 +178,7 @@ export default function ForgotPassword() {
               </div>
             )}
 
-            <Button
-              className="h-11 w-full"
-              disabled={isLoading}
-              type="submit"
-            >
+            <Button className="h-11 w-full" disabled={isLoading} type="submit">
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 size-4 animate-spin" />

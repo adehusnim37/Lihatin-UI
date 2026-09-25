@@ -17,11 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Pencil } from "lucide-react";
-import {
-  updateAPIKey,
-  APIKeyResponse,
-  UpdateAPIKeyRequest,
-} from "@/lib/api/api-keys";
+import { updateAPIKey, APIKeyResponse, UpdateAPIKeyRequest } from "@/lib/api/api-keys";
 import { toast } from "sonner";
 
 const editAPIKeySchema = z.object({
@@ -51,24 +47,14 @@ const PERMISSIONS = [
   { id: "delete", label: "Delete", description: "Remove data" },
 ] as const;
 
-export function EditAPIKeyDialog({
-  open,
-  onOpenChange,
-  apiKey,
-  onSuccess,
-}: EditAPIKeyDialogProps) {
+export function EditAPIKeyDialog({ open, onOpenChange, apiKey, onSuccess }: EditAPIKeyDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(editAPIKeySchema),
     defaultValues: {
       name: apiKey.name,
-      permissions: apiKey.permissions as (
-        | "read"
-        | "write"
-        | "delete"
-        | "update"
-      )[],
+      permissions: apiKey.permissions as ("read" | "write" | "delete" | "update")[],
       limit_usage: apiKey.limit_usage ?? null,
     },
   });
@@ -120,24 +106,16 @@ export function EditAPIKeyDialog({
             </div>
             <DialogTitle>Edit API Key</DialogTitle>
           </div>
-          <DialogDescription>
-            Update the settings for this API key.
-          </DialogDescription>
+          <DialogDescription>Update the settings for this API key.</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
           {/* Name */}
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
-            <Input
-              id="name"
-              placeholder="My API Key"
-              {...form.register("name")}
-            />
+            <Input id="name" placeholder="My API Key" {...form.register("name")} />
             {form.formState.errors.name && (
-              <p className="text-xs text-destructive">
-                {form.formState.errors.name.message}
-              </p>
+              <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
 
@@ -155,10 +133,7 @@ export function EditAPIKeyDialog({
                     onCheckedChange={(checked) => {
                       const current = form.getValues("permissions");
                       if (checked) {
-                        form.setValue("permissions", [
-                          ...current,
-                          permission.id,
-                        ]);
+                        form.setValue("permissions", [...current, permission.id]);
                       } else {
                         form.setValue(
                           "permissions",
@@ -169,9 +144,7 @@ export function EditAPIKeyDialog({
                   />
                   <div>
                     <p className="text-sm font-medium">{permission.label}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {permission.description}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{permission.description}</p>
                   </div>
                 </label>
               ))}
@@ -196,9 +169,8 @@ export function EditAPIKeyDialog({
               })}
             />
             <p className="text-xs text-muted-foreground">
-              An optional safety cap for this key. It does not change your
-              account&apos;s hourly or premium rate limit. Clear the field to
-              remove the cap.
+              An optional safety cap for this key. It does not change your account&apos;s hourly or
+              premium rate limit. Clear the field to remove the cap.
             </p>
           </div>
 

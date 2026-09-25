@@ -74,7 +74,7 @@ type SupportSendMessageVariables = {
   };
 };
 
-const ensureSuccess = <TData,>(
+const ensureSuccess = <TData>(
   response: { success: boolean; data?: TData | null; message?: string },
   fallbackMessage: string,
 ): TData => {
@@ -94,16 +94,13 @@ export const supportKeys = {
   adminTickets: () => [...supportKeys.admin(), "tickets"] as const,
   adminTicketList: (params: AdminTicketListParams) =>
     [...supportKeys.adminTickets(), "list", params] as const,
-  adminTicketDetail: (id: string) =>
-    [...supportKeys.adminTickets(), "detail", id] as const,
-  adminConversation: (id: string) =>
-    [...supportKeys.adminTickets(), "conversation", id] as const,
+  adminTicketDetail: (id: string) => [...supportKeys.adminTickets(), "detail", id] as const,
+  adminConversation: (id: string) => [...supportKeys.adminTickets(), "conversation", id] as const,
   user: () => [...supportKeys.all, "user"] as const,
   userTickets: () => [...supportKeys.user(), "tickets"] as const,
   userTicketList: (params: UserTicketListParams) =>
     [...supportKeys.userTickets(), "list", params] as const,
-  userConversation: (id: string) =>
-    [...supportKeys.userTickets(), "conversation", id] as const,
+  userConversation: (id: string) => [...supportKeys.userTickets(), "conversation", id] as const,
 };
 
 export function useCreateSupportTicketMutation() {
@@ -125,10 +122,7 @@ export function useRequestSupportAccessOTPMutation() {
       captcha_token: string;
     }): Promise<SupportOTPChallengeResponse> => {
       const response = await requestSupportAccessOTP(payload);
-      return ensureSuccess(
-        response,
-        "Failed to request verification code",
-      );
+      return ensureSuccess(response, "Failed to request verification code");
     },
   });
 }
@@ -234,10 +228,7 @@ export function useAdminSupportTicketsQuery(
   });
 }
 
-export function useAdminSupportTicketDetailQuery(
-  id: string,
-  enabled: boolean = true,
-) {
+export function useAdminSupportTicketDetailQuery(id: string, enabled: boolean = true) {
   return useQuery({
     queryKey: supportKeys.adminTicketDetail(id),
     queryFn: async (): Promise<AdminSupportTicketDetailResponse> => {
@@ -248,10 +239,7 @@ export function useAdminSupportTicketDetailQuery(
   });
 }
 
-export function useAdminSupportConversationQuery(
-  id: string,
-  enabled: boolean = true,
-) {
+export function useAdminSupportConversationQuery(id: string, enabled: boolean = true) {
   return useQuery({
     queryKey: supportKeys.adminConversation(id),
     queryFn: async (): Promise<SupportConversationResponse> => {
@@ -319,10 +307,7 @@ export function useSendAdminSupportMessageMutation() {
   });
 }
 
-export function useUserSupportTicketsQuery(
-  params: UserTicketListParams,
-  enabled: boolean = true,
-) {
+export function useUserSupportTicketsQuery(params: UserTicketListParams, enabled: boolean = true) {
   return useQuery({
     queryKey: supportKeys.userTicketList(params),
     queryFn: async (): Promise<UserListSupportTicketsResponse> => {
@@ -333,10 +318,7 @@ export function useUserSupportTicketsQuery(
   });
 }
 
-export function useUserSupportConversationQuery(
-  id: string,
-  enabled: boolean = true,
-) {
+export function useUserSupportConversationQuery(id: string, enabled: boolean = true) {
   return useQuery({
     queryKey: supportKeys.userConversation(id),
     queryFn: async (): Promise<SupportConversationResponse> => {

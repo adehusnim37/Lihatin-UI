@@ -23,13 +23,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -118,15 +112,9 @@ const PAGE_LIMIT = 20;
 export default function AdminSupportTicketsPage() {
   const [storedRole] = useState<string | null>(() => getStoredRole());
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<SupportTicketStatus | "all">(
-    "open",
-  );
-  const [categoryFilter, setCategoryFilter] = useState<SupportCategory | "all">(
-    "all",
-  );
-  const [priorityFilter, setPriorityFilter] = useState<SupportPriority | "all">(
-    "all",
-  );
+  const [statusFilter, setStatusFilter] = useState<SupportTicketStatus | "all">("open");
+  const [categoryFilter, setCategoryFilter] = useState<SupportCategory | "all">("all");
+  const [priorityFilter, setPriorityFilter] = useState<SupportPriority | "all">("all");
   const [search, setSearch] = useState("");
   const [activeTicketId, setActiveTicketId] = useState<string | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
@@ -173,9 +161,7 @@ export default function AdminSupportTicketsPage() {
   const detailsLoading = isDetailDialogOpen && ticketDetailQuery.isLoading;
   const conversationLoading = conversationQuery.isLoading;
   const ticketsErrorMessage =
-    ticketsQuery.error instanceof Error
-      ? ticketsQuery.error.message.toLowerCase()
-      : "";
+    ticketsQuery.error instanceof Error ? ticketsQuery.error.message.toLowerCase() : "";
   const state: LoadState = roleForbidden
     ? "forbidden"
     : ticketsQuery.isLoading
@@ -196,12 +182,12 @@ export default function AdminSupportTicketsPage() {
   const resolvedNextStatus = activeTicket
     ? ticketDraft.ticketId === activeTicket.id && ticketDraft.nextStatus
       ? ticketDraft.nextStatus
-      : ((activeTicket.status as SupportTicketStatus) || "in_progress")
+      : (activeTicket.status as SupportTicketStatus) || "in_progress"
     : "in_progress";
   const resolvedNextPriority = activeTicket
     ? ticketDraft.ticketId === activeTicket.id && ticketDraft.nextPriority
       ? ticketDraft.nextPriority
-      : ((activeTicket.priority as SupportPriority) || "normal")
+      : (activeTicket.priority as SupportPriority) || "normal"
     : "normal";
 
   useEffect(() => {
@@ -270,10 +256,7 @@ export default function AdminSupportTicketsPage() {
     });
   };
 
-  const applyUpdate = async (
-    action?: AdminSupportAction,
-    statusOverride?: SupportTicketStatus,
-  ) => {
+  const applyUpdate = async (action?: AdminSupportAction, statusOverride?: SupportTicketStatus) => {
     if (!activeTicket || updateTicketMutation.isPending) return;
 
     try {
@@ -300,8 +283,7 @@ export default function AdminSupportTicketsPage() {
       ]);
     } catch (error) {
       toast.error("Update failed", {
-        description:
-          error instanceof Error ? error.message : "Please try again.",
+        description: error instanceof Error ? error.message : "Please try again.",
       });
     }
   };
@@ -333,8 +315,7 @@ export default function AdminSupportTicketsPage() {
       toast.success("Message sent");
     } catch (error) {
       toast.error("Failed to send message", {
-        description:
-          error instanceof Error ? error.message : "Please try again.",
+        description: error instanceof Error ? error.message : "Please try again.",
       });
     }
   };
@@ -354,9 +335,7 @@ export default function AdminSupportTicketsPage() {
         <div className="flex flex-1 flex-col gap-6 p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-2">
-              <h1 className="text-2xl font-semibold tracking-tight">
-                Support Tickets
-              </h1>
+              <h1 className="text-2xl font-semibold tracking-tight">Support Tickets</h1>
               <p className="text-sm text-muted-foreground">
                 Review account access issues and resolve support requests.
               </p>
@@ -411,10 +390,7 @@ export default function AdminSupportTicketsPage() {
                           setStatusFilter(value as SupportTicketStatus | "all");
                         }}
                       >
-                        <SelectTrigger
-                          id="ticket-status-filter"
-                          className="w-full"
-                        >
+                        <SelectTrigger id="ticket-status-filter" className="w-full">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="max-h-72">
@@ -436,10 +412,7 @@ export default function AdminSupportTicketsPage() {
                           setCategoryFilter(value as SupportCategory | "all");
                         }}
                       >
-                        <SelectTrigger
-                          id="ticket-category-filter"
-                          className="w-full"
-                        >
+                        <SelectTrigger id="ticket-category-filter" className="w-full">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="max-h-72">
@@ -461,10 +434,7 @@ export default function AdminSupportTicketsPage() {
                           setPriorityFilter(value as SupportPriority | "all");
                         }}
                       >
-                        <SelectTrigger
-                          id="ticket-priority-filter"
-                          className="w-full"
-                        >
+                        <SelectTrigger id="ticket-priority-filter" className="w-full">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="max-h-72">
@@ -527,10 +497,7 @@ export default function AdminSupportTicketsPage() {
                         <TableBody>
                           {items.length === 0 ? (
                             <TableRow>
-                              <TableCell
-                                colSpan={7}
-                                className="text-center text-muted-foreground"
-                              >
+                              <TableCell colSpan={7} className="text-center text-muted-foreground">
                                 No support tickets found.
                               </TableCell>
                             </TableRow>
@@ -542,12 +509,8 @@ export default function AdminSupportTicketsPage() {
                                 onClick={() => void handleOpenTicket(item.id)}
                               >
                                 <TableCell>
-                                  <p className="font-medium">
-                                    {item.ticket_code}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {item.subject}
-                                  </p>
+                                  <p className="font-medium">{item.ticket_code}</p>
+                                  <p className="text-xs text-muted-foreground">{item.subject}</p>
                                 </TableCell>
                                 <TableCell>{item.email}</TableCell>
                                 <TableCell>{toLabel(item.category)}</TableCell>
@@ -559,11 +522,11 @@ export default function AdminSupportTicketsPage() {
                                 <TableCell>
                                   <SupportStatusBadge status={item.status} />
                                 </TableCell>
+                                <TableCell>{formatDate(item.created_at)}</TableCell>
                                 <TableCell>
-                                  {formatDate(item.created_at)}
-                                </TableCell>
-                                <TableCell>
-                                  {item.updated_at && item.updated_at !== item.created_at ? formatDate(item.updated_at) : "-"}
+                                  {item.updated_at && item.updated_at !== item.created_at
+                                    ? formatDate(item.updated_at)
+                                    : "-"}
                                 </TableCell>
                               </TableRow>
                             ))
@@ -580,9 +543,7 @@ export default function AdminSupportTicketsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() =>
-                            setPage((prev) => Math.max(1, prev - 1))
-                          }
+                          onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                           disabled={page <= 1}
                         >
                           Previous
@@ -590,9 +551,7 @@ export default function AdminSupportTicketsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() =>
-                            setPage((prev) => Math.min(totalPages, prev + 1))
-                          }
+                          onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
                           disabled={page >= totalPages}
                         >
                           Next
@@ -719,11 +678,11 @@ export default function AdminSupportTicketsPage() {
                           ) : (
                             <div className="mt-4 max-h-[440px] space-y-3 overflow-y-auto rounded-xl border bg-muted/20 p-3 sm:p-4">
                               {(conversation?.messages ?? []).map((message) => (
-                                <SupportConversationBubble 
-                                  key={message.id} 
-                                  message={message} 
+                                <SupportConversationBubble
+                                  key={message.id}
+                                  message={message}
                                   getAttachmentUrl={getAdminSupportAttachmentURL}
-                                  isAdminView 
+                                  isAdminView
                                 />
                               ))}
                             </div>
@@ -735,42 +694,44 @@ export default function AdminSupportTicketsPage() {
                               <IconMessage2 className="size-4 stroke-emerald-600" />
                               <AlertTitle>Conversation Closed</AlertTitle>
                               <AlertDescription className="text-emerald-800">
-                                This ticket has been marked as {activeTicket.status} on {formatDate(activeTicket.updated_at)}. Cannot receive or send new messages.
+                                This ticket has been marked as {activeTicket.status} on{" "}
+                                {formatDate(activeTicket.updated_at)}. Cannot receive or send new
+                                messages.
                               </AlertDescription>
                             </Alert>
                           ) : (
                             <div className="mt-4 space-y-3 rounded-xl border bg-muted/20 p-3 sm:p-4">
                               <div className="space-y-2">
-                              <Label>Reply</Label>
-                              <textarea
-                                value={draftMessage}
-                                onChange={(event) => setDraftMessage(event.target.value)}
-                                className="min-h-28 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                                placeholder="Write clear update for user"
+                                <Label>Reply</Label>
+                                <textarea
+                                  value={draftMessage}
+                                  onChange={(event) => setDraftMessage(event.target.value)}
+                                  className="min-h-28 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                                  placeholder="Write clear update for user"
+                                />
+                              </div>
+
+                              <input
+                                ref={attachmentInputRef}
+                                type="file"
+                                accept="application/pdf,image/jpeg,image/png,image/webp,image/gif"
+                                multiple
+                                className="hidden"
+                                onChange={(event) =>
+                                  setDraftFiles(Array.from(event.target.files || []))
+                                }
                               />
-                            </div>
 
-                            <input
-                              ref={attachmentInputRef}
-                              type="file"
-                              accept="application/pdf,image/jpeg,image/png,image/webp,image/gif"
-                              multiple
-                              className="hidden"
-                              onChange={(event) =>
-                                setDraftFiles(Array.from(event.target.files || []))
-                              }
-                            />
-
-                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => attachmentInputRef.current?.click()}
-                                className="rounded-xl"
-                              >
-                                <IconPaperclip className="mr-2 size-4" />
-                                Attach Files
-                              </Button>
+                              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => attachmentInputRef.current?.click()}
+                                  className="rounded-xl"
+                                >
+                                  <IconPaperclip className="mr-2 size-4" />
+                                  Attach Files
+                                </Button>
 
                                 <Button
                                   type="button"
@@ -781,20 +742,20 @@ export default function AdminSupportTicketsPage() {
                                   <IconSend className="mr-2 size-4" />
                                   {sendMessageMutation.isPending ? "Sending..." : "Send Reply"}
                                 </Button>
-                            </div>
-
-                            {draftFiles.length > 0 ? (
-                              <div className="flex flex-wrap gap-2">
-                                {draftFiles.map((file) => (
-                                  <span
-                                    key={`${file.name}-${file.size}`}
-                                    className="rounded-full bg-background px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-border"
-                                  >
-                                    {file.name}
-                                  </span>
-                                ))}
                               </div>
-                            ) : null}
+
+                              {draftFiles.length > 0 ? (
+                                <div className="flex flex-wrap gap-2">
+                                  {draftFiles.map((file) => (
+                                    <span
+                                      key={`${file.name}-${file.size}`}
+                                      className="rounded-full bg-background px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-border"
+                                    >
+                                      {file.name}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : null}
                             </div>
                           )}
                         </section>
@@ -847,9 +808,7 @@ export default function AdminSupportTicketsPage() {
                                     </SelectTrigger>
                                     <SelectContent>
                                       <SelectItem value="open">Open</SelectItem>
-                                      <SelectItem value="in_progress">
-                                        In Progress
-                                      </SelectItem>
+                                      <SelectItem value="in_progress">In Progress</SelectItem>
                                       <SelectItem value="resolved">Resolved</SelectItem>
                                       <SelectItem value="closed">Closed</SelectItem>
                                     </SelectContent>
@@ -960,7 +919,6 @@ export default function AdminSupportTicketsPage() {
                         </div>
                       </aside>
                     </div>
-
                   </>
                 )}
               </div>
@@ -1016,10 +974,7 @@ function formatBytes(value: number): string {
   }
 
   const units = ["B", "KB", "MB", "GB"];
-  const index = Math.min(
-    Math.floor(Math.log(value) / Math.log(1024)),
-    units.length - 1,
-  );
+  const index = Math.min(Math.floor(Math.log(value) / Math.log(1024)), units.length - 1);
   const size = value / 1024 ** index;
   return `${size >= 100 ? Math.round(size) : size.toFixed(size >= 10 ? 1 : 2)} ${units[index]}`;
 }

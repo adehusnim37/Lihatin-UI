@@ -46,8 +46,8 @@ export default function ActivateLink({
         <DialogHeader>
           <DialogTitle>Activate Link</DialogTitle>
           <DialogDescription>
-            Are you sure you want to activate this link? The link will start
-            redirecting visitors to the original URL.
+            Are you sure you want to activate this link? The link will start redirecting visitors to
+            the original URL.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

@@ -22,11 +22,7 @@ const helpCategories = [
     description: "Learn the basics of creating and managing short links",
     icon: Zap,
     color: "bg-green-500/10 text-green-500",
-    articles: [
-      "Create your first link",
-      "Understanding analytics",
-      "Custom short codes",
-    ],
+    articles: ["Create your first link", "Understanding analytics", "Custom short codes"],
   },
   {
     title: "Link Management",
@@ -111,9 +107,7 @@ export default function HelpPage() {
                     <h3 className="font-semibold group-hover:text-primary transition-colors">
                       {category.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {category.description}
-                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">{category.description}</p>
                     <ul className="mt-3 space-y-1">
                       {category.articles.map((article) => (
                         <li
@@ -143,9 +137,7 @@ export default function HelpPage() {
                   key={article}
                   className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
                 >
-                  <span className="group-hover:text-primary transition-colors">
-                    {article}
-                  </span>
+                  <span className="group-hover:text-primary transition-colors">{article}</span>
                   <ChevronRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
                 </li>
               ))}
@@ -161,12 +153,8 @@ export default function HelpPage() {
                 </div>
               </div>
               <h3 className="font-semibold">Live Chat</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Chat with our support team
-              </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                Available 9 AM - 6 PM WIB
-              </p>
+              <p className="text-sm text-muted-foreground mt-1">Chat with our support team</p>
+              <p className="text-xs text-muted-foreground mt-2">Available 9 AM - 6 PM WIB</p>
             </div>
 
             <div className="rounded-xl border bg-card p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
@@ -176,12 +164,8 @@ export default function HelpPage() {
                 </div>
               </div>
               <h3 className="font-semibold">Email Support</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Get help via email
-              </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                support@lihat.in
-              </p>
+              <p className="text-sm text-muted-foreground mt-1">Get help via email</p>
+              <p className="text-xs text-muted-foreground mt-2">support@lihat.in</p>
             </div>
 
             <div className="rounded-xl border bg-card p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
@@ -191,12 +175,8 @@ export default function HelpPage() {
                 </div>
               </div>
               <h3 className="font-semibold">Video Tutorials</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Learn with video guides
-              </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                YouTube Channel
-              </p>
+              <p className="text-sm text-muted-foreground mt-1">Learn with video guides</p>
+              <p className="text-xs text-muted-foreground mt-2">YouTube Channel</p>
             </div>
           </div>
 

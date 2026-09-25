@@ -52,10 +52,7 @@ export function ActiveInactiveBadge({
   className?: string;
 }) {
   return (
-    <StatusBadge
-      tone={isActive ? "success" : "danger"}
-      className={className}
-    >
+    <StatusBadge tone={isActive ? "success" : "danger"} className={className}>
       {isActive ? activeLabel.toLocaleUpperCase() : inactiveLabel.toLocaleUpperCase()}
     </StatusBadge>
   );
@@ -73,10 +70,7 @@ export function EnabledDisabledBadge({
   className?: string;
 }) {
   return (
-    <StatusBadge
-      tone={enabled ? "success" : "neutral"}
-      className={className}
-    >
+    <StatusBadge tone={enabled ? "success" : "neutral"} className={className}>
       {enabled ? enabledLabel : disabledLabel}
     </StatusBadge>
   );
@@ -90,10 +84,7 @@ export function EnvironmentEffectiveBadge({
   className?: string;
 }) {
   return (
-    <StatusBadge
-      tone={effective ? "success" : "warning"}
-      className={className}
-    >
+    <StatusBadge tone={effective ? "success" : "warning"} className={className}>
       {effective ? "Effective in current environment" : "Not effective in current environment"}
     </StatusBadge>
   );
@@ -107,10 +98,7 @@ export function HttpStatusCodeBadge({
   className?: string;
 }) {
   return (
-    <StatusBadge
-      tone={resolveHttpStatusTone(statusCode)}
-      className={className}
-    >
+    <StatusBadge tone={resolveHttpStatusTone(statusCode)} className={className}>
       {statusCode ?? "N/A"}
     </StatusBadge>
   );
@@ -129,11 +117,7 @@ export function HttpMethodBadge({
   const meta = resolveHttpMethodMeta(safeMethod);
 
   return (
-    <StatusBadge
-      tone={meta.tone}
-      withIcon={withIcon}
-      className={className}
-    >
+    <StatusBadge tone={meta.tone} withIcon={withIcon} className={className}>
       {safeMethod}
     </StatusBadge>
   );
@@ -233,24 +217,15 @@ export function LoginAttemptBadge({
   className?: string;
 }) {
   return (
-    <StatusBadge
-      tone={success ? "success" : "danger"}
-      className={className}
-    >
+    <StatusBadge tone={success ? "success" : "danger"} className={className}>
       {success ? "Success" : "Failed"}
     </StatusBadge>
   );
 }
 
-export function RoleBadge({
-  role,
-  className,
-}: {
-  role?: string | null;
-  className?: string;
-}) {
+export function RoleBadge({ role, className }: { role?: string | null; className?: string }) {
   const normalized = (role || "user").toLowerCase();
-  
+
   if (normalized === "super_admin") {
     return (
       <StatusBadge tone="danger" className={className}>
@@ -258,7 +233,7 @@ export function RoleBadge({
       </StatusBadge>
     );
   }
-  
+
   if (normalized === "admin") {
     return (
       <StatusBadge tone="warning" className={className}>
@@ -274,7 +249,13 @@ export function RoleBadge({
   );
 }
 
-export function SkyBadge({ children, className }: { children: React.ReactNode; className?: string }) {
+export function SkyBadge({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <Badge className={cn("bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300", className)}>
       {children}
@@ -282,9 +263,20 @@ export function SkyBadge({ children, className }: { children: React.ReactNode; c
   );
 }
 
-export function PurpleBadge({ children, className }: { children: React.ReactNode; className?: string }) {
+export function PurpleBadge({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <Badge className={cn("bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300", className)}>
+    <Badge
+      className={cn(
+        "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300",
+        className,
+      )}
+    >
       {children}
     </Badge>
   );

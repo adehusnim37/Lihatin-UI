@@ -20,12 +20,22 @@ import {
 export const loginAttemptsKeys = {
   all: ["login-attempts"] as const,
 
-  list: (params: LoginAttemptsQueryParams, isAdmin: boolean) =>
-    [...loginAttemptsKeys.all, "list", params, isAdmin],
+  list: (params: LoginAttemptsQueryParams, isAdmin: boolean) => [
+    ...loginAttemptsKeys.all,
+    "list",
+    params,
+    isAdmin,
+  ],
 
   detail: (id: string, isAdmin: boolean) => [...loginAttemptsKeys.all, "detail", id, isAdmin],
 
-  stats: (email_or_username: string, days: number, isAdmin: boolean) => [...loginAttemptsKeys.all, "stats", email_or_username, days, isAdmin],
+  stats: (email_or_username: string, days: number, isAdmin: boolean) => [
+    ...loginAttemptsKeys.all,
+    "stats",
+    email_or_username,
+    days,
+    isAdmin,
+  ],
 
   recentActivity: (isAdmin: boolean) => [...loginAttemptsKeys.all, "recent-activity", isAdmin],
 
@@ -33,7 +43,11 @@ export const loginAttemptsKeys = {
 
   topFailedIPs: (isAdmin: boolean) => [...loginAttemptsKeys.all, "top-failed-ips", isAdmin],
 
-  suspiciousActivity : (isAdmin: boolean) => [...loginAttemptsKeys.all, "suspicious-activity", isAdmin],
+  suspiciousActivity: (isAdmin: boolean) => [
+    ...loginAttemptsKeys.all,
+    "suspicious-activity",
+    isAdmin,
+  ],
 };
 
 const EMPTY_RECENT_ACTIVITY: RecentActivityResponse = {
@@ -53,9 +67,7 @@ const EMPTY_ATTEMPTS_BY_HOUR: AttemptsByHourResponse = {
 };
 
 // Fetch login attempts with pagination and filters
-export function useLoginAttemptsQuery(
-  params: LoginAttemptsQueryParams
-) {
+export function useLoginAttemptsQuery(params: LoginAttemptsQueryParams) {
   return useQuery<LoginAttemptsResponse>({
     queryKey: loginAttemptsKeys.list(params, false),
     queryFn: () => getLoginAttempts(params),
@@ -63,10 +75,7 @@ export function useLoginAttemptsQuery(
 }
 
 // Fetch admin login attempts with pagination and filters
-export function useAdminLoginAttemptsQuery(
-  params: LoginAttemptsQueryParams,
-  isAdmin: boolean
-) {
+export function useAdminLoginAttemptsQuery(params: LoginAttemptsQueryParams, isAdmin: boolean) {
   return useQuery<LoginAttemptsResponse>({
     queryKey: loginAttemptsKeys.list(params, isAdmin),
     queryFn: () => getLoginAttemptsAdmin(params),
@@ -75,10 +84,7 @@ export function useAdminLoginAttemptsQuery(
 }
 
 // Fetch detailed login attempt by ID
-export function useLoginAttemptDetailQuery(
-  id: string,
-  isAdmin = false
-) {
+export function useLoginAttemptDetailQuery(id: string, isAdmin = false) {
   return useQuery({
     queryKey: loginAttemptsKeys.detail(id, isAdmin),
     queryFn: () => getLoginAttemptById(id, isAdmin),
@@ -87,11 +93,7 @@ export function useLoginAttemptDetailQuery(
 }
 
 // Fetch login statistics for a user
-export function useLoginStatsQuery(
-  emailOrUsername: string,
-  days: number,
-  isAdmin = false
-) {
+export function useLoginStatsQuery(emailOrUsername: string, days: number, isAdmin = false) {
   return useQuery({
     queryKey: loginAttemptsKeys.stats(emailOrUsername, days, isAdmin),
     queryFn: () => getLoginStats(emailOrUsername, days, isAdmin),
@@ -100,9 +102,7 @@ export function useLoginStatsQuery(
 }
 
 // Fetch recent activity summary
-export function useRecentActivityQuery(
-  isAdmin = false
-) {
+export function useRecentActivityQuery(isAdmin = false) {
   return useQuery<RecentActivityResponse>({
     queryKey: loginAttemptsKeys.recentActivity(isAdmin),
     queryFn: async () => {
@@ -113,9 +113,7 @@ export function useRecentActivityQuery(
 }
 
 // Fetch login attempts grouped by hour
-export function useAttemptsByHourQuery(
-  isAdmin = false
-) {
+export function useAttemptsByHourQuery(isAdmin = false) {
   return useQuery<AttemptsByHourResponse>({
     queryKey: loginAttemptsKeys.attemptsByHour(isAdmin),
     queryFn: async () => {
@@ -126,9 +124,7 @@ export function useAttemptsByHourQuery(
 }
 
 // Additional hooks for top failed IPs and suspicious activity can be added similarly
-export function useTopFailedIPsQuery(
-  isAdmin = false
-) {
+export function useTopFailedIPsQuery(isAdmin = false) {
   return useQuery({
     queryKey: loginAttemptsKeys.topFailedIPs(isAdmin),
     queryFn: () => getTopFailedIPs(),
@@ -137,9 +133,7 @@ export function useTopFailedIPsQuery(
 }
 
 // Fetch suspicious activity data
-export function useSuspiciousActivityQuery(
-  isAdmin = false
-) {
+export function useSuspiciousActivityQuery(isAdmin = false) {
   return useQuery({
     queryKey: loginAttemptsKeys.suspiciousActivity(isAdmin),
     queryFn: () => getSuspiciousActivity(),

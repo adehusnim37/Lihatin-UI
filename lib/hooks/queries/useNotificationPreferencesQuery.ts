@@ -21,13 +21,9 @@ export function useUpdateNotificationPreferencesMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: UpdateNotificationPreferences) =>
-      updateNotificationPreferences(payload),
+    mutationFn: (payload: UpdateNotificationPreferences) => updateNotificationPreferences(payload),
     onSuccess: (response) => {
-      queryClient.setQueryData(
-        notificationPreferenceKeys.detail(),
-        response,
-      );
+      queryClient.setQueryData(notificationPreferenceKeys.detail(), response);
     },
   });
 }

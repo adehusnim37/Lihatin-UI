@@ -11,19 +11,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signupComplete } from "@/lib/api/auth";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const BRAND_URL = process.env.NEXT_PUBLIC_BRAND_URL || "https://lihat.in";
 
-export default function CompleteProfileForm({
-  signupToken,
-}: {
-  signupToken: string;
-}) {
+export default function CompleteProfileForm({ signupToken }: { signupToken: string }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -97,12 +89,10 @@ export default function CompleteProfileForm({
       return false;
     }
 
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
     if (!passwordRegex.test(formData.password)) {
       toast.error("Validation Error", {
-        description:
-          "Password must contain uppercase, lowercase, number, and special character",
+        description: "Password must contain uppercase, lowercase, number, and special character",
         duration: 3500,
       });
       return false;
@@ -151,8 +141,7 @@ export default function CompleteProfileForm({
         router.replace("/auth/login");
       }
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to complete signup";
+      const message = err instanceof Error ? err.message : "Failed to complete signup";
       toast.error("Signup Failed", {
         description: message,
         duration: 4000,
@@ -177,12 +166,9 @@ export default function CompleteProfileForm({
               />
             </Link>
             <div className="flex flex-col gap-y-3">
-              <h1 className="text-2xl md:text-3xl font-bold">
-                Complete your profile
-              </h1>
+              <h1 className="text-2xl md:text-3xl font-bold">Complete your profile</h1>
               <p className="text-muted-foreground text-sm">
-                Your email is verified. Set up your account details to finish
-                signup.
+                Your email is verified. Set up your account details to finish signup.
               </p>
             </div>
           </div>
@@ -292,9 +278,9 @@ export default function CompleteProfileForm({
                     </button>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs" side="top" sideOffset={6}>
-                    Updates about offers, new features, and campaigns sent by
-                    admins. Only active and verified users who opt in will
-                    receive them, and you can unsubscribe anytime.
+                    Updates about offers, new features, and campaigns sent by admins. Only active
+                    and verified users who opt in will receive them, and you can unsubscribe
+                    anytime.
                   </TooltipContent>
                 </Tooltip>
               </Label>
@@ -327,9 +313,8 @@ export default function CompleteProfileForm({
                     </button>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs" side="top" sideOffset={6}>
-                    A recap of your previous full Monday to Sunday activity.
-                    The system sends at most one successful summary per week,
-                    and includes one-click unsubscribe.
+                    A recap of your previous full Monday to Sunday activity. The system sends at
+                    most one successful summary per week, and includes one-click unsubscribe.
                   </TooltipContent>
                 </Tooltip>
               </Label>
@@ -337,12 +322,7 @@ export default function CompleteProfileForm({
           </form>
 
           <div className="flex flex-col space-y-4">
-            <Button
-              className="w-full"
-              onClick={handleSubmit}
-              disabled={isLoading}
-              type="submit"
-            >
+            <Button className="w-full" onClick={handleSubmit} disabled={isLoading} type="submit">
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 size-4 animate-spin" />

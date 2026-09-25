@@ -2,29 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type FormEvent,
-} from "react";
-import {
-  ArrowRight,
-  Check,
-  Loader2,
-  RefreshCw,
-  ShieldCheck,
-} from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { ArrowRight, Check, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 import { gsap } from "gsap";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { FieldDescription, FieldLabel } from "@/components/ui/field";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 interface OTPFormProps extends React.ComponentProps<"div"> {
   onVerify?: (otp: string) => Promise<void> | void;
@@ -67,10 +51,7 @@ export function OTPForm({
 
   useEffect(() => {
     const root = formRef.current;
-    if (
-      !root ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
+    if (!root || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return;
     }
 
@@ -100,11 +81,7 @@ export function OTPForm({
 
   useEffect(() => {
     const input = inputRef.current;
-    if (
-      !input ||
-      !error ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
+    if (!input || !error || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return;
     }
 
@@ -123,11 +100,7 @@ export function OTPForm({
 
   useEffect(() => {
     const input = inputRef.current;
-    if (
-      !input ||
-      !isComplete ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
+    if (!input || !isComplete || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return;
     }
 
@@ -168,11 +141,7 @@ export function OTPForm({
   };
 
   return (
-    <div
-      ref={formRef}
-      className={cn("flex flex-col gap-4", className)}
-      {...props}
-    >
+    <div ref={formRef} className={cn("flex flex-col gap-4", className)} {...props}>
       <div
         data-otp-card
         className="relative overflow-hidden rounded-[1.75rem] border bg-card/95 p-5 shadow-xl shadow-primary/5 backdrop-blur sm:p-7"
@@ -180,21 +149,12 @@ export function OTPForm({
         <div className="pointer-events-none absolute -right-16 -top-20 size-44 rounded-full bg-primary/12 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-20 -left-16 size-40 rounded-full bg-third/20 blur-3xl" />
 
-        <div
-          data-otp-reveal
-          className="relative flex items-center justify-between"
-        >
+        <div data-otp-reveal className="relative flex items-center justify-between">
           <Link
             href="/auth/login"
             className="inline-flex items-center gap-2 rounded-lg text-sm font-semibold text-foreground outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <Image
-              src="/logo.svg"
-              alt=""
-              width={30}
-              height={30}
-              className="size-7 rounded-lg"
-            />
+            <Image src="/logo.svg" alt="" width={30} height={30} className="size-7 rounded-lg" />
             Lihat.in
           </Link>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/8 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-primary">
@@ -230,11 +190,7 @@ export function OTPForm({
           )}
         </div>
 
-        <form
-          data-otp-reveal
-          onSubmit={handleSubmit}
-          className="relative mt-7"
-        >
+        <form data-otp-reveal onSubmit={handleSubmit} className="relative mt-7">
           <FieldLabel htmlFor="otp" className="sr-only">
             Verification code
           </FieldLabel>
@@ -268,10 +224,7 @@ export function OTPForm({
           </div>
 
           <div className="mt-3 flex items-center justify-between gap-3">
-            <p
-              id="otp-hint"
-              className="text-[11px] text-muted-foreground"
-            >
+            <p id="otp-hint" className="text-[11px] text-muted-foreground">
               Paste or type your code
             </p>
             <div
@@ -302,18 +255,14 @@ export function OTPForm({
 
           {onResend && (
             <div className="mt-5 flex items-center justify-between gap-3 rounded-xl bg-muted/55 px-3 py-2.5">
-              <p className="text-xs text-muted-foreground">
-                Didn&apos;t receive it?
-              </p>
+              <p className="text-xs text-muted-foreground">Didn&apos;t receive it?</p>
               <button
                 type="button"
                 onClick={handleResend}
                 disabled={cooldown > 0 || isResending}
                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary outline-none transition-colors hover:text-primary/75 focus-visible:rounded focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:text-muted-foreground"
               >
-                <RefreshCw
-                  className={cn("size-3.5", isResending && "animate-spin")}
-                />
+                <RefreshCw className={cn("size-3.5", isResending && "animate-spin")} />
                 {cooldown > 0
                   ? `Try again in ${cooldown}s`
                   : isResending
@@ -349,17 +298,11 @@ export function OTPForm({
         className="px-5 text-center text-[11px] leading-5 text-muted-foreground"
       >
         By continuing, you agree to our{" "}
-        <Link
-          href="/terms"
-          className="font-medium text-foreground underline underline-offset-4"
-        >
+        <Link href="/terms" className="font-medium text-foreground underline underline-offset-4">
           Terms
         </Link>{" "}
         and{" "}
-        <Link
-          href="/privacy"
-          className="font-medium text-foreground underline underline-offset-4"
-        >
+        <Link href="/privacy" className="font-medium text-foreground underline underline-offset-4">
           Privacy Policy
         </Link>
         .

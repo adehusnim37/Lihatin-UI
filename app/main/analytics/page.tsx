@@ -34,20 +34,10 @@ import {
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Table,
   TableBody,
@@ -90,10 +80,7 @@ export default function AnalyticsPage() {
   const startDate = date?.from ? format(date.from, "yyyy-MM-dd") : undefined;
   const endDate = date?.to ? format(date.to, "yyyy-MM-dd") : undefined;
 
-  const { data: stats } = useDashboardStats(
-    startDate,
-    endDate
-  );
+  const { data: stats } = useDashboardStats(startDate, endDate);
   const { data: linksData, isLoading: linksLoading } = useLinks(page, limit);
 
   const links = linksData?.short_links || [];
@@ -127,15 +114,14 @@ export default function AnalyticsPage() {
                     variant={"outline"}
                     className={cn(
                       "w-[260px] justify-start text-left font-normal",
-                      !date && "text-muted-foreground"
+                      !date && "text-muted-foreground",
                     )}
                   >
                     <CalendarIcon className="mr-2 size-4" />
                     {date?.from ? (
                       date.to ? (
                         <>
-                          {format(date.from, "LLL dd, y")} -{" "}
-                          {format(date.to, "LLL dd, y")}
+                          {format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}
                         </>
                       ) : (
                         format(date.from, "LLL dd, y")
@@ -162,49 +148,33 @@ export default function AnalyticsPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Clicks
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Total Clicks</CardTitle>
                 <MousePointerClick className="size-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {stats?.total_clicks ?? 0}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  In selected period
-                </p>
+                <div className="text-2xl font-bold">{stats?.total_clicks ?? 0}</div>
+                <p className="text-xs text-muted-foreground mt-1">In selected period</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Unique Visitors
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Unique Visitors</CardTitle>
                 <Users className="size-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {stats?.total_unique_visitors ?? 0}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Distinct audiences
-                </p>
+                <div className="text-2xl font-bold">{stats?.total_unique_visitors ?? 0}</div>
+                <p className="text-xs text-muted-foreground mt-1">Distinct audiences</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Active Links
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Active Links</CardTitle>
                 <LinkIcon className="size-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {stats?.active_links ?? 0}
-                </div>
+                <div className="text-2xl font-bold">{stats?.active_links ?? 0}</div>
                 <p className="text-xs text-muted-foreground mt-1">
                   Of {stats?.total_links ?? 0} total links
                 </p>
@@ -213,23 +183,17 @@ export default function AnalyticsPage() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Engagement Rate
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Engagement Rate</CardTitle>
                 <TrendingUp className="size-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
                   {stats?.total_clicks && stats.total_unique_visitors
-                    ? (
-                        stats.total_clicks / stats.total_unique_visitors
-                      ).toFixed(1)
+                    ? (stats.total_clicks / stats.total_unique_visitors).toFixed(1)
                     : "0.0"}
                   x
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Clicks per visitor
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">Clicks per visitor</p>
               </CardContent>
             </Card>
           </div>
@@ -238,15 +202,10 @@ export default function AnalyticsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Click Performance</CardTitle>
-              <CardDescription>
-                Daily click history for the selected period
-              </CardDescription>
+              <CardDescription>Daily click history for the selected period</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
-              <ChartContainer
-                config={chartConfig}
-                className="aspect-auto h-[250px] w-full"
-              >
+              <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
                 <LineChart
                   accessibilityLayer
                   data={stats?.click_history ?? []}
@@ -308,8 +267,7 @@ export default function AnalyticsPage() {
             <Card className="flex flex-col">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Globe className="size-4 text-muted-foreground" /> Top
-                  Countries
+                  <Globe className="size-4 text-muted-foreground" /> Top Countries
                 </CardTitle>
                 <CardDescription>Top locations by clicks</CardDescription>
               </CardHeader>
@@ -336,15 +294,8 @@ export default function AnalyticsPage() {
                       hide
                     />
                     <XAxis dataKey="count" type="number" hide />
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent hideLabel />}
-                    />
-                    <Bar
-                      dataKey="count"
-                      radius={5}
-                      fill="#70c5df"
-                    >
+                    <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                    <Bar dataKey="count" radius={5} fill="#70c5df">
                       <LabelList
                         dataKey="country"
                         position="insideLeft"
@@ -353,9 +304,7 @@ export default function AnalyticsPage() {
                         fontSize={10}
                         fill="#ffffff"
                         formatter={(value: unknown) =>
-                          typeof value === "string" && value.trim().length > 0
-                            ? value
-                            : "Unknown"
+                          typeof value === "string" && value.trim().length > 0 ? value : "Unknown"
                         }
                       />
                       <LabelList
@@ -376,8 +325,7 @@ export default function AnalyticsPage() {
             <Card className="flex flex-col">
               <CardHeader className="items-center pb-0">
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Smartphone className="size-4 text-muted-foreground" /> Top
-                  Devices
+                  <Smartphone className="size-4 text-muted-foreground" /> Top Devices
                 </CardTitle>
                 <CardDescription>Device distribution</CardDescription>
               </CardHeader>
@@ -390,13 +338,7 @@ export default function AnalyticsPage() {
                     data={
                       stats?.top_devices?.slice(0, 5).map((d, i) => ({
                         ...d,
-                        fill: [
-                          "#70c5df",
-                          "#56d6de",
-                          "#c2faff",
-                          "#70c5df",
-                          "#56d6de",
-                        ][i % 5],
+                        fill: ["#70c5df", "#56d6de", "#c2faff", "#70c5df", "#56d6de"][i % 5],
                       })) ?? []
                     }
                     startAngle={-90}
@@ -406,9 +348,7 @@ export default function AnalyticsPage() {
                   >
                     <ChartTooltip
                       cursor={false}
-                      content={
-                        <ChartTooltipContent hideLabel nameKey="device" />
-                      }
+                      content={<ChartTooltipContent hideLabel nameKey="device" />}
                     />
                     <RadialBar dataKey="count" background>
                       <LabelList
@@ -427,8 +367,7 @@ export default function AnalyticsPage() {
             <Card className="flex flex-col">
               <CardHeader className="items-center pb-0">
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Layout className="size-4 text-muted-foreground" /> Top
-                  Referrers
+                  <Layout className="size-4 text-muted-foreground" /> Top Referrers
                 </CardTitle>
                 <CardDescription>Traffic sources</CardDescription>
               </CardHeader>
@@ -438,22 +377,13 @@ export default function AnalyticsPage() {
                   className="mx-auto aspect-square max-h-[200px]"
                 >
                   <PieChart>
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent nameKey="host" />}
-                    />
+                    <ChartTooltip cursor={false} content={<ChartTooltipContent nameKey="host" />} />
                     <Pie
                       data={
                         stats?.top_referrers?.slice(0, 5).map((r, i) => ({
                           ...r,
                           name: r.host || "Direct",
-                          fill: [
-                            "#70c5df",
-                            "#56d6de",
-                            "#c2faff",
-                            "#70c5df",
-                            "#56d6de",
-                          ][i % 5],
+                          fill: ["#70c5df", "#56d6de", "#c2faff", "#70c5df", "#56d6de"][i % 5],
                         })) ?? []
                       }
                       dataKey="count"
@@ -462,9 +392,9 @@ export default function AnalyticsPage() {
                       outerRadius={80}
                       strokeWidth={2}
                       label={({ name, percent }) =>
-                        `${name?.substring(0, 10) || "Direct"}: ${(
-                          (percent ?? 0) * 100
-                        ).toFixed(0)}%`
+                        `${name?.substring(0, 10) || "Direct"}: ${((percent ?? 0) * 100).toFixed(
+                          0,
+                        )}%`
                       }
                       labelLine={false}
                     />
@@ -486,11 +416,7 @@ export default function AnalyticsPage() {
                   Your most recently created links.
                 </CardDescription>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push("/main/links")}
-              >
+              <Button variant="outline" size="sm" onClick={() => router.push("/main/links")}>
                 <span className="hidden sm:inline">View All Matches</span>
                 <span className="sm:hidden text-xs">View All</span>
                 <ArrowRight className="ml-1 sm:ml-2 size-4" />
@@ -532,10 +458,7 @@ export default function AnalyticsPage() {
                       ))
                     ) : links.length === 0 ? (
                       <TableRow>
-                        <TableCell
-                          colSpan={5}
-                          className="text-center py-6 text-muted-foreground"
-                        >
+                        <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
                           No links found.
                         </TableCell>
                       </TableRow>
@@ -556,8 +479,7 @@ export default function AnalyticsPage() {
                                 rel="noreferrer"
                                 className="text-xs text-muted-foreground hover:underline truncate max-w-[200px] flex items-center gap-1"
                               >
-                                {link.original_url}{" "}
-                                <ExternalLink className="size-3" />
+                                {link.original_url} <ExternalLink className="size-3" />
                               </a>
                             </div>
                           </TableCell>
@@ -579,9 +501,7 @@ export default function AnalyticsPage() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() =>
-                                router.push(`/main/analytics/${link.short_code}`)
-                              }
+                              onClick={() => router.push(`/main/analytics/${link.short_code}`)}
                             >
                               Details
                             </Button>
@@ -615,7 +535,10 @@ export default function AnalyticsPage() {
                   </div>
                 ) : (
                   links.map((link) => (
-                    <div key={link.id} className="p-4 flex flex-col gap-3 hover:bg-muted/30 transition-colors">
+                    <div
+                      key={link.id}
+                      className="p-4 flex flex-col gap-3 hover:bg-muted/30 transition-colors"
+                    >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <h4 className="font-semibold text-sm truncate" title={link.title}>
@@ -627,7 +550,10 @@ export default function AnalyticsPage() {
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
                           <ActiveInactiveBadge isActive={link.is_active} />
-                          <Badge variant="secondary" className="text-[10px] font-semibold h-5 px-1.5">
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] font-semibold h-5 px-1.5"
+                          >
                             {link.click_count ?? link.detail?.current_clicks ?? 0} clicks
                           </Badge>
                         </div>
@@ -649,8 +575,7 @@ export default function AnalyticsPage() {
                           variant="outline"
                           onClick={() => {
                             const resolvedUrl = (
-                              process.env.NEXT_PUBLIC_FRONTEND_URL ||
-                              window.location.origin
+                              process.env.NEXT_PUBLIC_FRONTEND_URL || window.location.origin
                             ).replace(/\/+$/, "");
                             navigator.clipboard.writeText(`${resolvedUrl}/${link.short_code}`);
                           }}
@@ -661,9 +586,7 @@ export default function AnalyticsPage() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() =>
-                            router.push(`/main/analytics/${link.short_code}`)
-                          }
+                          onClick={() => router.push(`/main/analytics/${link.short_code}`)}
                           className="h-8 px-2.5 text-xs text-primary hover:text-primary hover:bg-primary/10"
                         >
                           Details

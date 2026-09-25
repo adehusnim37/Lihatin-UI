@@ -14,23 +14,18 @@ type SignupCompletionStatusResponse = {
   } | null;
 };
 
-export async function isSignupCompletionTokenValid(
-  token: string,
-): Promise<boolean> {
+export async function isSignupCompletionTokenValid(token: string): Promise<boolean> {
   if (!SIGNUP_COMPLETION_TOKEN_PATTERN.test(token)) {
     return false;
   }
 
   try {
     const query = new URLSearchParams({ signup_token: token });
-    const response = await fetch(
-      `${API_URL}/auth/signup/complete/status?${query.toString()}`,
-      {
-        method: "GET",
-        cache: "no-store",
-        signal: AbortSignal.timeout(5000),
-      },
-    );
+    const response = await fetch(`${API_URL}/auth/signup/complete/status?${query.toString()}`, {
+      method: "GET",
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
+    });
 
     if (!response.ok) {
       return false;

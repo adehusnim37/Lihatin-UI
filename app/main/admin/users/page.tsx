@@ -68,7 +68,14 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   hasActivePremiumAccess,
   type AdminUserResponse,
@@ -112,9 +119,7 @@ function AdminUsersPageContent() {
   const sort = parseUserSort(searchParams.get("sort"));
   const orderBy = parseOrder(searchParams.get("order_by"));
   const roleFilter = parseRoleFilter(searchParams.get("role"));
-  const premiumFilter = parsePremiumFilter(
-    searchParams.get("premium_access_status"),
-  );
+  const premiumFilter = parsePremiumFilter(searchParams.get("premium_access_status"));
   const lockFilter = parseLockFilter(searchParams.get("lock_status"));
   const [searchInput, setSearchInput] = useState(searchFromURL);
   const debouncedSearch = useDebouncedValue(searchInput, 350);
@@ -208,10 +213,11 @@ function AdminUsersPageContent() {
     Boolean(activeUserId) && (isProfileOpen || isPremiumOpen || isHistoryOpen),
   );
 
-  const { data: eventsData, isLoading: eventsLoading, refetch: refetchEvents } = useAdminPremiumAccessEventsQuery(
-    activeUserId ?? "",
-    Boolean(activeUserId) && isHistoryOpen,
-  );
+  const {
+    data: eventsData,
+    isLoading: eventsLoading,
+    refetch: refetchEvents,
+  } = useAdminPremiumAccessEventsQuery(activeUserId ?? "", Boolean(activeUserId) && isHistoryOpen);
   const events = useMemo(() => eventsData?.items ?? [], [eventsData?.items]);
 
   const revokeMutation = useRevokeAdminUserPremiumMutation();
@@ -230,12 +236,8 @@ function AdminUsersPageContent() {
     lockFilter,
     sort !== "created_at" || orderBy !== "desc" ? "sort" : "",
   ].filter(Boolean).length;
-  const firstVisible =
-    (pagination?.total_count ?? 0) === 0 ? 0 : (page - 1) * PAGE_LIMIT + 1;
-  const lastVisible = Math.min(
-    page * PAGE_LIMIT,
-    pagination?.total_count ?? 0,
-  );
+  const firstVisible = (pagination?.total_count ?? 0) === 0 ? 0 : (page - 1) * PAGE_LIMIT + 1;
+  const lastVisible = Math.min(page * PAGE_LIMIT, pagination?.total_count ?? 0);
 
   useEffect(() => {
     if (!pagination || page <= totalPages) return;
@@ -264,7 +266,10 @@ function AdminUsersPageContent() {
     return { total, revoked, reactivated, permanent };
   }, [events]);
 
-  const recentHistory = useMemo(() => activeUser?.recent_history ?? [], [activeUser?.recent_history]);
+  const recentHistory = useMemo(
+    () => activeUser?.recent_history ?? [],
+    [activeUser?.recent_history],
+  );
   const recentLoginAttempts = useMemo(
     () => activeUser?.recent_login_attempts ?? [],
     [activeUser?.recent_login_attempts],
@@ -285,7 +290,7 @@ function AdminUsersPageContent() {
     setRevokeType("temporary");
     setReason("");
     setOverridePermanent(false);
-    
+
     if (focus === "profile") {
       setIsProfileOpen(true);
     } else if (focus === "premium") {
@@ -367,7 +372,10 @@ function AdminUsersPageContent() {
     }
 
     reactivateMutation.mutate(
-      { userId: activeUser.id, payload: { reason: cleanReason, override_permanent: overridePermanent } },
+      {
+        userId: activeUser.id,
+        payload: { reason: cleanReason, override_permanent: overridePermanent },
+      },
       {
         onSuccess: () => {
           setReason("");
@@ -475,37 +483,26 @@ function AdminUsersPageContent() {
         <main className="flex flex-1 flex-col gap-6 p-4 md:p-6">
           <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl">
-              <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
-                User directory
-              </h1>
+              <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">User directory</h1>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Find an account, inspect its current state, and move directly
-                into profile, access, or audit work.
+                Find an account, inspect its current state, and move directly into profile, access,
+                or audit work.
               </p>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => refetch()}
-              disabled={isLoading || isFetching}
-            >
-              <IconRefresh
-                className={isFetching && !isLoading ? "animate-spin" : ""}
-              />
+            <Button variant="outline" onClick={() => refetch()} disabled={isLoading || isFetching}>
+              <IconRefresh className={isFetching && !isLoading ? "animate-spin" : ""} />
               Refresh
             </Button>
           </header>
 
-          {(typeof roleFromStorage === "undefined" || isLoading) && (
-            <PageSkeleton />
-          )}
+          {(typeof roleFromStorage === "undefined" || isLoading) && <PageSkeleton />}
 
           {typeof roleFromStorage !== "undefined" && !isAdmin && (
             <Card>
               <CardHeader>
                 <CardTitle>Access denied</CardTitle>
                 <CardDescription>
-                  The user directory is available only to admins and super
-                  admins.
+                  The user directory is available only to admins and super admins.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -515,9 +512,7 @@ function AdminUsersPageContent() {
             <Card>
               <CardHeader>
                 <CardTitle>Users could not be loaded</CardTitle>
-                <CardDescription>
-                  Check the API connection, then retry this query.
-                </CardDescription>
+                <CardDescription>Check the API connection, then retry this query.</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="outline" onClick={() => refetch()}>
@@ -528,175 +523,155 @@ function AdminUsersPageContent() {
             </Card>
           )}
 
-          {typeof roleFromStorage !== "undefined" &&
-            !isLoading &&
-            !isError &&
-            isAdmin && (
-              <Card className="overflow-hidden py-0">
-                <CardHeader className="border-b bg-muted/20 px-5 py-5 md:px-6">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                    <div>
-                      <CardTitle>Operations index</CardTitle>
-                      <CardDescription className="mt-1">
-                        {pagination?.total_count ?? 0} matching account
-                        {(pagination?.total_count ?? 0) === 1 ? "" : "s"}
-                      </CardDescription>
-                    </div>
-                    <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-                      Showing {firstVisible}–{lastVisible}
-                    </p>
+          {typeof roleFromStorage !== "undefined" && !isLoading && !isError && isAdmin && (
+            <Card className="overflow-hidden py-0">
+              <CardHeader className="border-b bg-muted/20 px-5 py-5 md:px-6">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <CardTitle>Operations index</CardTitle>
+                    <CardDescription className="mt-1">
+                      {pagination?.total_count ?? 0} matching account
+                      {(pagination?.total_count ?? 0) === 1 ? "" : "s"}
+                    </CardDescription>
                   </div>
-                </CardHeader>
-
-                <div className="border-b px-5 py-4 md:px-6">
-                  <div className="grid gap-3 xl:grid-cols-[minmax(260px,1.4fr)_repeat(3,minmax(150px,0.65fr))_minmax(190px,0.8fr)_auto]">
-                    <div className="relative">
-                      <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        aria-label="Search users"
-                        className="h-9 pl-9"
-                        maxLength={100}
-                        placeholder="Search name, username, or email"
-                        value={searchInput}
-                        onChange={(event) => setSearchInput(event.target.value)}
-                      />
-                    </div>
-
-                    <Select
-                      value={roleFilter ?? "all"}
-                      onValueChange={(value) =>
-                        updateListQuery({
-                          role: value === "all" ? null : value,
-                          page: null,
-                        })
-                      }
-                    >
-                      <SelectTrigger className="h-9 w-full">
-                        <SelectValue placeholder="All roles" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All roles</SelectItem>
-                        <SelectItem value="user">User</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="super_admin">
-                          Super admin
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    <Select
-                      value={premiumFilter ?? "all"}
-                      onValueChange={(value) =>
-                        updateListQuery({
-                          premium_access_status:
-                            value === "all" ? null : value,
-                          page: null,
-                        })
-                      }
-                    >
-                      <SelectTrigger className="h-9 w-full">
-                        <SelectValue placeholder="All plans" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All plans</SelectItem>
-                        <SelectItem value="free">Free</SelectItem>
-                        <SelectItem value="premium">Premium</SelectItem>
-                        <SelectItem value="revoked">Revoked</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    <Select
-                      value={lockFilter ?? "all"}
-                      onValueChange={(value) =>
-                        updateListQuery({
-                          lock_status: value === "all" ? null : value,
-                          page: null,
-                        })
-                      }
-                    >
-                      <SelectTrigger className="h-9 w-full">
-                        <SelectValue placeholder="All access" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All access</SelectItem>
-                        <SelectItem value="unlocked">Unlocked</SelectItem>
-                        <SelectItem value="locked">Locked</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    <Select
-                      value={`${sort}:${orderBy}`}
-                      onValueChange={(value) => {
-                        const [nextSort, nextOrder] = value.split(":");
-                        updateListQuery({
-                          sort: nextSort === "created_at" ? null : nextSort,
-                          order_by:
-                            nextOrder === "desc" ? null : nextOrder,
-                          page: null,
-                        });
-                      }}
-                    >
-                      <SelectTrigger className="h-9 w-full">
-                        <SelectValue placeholder="Sort users" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="created_at:desc">
-                          Newest accounts
-                        </SelectItem>
-                        <SelectItem value="created_at:asc">
-                          Oldest accounts
-                        </SelectItem>
-                        <SelectItem value="updated_at:desc">
-                          Recently changed
-                        </SelectItem>
-                        <SelectItem value="username:asc">
-                          Username A–Z
-                        </SelectItem>
-                        <SelectItem value="username:desc">
-                          Username Z–A
-                        </SelectItem>
-                        <SelectItem value="email:asc">Email A–Z</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    <Button
-                      variant="ghost"
-                      className="h-9"
-                      disabled={activeFilterCount === 0}
-                      onClick={() => {
-                        isResettingQueryRef.current = true;
-                        setSearchInput("");
-                        router.replace(pathname, { scroll: false });
-                      }}
-                    >
-                      <IconX />
-                      Reset
-                    </Button>
-                  </div>
-                  <div className="mt-3 flex min-h-5 items-center justify-between gap-3">
-                    <p className="text-xs text-muted-foreground">
-                      Search and filters run across the full directory.
-                    </p>
-                    {isFetching && (
-                      <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-primary">
-                        Updating results
-                      </p>
-                    )}
-                  </div>
+                  <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                    Showing {firstVisible}–{lastVisible}
+                  </p>
                 </div>
+              </CardHeader>
 
-                <CardContent className="p-0">
+              <div className="border-b px-5 py-4 md:px-6">
+                <div className="grid gap-3 xl:grid-cols-[minmax(260px,1.4fr)_repeat(3,minmax(150px,0.65fr))_minmax(190px,0.8fr)_auto]">
+                  <div className="relative">
+                    <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      aria-label="Search users"
+                      className="h-9 pl-9"
+                      maxLength={100}
+                      placeholder="Search name, username, or email"
+                      value={searchInput}
+                      onChange={(event) => setSearchInput(event.target.value)}
+                    />
+                  </div>
+
+                  <Select
+                    value={roleFilter ?? "all"}
+                    onValueChange={(value) =>
+                      updateListQuery({
+                        role: value === "all" ? null : value,
+                        page: null,
+                      })
+                    }
+                  >
+                    <SelectTrigger className="h-9 w-full">
+                      <SelectValue placeholder="All roles" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All roles</SelectItem>
+                      <SelectItem value="user">User</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="super_admin">Super admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select
+                    value={premiumFilter ?? "all"}
+                    onValueChange={(value) =>
+                      updateListQuery({
+                        premium_access_status: value === "all" ? null : value,
+                        page: null,
+                      })
+                    }
+                  >
+                    <SelectTrigger className="h-9 w-full">
+                      <SelectValue placeholder="All plans" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All plans</SelectItem>
+                      <SelectItem value="free">Free</SelectItem>
+                      <SelectItem value="premium">Premium</SelectItem>
+                      <SelectItem value="revoked">Revoked</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select
+                    value={lockFilter ?? "all"}
+                    onValueChange={(value) =>
+                      updateListQuery({
+                        lock_status: value === "all" ? null : value,
+                        page: null,
+                      })
+                    }
+                  >
+                    <SelectTrigger className="h-9 w-full">
+                      <SelectValue placeholder="All access" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All access</SelectItem>
+                      <SelectItem value="unlocked">Unlocked</SelectItem>
+                      <SelectItem value="locked">Locked</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select
+                    value={`${sort}:${orderBy}`}
+                    onValueChange={(value) => {
+                      const [nextSort, nextOrder] = value.split(":");
+                      updateListQuery({
+                        sort: nextSort === "created_at" ? null : nextSort,
+                        order_by: nextOrder === "desc" ? null : nextOrder,
+                        page: null,
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="h-9 w-full">
+                      <SelectValue placeholder="Sort users" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="created_at:desc">Newest accounts</SelectItem>
+                      <SelectItem value="created_at:asc">Oldest accounts</SelectItem>
+                      <SelectItem value="updated_at:desc">Recently changed</SelectItem>
+                      <SelectItem value="username:asc">Username A–Z</SelectItem>
+                      <SelectItem value="username:desc">Username Z–A</SelectItem>
+                      <SelectItem value="email:asc">Email A–Z</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Button
+                    variant="ghost"
+                    className="h-9"
+                    disabled={activeFilterCount === 0}
+                    onClick={() => {
+                      isResettingQueryRef.current = true;
+                      setSearchInput("");
+                      router.replace(pathname, { scroll: false });
+                    }}
+                  >
+                    <IconX />
+                    Reset
+                  </Button>
+                </div>
+                <div className="mt-3 flex min-h-5 items-center justify-between gap-3">
+                  <p className="text-xs text-muted-foreground">
+                    Search and filters run across the full directory.
+                  </p>
+                  {isFetching && (
+                    <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-primary">
+                      Updating results
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <CardContent className="p-0">
                 {users.length === 0 ? (
                   <div className="flex min-h-64 flex-col items-center justify-center px-6 text-center">
                     <div className="grid size-11 place-items-center rounded-full bg-muted">
                       <IconUserCircle className="size-5 text-muted-foreground" />
                     </div>
-                    <p className="mt-3 text-sm font-medium">
-                      No accounts match this query
-                    </p>
+                    <p className="mt-3 text-sm font-medium">No accounts match this query</p>
                     <p className="mt-1 max-w-sm text-xs leading-5 text-muted-foreground">
-                      Change the search term or clear one of the account-state
-                      filters.
+                      Change the search term or clear one of the account-state filters.
                     </p>
                     {activeFilterCount > 0 && (
                       <Button
@@ -731,9 +706,8 @@ function AdminUsersPageContent() {
                       <TableBody>
                         {users.map((user) => {
                           const displayName =
-                            [user.first_name, user.last_name]
-                              .filter(Boolean)
-                              .join(" ") || user.username;
+                            [user.first_name, user.last_name].filter(Boolean).join(" ") ||
+                            user.username;
                           return (
                             <TableRow
                               key={user.id}
@@ -764,9 +738,7 @@ function AdminUsersPageContent() {
                               <TableCell>
                                 <div className="flex flex-wrap gap-1.5">
                                   <PremiumStateBadge
-                                    isPremium={hasActivePremiumAccess(
-                                      user.premium_access,
-                                    )}
+                                    isPremium={hasActivePremiumAccess(user.premium_access)}
                                     isRevoked={isUserCurrentlyRevoked(user)}
                                   />
                                   <ActiveInactiveBadge
@@ -781,21 +753,15 @@ function AdminUsersPageContent() {
                                 </div>
                               </TableCell>
                               <TableCell>
-                                <p className="text-sm">
-                                  {formatDate(user.created_at)}
-                                </p>
+                                <p className="text-sm">{formatDate(user.created_at)}</p>
                                 <p className="text-[11px] text-muted-foreground">
                                   {formatTime(user.created_at)}
                                 </p>
                               </TableCell>
                               <TableCell>
-                                <p className="text-sm">
-                                  {formatDate(getLastAccountChange(user))}
-                                </p>
+                                <p className="text-sm">{formatDate(getLastAccountChange(user))}</p>
                                 <p className="text-[11px] text-muted-foreground">
-                                  {formatRelativeTime(
-                                    getLastAccountChange(user),
-                                  )}
+                                  {formatRelativeTime(getLastAccountChange(user))}
                                 </p>
                               </TableCell>
                               <TableCell
@@ -814,42 +780,29 @@ function AdminUsersPageContent() {
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end">
-                                    <DropdownMenuItem
-                                      onClick={() =>
-                                        openUserDetailPage(user.id)
-                                      }
-                                    >
+                                    <DropdownMenuItem onClick={() => openUserDetailPage(user.id)}>
                                       <IconExternalLink />
                                       Open account file
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
-                                      onClick={() =>
-                                        openUserDetail(user, "profile")
-                                      }
+                                      onClick={() => openUserDetail(user, "profile")}
                                     >
                                       <IconPencil />
                                       Edit profile
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() => openUserDetail(user)}
-                                    >
+                                    <DropdownMenuItem onClick={() => openUserDetail(user)}>
                                       <IconClockHour4 />
                                       View audit history
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
                                       className={
-                                        user.account_status === "locked"
-                                          ? ""
-                                          : "text-destructive"
+                                        user.account_status === "locked" ? "" : "text-destructive"
                                       }
                                       disabled={
-                                        lockUserMutation.isPending ||
-                                        unlockUserMutation.isPending
+                                        lockUserMutation.isPending || unlockUserMutation.isPending
                                       }
-                                      onClick={() =>
-                                        handleToggleUserLock(user)
-                                      }
+                                      onClick={() => handleToggleUserLock(user)}
                                     >
                                       <IconLock />
                                       {user.account_status === "locked"
@@ -860,22 +813,16 @@ function AdminUsersPageContent() {
                                       className={
                                         isUserCurrentlyRevoked(user)
                                           ? ""
-                                          : hasActivePremiumAccess(
-                                                user.premium_access,
-                                              )
+                                          : hasActivePremiumAccess(user.premium_access)
                                             ? "text-destructive"
                                             : ""
                                       }
-                                      onClick={() =>
-                                        openUserDetail(user, "premium")
-                                      }
+                                      onClick={() => openUserDetail(user, "premium")}
                                     >
                                       <IconCrown />
                                       {isUserCurrentlyRevoked(user)
                                         ? "Restore premium"
-                                        : hasActivePremiumAccess(
-                                              user.premium_access,
-                                            )
+                                        : hasActivePremiumAccess(user.premium_access)
                                           ? "Revoke premium"
                                           : "Review premium"}
                                     </DropdownMenuItem>
@@ -892,8 +839,7 @@ function AdminUsersPageContent() {
 
                 <div className="flex flex-col gap-3 border-t px-5 py-4 text-sm sm:flex-row sm:items-center sm:justify-between md:px-6">
                   <p className="text-muted-foreground">
-                    Page {page} of {totalPages} · {pagination?.total_count ?? 0}{" "}
-                    total
+                    Page {page} of {totalPages} · {pagination?.total_count ?? 0} total
                   </p>
                   <div className="flex gap-2">
                     <Button
@@ -911,9 +857,7 @@ function AdminUsersPageContent() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() =>
-                        updateListQuery({ page: String(page + 1) })
-                      }
+                      onClick={() => updateListQuery({ page: String(page + 1) })}
                       disabled={!hasNext || isFetching}
                     >
                       Next
@@ -1016,10 +960,12 @@ function AdminUsersPageContent() {
           <DialogHeader>
             <DialogTitle>Manage Premium Access</DialogTitle>
             <DialogDescription>
-              {activeUserStatus === "revoked" ? "Reactivate premium access." : "Revoke premium access."}
+              {activeUserStatus === "revoked"
+                ? "Reactivate premium access."
+                : "Revoke premium access."}
             </DialogDescription>
           </DialogHeader>
-          
+
           {activeUser && (
             <div className="space-y-4 py-4">
               <div className="rounded-lg border p-4 bg-muted/20">
@@ -1029,9 +975,7 @@ function AdminUsersPageContent() {
                     <p className="text-xs text-muted-foreground">{activeUser.email}</p>
                   </div>
                   <PremiumStateBadge
-                    isPremium={hasActivePremiumAccess(
-                      activeUser.premium_access,
-                    )}
+                    isPremium={hasActivePremiumAccess(activeUser.premium_access)}
                     isRevoked={isUserCurrentlyRevoked(activeUser)}
                   />
                 </div>
@@ -1105,16 +1049,16 @@ function AdminUsersPageContent() {
               Cancel
             </Button>
             {activeUserStatus === "revoked" ? (
-              <Button 
+              <Button
                 onClick={handleReactivate}
                 disabled={!activeUser || reactivateMutation.isPending}
               >
                 {reactivateMutation.isPending ? "Submitting..." : "Reactivate Premium"}
               </Button>
             ) : activeUserStatus === "premium" ? (
-              <Button 
+              <Button
                 onClick={handleRevoke}
-                disabled={!activeUser || revokeMutation.isPending} 
+                disabled={!activeUser || revokeMutation.isPending}
                 variant="destructive"
               >
                 {revokeMutation.isPending ? "Submitting..." : "Revoke Premium"}
@@ -1193,7 +1137,10 @@ function AdminUsersPageContent() {
               <div className="rounded-md border bg-muted/20 p-2">
                 <p className="text-[11px] text-muted-foreground">Auth Events</p>
                 <p className="text-base font-semibold">
-                  {recentHistory.filter((item) => item.action_type?.toLowerCase().includes("auth")).length}
+                  {
+                    recentHistory.filter((item) => item.action_type?.toLowerCase().includes("auth"))
+                      .length
+                  }
                 </p>
               </div>
               <div className="rounded-md border bg-muted/20 p-2">
@@ -1226,7 +1173,9 @@ function AdminUsersPageContent() {
               </div>
               <div className="rounded-md border bg-muted/20 p-2">
                 <p className="text-[11px] text-muted-foreground">Last 24h</p>
-                <p className="text-base font-semibold">{activeUser?.stats?.login_attempts_24h ?? 0}</p>
+                <p className="text-base font-semibold">
+                  {activeUser?.stats?.login_attempts_24h ?? 0}
+                </p>
               </div>
             </div>
           )}
@@ -1269,7 +1218,9 @@ function AdminUsersPageContent() {
 
                       <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_260px]">
                         <div className="rounded-md bg-muted/20 p-3">
-                          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Reason</p>
+                          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                            Reason
+                          </p>
                           <p className="mt-1 text-sm break-words">
                             {event.reason || "No reason provided."}
                           </p>
@@ -1279,7 +1230,10 @@ function AdminUsersPageContent() {
                             <IconUserCircle className="size-3.5" />
                             Actor
                           </div>
-                          <p className="mt-1 text-sm font-medium break-all" title={event.actor_id || "system"}>
+                          <p
+                            className="mt-1 text-sm font-medium break-all"
+                            title={event.actor_id || "system"}
+                          >
                             {event.actor_id ? shortenID(event.actor_id) : "system"}
                           </p>
                           <p className="mt-1 text-xs text-muted-foreground">
@@ -1313,7 +1267,8 @@ function AdminUsersPageContent() {
                       <div className="mt-3 space-y-2 text-sm">
                         <p>{item.reason || "No reason provided."}</p>
                         <p className="text-xs text-muted-foreground">
-                          By: {item.changed_by ? shortenID(item.changed_by) : "system"} | IP: {item.ip_address || "-"}
+                          By: {item.changed_by ? shortenID(item.changed_by) : "system"} | IP:{" "}
+                          {item.ip_address || "-"}
                         </p>
                         <p className="text-xs text-muted-foreground break-words">
                           UA: {item.user_agent || "-"}
@@ -1343,7 +1298,9 @@ function AdminUsersPageContent() {
                     <div className="mt-3 space-y-2 text-sm">
                       <p className="break-all">Identity: {item.email_or_username}</p>
                       <p className="text-xs text-muted-foreground">IP: {item.ip_address || "-"}</p>
-                      <p className="text-xs text-muted-foreground break-words">UA: {item.user_agent || "-"}</p>
+                      <p className="text-xs text-muted-foreground break-words">
+                        UA: {item.user_agent || "-"}
+                      </p>
                       {!item.success && item.fail_reason ? (
                         <p className="text-xs text-destructive">Reason: {item.fail_reason}</p>
                       ) : null}
@@ -1358,11 +1315,7 @@ function AdminUsersPageContent() {
             <Button variant="outline" onClick={() => setIsHistoryOpen(false)}>
               Close
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => void refetchEvents()}
-              disabled={eventsLoading}
-            >
+            <Button variant="outline" onClick={() => void refetchEvents()} disabled={eventsLoading}>
               <IconRefresh className="mr-2 size-4" /> Refresh
             </Button>
           </DialogFooter>
@@ -1388,11 +1341,7 @@ function parsePositiveInteger(value: string | null, fallback: number): number {
 }
 
 function parseUserSort(value: string | null): AdminUserSort {
-  if (
-    value === "updated_at" ||
-    value === "username" ||
-    value === "email"
-  ) {
+  if (value === "updated_at" || value === "username" || value === "email") {
     return value;
   }
   return "created_at";
@@ -1409,9 +1358,7 @@ function parseRoleFilter(value: string | null): AdminUserRoleFilter | undefined 
   return undefined;
 }
 
-function parsePremiumFilter(
-  value: string | null,
-): AdminUserPremiumAccessFilter | undefined {
+function parsePremiumFilter(value: string | null): AdminUserPremiumAccessFilter | undefined {
   if (value === "free" || value === "premium" || value === "revoked") {
     return value;
   }

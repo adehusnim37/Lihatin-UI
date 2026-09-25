@@ -277,12 +277,7 @@ export function AuthenticatedTransition({
             data-authenticated-mark
             className="relative grid size-16 place-items-center rounded-[1.35rem] border border-primary-foreground/25 bg-primary-foreground/10 shadow-2xl shadow-black/10 sm:size-20"
           >
-            <svg
-              viewBox="0 0 24 24"
-              className="size-8 sm:size-10"
-              fill="none"
-              aria-hidden="true"
-            >
+            <svg viewBox="0 0 24 24" className="size-8 sm:size-10" fill="none" aria-hidden="true">
               <path
                 data-authenticated-check
                 d="m5 12.5 4.25 4.25L19.5 6.5"
@@ -298,16 +293,11 @@ export function AuthenticatedTransition({
             <span className="absolute -right-1 -top-1 size-3 rounded-full border-2 border-primary bg-third" />
           </span>
 
-          <div
-            data-authenticated-copy
-            className="mt-6 overflow-hidden px-4"
-          >
+          <div data-authenticated-copy className="mt-6 overflow-hidden px-4">
             <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary-foreground/65 sm:text-xs">
               {statusLabel}
             </p>
-            <h2 className="mt-2 text-3xl font-bold tracking-[-0.05em] sm:text-5xl">
-              {finalTitle}
-            </h2>
+            <h2 className="mt-2 text-3xl font-bold tracking-[-0.05em] sm:text-5xl">{finalTitle}</h2>
             <p className="mt-3 text-sm text-primary-foreground/70 sm:text-base">
               {finalDescription}
             </p>
@@ -320,7 +310,6 @@ export function AuthenticatedTransition({
             />
           </span>
         </div>
-
       </div>
     </div>,
     document.body,

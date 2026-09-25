@@ -37,19 +37,11 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 import { Separator } from "@/components/ui/separator";
 import { DateTimePicker24hForm } from "../ui/datepickerhour";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "../ui/badge";
 import { useEffect } from "react";
 import { useCreateLink } from "@/lib/hooks/queries/useLinksQuery";
@@ -57,8 +49,7 @@ import { hasRepeatedConsecutiveDigits } from "@/lib/validators/passcode";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { ShortLinkCutTransition } from "./short-link-cut-transition";
 
-const FRONTEND_BASE_URL =
-  process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
+const FRONTEND_BASE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
 
 const linkSchema = z.object({
   original_url: z.url({ message: "Please enter a valid URL" }),
@@ -281,9 +272,7 @@ export default function CreateLink() {
           <div className="mx-auto w-full max-w-xl flex-grow flex flex-col overflow-hidden">
             <DrawerHeader>
               <DrawerTitle>Create New Link</DrawerTitle>
-              <DrawerDescription>
-                Add a new short link to your dashboard.
-              </DrawerDescription>
+              <DrawerDescription>Add a new short link to your dashboard.</DrawerDescription>
             </DrawerHeader>
 
             <form
@@ -300,9 +289,7 @@ export default function CreateLink() {
                     className="flex flex-row items-center justify-between rounded-lg border p-4"
                   >
                     <div className="space-y-0.5">
-                      <FieldLabel className="text-base">
-                        Bulk Creation
-                      </FieldLabel>
+                      <FieldLabel className="text-base">Bulk Creation</FieldLabel>
                       <FieldDescription>
                         Enable to add multiple links at once. (Max 3 links)
                       </FieldDescription>
@@ -323,9 +310,7 @@ export default function CreateLink() {
                       <FieldSet key={field.id}>
                         {isBulky && (
                           <div className="flex items-center justify-between">
-                            <h4 className="text-sm font-medium">
-                              Link #{index + 1}
-                            </h4>
+                            <h4 className="text-sm font-medium">Link #{index + 1}</h4>
                             {fields.length > 1 && (
                               <Button
                                 type="button"
@@ -354,9 +339,7 @@ export default function CreateLink() {
                             placeholder="https://example.com"
                             {...register(`links.${index}.original_url`)}
                           />
-                          <FieldError
-                            errors={[errors.links?.[index]?.original_url]}
-                          />
+                          <FieldError errors={[errors.links?.[index]?.original_url]} />
                         </Field>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -376,9 +359,7 @@ export default function CreateLink() {
                               placeholder="my-link"
                               {...register(`links.${index}.custom_code`)}
                             />
-                            <FieldError
-                              errors={[errors.links?.[index]?.custom_code]}
-                            />
+                            <FieldError errors={[errors.links?.[index]?.custom_code]} />
                           </Field>
 
                           <Field>
@@ -388,8 +369,8 @@ export default function CreateLink() {
                               </TooltipTrigger>
                               <TooltipContent sideOffset={4} align="start">
                                 <p>
-                                  It is used to secure the link, so that only
-                                  those with the passcode can access it.
+                                  It is used to secure the link, so that only those with the
+                                  passcode can access it.
                                 </p>
                               </TooltipContent>
                             </Tooltip>
@@ -401,15 +382,11 @@ export default function CreateLink() {
                               maxLength={6}
                               {...register(`links.${index}.passcode`)}
                               onChange={(e) => {
-                                const value = e.target.value
-                                  .replace(/\D/g, "")
-                                  .slice(0, 6);
+                                const value = e.target.value.replace(/\D/g, "").slice(0, 6);
                                 setValue(`links.${index}.passcode`, value);
                               }}
                             />
-                            <FieldError
-                              errors={[errors.links?.[index]?.passcode]}
-                            />
+                            <FieldError errors={[errors.links?.[index]?.passcode]} />
                           </Field>
                         </div>
 
@@ -423,8 +400,8 @@ export default function CreateLink() {
                             </FieldLabel>
                             <TooltipContent sideOffset={4} align="start">
                               <p>
-                                Set the maximum number of clicks allowed for
-                                this link. Leave empty for unlimited clicks.
+                                Set the maximum number of clicks allowed for this link. Leave empty
+                                for unlimited clicks.
                               </p>
                             </TooltipContent>
                           </Tooltip>
@@ -435,21 +412,12 @@ export default function CreateLink() {
                               <Input
                                 placeholder="Leave empty for unlimited"
                                 inputMode="numeric"
-                                value={
-                                  field.value
-                                    ? field.value.toLocaleString("en-US")
-                                    : ""
-                                }
+                                value={field.value ? field.value.toLocaleString("en-US") : ""}
                                 onChange={(e) => {
                                   // Remove all non-digit characters
-                                  const rawValue = e.target.value.replace(
-                                    /\D/g,
-                                    "",
-                                  );
+                                  const rawValue = e.target.value.replace(/\D/g, "");
                                   // Convert to number or undefined if empty
-                                  const numValue = rawValue
-                                    ? parseInt(rawValue, 10)
-                                    : undefined;
+                                  const numValue = rawValue ? parseInt(rawValue, 10) : undefined;
                                   // Limit to max 1,000,000
                                   if (numValue && numValue > 1000000) {
                                     field.onChange(1000000);
@@ -466,9 +434,7 @@ export default function CreateLink() {
                         <Field>
                           <FieldLabel>Expires At (Optional)</FieldLabel>
                           <DateTimePicker24hForm disablePast />
-                          <FieldError
-                            errors={[errors.links?.[index]?.expires_at]}
-                          />
+                          <FieldError errors={[errors.links?.[index]?.expires_at]} />
                         </Field>
 
                         <Field>
@@ -478,9 +444,7 @@ export default function CreateLink() {
                             placeholder="Add a description..."
                             {...register(`links.${index}.description`)}
                           />
-                          <FieldError
-                            errors={[errors.links?.[index]?.description]}
-                          />
+                          <FieldError errors={[errors.links?.[index]?.description]} />
                         </Field>
 
                         <Field
@@ -497,9 +461,8 @@ export default function CreateLink() {
                               </FieldLabel>
                               <TooltipContent sideOffset={1} align="start">
                                 <p>
-                                  What is statistics? Statistics is a feature
-                                  that tracks the number of clicks on a link. If
-                                  disabled, the link will not be tracked.
+                                  What is statistics? Statistics is a feature that tracks the number
+                                  of clicks on a link. If disabled, the link will not be tracked.
                                 </p>
                               </TooltipContent>
                             </Tooltip>
@@ -508,10 +471,7 @@ export default function CreateLink() {
                             control={control}
                             name={`links.${index}.enable_stats`}
                             render={({ field }) => (
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
+                              <Switch checked={field.value} onCheckedChange={field.onChange} />
                             )}
                           />
                         </Field>
@@ -520,11 +480,7 @@ export default function CreateLink() {
                           <div className="flex items-center justify-between">
                             <FieldLabel>UTM Tags (Advanced)</FieldLabel>
                             <CollapsibleTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="w-9 p-0"
-                              >
+                              <Button variant="ghost" size="sm" className="w-9 p-0">
                                 <ChevronDown className="size-4 transition-transform duration-200 data-[state=open]:rotate-180" />
                                 <span className="sr-only">Toggle</span>
                               </Button>
@@ -564,9 +520,7 @@ export default function CreateLink() {
                               </Badge>
                               <Input
                                 placeholder="e.g. summer_sale"
-                                {...register(
-                                  `links.${index}.tags.utm_campaign`,
-                                )}
+                                {...register(`links.${index}.tags.utm_campaign`)}
                               />
                             </Field>
                             <Field>
@@ -641,11 +595,7 @@ export default function CreateLink() {
                   Cancel
                 </Button>
               </DrawerClose>
-              <Button
-                type="submit"
-                form="create-link-form"
-                disabled={createLinkMutation.isPending}
-              >
+              <Button type="submit" form="create-link-form" disabled={createLinkMutation.isPending}>
                 {createLinkMutation.isPending ? "Creating..." : "Create Link"}
                 {isBulky && "s"}
               </Button>

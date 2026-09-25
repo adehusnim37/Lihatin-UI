@@ -38,9 +38,7 @@ export default function SetupTOTPModal({
 }: SetupTOTPModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [step, setStep] = useState<"init" | "scan" | "verify" | "complete">(
-    "init"
-  );
+  const [step, setStep] = useState<"init" | "scan" | "verify" | "complete">("init");
   const [totpData, setTotpData] = useState<TOTPSetupResponse | null>(null);
   const [verificationCode, setVerificationCode] = useState("");
   const [error, setError] = useState("");
@@ -87,9 +85,7 @@ export default function SetupTOTPModal({
         setStep("scan");
       }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to setup 2FA. Please try again."
-      );
+      setError(err instanceof Error ? err.message : "Failed to setup 2FA. Please try again.");
       toast.error("Setup Failed", {
         description: err instanceof Error ? err.message : "Failed to setup 2FA",
       });
@@ -114,7 +110,7 @@ export default function SetupTOTPModal({
         toast.success("2FA Enabled", {
           description: "Two-factor authentication has been enabled successfully.",
         });
-        
+
         setTimeout(() => {
           setIsOpen(false);
           if (onSetupComplete) {
@@ -123,9 +119,7 @@ export default function SetupTOTPModal({
         }, 2000);
       }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Invalid code. Please try again."
-      );
+      setError(err instanceof Error ? err.message : "Invalid code. Please try again.");
       toast.error("Verification Failed", {
         description: err instanceof Error ? err.message : "Invalid code",
       });
@@ -181,9 +175,7 @@ export default function SetupTOTPModal({
             <IconShield className="size-5" />
             Setup Two-Factor Authentication
           </DialogTitle>
-          <DialogDescription>
-            Add an extra layer of security to your account
-          </DialogDescription>
+          <DialogDescription>Add an extra layer of security to your account</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -197,8 +189,8 @@ export default function SetupTOTPModal({
                 <div>
                   <h3 className="font-semibold text-lg">Secure Your Account</h3>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Two-factor authentication adds an extra layer of security by
-                    requiring a code from your authenticator app.
+                    Two-factor authentication adds an extra layer of security by requiring a code
+                    from your authenticator app.
                   </p>
                 </div>
               </div>
@@ -221,7 +213,7 @@ export default function SetupTOTPModal({
                 <p className="text-sm text-muted-foreground">
                   Scan this QR code with your authenticator app:
                 </p>
-                
+
                 <div className="flex justify-center w-full">
                   <div className="p-4 bg-white rounded-lg border-2 border-gray-200">
                     {qrCodeDataURL ? (
@@ -270,12 +262,10 @@ export default function SetupTOTPModal({
                 <div className="flex items-start gap-2">
                   <IconKey className="size-5 text-amber-600 shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-amber-900">
-                      Save Your Recovery Codes
-                    </p>
+                    <p className="text-sm font-medium text-amber-900">Save Your Recovery Codes</p>
                     <p className="text-xs text-amber-700 mt-1">
-                      Store these codes in a safe place. You can use them to access
-                      your account if you lose your phone.
+                      Store these codes in a safe place. You can use them to access your account if
+                      you lose your phone.
                     </p>
                   </div>
                 </div>
@@ -293,12 +283,7 @@ export default function SetupTOTPModal({
                     variant="outline"
                     size="sm"
                     className="w-full mt-2"
-                    onClick={() =>
-                      copyToClipboard(
-                        totpData.recovery_codes.join("\n"),
-                        "codes"
-                      )
-                    }
+                    onClick={() => copyToClipboard(totpData.recovery_codes.join("\n"), "codes")}
                   >
                     {copiedCodes ? (
                       <>
@@ -380,9 +365,7 @@ export default function SetupTOTPModal({
           )}
 
           {step === "scan" && (
-            <Button onClick={() => setStep("verify")}>
-              I&apos;ve Scanned the QR Code
-            </Button>
+            <Button onClick={() => setStep("verify")}>I&apos;ve Scanned the QR Code</Button>
           )}
 
           {step === "verify" && (
@@ -400,9 +383,7 @@ export default function SetupTOTPModal({
             </div>
           )}
 
-          {step === "complete" && (
-            <Button onClick={() => handleOpenChange(false)}>Close</Button>
-          )}
+          {step === "complete" && <Button onClick={() => handleOpenChange(false)}>Close</Button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>

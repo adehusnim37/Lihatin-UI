@@ -68,11 +68,9 @@ export const useLinksUIStore = create<LinksUIState>()(
       // Modal actions
       openCreateModal: () => set({ isCreateModalOpen: true }),
       closeCreateModal: () => set({ isCreateModalOpen: false }),
-      openEditModal: (linkId) =>
-        set({ isEditModalOpen: true, editingLinkId: linkId }),
-      closeEditModal: () =>
-        set({ isEditModalOpen: false, editingLinkId: null }),
+      openEditModal: (linkId) => set({ isEditModalOpen: true, editingLinkId: linkId }),
+      closeEditModal: () => set({ isEditModalOpen: false, editingLinkId: null }),
     }),
-    { name: "links-ui-store" }
-  )
+    { name: "links-ui-store" },
+  ),
 );

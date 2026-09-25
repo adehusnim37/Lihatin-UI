@@ -5,12 +5,10 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   async headers() {
-    const sharedHeaders = Object.entries(SECURITY_HEADERS).map(
-      ([key, value]) => ({
-        key,
-        value,
-      })
-    );
+    const sharedHeaders = Object.entries(SECURITY_HEADERS).map(([key, value]) => ({
+      key,
+      value,
+    }));
 
     return [
       {

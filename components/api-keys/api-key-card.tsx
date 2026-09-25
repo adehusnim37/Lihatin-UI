@@ -74,9 +74,7 @@ export function APIKeyCard({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div
-            className={`p-2 rounded-lg ${apiKey.is_active ? "bg-green-500/10" : "bg-muted"}`}
-          >
+          <div className={`p-2 rounded-lg ${apiKey.is_active ? "bg-green-500/10" : "bg-muted"}`}>
             <Key
               className={`size-4 ${apiKey.is_active ? "text-green-500" : "text-muted-foreground"}`}
             />
@@ -90,10 +88,7 @@ export function APIKeyCard({
               <code className="text-xs bg-muted px-2 py-0.5 rounded font-mono">
                 {apiKey.key_preview}
               </code>
-              <button
-                onClick={handleCopy}
-                className="p-1 rounded hover:bg-muted transition-colors"
-              >
+              <button onClick={handleCopy} className="p-1 rounded hover:bg-muted transition-colors">
                 {copied ? (
                   <Check className="size-3 text-green-500" />
                 ) : (

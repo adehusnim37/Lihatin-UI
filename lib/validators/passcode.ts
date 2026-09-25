@@ -1,7 +1,4 @@
-export function hasRepeatedConsecutiveDigits(
-  value: string,
-  minimumRepeat = 4,
-): boolean {
+export function hasRepeatedConsecutiveDigits(value: string, minimumRepeat = 4): boolean {
   if (!value) {
     return false;
   }

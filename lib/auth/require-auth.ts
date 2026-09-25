@@ -109,9 +109,7 @@ function verifyLocalAccessToken(token: string, secret: string): LocalCheckResult
   const header = safeParseJSON<{ alg?: string; typ?: string }>(
     base64UrlToBuffer(encodedHeader).toString("utf8"),
   );
-  const payload = safeParseJSON<LocalJWTClaims>(
-    base64UrlToBuffer(encodedPayload).toString("utf8"),
-  );
+  const payload = safeParseJSON<LocalJWTClaims>(base64UrlToBuffer(encodedPayload).toString("utf8"));
   if (!header || !payload || header.alg !== "HS256") {
     return { status: "invalid" };
   }

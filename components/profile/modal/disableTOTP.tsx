@@ -10,12 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  IconShieldOff,
-  IconAlertTriangle,
-  IconLock,
-  IconKey,
-} from "@tabler/icons-react";
+import { IconShieldOff, IconAlertTriangle, IconLock, IconKey } from "@tabler/icons-react";
 import { useState, useCallback } from "react";
 import { disableTOTP } from "@/lib/api/auth";
 import { Input } from "@/components/ui/input";
@@ -46,7 +41,7 @@ export default function DisableTOTPModal({
     try {
       const response = await disableTOTP(
         method === "password" ? password : undefined,
-        method === "totp" ? totpCode : undefined
+        method === "totp" ? totpCode : undefined,
       );
 
       if (response.success) {
@@ -60,11 +55,7 @@ export default function DisableTOTPModal({
         }
       }
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to disable 2FA. Please try again."
-      );
+      setError(err instanceof Error ? err.message : "Failed to disable 2FA. Please try again.");
       toast.error("Failed to Disable", {
         description: err instanceof Error ? err.message : "Please try again",
       });
@@ -100,9 +91,7 @@ export default function DisableTOTPModal({
             <IconShieldOff className="size-5 text-orange-600" />
             Disable Two-Factor Authentication
           </DialogTitle>
-          <DialogDescription>
-            Confirm your identity to disable 2FA
-          </DialogDescription>
+          <DialogDescription>Confirm your identity to disable 2FA</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -111,12 +100,10 @@ export default function DisableTOTPModal({
             <div className="flex items-start gap-2">
               <IconAlertTriangle className="size-5 text-orange-600 shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-orange-900">
-                  Security Warning
-                </p>
+                <p className="text-sm font-medium text-orange-900">Security Warning</p>
                 <p className="text-xs text-orange-700 mt-1">
-                  Disabling 2FA will make your account less secure. You can always
-                  re-enable it later.
+                  Disabling 2FA will make your account less secure. You can always re-enable it
+                  later.
                 </p>
               </div>
             </div>
@@ -190,11 +177,7 @@ export default function DisableTOTPModal({
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            variant="destructive"
-            onClick={handleDisable}
-            disabled={isLoading || !canSubmit}
-          >
+          <Button variant="destructive" onClick={handleDisable} disabled={isLoading || !canSubmit}>
             {isLoading ? "Disabling..." : "Disable 2FA"}
           </Button>
         </DialogFooter>

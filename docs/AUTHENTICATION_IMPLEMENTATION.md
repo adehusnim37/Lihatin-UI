@@ -1,14 +1,17 @@
 # Authentication Implementation - Frontend
 
 ## Overview
+
 Implementasi lengkap sistem autentikasi frontend yang terintegrasi dengan backend Lihatin-Go API.
 
 ## File yang Dibuat/Dimodifikasi
 
 ### 1. API Service Layer
+
 **File**: `lib/api/auth.ts`
 
 Service layer untuk komunikasi dengan backend API. Mencakup:
+
 - Type definitions sesuai dengan backend DTOs
 - Fungsi `login()` - Autentikasi user
 - Fungsi `register()` - Registrasi user baru
@@ -18,9 +21,11 @@ Service layer untuk komunikasi dengan backend API. Mencakup:
 - Function `isAuthenticated()` untuk check status login
 
 ### 2. Environment Configuration
+
 **File**: `.env.local`
 
 Konfigurasi untuk Backend API URL:
+
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
 ```
@@ -28,9 +33,11 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
 **Note**: Sesuaikan URL sesuai dengan backend server yang digunakan.
 
 ### 3. Login Page
+
 **File**: `app/auth/login/page.tsx`
 
 Features:
+
 - Form dengan email/username dan password
 - Client-side validation
 - Loading state dengan spinner
@@ -42,14 +49,17 @@ Features:
 - "Keep me signed in" checkbox (UI ready, logic bisa ditambahkan)
 
 Toast Messages:
+
 - ✅ Success: "Welcome back, {firstName}!"
 - ❌ Error: "Invalid credentials. Please try again."
 - ⚠️ Validation errors untuk field kosong atau invalid
 
 ### 4. Register Page
+
 **File**: `app/auth/register/page.tsx`
 
 Features:
+
 - Form dengan first_name, last_name, username, email, password
 - Confirm password validation
 - Secret code field (optional)
@@ -65,13 +75,16 @@ Features:
 - Redirect ke `/auth/check-email` setelah berhasil
 
 Toast Messages:
+
 - ✅ Success: "Please check your email to verify your account"
 - ❌ Error: Specific validation errors atau "An error occurred. Please try again."
 
 ### 5. Forgot Password Page
+
 **File**: `app/auth/forgot-password/page.tsx`
 
 Features:
+
 - Form dengan email input
 - Email format validation
 - Loading state dengan spinner
@@ -80,12 +93,14 @@ Features:
 - Backend always returns success (anti email enumeration)
 
 Toast Messages:
+
 - ✅ Success: "If an account with that email exists, a password reset link has been sent"
 - ❌ Error: "Unable to send reset link. Please try again."
 
 ## Backend API Endpoints
 
 ### Login
+
 ```
 POST /api/v1/auth/login
 Content-Type: application/json
@@ -132,6 +147,7 @@ Response:
 ```
 
 ### Register
+
 ```
 POST /api/v1/auth/register
 Content-Type: application/json
@@ -165,6 +181,7 @@ Response:
 ```
 
 ### Forgot Password
+
 ```
 POST /api/v1/auth/forgot-password
 Content-Type: application/json
@@ -189,10 +206,12 @@ Response (always 200 OK):
 ## Validation Rules
 
 ### Login
+
 - Email/Username: Required, min 3 chars
 - Password: Required, min 8 chars
 
 ### Register
+
 - First Name: Required, 2-50 chars
 - Last Name: Required, 2-50 chars
 - Username: Required, 3-30 chars, alphanumeric only
@@ -206,28 +225,33 @@ Response (always 200 OK):
 - Terms & Conditions: Must be checked
 
 ### Forgot Password
+
 - Email: Required, valid email format
 
 ## Error Handling
 
 Semua error dari backend ditangani dengan:
+
 1. Try-catch block
 2. Toast notification dengan pesan error
 3. Console.error untuk debugging
 4. Loading state yang di-reset
 
 Error responses dari backend akan menampilkan:
+
 - `message` field sebagai description di toast
 - Field-specific errors jika ada di `error` object
 
 ## Token Management
 
 Tokens disimpan di localStorage:
+
 - `access_token`: JWT token untuk authenticated requests
 - `refresh_token`: Token untuk refresh access token
 - `user`: User data (JSON string)
 
 Helper functions tersedia:
+
 - `saveTokens(accessToken, refreshToken)`
 - `getAccessToken()`
 - `getRefreshToken()`
@@ -240,6 +264,7 @@ Helper functions tersedia:
 ## User Flow
 
 ### Login Flow
+
 1. User mengisi form login
 2. Client-side validation
 3. API call ke `/auth/login`
@@ -250,6 +275,7 @@ Helper functions tersedia:
 5. Jika error: Show toast notification
 
 ### Register Flow
+
 1. User mengisi form register
 2. Comprehensive client-side validation
 3. API call ke `/auth/register`
@@ -259,6 +285,7 @@ Helper functions tersedia:
 5. Jika error: Show toast notification
 
 ### Forgot Password Flow
+
 1. User mengisi email
 2. Email validation
 3. API call ke `/auth/forgot-password`
@@ -268,6 +295,7 @@ Helper functions tersedia:
 ## Next Steps
 
 ### TODO: Features yang bisa ditambahkan
+
 1. **Refresh Token Logic**
    - Implement auto-refresh when access token expires
    - Add interceptor untuk handle 401 responses
@@ -314,6 +342,7 @@ Helper functions tersedia:
 ## Testing
 
 ### Manual Testing Checklist
+
 - [ ] Login dengan credentials valid
 - [ ] Login dengan credentials invalid
 - [ ] Register dengan data valid
@@ -327,7 +356,9 @@ Helper functions tersedia:
 - [ ] Validation errors tampil dengan jelas
 
 ### Backend Requirements
+
 Pastikan backend sudah running dan:
+
 - [ ] CORS enabled untuk frontend URL
 - [ ] Environment variables configured
 - [ ] Database connected
@@ -344,20 +375,24 @@ Pastikan backend sudah running dan:
 ## Troubleshooting
 
 ### CORS Error
+
 - Pastikan backend configure CORS dengan benar
 - Check `Access-Control-Allow-Origin` header di response
 
 ### Network Error
+
 - Check apakah backend server sudah running
 - Verify `NEXT_PUBLIC_API_URL` di `.env.local`
 - Check browser console untuk error details
 
 ### Token Not Saved
+
 - Check browser localStorage
 - Verify browser tidak dalam private/incognito mode
 - Check console untuk errors
 
 ### Toast Not Showing
+
 - Verify Sonner toaster sudah di-configure di layout
 - Check import dari `sonner` package
 

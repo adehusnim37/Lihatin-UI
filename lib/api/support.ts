@@ -14,11 +14,7 @@ export type SupportCategory =
   | "suspicious_link"
   | "other";
 
-export type SupportTicketStatus =
-  | "open"
-  | "in_progress"
-  | "resolved"
-  | "closed";
+export type SupportTicketStatus = "open" | "in_progress" | "resolved" | "closed";
 
 export type SupportPriority = "low" | "normal" | "high" | "urgent";
 
@@ -125,10 +121,7 @@ export interface AdminSupportTicketDetailResponse {
 }
 
 export type AdminSupportAction =
-  | "unlock_user"
-  | "activate_user"
-  | "resend_verification"
-  | "manual_response";
+  "unlock_user" | "activate_user" | "resend_verification" | "manual_response";
 
 export interface AdminUpdateSupportTicketRequest {
   status: SupportTicketStatus;
@@ -330,10 +323,13 @@ export async function downloadPublicSupportAttachment(params: {
 }
 
 export async function revokePublicSupportAccess(ticket: string): Promise<void> {
-  const response = await fetch(`${API_URL}/support/tickets/${encodeURIComponent(ticket)}/access/logout`, {
-    method: "POST",
-    credentials: "include",
-  });
+  const response = await fetch(
+    `${API_URL}/support/tickets/${encodeURIComponent(ticket)}/access/logout`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
   if (!response.ok && response.status !== 204) {
     throw new Error("Failed to end support session");
   }
@@ -351,10 +347,8 @@ export async function listAdminSupportTickets(params?: {
   const query = new URLSearchParams();
 
   if (params?.status && params.status !== "all") query.set("status", params.status);
-  if (params?.category && params.category !== "all")
-    query.set("category", params.category);
-  if (params?.priority && params.priority !== "all")
-    query.set("priority", params.priority);
+  if (params?.category && params.category !== "all") query.set("category", params.category);
+  if (params?.priority && params.priority !== "all") query.set("priority", params.priority);
   if (params?.page) query.set("page", String(params.page));
   if (params?.limit) query.set("limit", String(params.limit));
   if (params?.search) query.set("search", params.search);
@@ -459,10 +453,13 @@ export async function sendAdminSupportMessage(
     formData.append("attachments", file);
   }
 
-  const response = await fetchWithAuth(`${API_URL}/auth/admin/support/tickets/${encodeURIComponent(id)}/messages`, {
-    method: "POST",
-    body: formData,
-  });
+  const response = await fetchWithAuth(
+    `${API_URL}/auth/admin/support/tickets/${encodeURIComponent(id)}/messages`,
+    {
+      method: "POST",
+      body: formData,
+    },
+  );
 
   const result: APIResponse<SupportMessageResponse> = await response.json();
   if (!response.ok) {
@@ -535,10 +532,13 @@ export async function sendUserSupportMessage(
     formData.append("attachments", file);
   }
 
-  const response = await fetchWithAuth(`${API_URL}/auth/support/tickets/${encodeURIComponent(id)}/messages`, {
-    method: "POST",
-    body: formData,
-  });
+  const response = await fetchWithAuth(
+    `${API_URL}/auth/support/tickets/${encodeURIComponent(id)}/messages`,
+    {
+      method: "POST",
+      body: formData,
+    },
+  );
 
   const result: APIResponse<SupportMessageResponse> = await response.json();
   if (!response.ok) {

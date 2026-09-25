@@ -29,12 +29,7 @@ import { LinkQRCode } from "@/components/links/detail/link-qrcode";
 import { UpdateClickLimitDialog } from "@/components/links/detail/update-click-limit";
 import { RulesCard } from "@/components/links/detail/rules-card";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
@@ -84,10 +79,7 @@ export default function LinkDetailPage() {
     utm_content: "",
   });
 
-  const handleUpdate = async (
-    data: UpdateShortLinkRequest,
-    successMessage: string,
-  ) => {
+  const handleUpdate = async (data: UpdateShortLinkRequest, successMessage: string) => {
     try {
       await updateLink.mutateAsync({ code, data });
       toast.success(successMessage);
@@ -140,21 +132,14 @@ export default function LinkDetailPage() {
       toast.error("Original URL cannot be empty");
       return;
     }
-    if (
-      await handleUpdate({ original_url: urlInput }, "Original URL updated!")
-    ) {
+    if (await handleUpdate({ original_url: urlInput }, "Original URL updated!")) {
       setIsEditingUrl(false);
     }
   };
 
   const handleSaveDescription = async () => {
     // Description can be empty
-    if (
-      await handleUpdate(
-        { description: descriptionInput },
-        "Description updated!",
-      )
-    ) {
+    if (await handleUpdate({ description: descriptionInput }, "Description updated!")) {
       setIsEditingDescription(false);
     }
   };
@@ -184,10 +169,7 @@ export default function LinkDetailPage() {
     toast.success("Link copied to clipboard");
   };
 
-  const handleUpdateExpiration = async (
-    shortCode: string,
-    data: { expires_at: string | null },
-  ) => {
+  const handleUpdateExpiration = async (shortCode: string, data: { expires_at: string | null }) => {
     await updateLink.mutateAsync({ code: shortCode, data });
     toast.success("Expiration updated successfully");
   };
@@ -210,9 +192,7 @@ export default function LinkDetailPage() {
           <SiteHeader />
           <div className="flex flex-1 flex-col items-center justify-center p-10 space-y-4">
             <TriangleAlert className="size-12 text-destructive opacity-50" />
-            <h2 className="text-xl font-bold text-foreground">
-              Link Not Found
-            </h2>
+            <h2 className="text-xl font-bold text-foreground">Link Not Found</h2>
             <Button variant="secondary" onClick={() => router.back()}>
               Go Back
             </Button>
@@ -224,22 +204,18 @@ export default function LinkDetailPage() {
 
   const host = (
     process.env.NEXT_PUBLIC_FRONTEND_URL ||
-    (typeof window !== "undefined"
-      ? window.location.origin
-      : "http://localhost:3000")
+    (typeof window !== "undefined" ? window.location.origin : "http://localhost:3000")
   ).replace(/\/+$/, "");
   const fullUrl = `${host}/${link.short_code}`;
 
   // Calculate Progress if limit exists
   const clickLimit = link.detail?.click_limit || 0;
   const currentClicks = link.detail?.current_clicks || 0;
-  const progressPercent =
-    clickLimit > 0 ? Math.min((currentClicks / clickLimit) * 100, 100) : 0;
+  const progressPercent = clickLimit > 0 ? Math.min((currentClicks / clickLimit) * 100, 100) : 0;
   const ringRadius = 84;
   const ringStroke = 24;
   const ringCircumference = 2 * Math.PI * ringRadius;
-  const ringOffset =
-    ringCircumference * (1 - Math.max(0, Math.min(progressPercent, 100)) / 100);
+  const ringOffset = ringCircumference * (1 - Math.max(0, Math.min(progressPercent, 100)) / 100);
 
   return (
     <SidebarProvider
@@ -257,14 +233,9 @@ export default function LinkDetailPage() {
         <div className="flex flex-1 flex-col p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-8">
           {/* Banned Alert */}
           {link.detail?.is_banned && (
-            <Alert
-              variant="destructive"
-              className="border-destructive/20 bg-destructive/10"
-            >
+            <Alert variant="destructive" className="border-destructive/20 bg-destructive/10">
               <TriangleAlert className="size-5" />
-              <AlertTitle className="text-lg font-semibold ml-2">
-                Link Banned
-              </AlertTitle>
+              <AlertTitle className="text-lg font-semibold ml-2">Link Banned</AlertTitle>
               <AlertDescription className="ml-2 mt-1">
                 This link has been suspended due to:{" "}
                 <span className="font-medium">{link.detail.banned_reason}</span>
@@ -346,15 +317,14 @@ export default function LinkDetailPage() {
                 )}
                 <Separator orientation="vertical" className="h-3" />
                 <span className="flex items-center gap-1.5">
-                  <MousePointerClick className="size-3.5" />{" "}
-                  {link.detail?.current_clicks || 0} clicks
+                  <MousePointerClick className="size-3.5" /> {link.detail?.current_clicks || 0}{" "}
+                  clicks
                 </span>
                 {link.detail?.custom_domain && (
                   <>
                     <Separator orientation="vertical" className="h-3" />
                     <span className="flex items-center gap-1.5 text-blue-500">
-                      <Globe className="size-3.5" />{" "}
-                      {link.detail.custom_domain}
+                      <Globe className="size-3.5" /> {link.detail.custom_domain}
                     </span>
                   </>
                 )}
@@ -421,8 +391,7 @@ export default function LinkDetailPage() {
                               autoFocus
                               disabled={isCheckingSlug}
                               onKeyDown={(e) => {
-                                if (e.key === "Enter" && !isCheckingSlug)
-                                  handleSaveSlug();
+                                if (e.key === "Enter" && !isCheckingSlug) handleSaveSlug();
                                 if (e.key === "Escape") {
                                   setIsEditing(false);
                                   setSlugInput(code);
@@ -473,10 +442,7 @@ export default function LinkDetailPage() {
                             tabIndex={0}
                           >
                             <span className="text-2xl sm:text-3xl font-bold tracking-tighter text-primary break-all hover:underline decoration-primary/30 underline-offset-4 transition-all">
-                              {host}/
-                              <span className="text-foreground">
-                                {link.short_code}
-                              </span>
+                              {host}/<span className="text-foreground">{link.short_code}</span>
                             </span>
                           </div>
                           <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity ml-2">
@@ -564,9 +530,7 @@ export default function LinkDetailPage() {
                       ) : (
                         <p
                           className="text-sm font-medium break-all whitespace-pre-wrap text-foreground hover:underline cursor-pointer"
-                          onClick={() =>
-                            window.open(link.original_url, "_blank")
-                          }
+                          onClick={() => window.open(link.original_url, "_blank")}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === " ") {
                               e.preventDefault();
@@ -611,8 +575,7 @@ export default function LinkDetailPage() {
                   <CardHeader className="pb-3 border-b relative z-10">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base font-medium text-foreground flex items-center gap-2">
-                        <MousePointerClick className="size-4 text-primary" />{" "}
-                        Activity
+                        <MousePointerClick className="size-4 text-primary" /> Activity
                       </CardTitle>
                       <Button
                         variant="ghost"
@@ -661,17 +624,14 @@ export default function LinkDetailPage() {
                         <span className="text-4xl font-bold text-foreground">
                           {currentClicks.toLocaleString()}
                         </span>
-                        <span className="text-sm text-muted-foreground">
-                          Clicks
-                        </span>
+                        <span className="text-sm text-muted-foreground">Clicks</span>
                       </div>
                     </div>
 
                     <div className="text-center text-sm text-muted-foreground mt-4">
                       {clickLimit > 0 ? (
                         <span>
-                          Limit: {clickLimit.toLocaleString()} (
-                          {Math.round(progressPercent)}%)
+                          Limit: {clickLimit.toLocaleString()} ({Math.round(progressPercent)}%)
                         </span>
                       ) : (
                         <span className="flex items-center justify-center gap-2">
@@ -767,11 +727,7 @@ export default function LinkDetailPage() {
                           >
                             Cancel
                           </Button>
-                          <Button
-                            size="sm"
-                            onClick={handleSaveDescription}
-                            className="h-8 px-2"
-                          >
+                          <Button size="sm" onClick={handleSaveDescription} className="h-8 px-2">
                             Save
                           </Button>
                         </div>
@@ -811,13 +767,7 @@ export default function LinkDetailPage() {
                         strokeWidth="4"
                         strokeLinejoin="round"
                       />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="10"
-                        fill="currentColor"
-                        fillOpacity="0.2"
-                      />
+                      <circle cx="50" cy="50" r="10" fill="currentColor" fillOpacity="0.2" />
                       <path
                         d="M50 20V10M80 50H90M50 80V90M20 50H10"
                         stroke="currentColor"
@@ -941,26 +891,22 @@ export default function LinkDetailPage() {
                               {
                                 k: "source",
                                 v: link.detail.utm_source,
-                                color:
-                                  "bg-blue-50 text-blue-700 border-blue-200",
+                                color: "bg-blue-50 text-blue-700 border-blue-200",
                               },
                               {
                                 k: "medium",
                                 v: link.detail.utm_medium,
-                                color:
-                                  "bg-purple-50 text-purple-700 border-purple-200",
+                                color: "bg-purple-50 text-purple-700 border-purple-200",
                               },
                               {
                                 k: "campaign",
                                 v: link.detail.utm_campaign,
-                                color:
-                                  "bg-pink-50 text-pink-700 border-pink-200",
+                                color: "bg-pink-50 text-pink-700 border-pink-200",
                               },
                               {
                                 k: "content",
                                 v: link.detail.utm_content,
-                                color:
-                                  "bg-orange-50 text-orange-700 border-orange-200",
+                                color: "bg-orange-50 text-orange-700 border-orange-200",
                               },
                             ].map((tag) =>
                               tag.v ? (
@@ -978,9 +924,7 @@ export default function LinkDetailPage() {
                           </div>
                         ) : (
                           <div className="h-full flex items-center justify-center min-h-[60px] relative group">
-                            <span className="text-sm text-muted-foreground/60 italic">
-                              No tags
-                            </span>
+                            <span className="text-sm text-muted-foreground/60 italic">No tags</span>
                           </div>
                         )}
                       </>

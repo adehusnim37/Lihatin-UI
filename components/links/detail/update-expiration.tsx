@@ -36,10 +36,7 @@ interface UpdateExpirationDialogProps {
   currentExpiration?: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onUpdate: (
-    code: string,
-    data: { expires_at: string | null },
-  ) => Promise<unknown>;
+  onUpdate: (code: string, data: { expires_at: string | null }) => Promise<unknown>;
 }
 
 export function UpdateExpirationDialog({

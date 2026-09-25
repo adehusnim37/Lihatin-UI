@@ -50,7 +50,7 @@ export function CounterInput({
     <div
       className={cn(
         "flex h-10 w-full items-stretch overflow-hidden rounded-lg border bg-background shadow-xs transition-[border-color,box-shadow] focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
-        className
+        className,
       )}
       role="group"
       aria-label="Number stepper"

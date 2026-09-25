@@ -23,12 +23,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import {
-  Suspense,
-  useEffect,
-  useRef,
-  type PointerEvent as ReactPointerEvent,
-} from "react";
+import { Suspense, useEffect, useRef, type PointerEvent as ReactPointerEvent } from "react";
 
 gsap.registerPlugin(MorphSVGPlugin, MotionPathPlugin);
 
@@ -50,8 +45,7 @@ const errorConfig: Record<string, ErrorConfig> = {
     title: "This link leads nowhere.",
   },
   expired: {
-    description:
-      "The owner placed a time limit on this link and its access window has now closed.",
+    description: "The owner placed a time limit on this link and its access window has now closed.",
     eyebrow: "Access window closed",
     icon: Clock3,
     signal: "Link expired",
@@ -66,8 +60,7 @@ const errorConfig: Record<string, ErrorConfig> = {
     title: "We stopped this route.",
   },
   click_limit: {
-    description:
-      "This link has reached the maximum number of visits allowed by its owner.",
+    description: "This link has reached the maximum number of visits allowed by its owner.",
     eyebrow: "Capacity reached",
     icon: BatteryWarning,
     signal: "Limit reached",
@@ -140,12 +133,8 @@ function ErrorVisual({
     media.add("(prefers-reduced-motion: no-preference)", () => {
       const context = gsap.context(() => {
         const plane = visual.querySelector<SVGGElement>("[data-error-plane]");
-        const planeBody = visual.querySelector<SVGGElement>(
-          "[data-error-plane-body]",
-        );
-        const planePath = visual.querySelector<SVGPathElement>(
-          "[data-error-plane-path]",
-        );
+        const planeBody = visual.querySelector<SVGGElement>("[data-error-plane-body]");
+        const planePath = visual.querySelector<SVGPathElement>("[data-error-plane-path]");
 
         if (!plane || !planeBody || !planePath) {
           return;
@@ -569,10 +558,7 @@ function ErrorVisual({
   const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
     const visual = visualRef.current;
 
-    if (
-      !visual ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
+    if (!visual || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return;
     }
 
@@ -602,19 +588,14 @@ function ErrorVisual({
       return;
     }
 
-    gsap.to(
-      visual.querySelectorAll(
-        "[data-error-scene], [data-error-foreground]",
-      ),
-      {
-        duration: 0.8,
-        ease: "power3.out",
-        rotationX: 0,
-        rotationY: 0,
-        x: 0,
-        y: 0,
-      },
-    );
+    gsap.to(visual.querySelectorAll("[data-error-scene], [data-error-foreground]"), {
+      duration: 0.8,
+      ease: "power3.out",
+      rotationX: 0,
+      rotationY: 0,
+      x: 0,
+      y: 0,
+    });
   };
 
   return (
@@ -656,12 +637,7 @@ function ErrorVisual({
           </defs>
 
           <rect width="680" height="560" fill="url(#error-stage)" />
-          <path
-            data-error-blob
-            d={morphPaths[0]}
-            fill="url(#error-blob-fill)"
-            opacity="0.56"
-          />
+          <path data-error-blob d={morphPaths[0]} fill="url(#error-blob-fill)" opacity="0.56" />
           <circle
             cx="340"
             cy="280"
@@ -731,23 +707,17 @@ function ErrorVisual({
             strokeLinecap="round"
             strokeWidth="4"
           />
-          <ellipse
-            cx="556"
-            cy="438"
-            rx="66"
-            ry="13"
-            fill="var(--foreground)"
-            opacity="0.07"
-          />
+          <ellipse cx="556" cy="438" rx="66" ry="13" fill="var(--foreground)" opacity="0.07" />
 
-          <g
-            fill="none"
-            stroke="var(--foreground)"
-            strokeLinecap="round"
-            strokeWidth="12"
-          >
-            <path d="M319 249L300 230C283 213 256 213 239 230L216 253C199 270 199 297 216 314L235 333" opacity="0.2" />
-            <path d="M361 311L380 330C397 347 424 347 441 330L464 307C481 290 481 263 464 246L445 227" opacity="0.2" />
+          <g fill="none" stroke="var(--foreground)" strokeLinecap="round" strokeWidth="12">
+            <path
+              d="M319 249L300 230C283 213 256 213 239 230L216 253C199 270 199 297 216 314L235 333"
+              opacity="0.2"
+            />
+            <path
+              d="M361 311L380 330C397 347 424 347 441 330L464 307C481 290 481 263 464 246L445 227"
+              opacity="0.2"
+            />
           </g>
         </svg>
 
@@ -856,38 +826,38 @@ function ErrorVisual({
           <g data-error-plane filter="url(#crash-plane-shadow)" opacity="0">
             <g data-error-plane-body>
               <g transform="translate(-105 -75)">
-              <path
-                d="M12 64C12 51 23 40 36 40H123C143 40 161 46 176 57L198 73L176 89C161 100 143 106 123 106H36C23 106 12 95 12 82Z"
-                fill="var(--card)"
-                stroke="var(--foreground)"
-                strokeLinejoin="round"
-                strokeWidth="5"
-              />
-              <path
-                d="M17 62L0 39H22L51 60M17 88L3 109H27L52 90"
-                fill="var(--third)"
-                stroke="var(--foreground)"
-                strokeLinejoin="round"
-                strokeWidth="5"
-              />
-              <path
-                d="M91 59L66 2H93L146 62ZM92 89L70 150H99L147 92Z"
-                fill="var(--primary)"
-                stroke="var(--foreground)"
-                strokeLinejoin="round"
-                strokeWidth="5"
-              />
-              <path
-                d="M136 48C151 50 164 55 175 63H131Z"
-                fill="var(--secondary)"
-                stroke="var(--foreground)"
-                strokeWidth="4"
-              />
-              <g fill="var(--primary)" stroke="var(--foreground)" strokeWidth="3">
-                <circle cx="62" cy="70" r="7" />
-                <circle cx="88" cy="70" r="7" />
-                <circle cx="114" cy="70" r="7" />
-              </g>
+                <path
+                  d="M12 64C12 51 23 40 36 40H123C143 40 161 46 176 57L198 73L176 89C161 100 143 106 123 106H36C23 106 12 95 12 82Z"
+                  fill="var(--card)"
+                  stroke="var(--foreground)"
+                  strokeLinejoin="round"
+                  strokeWidth="5"
+                />
+                <path
+                  d="M17 62L0 39H22L51 60M17 88L3 109H27L52 90"
+                  fill="var(--third)"
+                  stroke="var(--foreground)"
+                  strokeLinejoin="round"
+                  strokeWidth="5"
+                />
+                <path
+                  d="M91 59L66 2H93L146 62ZM92 89L70 150H99L147 92Z"
+                  fill="var(--primary)"
+                  stroke="var(--foreground)"
+                  strokeLinejoin="round"
+                  strokeWidth="5"
+                />
+                <path
+                  d="M136 48C151 50 164 55 175 63H131Z"
+                  fill="var(--secondary)"
+                  stroke="var(--foreground)"
+                  strokeWidth="4"
+                />
+                <g fill="var(--primary)" stroke="var(--foreground)" strokeWidth="3">
+                  <circle cx="62" cy="70" r="7" />
+                  <circle cx="88" cy="70" r="7" />
+                  <circle cx="114" cy="70" r="7" />
+                </g>
                 <g data-error-propeller transform="translate(199 73)">
                   <circle
                     cx="0"
@@ -1095,9 +1065,7 @@ function LinkErrorContent() {
             className="size-8 rounded-lg sm:size-9"
             priority
           />
-          <span className="text-sm font-bold tracking-tight sm:text-base">
-            Lihat.in
-          </span>
+          <span className="text-sm font-bold tracking-tight sm:text-base">Lihat.in</span>
         </Link>
         <Link
           href={supportHref}
@@ -1149,18 +1117,13 @@ function LinkErrorContent() {
                   <p className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                     Diagnostic detail
                   </p>
-                  <p className="mt-1 break-words text-sm leading-6 text-foreground/75">
-                    {message}
-                  </p>
+                  <p className="mt-1 break-words text-sm leading-6 text-foreground/75">{message}</p>
                 </div>
               </div>
             </div>
           )}
 
-          <div
-            data-error-reveal
-            className="mt-8 flex flex-col gap-3 min-[430px]:flex-row"
-          >
+          <div data-error-reveal className="mt-8 flex flex-col gap-3 min-[430px]:flex-row">
             {passcodeRetry && (
               <Button asChild size="lg" className="group rounded-full px-6">
                 <Link href={passcodeHref}>

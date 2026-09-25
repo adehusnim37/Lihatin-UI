@@ -1,19 +1,13 @@
-"use client"
+"use client";
 
-import { IconExternalLink, IconEye, IconCopy } from "@tabler/icons-react"
-import { toast } from "sonner"
+import { IconExternalLink, IconEye, IconCopy } from "@tabler/icons-react";
+import { toast } from "sonner";
 
-import { Badge } from "@/components/ui/badge"
-import { ActiveInactiveBadge } from "@/components/ui/app-status-badges"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Badge } from "@/components/ui/badge";
+import { ActiveInactiveBadge } from "@/components/ui/app-status-badges";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ShortLink {
   id: string;
@@ -97,9 +91,7 @@ export function RecentLinksTable({ links = [], isLoading = false }: RecentLinksT
                       className="inline-flex w-full min-w-0 items-center gap-1 text-xs text-muted-foreground hover:text-primary"
                       title={link.original_url}
                     >
-                      <span className="block min-w-0 flex-1 truncate">
-                        {link.original_url}
-                      </span>
+                      <span className="block min-w-0 flex-1 truncate">{link.original_url}</span>
                       <IconExternalLink className="size-3 flex-shrink-0" />
                     </a>
                   </div>

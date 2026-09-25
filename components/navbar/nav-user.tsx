@@ -1,19 +1,15 @@
-"use client"
+"use client";
 
-import { useState, useSyncExternalStore } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useSyncExternalStore } from "react";
+import { useRouter } from "next/navigation";
 import {
   IconDeviceDesktop,
   IconDotsVertical,
   IconLogout,
   IconShield,
   IconUserCircle,
-} from "@tabler/icons-react"
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+} from "@tabler/icons-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,107 +18,103 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
-import { useAuth } from "@/app/context/AuthContext"
-import { LogoutTransition } from "@/components/auth/logout-transition"
+} from "@/components/ui/sidebar";
+import { useAuth } from "@/app/context/AuthContext";
+import { LogoutTransition } from "@/components/auth/logout-transition";
 
 interface UserData {
-  id: string
-  username: string
-  first_name: string
-  last_name: string
-  email: string
-  avatar: string
-  role: string
+  id: string;
+  username: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  avatar: string;
+  role: string;
 }
 
-const USER_STORAGE_UPDATED_EVENT = "user-storage-updated"
+const USER_STORAGE_UPDATED_EVENT = "user-storage-updated";
 
-let cachedUserRaw: string | null = null
-let cachedUserSnapshot: UserData | null = null
+let cachedUserRaw: string | null = null;
+let cachedUserSnapshot: UserData | null = null;
 
 const readUserFromStorage = (): UserData | null => {
   if (typeof window === "undefined") {
-    return null
+    return null;
   }
 
-  const savedUser = localStorage.getItem("user")
+  const savedUser = localStorage.getItem("user");
   if (savedUser === cachedUserRaw) {
-    return cachedUserSnapshot
+    return cachedUserSnapshot;
   }
 
-  cachedUserRaw = savedUser
+  cachedUserRaw = savedUser;
 
   if (!savedUser) {
-    cachedUserSnapshot = null
-    return null
+    cachedUserSnapshot = null;
+    return null;
   }
 
   try {
-    cachedUserSnapshot = JSON.parse(savedUser) as UserData
-    return cachedUserSnapshot
+    cachedUserSnapshot = JSON.parse(savedUser) as UserData;
+    return cachedUserSnapshot;
   } catch {
-    cachedUserSnapshot = null
-    return null
+    cachedUserSnapshot = null;
+    return null;
   }
-}
+};
 
 const subscribeToUserStorage = (onStoreChange: () => void) => {
   if (typeof window === "undefined") {
-    return () => {}
+    return () => {};
   }
 
-  const handler = () => onStoreChange()
-  window.addEventListener("storage", handler)
-  window.addEventListener("focus", handler)
-  window.addEventListener(USER_STORAGE_UPDATED_EVENT, handler)
+  const handler = () => onStoreChange();
+  window.addEventListener("storage", handler);
+  window.addEventListener("focus", handler);
+  window.addEventListener(USER_STORAGE_UPDATED_EVENT, handler);
 
   return () => {
-    window.removeEventListener("storage", handler)
-    window.removeEventListener("focus", handler)
-    window.removeEventListener(USER_STORAGE_UPDATED_EVENT, handler)
-  }
-}
+    window.removeEventListener("storage", handler);
+    window.removeEventListener("focus", handler);
+    window.removeEventListener(USER_STORAGE_UPDATED_EVENT, handler);
+  };
+};
 
 export function NavUser() {
-  const { isMobile } = useSidebar()
-  const [isLoading, setIsLoading] = useState(false)
-  const [showLogoutTransition, setShowLogoutTransition] = useState(false)
-  const user = useSyncExternalStore(
-    subscribeToUserStorage,
-    readUserFromStorage,
-    () => null
-  )
+  const { isMobile } = useSidebar();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showLogoutTransition, setShowLogoutTransition] = useState(false);
+  const user = useSyncExternalStore(subscribeToUserStorage, readUserFromStorage, () => null);
 
-  const router = useRouter()
-  const auth = useAuth()
+  const router = useRouter();
+  const auth = useAuth();
 
   // Get display name and initials
-  const displayName = user ? `${user.first_name} ${user.last_name}` : "User"
-  const initials = user 
-    ? `${user.first_name?.[0] || ""}${user.last_name?.[0] || ""}`.toUpperCase() 
-    : "U"
+  const displayName = user ? `${user.first_name} ${user.last_name}` : "User";
+  const initials = user
+    ? `${user.first_name?.[0] || ""}${user.last_name?.[0] || ""}`.toUpperCase()
+    : "U";
 
   const handleLogout = () => {
-    if (isLoading) return
+    if (isLoading) return;
 
-    setIsLoading(true)
-    setShowLogoutTransition(true)
-  }
+    setIsLoading(true);
+    setShowLogoutTransition(true);
+  };
 
   const completeLogout = async () => {
-    await auth.logout()
-  }
+    await auth.logout();
+  };
 
   const handleProfilePage = () => {
-    router.push('/profile/me')
-  }
+    router.push("/profile/me");
+  };
 
   return (
     <SidebarMenu>
@@ -176,7 +168,7 @@ export function NavUser() {
                 <IconShield />
                 MFA/2FA
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push('/profile/me?tab=session')}>
+              <DropdownMenuItem onClick={() => router.push("/profile/me?tab=session")}>
                 <IconDeviceDesktop />
                 Session
               </DropdownMenuItem>
@@ -189,10 +181,7 @@ export function NavUser() {
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
-      <LogoutTransition
-        active={showLogoutTransition}
-        onComplete={completeLogout}
-      />
+      <LogoutTransition active={showLogoutTransition} onComplete={completeLogout} />
     </SidebarMenu>
-  )
+  );
 }
