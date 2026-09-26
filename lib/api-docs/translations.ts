@@ -244,6 +244,11 @@ export const guideTranslations = {
     id: "Akun non-premium mendapat 50 request per jam. Akun premium mendapat 100 request per 10 menit. Batas dihitung bersama untuk seluruh API key dan endpoint short link dalam satu akun, meskipun IP berbeda.",
     en: "Non-premium accounts get 50 requests per hour. Premium accounts get 100 requests per 10 minutes. The limit is shared across all API keys and short-link endpoints on one account, even from different IPs.",
   },
+  authThrottleLabel: { id: "Perlindungan autentikasi", en: "Authentication protection" },
+  authThrottleDesc: {
+    id: "Sebelum autentikasi, maksimal 120 request per menit per IP. Setelah 10 kegagalan tercatat untuk pasangan IP dan key ID dalam 15 menit, percobaan berikutnya ditolak sementara. Respons 429 menyertakan Retry-After dalam detik. Kegagalan autentikasi tidak mengurangi kuota akun atau limit_usage.",
+    en: "Before authentication, each IP is limited to 120 requests per minute. After 10 recorded failures for the same IP and key ID within 15 minutes, further attempts are temporarily blocked. A 429 response includes Retry-After in seconds. Authentication failures do not spend account quota or limit_usage.",
+  },
   limitUsageLabel: { id: "limit_usage", en: "limit_usage" },
   limitUsageDesc: {
     id: "Batas total tambahan untuk satu key, bukan rate limit akun. Tidak diisi atau null saat membuat key berarti tanpa batas. Nilai 0 menolak penggunaan. Batas ini dapat diubah atau dihapus melalui edit key.",
@@ -282,8 +287,8 @@ export const guideTranslations = {
     en: "The short link code is already in use. Choose a different code.",
   },
   err429: {
-    id: "Batas request atau kuota key tercapai. Untuk rate limit sementara, tunggu sebelum mencoba lagi.",
-    en: "Request limit or key quota reached. For a temporary rate limit, wait before retrying.",
+    id: "Batas request, perlindungan autentikasi, atau kuota key tercapai. Jika ada header Retry-After, tunggu selama jumlah detik tersebut sebelum mencoba lagi.",
+    en: "A request limit, authentication guard, or key quota was reached. If Retry-After is present, wait that many seconds before retrying.",
   },
   err500: {
     id: "Terjadi masalah pada server. Catat waktu kejadian dan pesan error tanpa menyertakan secret.",

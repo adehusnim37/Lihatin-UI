@@ -314,6 +314,7 @@ export function APIReference() {
         <FieldList
           rows={[
             [t(gt.limitRateLabel), t(gt.limitRateDesc)],
+            [t(gt.authThrottleLabel), t(gt.authThrottleDesc)],
             [t(gt.limitUsageLabel), t(gt.limitUsageDesc)],
             [t(gt.quotaCountLabel), t(gt.quotaCountDesc)],
             [t(gt.ipRestrictionLabel), t(gt.ipRestrictionDesc)],
