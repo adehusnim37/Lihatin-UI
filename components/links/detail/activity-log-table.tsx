@@ -166,7 +166,12 @@ function LogDetailSheet({ log }: { log: ActivityLog }) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-8 hover:bg-muted">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="View log details"
+          className="size-8 hover:bg-muted"
+        >
           <Search className="size-4 text-muted-foreground" />
         </Button>
       </SheetTrigger>
@@ -181,7 +186,7 @@ function LogDetailSheet({ log }: { log: ActivityLog }) {
         </SheetHeader>
 
         <ScrollArea className="flex-1 min-h-0">
-          <LogDetailContent log={log} className="px-6 py-5" />
+          <LogDetailContent log={log} className="px-4 sm:px-6 py-5" />
         </ScrollArea>
       </SheetContent>
     </Sheet>

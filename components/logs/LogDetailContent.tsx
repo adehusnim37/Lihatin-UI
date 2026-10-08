@@ -1,275 +1,336 @@
 "use client";
 
+import { useId, useMemo, useState, type ReactNode } from "react";
 import { format } from "date-fns";
-import {
-  Clock3,
-  Globe,
-  Info,
-  LaptopMinimal,
-  Monitor,
-  Network,
-  Radar,
-  Server,
-  Terminal,
-} from "lucide-react";
-
-import { ActivityLog } from "@/lib/api/logs";
+import { ChevronDown, Copy, FileJson, WrapText } from "lucide-react";
+import { toast } from "sonner";
+import type { ActivityLog } from "@/lib/api/logs";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { HttpMethodBadge, HttpStatusCodeBadge } from "@/components/ui/app-status-badges";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface LogDetailContentProps {
   log: ActivityLog;
   className?: string;
 }
 
-const parseJson = (value: unknown) => {
+function parsePayload(value: unknown): unknown {
+  if (typeof value !== "string") return value;
+  if (!value.trim()) return null;
   try {
-    if (!value) return null;
-    if (typeof value === "string") {
-      const trimmed = value.trim();
-      if (!trimmed) return null;
-      if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return value;
-      return JSON.parse(trimmed);
-    }
-    return value;
+    return JSON.parse(value);
   } catch {
     return value;
   }
-};
+}
 
-const displayValue = (value: unknown) => {
-  if (value === null || value === undefined) return "-";
-  if (typeof value === "string") return value.trim() ? value : "-";
-  return String(value);
-};
+function valueText(value: unknown) {
+  return value === null || value === undefined || value === "" ? "Not recorded" : String(value);
+}
 
-const hasContent = (value: unknown) => {
-  if (value === null || value === undefined) return false;
-  if (typeof value === "string") return value.trim().length > 0;
-  return true;
-};
-
-const formatDateValue = (value: string) => {
+function recordedAt(value: string) {
   try {
-    return format(new Date(value), "PPpp");
+    return format(new Date(value), "MMM d, yyyy · HH:mm:ss");
   } catch {
     return value;
   }
-};
+}
+
+async function copyText(value: string, label: string) {
+  try {
+    await navigator.clipboard.writeText(value);
+    toast.success(`${label} copied`);
+  } catch {
+    toast.error(`Could not copy ${label.toLowerCase()}. Select and copy the text instead.`);
+  }
+}
 
 export function LogDetailContent({ log, className }: LogDetailContentProps) {
-  const headers = parseJson(log.request_headers);
-  const routeParams = parseJson(log.route_params);
-  const queryParams = parseJson(log.query_params);
-  const requestBody = parseJson(log.request_body);
-  const responseBody = parseJson(log.response_body);
-
+  const [metadataOpen, setMetadataOpen] = useState(false);
+  const metadataId = useId();
   return (
-    <div className={cn("space-y-4", className)}>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <SectionCard
-          title="Request"
-          subtitle="Inbound request context"
-          icon={<Monitor className="size-4" />}
-        >
-          <Field label="Route" value={displayValue(log.route)} mono />
-          <div className="grid grid-cols-2 gap-2">
-            <MiniStat
-              icon={<Terminal className="size-3.5" />}
-              label="Method"
-              value={displayValue(log.method)}
-            />
-            <MiniStat
-              icon={<Clock3 className="size-3.5" />}
-              label="Timestamp"
-              value={formatDateValue(log.timestamp)}
-            />
-          </div>
+    <div className={cn("min-w-0", className)}>
+      <div className="space-y-3 border-b pb-5 sm:pb-6">
+        <div className="flex flex-wrap items-center gap-2">
+          <HttpMethodBadge method={log.method} className="font-mono" />
+          <HttpStatusCodeBadge statusCode={log.status_code} className="font-mono" />
+          <span className="text-sm tabular-nums text-muted-foreground">
+            {log.response_time == null ? "Duration not recorded" : `${log.response_time} ms`}
+          </span>
+          <span className="text-sm text-muted-foreground">{valueText(log.level)}</span>
+          {log.route && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="ml-auto"
+              aria-label="Copy request route"
+              onClick={() => void copyText(log.route, "Route")}
+            >
+              <Copy className="size-4" />
+            </Button>
+          )}
+        </div>
+        <div className="flex items-start gap-2">
+          <p className="min-w-0 flex-1 font-mono text-base font-semibold leading-relaxed [overflow-wrap:anywhere] sm:text-xl">
+            {valueText(log.route)}
+          </p>
+        </div>
+        <p className="max-w-[80ch] text-sm leading-6 text-muted-foreground [overflow-wrap:anywhere]">
+          {valueText(log.message)}
+        </p>
+      </div>
 
-          {hasContent(routeParams) && (
-            <ExpandableJson
-              title="Route Params"
-              icon={<Terminal className="size-3.5" />}
-              data={routeParams}
+      <div className="grid min-w-0 gap-6 pt-5 sm:pt-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-8">
+        <div className="min-w-0">
+          <Button
+            variant="outline"
+            className="w-full justify-between lg:hidden"
+            aria-expanded={metadataOpen}
+            aria-controls={metadataId}
+            onClick={() => setMetadataOpen(!metadataOpen)}
+          >
+            Event & client details
+            <ChevronDown
+              className={cn("size-4 transition-transform", metadataOpen && "rotate-180")}
             />
-          )}
-          {hasContent(queryParams) && (
-            <ExpandableJson
-              title="Query Params"
-              icon={<Info className="size-3.5" />}
-              data={queryParams}
-            />
-          )}
-          {hasContent(requestBody) && (
-            <ExpandableJson
-              title="Request Body"
-              icon={<Server className="size-3.5" />}
-              data={requestBody}
-            />
-          )}
-          {hasContent(headers) && (
-            <ExpandableJson
-              title="Request Headers"
-              icon={<Info className="size-3.5" />}
-              data={headers}
-            />
-          )}
-        </SectionCard>
+          </Button>
+          <aside
+            id={metadataId}
+            className={cn(
+              "min-w-0 space-y-6 lg:block",
+              metadataOpen ? "mt-5 block lg:mt-0" : "hidden",
+            )}
+          >
+            <section aria-label="Event metadata">
+              <h3 className="mb-3 text-sm font-semibold">Event</h3>
+              <dl className="space-y-3 text-sm">
+                <Metadata label="Recorded">{recordedAt(log.timestamp)}</Metadata>
+                <Metadata label="Action">{valueText(log.action)}</Metadata>
+              </dl>
+            </section>
+            <section aria-label="Client metadata" className="border-t pt-5">
+              <h3 className="mb-3 text-sm font-semibold">Client</h3>
+              <dl className="space-y-3 text-sm">
+                <Metadata label="Username">{valueText(log.username)}</Metadata>
+                <Metadata label="IP address" mono>
+                  {valueText(log.ip_address)}
+                </Metadata>
+                <Metadata label="Browser">{valueText(log.browser_info)}</Metadata>
+              </dl>
+              <details className="group mt-4">
+                <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-2 rounded-md text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+                  User agent
+                  <ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180" />
+                </summary>
+                <p className="mt-1 font-mono text-xs leading-6 text-muted-foreground [overflow-wrap:anywhere]">
+                  {valueText(log.user_agent)}
+                </p>
+              </details>
+            </section>
+            <section className="border-t pt-5" aria-label="Log identifier">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold">Log ID</h3>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Copy log ID"
+                  onClick={() => void copyText(log.id, "Log ID")}
+                >
+                  <Copy className="size-4" />
+                </Button>
+              </div>
+              <p className="font-mono text-xs leading-6 text-muted-foreground [overflow-wrap:anywhere]">
+                {valueText(log.id)}
+              </p>
+            </section>
+          </aside>
+        </div>
 
-        <SectionCard
-          title="Client"
-          subtitle="Visitor and device details"
-          icon={<Globe className="size-4" />}
-        >
-          <div className="grid grid-cols-2 gap-2">
-            <MiniStat
-              icon={<Network className="size-3.5" />}
-              label="IP Address"
-              value={displayValue(log.ip_address)}
+        <Tabs defaultValue="response" className="min-w-0 gap-4">
+          <TabsList aria-label="Log payload" className="grid h-auto w-full grid-cols-4">
+            <TabsTrigger
+              value="response"
+              className="min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
+            >
+              Response
+            </TabsTrigger>
+            <TabsTrigger
+              value="request"
+              className="min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
+            >
+              Request
+            </TabsTrigger>
+            <TabsTrigger
+              value="headers"
+              className="min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
+            >
+              Headers
+            </TabsTrigger>
+            <TabsTrigger
+              value="params"
+              className="min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
+            >
+              Params
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="response" className="min-w-0">
+            <PayloadViewer
+              title="Response body"
+              value={log.response_body}
+              emptyText="No response body was recorded for this request."
             />
-            <MiniStat
-              icon={<LaptopMinimal className="size-3.5" />}
-              label="Browser"
-              value={displayValue(log.browser_info)}
+          </TabsContent>
+          <TabsContent value="request" className="min-w-0">
+            <PayloadViewer
+              title="Request body"
+              value={log.request_body}
+              emptyText="No request body was recorded. Requests such as GET often have no body."
             />
-          </div>
-          <Field label="User Agent" value={displayValue(log.user_agent)} mono />
-          <Field label="Username" value={displayValue(log.username)} />
-        </SectionCard>
-
-        <SectionCard
-          title="Response"
-          subtitle="Server response metadata"
-          icon={<Server className="size-4" />}
-          className="lg:col-span-2"
-        >
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            <MiniStat
-              icon={<Radar className="size-3.5" />}
-              label="Status"
-              value={displayValue(log.status_code)}
+          </TabsContent>
+          <TabsContent value="headers" className="min-w-0">
+            <PayloadViewer
+              title="Request headers"
+              value={log.request_headers}
+              emptyText="No request headers were recorded."
             />
-            <MiniStat
-              icon={<Clock3 className="size-3.5" />}
-              label="Response Time"
-              value={
-                log.response_time === null || log.response_time === undefined
-                  ? "-"
-                  : `${log.response_time} ms`
-              }
+          </TabsContent>
+          <TabsContent value="params" className="min-w-0 space-y-5">
+            <PayloadViewer
+              title="Route parameters"
+              value={log.route_params}
+              emptyText="No route parameters were recorded."
             />
-            <MiniStat
-              icon={<Info className="size-3.5" />}
-              label="Level"
-              value={displayValue(log.level)}
+            <PayloadViewer
+              title="Query parameters"
+              value={log.query_params}
+              emptyText="No query parameters were recorded."
             />
-          </div>
-          <Field label="Message" value={displayValue(log.message)} />
-          <Field label="Action" value={displayValue(log.action)} />
-          <Field label="Log ID" value={displayValue(log.id)} mono />
-          {hasContent(responseBody) && (
-            <ExpandableJson
-              title="Response Body"
-              icon={<Server className="size-3.5" />}
-              data={responseBody}
-              defaultOpen
-            />
-          )}
-        </SectionCard>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
 }
 
-const SectionCard = ({
-  title,
-  subtitle,
-  icon,
-  className = "",
+function Metadata({
+  label,
   children,
-}: {
-  title: string;
-  subtitle: string;
-  icon: React.ReactNode;
-  className?: string;
-  children: React.ReactNode;
-}) => (
-  <div className={`rounded-xl border bg-card p-4 shadow-sm space-y-3 ${className}`}>
-    <div className="flex items-start gap-3">
-      <div className="rounded-md bg-primary/10 p-2 text-primary-ink">{icon}</div>
-      <div>
-        <h4 className="text-sm font-semibold text-foreground">{title}</h4>
-        <p className="text-xs text-muted-foreground">{subtitle}</p>
-      </div>
-    </div>
-    <div className="space-y-2.5">{children}</div>
-  </div>
-);
-
-const Field = ({
-  label,
-  value,
   mono = false,
-  className = "",
 }: {
   label: string;
-  value: string;
+  children: ReactNode;
   mono?: boolean;
-  className?: string;
-}) => (
-  <div className="space-y-1">
-    <div className="text-xs text-muted-foreground">{label}</div>
-    <div
-      className={`rounded-md border bg-muted/30 px-3 py-2 text-sm text-foreground whitespace-pre-wrap break-all ${
-        mono ? "font-mono text-xs" : ""
-      } ${className}`}
-    >
-      {value}
+}) {
+  return (
+    <div className="grid grid-cols-[80px_minmax(0,1fr)] gap-3">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className={cn("min-w-0 leading-5 [overflow-wrap:anywhere]", mono && "font-mono text-xs")}>
+        {children}
+      </dd>
     </div>
-  </div>
-);
+  );
+}
 
-const MiniStat = ({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) => (
-  <div className="rounded-md border bg-muted/20 p-2">
-    <div className="mb-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-      {icon}
-      <span>{label}</span>
-    </div>
-    <div className="text-xs font-medium break-all">{value}</div>
-  </div>
-);
-
-const ExpandableJson = ({
+function PayloadViewer({
   title,
-  icon,
-  data,
-  defaultOpen = false,
+  value,
+  emptyText,
 }: {
   title: string;
-  icon: React.ReactNode;
-  data: unknown;
-  defaultOpen?: boolean;
-}) => (
-  <details className="rounded-md border bg-muted/20 p-2.5" open={defaultOpen}>
-    <summary className="flex cursor-pointer list-none items-center gap-1.5 text-xs font-medium text-foreground">
-      {icon}
-      {title}
-    </summary>
-    <div className="mt-2">
-      <JsonBlock data={data} />
-    </div>
-  </details>
-);
+  value: unknown;
+  emptyText: string;
+}) {
+  const [wrap, setWrap] = useState(true);
+  const payload = useMemo(() => parsePayload(value), [value]);
+  const empty = payload === null || payload === undefined;
+  const serialized = useMemo(
+    () => (empty ? "" : typeof payload === "string" ? payload : JSON.stringify(payload, null, 2)),
+    [payload, empty],
+  );
+  const isJson = typeof payload !== "string";
+  const lines = serialized.split("\n").length;
+  return (
+    <section className="min-w-0 overflow-hidden rounded-xl border">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b bg-muted/30 px-4 py-3">
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold">{title}</h3>
+          {!empty && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {isJson ? "JSON" : "Text"} · {lines} {lines === 1 ? "line" : "lines"}
+            </p>
+          )}
+        </div>
+        {!empty && (
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              aria-pressed={wrap}
+              aria-label={`Wrap lines in ${title.toLowerCase()}`}
+              onClick={() => setWrap(!wrap)}
+            >
+              <WrapText className="size-4" />
+              <span className="hidden sm:inline">Wrap</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              aria-label={`Copy ${title.toLowerCase()}`}
+              onClick={() => void copyText(serialized, title)}
+            >
+              <Copy className="size-4" />
+              Copy
+            </Button>
+          </div>
+        )}
+      </div>
+      {empty ? (
+        <div className="flex min-h-40 flex-col items-center justify-center gap-3 px-5 py-8 text-center">
+          <FileJson className="size-6 text-muted-foreground" aria-hidden="true" />
+          <p className="max-w-sm text-sm leading-6 text-muted-foreground">{emptyText}</p>
+        </div>
+      ) : (
+        <div
+          role="region"
+          aria-label={`${title}, code viewer`}
+          tabIndex={0}
+          className="max-h-[min(56dvh,640px)] min-h-40 overflow-auto bg-muted/10 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+        >
+          <pre
+            className={cn(
+              "p-4 font-mono text-[13px] leading-6 tabular-nums sm:p-5",
+              wrap ? "whitespace-pre-wrap [overflow-wrap:anywhere]" : "whitespace-pre",
+            )}
+          >
+            <code>{isJson ? <JsonText text={serialized} /> : serialized}</code>
+          </pre>
+        </div>
+      )}
+    </section>
+  );
+}
 
-const JsonBlock = ({ data }: { data: unknown }) => (
-  <div className="relative rounded-md bg-muted/30 p-3 font-mono text-[11px] text-foreground overflow-auto max-h-[320px] border">
-    <pre>{typeof data === "string" ? data : JSON.stringify(data, null, 2)}</pre>
-  </div>
-);
+function JsonText({ text }: { text: string }) {
+  const tokens = text.split(
+    /("(?:\\.|[^"\\])*"(?=\s*:)|"(?:\\.|[^"\\])*"|\b(?:true|false|null)\b|-?\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b)/g,
+  );
+  return tokens.map((token, index) => {
+    if (!token) return null;
+    const next = tokens[index + 1] ?? "";
+    const color = token.startsWith('"')
+      ? /^\s*:/.test(next)
+        ? "text-primary-ink"
+        : "text-emerald-800 dark:text-emerald-300"
+      : /^(true|false|null)$/.test(token)
+        ? "text-violet-800 dark:text-violet-300"
+        : /^-?\d/.test(token)
+          ? "text-amber-800 dark:text-amber-300"
+          : "text-foreground";
+    return (
+      <span key={index} className={color}>
+        {token}
+      </span>
+    );
+  });
+}

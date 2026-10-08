@@ -194,7 +194,7 @@ export default function HistoryActivityPage() {
       <AppSidebar />
       <SidebarInset className="min-w-0">
         <SiteHeader />
-        <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6">
+        <div className="mx-auto flex w-full min-w-0 max-w-[1328px] flex-1 flex-col gap-6 p-4 sm:p-6">
           {/* Header */}
           <div className="flex flex-col gap-1">
             <h1 className="text-3xl font-bold tracking-tight">History & Activity</h1>
@@ -694,85 +694,90 @@ export default function HistoryActivityPage() {
                   </p>
                 )}
                 <div
-                  role="region"
-                  aria-label="Activity logs, scroll horizontally for more columns"
-                  tabIndex={0}
-                  className="overflow-x-auto outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="hidden items-center gap-5 border-b bg-muted/30 px-5 py-3 text-xs font-medium text-muted-foreground md:grid md:grid-cols-[116px_minmax(0,1fr)_128px_132px_16px]"
+                  aria-hidden="true"
                 >
-                  <table className="w-full min-w-[640px]">
-                    <caption className="sr-only">
-                      Account activity logs. Use View log details to inspect an entry.
-                    </caption>
-                    <thead className="border-b bg-muted/50">
-                      <tr>
-                        <th className="text-left p-4 font-semibold text-sm">Action</th>
-                        <th className="text-left p-4 font-semibold text-sm">User</th>
-                        <th className="text-left p-4 font-semibold text-sm">Route</th>
-                        <th className="text-left p-4 font-semibold text-sm">Status</th>
-                        <th className="text-left p-4 font-semibold text-sm">Time</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {logs.map((log) => (
-                        <tr key={log.id} className="border-b hover:bg-muted/30 transition-colors">
-                          <td className="p-4">
-                            <div className="flex items-center gap-3">
-                              <div
-                                className={`p-2 rounded-lg ${getActivityColor(log.level, log.method)}`}
-                              >
-                                {getActivityIcon(log.method)}
-                              </div>
-                              <div>
-                                <button
-                                  type="button"
-                                  className="min-h-[44px] text-left font-medium text-sm rounded outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
-                                  aria-label={`View log details: ${log.action || log.message}, ${log.method}, ${formatTimestamp(log.created_at)}`}
-                                  onClick={() => setSelectedLogId(log.id)}
-                                >
-                                  {log.action || log.message}
-                                </button>
-                                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                  <span className="font-mono font-semibold">{log.method}</span>
-                                  <span>•</span>
-                                  <span>{log.level}</span>
-                                </p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-4">
-                            <div className="flex items-center gap-2">
-                              <div className="p-1.5 rounded-full bg-primary/10">
-                                <User className="size-3 text-primary-ink" />
-                              </div>
-                              <span className="text-sm">{log.username || "Anonymous"}</span>
-                            </div>
-                          </td>
-                          <td className="p-4">
-                            <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
-                              {log.route}
-                            </code>
-                          </td>
-                          <td className="p-4">
-                            <span
-                              className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                log.status_code >= 200 && log.status_code < 300
-                                  ? "bg-green-500/10 text-green-700 dark:text-green-400"
-                                  : log.status_code >= 400
-                                    ? "bg-red-500/10 text-red-600 dark:text-red-400"
-                                    : "bg-amber-500/10 text-amber-800 dark:text-amber-400"
-                              }`}
-                            >
-                              {log.status_code}
-                            </span>
-                          </td>
-                          <td className="p-4 text-sm text-muted-foreground">
-                            {formatTimestamp(log.created_at)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <span>Action</span>
+                  <span>Request & status</span>
+                  <span>User</span>
+                  <span>Time</span>
+                  <span />
                 </div>
+                <ul aria-label="Activity logs" className="divide-y">
+                  {logs.map((log) => (
+                    <li key={log.id}>
+                      <button
+                        type="button"
+                        aria-label={`View log details: ${log.action || log.message}, ${log.method} ${log.route}, status ${log.status_code}, ${log.username || "Anonymous"}, ${formatTimestamp(log.created_at)}`}
+                        onClick={() => setSelectedLogId(log.id)}
+                        className="group grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-4 py-3 text-left transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:grid-cols-[116px_minmax(0,1fr)_128px_132px_16px] md:gap-x-5 md:gap-y-0 md:px-5 md:py-3"
+                      >
+                        <span className="flex min-w-0 items-center gap-2.5">
+                          <span
+                            aria-hidden="true"
+                            className={`shrink-0 rounded-lg p-2 ${getActivityColor(log.level, log.method)}`}
+                          >
+                            {getActivityIcon(log.method)}
+                          </span>
+                          <span className="min-w-0">
+                            <span
+                              className="block truncate text-sm font-semibold"
+                              title={log.action || log.message}
+                            >
+                              {log.action || log.message}
+                            </span>
+                            <span className="block text-xs text-muted-foreground">
+                              {log.level.toLowerCase()}
+                            </span>
+                          </span>
+                        </span>
+                        <span className="col-span-2 row-start-2 flex min-w-0 flex-wrap items-center gap-2 md:flex-nowrap md:col-span-1 md:row-start-auto">
+                          <span
+                            title={`HTTP status ${log.status_code}`}
+                            className={`inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold tabular-nums ${
+                              log.status_code >= 200 && log.status_code < 300
+                                ? "bg-green-500/10 text-green-700 dark:text-green-400"
+                                : log.status_code >= 400
+                                  ? "bg-red-500/10 text-red-700 dark:text-red-400"
+                                  : "bg-amber-500/10 text-amber-800 dark:text-amber-400"
+                            }`}
+                          >
+                            <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
+                            {log.status_code}
+                          </span>
+                          <span className="shrink-0 font-mono text-[11px] font-semibold text-muted-foreground">
+                            {log.method}
+                          </span>
+                          <code
+                            title={log.route}
+                            className="min-w-0 w-full break-all font-mono text-xs leading-5 text-foreground md:w-auto md:truncate"
+                          >
+                            {log.route}
+                          </code>
+                        </span>
+                        <span className="col-start-2 row-start-1 flex min-w-0 items-center justify-end gap-1.5 text-xs text-muted-foreground md:col-start-auto md:row-start-auto md:justify-start md:text-sm">
+                          <User aria-hidden="true" className="size-3.5 shrink-0" />
+                          <span
+                            className="max-w-24 truncate md:max-w-full"
+                            title={log.username || "Anonymous"}
+                          >
+                            {log.username || "Anonymous"}
+                          </span>
+                        </span>
+                        <time
+                          dateTime={log.created_at}
+                          className="col-span-2 row-start-3 text-xs tabular-nums text-muted-foreground md:col-span-1 md:row-start-auto"
+                        >
+                          {formatTimestamp(log.created_at)}
+                        </time>
+                        <ChevronRight
+                          aria-hidden="true"
+                          className="hidden size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 md:block"
+                        />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
 
                 {/* Pagination */}
                 <div className="px-6 py-4 border-t bg-muted/30 flex flex-col sm:flex-row items-center justify-between gap-4">

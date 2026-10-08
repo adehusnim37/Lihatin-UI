@@ -11,7 +11,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { QueryError } from "@/components/query-error";
-import { HttpMethodBadge, HttpStatusCodeBadge } from "@/components/ui/app-status-badges";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLogById } from "@/lib/hooks/queries/useLogsQuery";
 import { LogDetailContent } from "@/components/logs/LogDetailContent";
@@ -34,20 +33,11 @@ export function LogDetailDialog({ logId, onClose }: LogDetailDialogProps) {
 
   return (
     <Dialog open={!!logId} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[96vw] max-w-[96vw] h-[94vh] p-0 gap-0 overflow-hidden flex flex-col xl:w-[92vw] xl:max-w-[92vw]">
-        <DialogHeader className="px-4 sm:px-6 py-4 border-b shrink-0">
+      <DialogContent className="w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] h-[calc(100dvh-1rem)] sm:w-[calc(100vw-3rem)] sm:max-w-[1180px] sm:h-[90dvh] p-0 gap-0 overflow-hidden flex flex-col rounded-xl [&>[data-slot=dialog-close]]:flex [&>[data-slot=dialog-close]]:size-11 [&>[data-slot=dialog-close]]:items-center [&>[data-slot=dialog-close]]:justify-center [&>[data-slot=dialog-close]]:top-2 [&>[data-slot=dialog-close]]:right-2">
+        <DialogHeader className="px-4 sm:px-6 py-4 border-b shrink-0 text-left pr-14">
           <DialogTitle className="flex flex-wrap items-center gap-2 pr-10">
             <History className="size-5" />
             Log Details
-            {logDetail?.data && (
-              <>
-                <HttpStatusCodeBadge
-                  statusCode={logDetail.data.status_code}
-                  className="font-mono"
-                />
-                <HttpMethodBadge method={logDetail.data.method} className="font-mono" />
-              </>
-            )}
           </DialogTitle>
           <DialogDescription>
             {logDetail?.data
@@ -57,12 +47,20 @@ export function LogDetailDialog({ logId, onClose }: LogDetailDialogProps) {
         </DialogHeader>
 
         {logDetailLoading ? (
-          <div className="flex flex-1 items-center justify-center p-12">
+          <div
+            role="status"
+            aria-label="Loading log details"
+            className="flex flex-1 items-center justify-center p-12"
+          >
             <Loader2 className="size-8 animate-spin text-muted-foreground" />
           </div>
         ) : logDetail?.data ? (
           <ScrollArea className="flex-1 min-h-0">
-            <LogDetailContent log={logDetail.data} className="px-4 sm:px-6 py-5" />
+            <LogDetailContent
+              key={logDetail.data.id}
+              log={logDetail.data}
+              className="px-4 sm:px-6 py-5"
+            />
           </ScrollArea>
         ) : (
           <div className="p-4">
