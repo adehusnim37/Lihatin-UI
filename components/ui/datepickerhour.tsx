@@ -11,6 +11,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 interface DateTimePicker24hFormProps {
+  id?: string;
+  ariaLabel?: string;
   disablePast?: boolean;
   disableBefore?: Date;
   value?: Date;
@@ -19,18 +21,21 @@ interface DateTimePicker24hFormProps {
 }
 
 export function DateTimePicker24hForm(props: DateTimePicker24hFormProps) {
-  const { disablePast = false, disableBefore, value, onChange, disabledPast2Dates = false } = props;
+  const {
+    id,
+    ariaLabel,
+    disablePast = false,
+    disableBefore,
+    value,
+    onChange,
+    disabledPast2Dates = false,
+  } = props;
   const hasExternalValue = Object.prototype.hasOwnProperty.call(props, "value");
   const [isOpen, setIsOpen] = React.useState(false);
   const [internalValue, setInternalValue] = React.useState<Date | undefined>(value);
   const hours = React.useMemo(() => Array.from({ length: 24 }, (_, i) => i).reverse(), []);
   const now = new Date();
   const selectedValue = hasExternalValue ? value : internalValue;
-
-  React.useEffect(() => {
-    if (!hasExternalValue) return;
-    setInternalValue(value);
-  }, [hasExternalValue, value]);
 
   const commitValue = (nextDate: Date | undefined) => {
     if (!hasExternalValue) {
@@ -119,6 +124,8 @@ export function DateTimePicker24hForm(props: DateTimePicker24hFormProps) {
       <Popover modal={true} open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button
+            id={id}
+            aria-label={ariaLabel}
             type="button"
             variant="outline"
             className={cn(

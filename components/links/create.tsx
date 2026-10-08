@@ -42,7 +42,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Separator } from "@/components/ui/separator";
 import { DateTimePicker24hForm } from "../ui/datepickerhour";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Badge } from "../ui/badge";
 import { useEffect } from "react";
 import { useCreateLink } from "@/lib/hooks/queries/useLinksQuery";
 import { hasRepeatedConsecutiveDigits } from "@/lib/validators/passcode";
@@ -117,6 +116,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function CreateLink() {
+  const formId = React.useId();
   const [open, setOpen] = React.useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
   const [pendingData, setPendingData] = React.useState<FormValues | null>(null);
@@ -261,7 +261,7 @@ export default function CreateLink() {
 
   return (
     <>
-      <Drawer open={open} onOpenChange={setOpen}>
+      <Drawer autoFocus open={open} onOpenChange={setOpen}>
         <DrawerTrigger asChild>
           <Button>
             <Plus className="mr-1/2 size-4" />
@@ -289,13 +289,15 @@ export default function CreateLink() {
                     className="flex flex-row items-center justify-between rounded-lg border p-4"
                   >
                     <div className="space-y-0.5">
-                      <FieldLabel className="text-base">Bulk Creation</FieldLabel>
+                      <FieldLabel htmlFor={`${formId}-bulk`} className="text-base">
+                        Bulk Creation
+                      </FieldLabel>
                       <FieldDescription>
                         Enable to add multiple links at once. (Max 3 links)
                       </FieldDescription>
                     </div>
                     <Switch
-                      defaultChecked={field.value}
+                      id={`${formId}-bulk`}
                       checked={field.value}
                       onCheckedChange={field.onChange}
                     />
@@ -316,6 +318,7 @@ export default function CreateLink() {
                                 type="button"
                                 variant="ghost"
                                 size="sm"
+                                aria-label={`Remove link ${index + 1}`}
                                 onClick={() => remove(index)}
                               >
                                 <Trash2 className="size-4 text-destructive" />
@@ -325,28 +328,55 @@ export default function CreateLink() {
                         )}
 
                         <Field>
-                          <FieldLabel>Title</FieldLabel>
+                          <FieldLabel htmlFor={`${formId}-${index}-title`}>Title</FieldLabel>
                           <Input
                             placeholder="My Awesome Link"
+                            id={`${formId}-${index}-title`}
+                            aria-invalid={!!errors.links?.[index]?.title}
+                            aria-describedby={
+                              errors.links?.[index]?.title
+                                ? `${formId}-${index}-title-error`
+                                : undefined
+                            }
                             {...register(`links.${index}.title`)}
                           />
-                          <FieldError errors={[errors.links?.[index]?.title]} />
+                          <FieldError
+                            id={`${formId}-${index}-title-error`}
+                            errors={[errors.links?.[index]?.title]}
+                          />
                         </Field>
 
                         <Field>
-                          <FieldLabel>Original URL</FieldLabel>
+                          <FieldLabel htmlFor={`${formId}-${index}-original_url`}>
+                            Original URL
+                          </FieldLabel>
                           <Input
+                            type="url"
+                            inputMode="url"
+                            autoCapitalize="none"
                             placeholder="https://example.com"
+                            id={`${formId}-${index}-original_url`}
+                            aria-invalid={!!errors.links?.[index]?.original_url}
+                            aria-describedby={
+                              errors.links?.[index]?.original_url
+                                ? `${formId}-${index}-original_url-error`
+                                : undefined
+                            }
                             {...register(`links.${index}.original_url`)}
                           />
-                          <FieldError errors={[errors.links?.[index]?.original_url]} />
+                          <FieldError
+                            id={`${formId}-${index}-original_url-error`}
+                            errors={[errors.links?.[index]?.original_url]}
+                          />
                         </Field>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2">
                           <Field>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <FieldLabel>Custom Code (Optional)</FieldLabel>
+                                <FieldLabel htmlFor={`${formId}-${index}-custom_code`}>
+                                  Custom Code (Optional)
+                                </FieldLabel>
                               </TooltipTrigger>
                               <TooltipContent sideOffset={4} align="start">
                                 <p>
@@ -357,15 +387,27 @@ export default function CreateLink() {
                             </Tooltip>
                             <Input
                               placeholder="my-link"
+                              id={`${formId}-${index}-custom_code`}
+                              aria-invalid={!!errors.links?.[index]?.custom_code}
+                              aria-describedby={
+                                errors.links?.[index]?.custom_code
+                                  ? `${formId}-${index}-custom_code-error`
+                                  : undefined
+                              }
                               {...register(`links.${index}.custom_code`)}
                             />
-                            <FieldError errors={[errors.links?.[index]?.custom_code]} />
+                            <FieldError
+                              id={`${formId}-${index}-custom_code-error`}
+                              errors={[errors.links?.[index]?.custom_code]}
+                            />
                           </Field>
 
                           <Field>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <FieldLabel>Passcode (Optional)</FieldLabel>
+                                <FieldLabel htmlFor={`${formId}-${index}-passcode`}>
+                                  Passcode (Optional)
+                                </FieldLabel>
                               </TooltipTrigger>
                               <TooltipContent sideOffset={4} align="start">
                                 <p>
@@ -380,19 +422,29 @@ export default function CreateLink() {
                               inputMode="numeric"
                               pattern="[0-9]*"
                               maxLength={6}
+                              id={`${formId}-${index}-passcode`}
+                              aria-invalid={!!errors.links?.[index]?.passcode}
+                              aria-describedby={
+                                errors.links?.[index]?.passcode
+                                  ? `${formId}-${index}-passcode-error`
+                                  : undefined
+                              }
                               {...register(`links.${index}.passcode`)}
                               onChange={(e) => {
                                 const value = e.target.value.replace(/\D/g, "").slice(0, 6);
                                 setValue(`links.${index}.passcode`, value);
                               }}
                             />
-                            <FieldError errors={[errors.links?.[index]?.passcode]} />
+                            <FieldError
+                              id={`${formId}-${index}-passcode-error`}
+                              errors={[errors.links?.[index]?.passcode]}
+                            />
                           </Field>
                         </div>
 
                         <Field>
                           <Tooltip>
-                            <FieldLabel>
+                            <FieldLabel htmlFor={`${formId}-${index}-limit`}>
                               Click Limit (Optional)
                               <TooltipTrigger asChild>
                                 <IconInfoCircle className="size-4 ml-1 inline-block" />
@@ -410,6 +462,13 @@ export default function CreateLink() {
                             name={`links.${index}.limit`}
                             render={({ field }) => (
                               <Input
+                                id={`${formId}-${index}-limit`}
+                                aria-invalid={!!errors.links?.[index]?.limit}
+                                aria-describedby={
+                                  errors.links?.[index]?.limit
+                                    ? `${formId}-${index}-limit-error`
+                                    : undefined
+                                }
                                 placeholder="Leave empty for unlimited"
                                 inputMode="numeric"
                                 value={field.value ? field.value.toLocaleString("en-US") : ""}
@@ -428,23 +487,52 @@ export default function CreateLink() {
                               />
                             )}
                           />
-                          <FieldError errors={[errors.links?.[index]?.limit]} />
+                          <FieldError
+                            id={`${formId}-${index}-limit-error`}
+                            errors={[errors.links?.[index]?.limit]}
+                          />
                         </Field>
 
                         <Field>
-                          <FieldLabel>Expires At (Optional)</FieldLabel>
-                          <DateTimePicker24hForm disablePast />
+                          <FieldLabel htmlFor={`${formId}-${index}-expires`}>
+                            Expires At (Optional)
+                          </FieldLabel>
+                          <Controller
+                            control={control}
+                            name={`links.${index}.expires_at`}
+                            render={({ field }) => (
+                              <DateTimePicker24hForm
+                                id={`${formId}-${index}-expires`}
+                                ariaLabel="Expiration date and time (optional)"
+                                disablePast
+                                value={field.value ? new Date(field.value) : undefined}
+                                onChange={(date) => field.onChange(date?.toISOString() ?? "")}
+                              />
+                            )}
+                          />
                           <FieldError errors={[errors.links?.[index]?.expires_at]} />
                         </Field>
 
                         <Field>
-                          <FieldLabel>Description (Optional)</FieldLabel>
+                          <FieldLabel htmlFor={`${formId}-${index}-description`}>
+                            Description (Optional)
+                          </FieldLabel>
                           <textarea
                             className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             placeholder="Add a description..."
+                            id={`${formId}-${index}-description`}
+                            aria-invalid={!!errors.links?.[index]?.description}
+                            aria-describedby={
+                              errors.links?.[index]?.description
+                                ? `${formId}-${index}-description-error`
+                                : undefined
+                            }
                             {...register(`links.${index}.description`)}
                           />
-                          <FieldError errors={[errors.links?.[index]?.description]} />
+                          <FieldError
+                            id={`${formId}-${index}-description-error`}
+                            errors={[errors.links?.[index]?.description]}
+                          />
                         </Field>
 
                         <Field
@@ -453,7 +541,7 @@ export default function CreateLink() {
                         >
                           <div className="space-y-0.5">
                             <Tooltip>
-                              <FieldLabel>
+                              <FieldLabel htmlFor={`${formId}-${index}-stats`}>
                                 Enable Statistics
                                 <TooltipTrigger asChild>
                                   <IconInfoCircle className="size-4" />
@@ -471,7 +559,11 @@ export default function CreateLink() {
                             control={control}
                             name={`links.${index}.enable_stats`}
                             render={({ field }) => (
-                              <Switch checked={field.value} onCheckedChange={field.onChange} />
+                              <Switch
+                                id={`${formId}-${index}-stats`}
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
                             )}
                           />
                         </Field>
@@ -482,68 +574,58 @@ export default function CreateLink() {
                             <CollapsibleTrigger asChild>
                               <Button variant="ghost" size="sm" className="w-9 p-0">
                                 <ChevronDown className="size-4 transition-transform duration-200 data-[state=open]:rotate-180" />
-                                <span className="sr-only">Toggle</span>
+                                <span className="sr-only">Toggle UTM tags</span>
                               </Button>
                             </CollapsibleTrigger>
                           </div>
                           <CollapsibleContent className="pt-4 grid grid-cols-2 gap-4">
                             <Field>
-                              <Badge
-                                variant="outline"
-                                className="bg-blue-50 text-blue-700 border-blue-200 mb-2"
-                              >
+                              <FieldLabel htmlFor={`${formId}-${index}-utm_source`}>
                                 UTM Source
-                              </Badge>
+                              </FieldLabel>
                               <Input
                                 placeholder="e.g. instagram"
+                                id={`${formId}-${index}-utm_source`}
                                 {...register(`links.${index}.tags.utm_source`)}
                               />
                             </Field>
                             <Field>
-                              <Badge
-                                variant="outline"
-                                className="bg-purple-50 text-purple-700 border-purple-200 mb-2"
-                              >
+                              <FieldLabel htmlFor={`${formId}-${index}-utm_medium`}>
                                 UTM Medium
-                              </Badge>
+                              </FieldLabel>
                               <Input
                                 placeholder="e.g. social"
+                                id={`${formId}-${index}-utm_medium`}
                                 {...register(`links.${index}.tags.utm_medium`)}
                               />
                             </Field>
                             <Field>
-                              <Badge
-                                variant="outline"
-                                className="bg-pink-50 text-pink-700 border-pink-200 mb-2"
-                              >
+                              <FieldLabel htmlFor={`${formId}-${index}-utm_campaign`}>
                                 UTM Campaign
-                              </Badge>
+                              </FieldLabel>
                               <Input
                                 placeholder="e.g. summer_sale"
+                                id={`${formId}-${index}-utm_campaign`}
                                 {...register(`links.${index}.tags.utm_campaign`)}
                               />
                             </Field>
                             <Field>
-                              <Badge
-                                variant="outline"
-                                className="bg-indigo-50 text-indigo-700 border-indigo-200 mb-2"
-                              >
+                              <FieldLabel htmlFor={`${formId}-${index}-utm_term`}>
                                 UTM Term
-                              </Badge>
+                              </FieldLabel>
                               <Input
                                 placeholder="e.g. running_shoes"
+                                id={`${formId}-${index}-utm_term`}
                                 {...register(`links.${index}.tags.utm_term`)}
                               />
                             </Field>
                             <Field className="col-span-2">
-                              <Badge
-                                variant="outline"
-                                className="bg-orange-50 text-orange-700 border-orange-200 mb-2"
-                              >
+                              <FieldLabel htmlFor={`${formId}-${index}-utm_content`}>
                                 UTM Content
-                              </Badge>
+                              </FieldLabel>
                               <Input
                                 placeholder="e.g. banner_top"
+                                id={`${formId}-${index}-utm_content`}
                                 {...register(`links.${index}.tags.utm_content`)}
                               />
                             </Field>

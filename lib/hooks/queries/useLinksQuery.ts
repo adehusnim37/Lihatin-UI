@@ -167,7 +167,7 @@ export function useShortLinkViews(
   code: string,
   page: number = 1,
   limit: number = 10,
-  sort: string = "created_at",
+  sort: string = "clicked_at",
   orderBy: string = "desc",
 ) {
   return useQuery({

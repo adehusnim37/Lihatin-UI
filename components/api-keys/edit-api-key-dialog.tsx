@@ -138,11 +138,11 @@ export function EditAPIKeyDialog({ open, onOpenChange, apiKey, onSuccess }: Edit
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-blue-500/10">
-              <Pencil className="size-5 text-blue-500" />
+              <Pencil className="size-5 text-blue-700 dark:text-blue-400" />
             </div>
             <DialogTitle>Edit API Key</DialogTitle>
           </div>
@@ -153,16 +153,24 @@ export function EditAPIKeyDialog({ open, onOpenChange, apiKey, onSuccess }: Edit
           {/* Name */}
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
-            <Input id="name" placeholder="My API Key" {...form.register("name")} />
+            <Input
+              aria-invalid={Boolean(form.formState.errors.name)}
+              aria-describedby={form.formState.errors.name ? "api-key-edit-name-error" : undefined}
+              id="name"
+              placeholder="My API Key"
+              {...form.register("name")}
+            />
             {form.formState.errors.name && (
-              <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
+              <p id="api-key-edit-name-error" role="alert" className="text-xs text-destructive">
+                {form.formState.errors.name.message}
+              </p>
             )}
           </div>
 
           {/* Permissions */}
           <div className="space-y-3">
             <Label>Permissions *</Label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-3">
               {PERMISSIONS.map((permission) => (
                 <label
                   key={permission.id}
@@ -226,14 +234,20 @@ export function EditAPIKeyDialog({ open, onOpenChange, apiKey, onSuccess }: Edit
                 className="w-full"
               >
                 <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="none" className="text-xs">
+                  <TabsTrigger value="none" className="min-w-0 whitespace-normal text-xs">
                     No Restriction
                   </TabsTrigger>
-                  <TabsTrigger value="allowlist" className="text-xs gap-1">
+                  <TabsTrigger
+                    value="allowlist"
+                    className="min-w-0 whitespace-normal text-xs gap-1"
+                  >
                     <Shield className="size-3" />
                     Allow List
                   </TabsTrigger>
-                  <TabsTrigger value="blocklist" className="text-xs gap-1">
+                  <TabsTrigger
+                    value="blocklist"
+                    className="min-w-0 whitespace-normal text-xs gap-1"
+                  >
                     <Ban className="size-3" />
                     Block List
                   </TabsTrigger>
@@ -244,6 +258,7 @@ export function EditAPIKeyDialog({ open, onOpenChange, apiKey, onSuccess }: Edit
                 <div className="space-y-2 pt-2">
                   <Input
                     id="ip_list"
+                    aria-label="IP addresses"
                     placeholder="192.168.1.1, 10.0.0.1"
                     {...form.register("ip_list")}
                   />

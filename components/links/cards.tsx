@@ -39,7 +39,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-import { cn } from "@/lib/utils";
+import { LinkStatusBadge } from "@/components/ui/app-status-badges";
 import { DetailLink } from "@/lib/api/shortlinks";
 import DeactivateLink from "./detail/deactivate";
 import ActivateLink from "./detail/activate";
@@ -116,17 +116,6 @@ export default function ShortLinkCard({ data, baseUrl, onDelete, onToggle }: Sho
 
   const isExpired = data.expires_at ? new Date(data.expires_at) < new Date() : false;
 
-  const getStatusColor = () => {
-    if (isExpired) return "bg-red-500/80";
-    if (!data.is_active) return "bg-yellow-500/80";
-    return "bg-sky-500/80";
-  };
-
-  const getStatusText = () => {
-    if (isExpired) return "Expired";
-    return data.is_active ? "Active" : "Inactive";
-  };
-
   const handleUpdate = async (code: string, updateData: UpdateShortLinkRequest) => {
     return updateMutation.mutateAsync({ code, data: updateData });
   };
@@ -193,13 +182,12 @@ export default function ShortLinkCard({ data, baseUrl, onDelete, onToggle }: Sho
                 </Link>
               </ItemTitle>
               <ItemDescription className="text-xs truncate">{data.short_code}</ItemDescription>
-              <span className="mt-1.5 inline-flex w-fit items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-foreground">
-                <span
-                  aria-hidden="true"
-                  className={cn("size-1.5 shrink-0 rounded-full", getStatusColor())}
-                />
-                {getStatusText()}
-              </span>
+              <LinkStatusBadge
+                className="mt-1.5 w-fit"
+                isActive={data.is_active}
+                expiresAt={data.expires_at}
+                isBanned={data.detail?.is_banned}
+              />
             </ItemContent>
             <ItemActions className="-me-2">
               <DropdownMenu>
@@ -308,7 +296,7 @@ export default function ShortLinkCard({ data, baseUrl, onDelete, onToggle }: Sho
                 {data.description ? (
                   data.description
                 ) : (
-                  <span className="italic opacity-50">No description</span>
+                  <span className="italic">No description</span>
                 )}
               </p>
             )}

@@ -10,6 +10,7 @@ import {
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 
+import { QueryError } from "@/components/query-error";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SupportStatusBadge } from "@/components/support/support-ticket-badges";
 import { SiteHeader } from "@/components/site-header";
@@ -18,11 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  getUserSupportAttachmentURL,
-  type AdminSupportTicketItem,
-  type SupportMessageResponse,
-} from "@/lib/api/support";
+import { getUserSupportAttachmentURL, type AdminSupportTicketItem } from "@/lib/api/support";
 import {
   formatDate,
   SupportConversationBubble,
@@ -130,10 +127,10 @@ export default function UserSupportPage() {
       }
     >
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <SiteHeader />
-        <div className="flex flex-1 flex-col gap-6 p-6">
-          <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">Support Inbox</h1>
               <p className="text-sm text-muted-foreground">
@@ -144,9 +141,12 @@ export default function UserSupportPage() {
             <Button
               variant="outline"
               onClick={() =>
-                void Promise.all([ticketsQuery.refetch(), conversationQuery.refetch()])
+                void Promise.all([
+                  ticketsQuery.refetch(),
+                  ...(activeTicket ? [conversationQuery.refetch()] : []),
+                ])
               }
-              disabled={ticketsQuery.isFetching}
+              disabled={ticketsQuery.isFetching || conversationQuery.isFetching}
             >
               <IconRefresh className="mr-2 size-4" />
               Refresh
@@ -160,7 +160,13 @@ export default function UserSupportPage() {
                   <IconTicket className="size-5" />
                   My Tickets
                 </CardTitle>
-                <CardDescription>{ticketCountText}</CardDescription>
+                <CardDescription>
+                  {ticketsQuery.isLoading
+                    ? "Loading tickets…"
+                    : ticketsQuery.isError
+                      ? "Tickets unavailable"
+                      : ticketCountText}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
                 {ticketsQuery.isLoading ? (
@@ -169,6 +175,11 @@ export default function UserSupportPage() {
                     <Skeleton className="h-16 w-full" />
                     <Skeleton className="h-16 w-full" />
                   </div>
+                ) : ticketsQuery.isError ? (
+                  <QueryError
+                    message="Could not load your support tickets."
+                    onRetry={() => void ticketsQuery.refetch()}
+                  />
                 ) : tickets.length === 0 ? (
                   <p className="rounded-lg border bg-muted/20 p-4 text-sm text-muted-foreground">
                     No support ticket yet.
@@ -179,15 +190,16 @@ export default function UserSupportPage() {
                       key={ticket.id}
                       type="button"
                       onClick={() => handleOpenTicket(ticket)}
-                      className={`w-full rounded-lg border p-3 text-left transition-colors hover:bg-muted/20 ${
-                        ticket.id === activeTicketId ? "border-primary bg-primary/5" : "bg-card"
+                      aria-pressed={ticket.id === activeTicket?.id}
+                      className={`w-full rounded-lg border p-3 text-left transition-colors hover:bg-muted/20 outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                        ticket.id === activeTicket?.id ? "border-primary bg-primary/5" : "bg-card"
                       }`}
                     >
                       <p className="text-sm font-semibold">{ticket.ticket_code}</p>
                       <p className="line-clamp-1 text-xs text-muted-foreground">{ticket.subject}</p>
                       <div className="mt-2 flex items-center justify-between gap-2">
                         <SupportStatusBadge status={ticket.status} />
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           {formatDate(ticket.created_at)}
                         </p>
                       </div>
@@ -206,7 +218,7 @@ export default function UserSupportPage() {
                 <CardDescription>
                   {conversation?.ticket_code ||
                     activeTicket?.ticket_code ||
-                    "Select ticket from left panel"}
+                    "Select a ticket to view its conversation"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -216,9 +228,14 @@ export default function UserSupportPage() {
                     <Skeleton className="h-20 w-full" />
                     <Skeleton className="h-20 w-4/5" />
                   </div>
+                ) : conversationQuery.isError ? (
+                  <QueryError
+                    message="Could not load this conversation."
+                    onRetry={() => void conversationQuery.refetch()}
+                  />
                 ) : !activeTicket ? (
                   <p className="rounded-lg border bg-muted/20 p-4 text-sm text-muted-foreground">
-                    Pick one ticket to view full detail.
+                    Your ticket conversation will appear here.
                   </p>
                 ) : (
                   <>
@@ -246,10 +263,10 @@ export default function UserSupportPage() {
                     </div>
 
                     {conversation?.status === "resolved" || conversation?.status === "closed" ? (
-                      <Alert className="mt-4 border-emerald-200 bg-emerald-50/50 text-emerald-900">
+                      <Alert className="mt-4 border-emerald-500/25 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200">
                         <IconMessage2 className="size-4 stroke-emerald-600" />
                         <AlertTitle>Conversation Closed</AlertTitle>
-                        <AlertDescription className="text-emerald-800">
+                        <AlertDescription className="text-emerald-800 dark:text-emerald-300">
                           This ticket has been marked as {conversation.status} on{" "}
                           {formatDate(conversation.updated_at)} and cannot receive or send new
                           messages.
@@ -257,7 +274,11 @@ export default function UserSupportPage() {
                       </Alert>
                     ) : (
                       <div className="space-y-3 rounded-lg border p-3">
+                        <label htmlFor="support-reply" className="block text-sm font-medium">
+                          Reply to support
+                        </label>
                         <textarea
+                          id="support-reply"
                           value={draftBody}
                           onChange={(event) => setDraftBody(event.target.value)}
                           className="min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
@@ -268,6 +289,7 @@ export default function UserSupportPage() {
                           <input
                             ref={fileInputRef}
                             type="file"
+                            aria-label="Attach files to support reply"
                             accept="application/pdf,image/jpeg,image/png,image/webp,image/gif"
                             multiple
                             className="hidden"
@@ -286,7 +308,10 @@ export default function UserSupportPage() {
                           <Button
                             type="button"
                             onClick={() => void handleSend()}
-                            disabled={sendMessageMutation.isPending}
+                            disabled={
+                              sendMessageMutation.isPending ||
+                              (!draftBody.trim() && draftFiles.length === 0)
+                            }
                           >
                             <IconSend className="mr-2 size-4" />
                             {sendMessageMutation.isPending ? "Sending..." : "Send"}

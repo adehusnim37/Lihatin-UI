@@ -3,7 +3,6 @@
 import * as React from "react";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
-import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Card,
   CardAction,
@@ -56,7 +55,6 @@ export function ChartAreaInteractive({
   emptyMessage = "No data available for the selected period",
   curveType = "natural",
 }: ChartAreaInteractiveProps) {
-  const isMobile = useIsMobile();
   const [timeRange, setTimeRange] = React.useState("90d");
   const chartConfig = React.useMemo(
     () =>
@@ -69,12 +67,6 @@ export function ChartAreaInteractive({
     [valueLabel],
   );
 
-  React.useEffect(() => {
-    if (isMobile) {
-      setTimeRange("30d");
-    }
-  }, [isMobile]);
-
   const chartData = React.useMemo(() => {
     return data.map((item) => ({
       date: item.date,
@@ -85,9 +77,8 @@ export function ChartAreaInteractive({
   const filteredData = React.useMemo(() => {
     if (chartData.length === 0) return [];
 
-    // Get the most recent date from the data
-    const dates = chartData.map((item) => new Date(item.date));
-    const referenceDate = new Date(Math.max(...dates.map((d) => d.getTime())));
+    const referenceDate = new Date();
+    referenceDate.setHours(23, 59, 59, 999);
 
     let daysToSubtract = 90;
     if (timeRange === "30d") {
@@ -97,11 +88,12 @@ export function ChartAreaInteractive({
     }
 
     const startDate = new Date(referenceDate);
-    startDate.setDate(startDate.getDate() - daysToSubtract);
+    startDate.setDate(startDate.getDate() - daysToSubtract + 1);
+    startDate.setHours(0, 0, 0, 0);
 
     return chartData.filter((item) => {
       const date = new Date(item.date);
-      return date >= startDate;
+      return date >= startDate && date <= referenceDate;
     });
   }, [chartData, timeRange]);
 
@@ -165,7 +157,7 @@ export function ChartAreaInteractive({
       </CardHeader>
       <CardContent className="min-w-0 px-2 pt-4 pb-8 sm:px-6 sm:pt-6 sm:pb-6">
         {filteredData.length === 0 ? (
-          <div className="flex h-[250px] items-center justify-center text-muted-foreground">
+          <div className="flex min-h-36 items-center justify-center px-4 text-center text-sm text-muted-foreground sm:min-h-48">
             {emptyMessage}
           </div>
         ) : (

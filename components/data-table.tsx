@@ -35,20 +35,22 @@ import {
   IconTrendingUp,
 } from "@tabler/icons-react";
 import {
-  ColumnDef,
   ColumnFiltersState,
   flexRender,
+  SortingState,
+  ColumnVisibilityState as VisibilityState,
+} from "@tanstack/react-table";
+import {
+  LegacyColumnDef as ColumnDef,
+  LegacyRow as Row,
+  useLegacyTable as useReactTable,
   getCoreRowModel,
   getFacetedRowModel,
   getFacetedUniqueValues,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  Row,
-  SortingState,
-  useReactTable,
-  VisibilityState,
-} from "@tanstack/react-table";
+} from "@tanstack/react-table/legacy";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import { toast } from "sonner";
 import { z } from "zod";

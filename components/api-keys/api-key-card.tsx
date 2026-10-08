@@ -37,10 +37,10 @@ interface APIKeyCardProps {
 }
 
 const PERMISSION_COLORS: Record<string, string> = {
-  read: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  write: "bg-green-500/10 text-green-500 border-green-500/20",
-  update: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-  delete: "bg-red-500/10 text-red-500 border-red-500/20",
+  read: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20",
+  write: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20",
+  update: "bg-amber-500/10 text-amber-800 dark:text-amber-400 border-amber-500/20",
+  delete: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20",
 };
 
 export function APIKeyCard({
@@ -54,10 +54,14 @@ export function APIKeyCard({
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(apiKey.key_preview);
-    setCopied(true);
-    toast.success("Key preview copied to clipboard");
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(apiKey.key_preview);
+      setCopied(true);
+      toast.success("Key preview copied to clipboard");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Could not copy the key preview. Select and copy the text instead.");
+    }
   };
 
   const formatDate = (dateString?: string) => {
@@ -72,36 +76,42 @@ export function APIKeyCard({
   return (
     <div className="rounded-lg border bg-card p-4 space-y-3 hover:border-primary/30 transition-colors">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-start justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-3">
           <div className={`p-2 rounded-lg ${apiKey.is_active ? "bg-green-500/10" : "bg-muted"}`}>
             <Key
-              className={`size-4 ${apiKey.is_active ? "text-green-500" : "text-muted-foreground"}`}
+              className={`size-4 ${apiKey.is_active ? "text-green-700 dark:text-green-400" : "text-muted-foreground"}`}
             />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-medium">{apiKey.name}</h3>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="break-all font-medium">{apiKey.name}</h3>
               <ActiveInactiveBadge isActive={apiKey.is_active} className="text-xs" />
             </div>
-            <div className="flex items-center gap-2 mt-1">
-              <code className="text-xs bg-muted px-2 py-0.5 rounded font-mono">
+            <div className="flex flex-wrap items-center gap-2 mt-1">
+              <code className="text-xs bg-muted px-2 py-0.5 rounded font-mono break-all">
                 {apiKey.key_preview}
               </code>
-              <button onClick={handleCopy} className="p-1 rounded hover:bg-muted transition-colors">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label={copied ? "Key preview copied" : "Copy key preview"}
+                onClick={handleCopy}
+              >
                 {copied ? (
-                  <Check className="size-3 text-green-500" />
+                  <Check className="size-3 text-green-700 dark:text-green-400" />
                 ) : (
                   <Copy className="size-3 text-muted-foreground" />
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8">
+            <Button variant="ghost" size="icon" aria-label={`Actions for API key ${apiKey.name}`}>
               <MoreVertical className="size-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -158,12 +168,12 @@ export function APIKeyCard({
       </div>
 
       {/* Footer Stats */}
-      <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-wrap gap-2 items-center justify-between text-xs text-muted-foreground pt-2 border-t">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
           <span>Created {formatDate(apiKey.created_at)}</span>
           <span>Last used {formatDate(apiKey.last_used_at)}</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {apiKey.limit_usage != null ? (
             <span>
               {apiKey.usage_count} / {apiKey.limit_usage} uses

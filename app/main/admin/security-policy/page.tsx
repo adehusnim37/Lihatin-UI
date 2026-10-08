@@ -3,6 +3,8 @@
 import { useMemo, type CSSProperties } from "react";
 import { ShieldAlert } from "lucide-react";
 
+import { useAuth } from "@/app/context/AuthContext";
+import { QueryError } from "@/components/query-error";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { EnabledDisabledBadge, EnvironmentEffectiveBadge } from "@/components/ui/app-status-badges";
@@ -17,9 +19,10 @@ import {
 } from "@/lib/hooks/queries/useAdminQuery";
 
 export default function AdminSecurityPolicyPage() {
-  const roleFromStorage = getStoredRole();
-  const isAdmin = roleFromStorage && isAdminRole(roleFromStorage);
-  const { data: policy, isLoading, isError } = useAdminDisposableEmailPolicyQuery();
+  const { user, isLoading: authLoading } = useAuth();
+  const role = user?.role?.trim().toLowerCase();
+  const isAdmin = role === "admin" || role === "super_admin";
+  const { data: policy, isLoading, isError, refetch } = useAdminDisposableEmailPolicyQuery();
   const updatePolicyMutation = useUpdateAdminDisposableEmailPolicyMutation();
 
   const formattedUpdatedAt = useMemo(() => {
@@ -50,9 +53,9 @@ export default function AdminSecurityPolicyPage() {
       }
     >
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <SiteHeader />
-        <div className="flex flex-1 flex-col gap-6 p-6">
+        <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6">
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold tracking-tight">Admin Security Policy</h1>
             <p className="text-sm text-muted-foreground">
@@ -60,9 +63,9 @@ export default function AdminSecurityPolicyPage() {
             </p>
           </div>
 
-          {isLoading && <PageSkeleton />}
+          {(authLoading || (isAdmin && isLoading)) && <PageSkeleton />}
 
-          {!isAdmin && (
+          {!authLoading && !isAdmin && (
             <Card>
               <CardHeader>
                 <CardTitle>Access Denied</CardTitle>
@@ -73,13 +76,11 @@ export default function AdminSecurityPolicyPage() {
             </Card>
           )}
 
-          {isError && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Failed to Load Policy</CardTitle>
-                <CardDescription>Please refresh page or try again later.</CardDescription>
-              </CardHeader>
-            </Card>
+          {isError && isAdmin && (
+            <QueryError
+              message="Could not load the security policy."
+              onRetry={() => void refetch()}
+            />
           )}
 
           {!isLoading && !isError && policy && isAdmin && (
@@ -95,7 +96,7 @@ export default function AdminSecurityPolicyPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between rounded-lg border p-4">
+                <div className="flex items-center justify-between gap-4 rounded-lg border p-4">
                   <div className="space-y-1">
                     <p className="text-sm font-medium">Policy Status</p>
                     <p className="text-xs text-muted-foreground">
@@ -135,38 +136,12 @@ function PageSkeleton() {
     <Card>
       <CardHeader>
         <Skeleton className="h-6 w-64" />
-        <Skeleton className="h-4 w-96" />
+        <Skeleton className="h-4 w-full max-w-96" />
       </CardHeader>
       <CardContent className="space-y-4">
         <Skeleton className="h-20 w-full" />
-        <Skeleton className="h-5 w-80" />
+        <Skeleton className="h-5 w-full max-w-80" />
       </CardContent>
     </Card>
   );
-}
-
-function getStoredRole(): string | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const raw = localStorage.getItem("user");
-  if (!raw) {
-    return null;
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as { role?: string };
-    if (!parsed.role) {
-      return null;
-    }
-    const normalized = parsed.role.trim().toLowerCase();
-    return normalized || null;
-  } catch {
-    return null;
-  }
-}
-
-function isAdminRole(role: string): boolean {
-  return role === "admin" || role === "super_admin";
 }

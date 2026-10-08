@@ -68,10 +68,14 @@ export function CreateAPIKeyDialog({ open, onOpenChange, onSuccess }: CreateAPIK
 
   const handleCopyKey = async () => {
     if (createdKey?.key) {
-      await navigator.clipboard.writeText(createdKey.key);
-      setCopied(true);
-      toast.success("API key copied to clipboard");
-      setTimeout(() => setCopied(false), 2000);
+      try {
+        await navigator.clipboard.writeText(createdKey.key);
+        setCopied(true);
+        toast.success("API key copied to clipboard");
+        setTimeout(() => setCopied(false), 2000);
+      } catch {
+        toast.error("Could not copy the API key. Select and copy the key text instead.");
+      }
     }
   };
 
@@ -124,11 +128,11 @@ export function CreateAPIKeyDialog({ open, onOpenChange, onSuccess }: CreateAPIK
   if (createdKey) {
     return (
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 rounded-lg bg-green-500/10">
-                <Key className="size-5 text-green-500" />
+                <Key className="size-5 text-green-700 dark:text-green-400" />
               </div>
               <DialogTitle>API Key Created!</DialogTitle>
             </div>
@@ -140,9 +144,11 @@ export function CreateAPIKeyDialog({ open, onOpenChange, onSuccess }: CreateAPIK
           <div className="space-y-4">
             {/* Warning */}
             <div className="flex items-start gap-3 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-              <AlertTriangle className="size-5 text-amber-500 mt-0.5 flex-shrink-0" />
+              <AlertTriangle className="size-5 text-amber-800 dark:text-amber-400 mt-0.5 flex-shrink-0" />
               <div className="space-y-1">
-                <p className="text-sm font-medium text-amber-500">{createdKey.warning}</p>
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-400">
+                  {createdKey.warning}
+                </p>
                 <p className="text-xs text-muted-foreground">
                   Store this key securely. You won&apos;t be able to see it again.
                 </p>
@@ -160,10 +166,11 @@ export function CreateAPIKeyDialog({ open, onOpenChange, onSuccess }: CreateAPIK
                   variant="outline"
                   size="icon"
                   onClick={handleCopyKey}
+                  aria-label={copied ? "API key copied" : "Copy API key"}
                   className="flex-shrink-0"
                 >
                   {copied ? (
-                    <Check className="size-4 text-green-500" />
+                    <Check className="size-4 text-green-700 dark:text-green-400" />
                   ) : (
                     <Copy className="size-4" />
                   )}
@@ -197,11 +204,11 @@ export function CreateAPIKeyDialog({ open, onOpenChange, onSuccess }: CreateAPIK
   // Form view
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-amber-500/10">
-              <Key className="size-5 text-amber-500" />
+              <Key className="size-5 text-amber-800 dark:text-amber-400" />
             </div>
             <DialogTitle>Create API Key</DialogTitle>
           </div>
@@ -212,16 +219,24 @@ export function CreateAPIKeyDialog({ open, onOpenChange, onSuccess }: CreateAPIK
           {/* Name */}
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
-            <Input id="name" placeholder="My API Key" {...form.register("name")} />
+            <Input
+              aria-invalid={Boolean(form.formState.errors.name)}
+              aria-describedby={form.formState.errors.name ? "api-key-name-error" : undefined}
+              id="name"
+              placeholder="My API Key"
+              {...form.register("name")}
+            />
             {form.formState.errors.name && (
-              <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
+              <p id="api-key-name-error" role="alert" className="text-xs text-destructive">
+                {form.formState.errors.name.message}
+              </p>
             )}
           </div>
 
           {/* Permissions */}
           <div className="space-y-3">
             <Label>Permissions *</Label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-3">
               {PERMISSIONS.map((permission) => (
                 <label
                   key={permission.id}
@@ -284,14 +299,14 @@ export function CreateAPIKeyDialog({ open, onOpenChange, onSuccess }: CreateAPIK
               className="w-full"
             >
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="none" className="text-xs">
+                <TabsTrigger value="none" className="min-w-0 whitespace-normal text-xs">
                   No Restriction
                 </TabsTrigger>
-                <TabsTrigger value="allowlist" className="text-xs gap-1">
+                <TabsTrigger value="allowlist" className="min-w-0 whitespace-normal text-xs gap-1">
                   <Shield className="size-3" />
                   Allow List
                 </TabsTrigger>
-                <TabsTrigger value="blocklist" className="text-xs gap-1">
+                <TabsTrigger value="blocklist" className="min-w-0 whitespace-normal text-xs gap-1">
                   <Ban className="size-3" />
                   Block List
                 </TabsTrigger>
@@ -302,6 +317,7 @@ export function CreateAPIKeyDialog({ open, onOpenChange, onSuccess }: CreateAPIK
               <div className="space-y-2 pt-2">
                 <Input
                   id="ip_list"
+                  aria-label="IP addresses"
                   placeholder="192.168.1.1, 10.0.0.1"
                   {...form.register("ip_list")}
                 />

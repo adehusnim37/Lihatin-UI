@@ -54,10 +54,14 @@ export function RefreshAPIKeyDialog({
 
   const handleCopyKey = async () => {
     if (refreshedKey?.secret.full_api_key) {
-      await navigator.clipboard.writeText(refreshedKey.secret.full_api_key);
-      setCopied(true);
-      toast.success("API key copied to clipboard");
-      setTimeout(() => setCopied(false), 2000);
+      try {
+        await navigator.clipboard.writeText(refreshedKey.secret.full_api_key);
+        setCopied(true);
+        toast.success("API key copied to clipboard");
+        setTimeout(() => setCopied(false), 2000);
+      } catch {
+        toast.error("Could not copy the API key. Select and copy the key text instead.");
+      }
     }
   };
 
@@ -71,11 +75,11 @@ export function RefreshAPIKeyDialog({
   if (refreshedKey) {
     return (
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 rounded-lg bg-green-500/10">
-                <Key className="size-5 text-green-500" />
+                <Key className="size-5 text-green-700 dark:text-green-400" />
               </div>
               <DialogTitle>New API Key Generated!</DialogTitle>
             </div>
@@ -87,9 +91,11 @@ export function RefreshAPIKeyDialog({
           <div className="space-y-4">
             {/* Warning */}
             <div className="flex items-start gap-3 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-              <AlertTriangle className="size-5 text-amber-500 mt-0.5 flex-shrink-0" />
+              <AlertTriangle className="size-5 text-amber-800 dark:text-amber-400 mt-0.5 flex-shrink-0" />
               <div className="space-y-1">
-                <p className="text-sm font-medium text-amber-500">{refreshedKey.secret.warning}</p>
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-400">
+                  {refreshedKey.secret.warning}
+                </p>
                 <p className="text-xs text-muted-foreground">
                   The old key has been invalidated and will no longer work.
                 </p>
@@ -107,10 +113,11 @@ export function RefreshAPIKeyDialog({
                   variant="outline"
                   size="icon"
                   onClick={handleCopyKey}
+                  aria-label={copied ? "API key copied" : "Copy API key"}
                   className="flex-shrink-0"
                 >
                   {copied ? (
-                    <Check className="size-4 text-green-500" />
+                    <Check className="size-4 text-green-700 dark:text-green-400" />
                   ) : (
                     <Copy className="size-4" />
                   )}
@@ -144,11 +151,11 @@ export function RefreshAPIKeyDialog({
   // Confirmation view
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-amber-500/10">
-              <RefreshCw className="size-5 text-amber-500" />
+              <RefreshCw className="size-5 text-amber-800 dark:text-amber-400" />
             </div>
             <DialogTitle>Regenerate API Key</DialogTitle>
           </div>
@@ -158,9 +165,9 @@ export function RefreshAPIKeyDialog({
         <div className="space-y-4">
           {/* Warning */}
           <div className="flex items-start gap-3 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-            <AlertTriangle className="size-5 text-amber-500 mt-0.5 flex-shrink-0" />
+            <AlertTriangle className="size-5 text-amber-800 dark:text-amber-400 mt-0.5 flex-shrink-0" />
             <div className="space-y-1">
-              <p className="text-sm font-medium text-amber-500">
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-400">
                 This will invalidate the current key
               </p>
               <p className="text-xs text-muted-foreground">

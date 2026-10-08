@@ -13,6 +13,7 @@ import {
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 
+import { QueryError } from "@/components/query-error";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   SupportPriorityBadge,
@@ -330,9 +331,9 @@ export default function AdminSupportTicketsPage() {
       }
     >
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <SiteHeader />
-        <div className="flex flex-1 flex-col gap-6 p-6">
+        <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-2">
               <h1 className="text-2xl font-semibold tracking-tight">Support Tickets</h1>
@@ -509,7 +510,17 @@ export default function AdminSupportTicketsPage() {
                                 onClick={() => void handleOpenTicket(item.id)}
                               >
                                 <TableCell>
-                                  <p className="font-medium">{item.ticket_code}</p>
+                                  <button
+                                    type="button"
+                                    aria-label={`View support ticket ${item.ticket_code}`}
+                                    className="min-h-[44px] rounded text-left font-medium outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      void handleOpenTicket(item.id);
+                                    }}
+                                  >
+                                    {item.ticket_code}
+                                  </button>
                                   <p className="text-xs text-muted-foreground">{item.subject}</p>
                                 </TableCell>
                                 <TableCell>{item.email}</TableCell>
@@ -671,6 +682,11 @@ export default function AdminSupportTicketsPage() {
                             <div className="mt-4">
                               <PageSkeleton />
                             </div>
+                          ) : conversationQuery.isError ? (
+                            <QueryError
+                              message="Could not load this conversation."
+                              onRetry={() => void conversationQuery.refetch()}
+                            />
                           ) : (conversation?.messages ?? []).length === 0 ? (
                             <p className="mt-4 rounded-xl border bg-muted/20 p-4 text-sm text-muted-foreground">
                               No conversation yet.
@@ -690,10 +706,10 @@ export default function AdminSupportTicketsPage() {
 
                           {activeTicket.status === "resolved" ||
                           activeTicket.status === "closed" ? (
-                            <Alert className="mt-4 border-emerald-200 bg-emerald-50/50 text-emerald-900">
+                            <Alert className="mt-4 border-emerald-500/25 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200">
                               <IconMessage2 className="size-4 stroke-emerald-600" />
                               <AlertTitle>Conversation Closed</AlertTitle>
-                              <AlertDescription className="text-emerald-800">
+                              <AlertDescription className="text-emerald-800 dark:text-emerald-300">
                                 This ticket has been marked as {activeTicket.status} on{" "}
                                 {formatDate(activeTicket.updated_at)}. Cannot receive or send new
                                 messages.
@@ -702,8 +718,9 @@ export default function AdminSupportTicketsPage() {
                           ) : (
                             <div className="mt-4 space-y-3 rounded-xl border bg-muted/20 p-3 sm:p-4">
                               <div className="space-y-2">
-                                <Label>Reply</Label>
+                                <Label htmlFor="admin-support-reply">Reply</Label>
                                 <textarea
+                                  id="admin-support-reply"
                                   value={draftMessage}
                                   onChange={(event) => setDraftMessage(event.target.value)}
                                   className="min-h-28 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
@@ -736,7 +753,10 @@ export default function AdminSupportTicketsPage() {
                                 <Button
                                   type="button"
                                   onClick={() => void handleSendMessage()}
-                                  disabled={sendMessageMutation.isPending}
+                                  disabled={
+                                    sendMessageMutation.isPending ||
+                                    (!draftMessage.trim() && draftFiles.length === 0)
+                                  }
                                   className="rounded-xl"
                                 >
                                   <IconSend className="mr-2 size-4" />
@@ -772,11 +792,11 @@ export default function AdminSupportTicketsPage() {
 
                           {activeTicket.status === "resolved" ||
                           activeTicket.status === "closed" ? (
-                            <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 text-sm">
-                              <p className="font-medium text-emerald-900">
+                            <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-4 text-sm">
+                              <p className="font-medium text-emerald-900 dark:text-emerald-200">
                                 Ticket {toLabel(activeTicket.status)}
                               </p>
-                              <p className="mt-1 text-emerald-700">
+                              <p className="mt-1 text-emerald-700 dark:text-emerald-300">
                                 Closed on {formatDate(activeTicket.updated_at)}. Editing disabled.
                               </p>
                               {activeTicket.admin_notes ? (
@@ -784,7 +804,7 @@ export default function AdminSupportTicketsPage() {
                                   <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700/80">
                                     Final Admin Notes
                                   </p>
-                                  <p className="whitespace-pre-wrap break-words text-emerald-800">
+                                  <p className="whitespace-pre-wrap break-words text-emerald-800 dark:text-emerald-300">
                                     {activeTicket.admin_notes}
                                   </p>
                                 </div>
@@ -794,7 +814,7 @@ export default function AdminSupportTicketsPage() {
                             <>
                               <div className="flex flex-col gap-3 sm:flex-row">
                                 <div className="min-w-0 flex-1 space-y-2">
-                                  <Label>Next Status</Label>
+                                  <Label htmlFor="admin-support-status">Next Status</Label>
                                   <Select
                                     value={resolvedNextStatus}
                                     onValueChange={(value) =>
@@ -803,7 +823,10 @@ export default function AdminSupportTicketsPage() {
                                       })
                                     }
                                   >
-                                    <SelectTrigger className="h-10 w-full rounded-xl">
+                                    <SelectTrigger
+                                      id="admin-support-status"
+                                      className="h-10 w-full rounded-xl"
+                                    >
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -816,7 +839,7 @@ export default function AdminSupportTicketsPage() {
                                 </div>
 
                                 <div className="min-w-0 flex-1 space-y-2">
-                                  <Label>Priority</Label>
+                                  <Label htmlFor="admin-support-priority">Priority</Label>
                                   <Select
                                     value={resolvedNextPriority}
                                     onValueChange={(value) =>
@@ -825,7 +848,10 @@ export default function AdminSupportTicketsPage() {
                                       })
                                     }
                                   >
-                                    <SelectTrigger className="h-10 w-full rounded-xl">
+                                    <SelectTrigger
+                                      id="admin-support-priority"
+                                      className="h-10 w-full rounded-xl"
+                                    >
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -839,8 +865,9 @@ export default function AdminSupportTicketsPage() {
                               </div>
 
                               <div className="space-y-2">
-                                <Label>Admin Notes</Label>
+                                <Label htmlFor="admin-support-notes">Admin Notes</Label>
                                 <textarea
+                                  id="admin-support-notes"
                                   value={resolvedAdminNotes}
                                   onChange={(event) =>
                                     patchTicketDraft({

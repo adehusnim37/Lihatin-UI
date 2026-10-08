@@ -249,7 +249,7 @@ export default function AdminPremiumCodesPage() {
       }
     >
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <SiteHeader />
         <main className="flex min-w-0 flex-1 flex-col gap-6 p-4 md:p-6">
           <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -512,16 +512,25 @@ export default function AdminPremiumCodesPage() {
               >
                 <div className="shrink-0 border-b px-4 py-3 sm:px-5 md:px-6">
                   <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="overview" className="px-1 text-xs sm:text-sm">
+                    <TabsTrigger
+                      value="overview"
+                      className="min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
+                    >
                       Overview
                     </TabsTrigger>
-                    <TabsTrigger value="usage" className="px-1 text-xs sm:text-sm">
+                    <TabsTrigger
+                      value="usage"
+                      className="min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
+                    >
                       Usage
                       <span className="rounded-full bg-background px-1.5 py-0.5 text-[10px] tabular-nums">
                         {activeCode.usage_count}
                       </span>
                     </TabsTrigger>
-                    <TabsTrigger value="send" className="px-1 text-xs sm:text-sm">
+                    <TabsTrigger
+                      value="send"
+                      className="min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
+                    >
                       Send code
                     </TabsTrigger>
                   </TabsList>
@@ -639,7 +648,7 @@ export default function AdminPremiumCodesPage() {
                               value={recipientMode}
                               onValueChange={(value) => setRecipientMode(value as RecipientMode)}
                             >
-                              <SelectTrigger className="h-9 w-full">
+                              <SelectTrigger aria-label="Recipient type" className="h-9 w-full">
                                 <SelectValue placeholder="Select recipient type" />
                               </SelectTrigger>
                               <SelectContent>

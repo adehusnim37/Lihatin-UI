@@ -90,7 +90,7 @@ export function SupportConversationBubble({
     <div className={cn("flex", mine ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "max-w-[88%] rounded-xl border px-3.5 py-3 text-sm sm:max-w-[76%]",
+          "min-w-0 max-w-[88%] rounded-xl border px-3.5 py-3 text-sm sm:max-w-[76%]",
           mine
             ? "border-primary/15 bg-primary/10 text-foreground"
             : "bg-background text-card-foreground",
@@ -102,7 +102,7 @@ export function SupportConversationBubble({
         </div>
 
         {message.body ? (
-          <p className="whitespace-pre-wrap break-words leading-6 text-foreground/90">
+          <p className="whitespace-pre-wrap [overflow-wrap:anywhere] leading-6 text-foreground/90">
             {message.body}
           </p>
         ) : null}
@@ -115,7 +115,7 @@ export function SupportConversationBubble({
                   key={attachment.id}
                   type="button"
                   onClick={() => setPreview(attachment)}
-                  className="rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium text-primary-ink transition-colors hover:bg-muted/60"
+                  className="min-h-[44px] max-w-full break-all rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium text-primary-ink transition-colors hover:bg-muted/60 outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {attachment.file_name} ({formatBytes(attachment.size_bytes)})
                 </button>
@@ -124,7 +124,7 @@ export function SupportConversationBubble({
                   key={attachment.id}
                   type="button"
                   onClick={() => download(attachment)}
-                  className="rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium text-primary-ink transition-colors hover:bg-muted/60"
+                  className="min-h-[44px] max-w-full break-all rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium text-primary-ink transition-colors hover:bg-muted/60 outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {attachment.file_name} ({formatBytes(attachment.size_bytes)})
                 </button>

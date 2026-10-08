@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { AlertCircle, History, Loader2 } from "lucide-react";
+import { History, Loader2 } from "lucide-react";
 
 import {
   Dialog,
@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { QueryError } from "@/components/query-error";
 import { HttpMethodBadge, HttpStatusCodeBadge } from "@/components/ui/app-status-badges";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLogById } from "@/lib/hooks/queries/useLogsQuery";
@@ -29,13 +30,13 @@ const formatDateValue = (value: string) => {
 };
 
 export function LogDetailDialog({ logId, onClose }: LogDetailDialogProps) {
-  const { data: logDetail, isLoading: logDetailLoading } = useLogById(logId || "");
+  const { data: logDetail, isLoading: logDetailLoading, refetch } = useLogById(logId || "");
 
   return (
     <Dialog open={!!logId} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="w-[96vw] max-w-[96vw] h-[94vh] p-0 gap-0 overflow-hidden flex flex-col xl:w-[92vw] xl:max-w-[92vw]">
-        <DialogHeader className="px-6 py-4 border-b shrink-0">
-          <DialogTitle className="flex items-center gap-2 pr-10">
+        <DialogHeader className="px-4 sm:px-6 py-4 border-b shrink-0">
+          <DialogTitle className="flex flex-wrap items-center gap-2 pr-10">
             <History className="size-5" />
             Log Details
             {logDetail?.data && (
@@ -61,12 +62,11 @@ export function LogDetailDialog({ logId, onClose }: LogDetailDialogProps) {
           </div>
         ) : logDetail?.data ? (
           <ScrollArea className="flex-1 min-h-0">
-            <LogDetailContent log={logDetail.data} className="px-6 py-5" />
+            <LogDetailContent log={logDetail.data} className="px-4 sm:px-6 py-5" />
           </ScrollArea>
         ) : (
-          <div className="flex flex-1 flex-col items-center justify-center p-12 text-muted-foreground">
-            <AlertCircle className="size-12 mb-4" />
-            <p>Failed to load log details</p>
+          <div className="p-4">
+            <QueryError message="Could not load log details." onRetry={() => void refetch()} />
           </div>
         )}
       </DialogContent>

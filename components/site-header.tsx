@@ -21,7 +21,7 @@ export function SiteHeader() {
   const breadcrumbs = React.useMemo(() => {
     const items = [
       {
-        label: "Main",
+        label: "Dashboard",
         href: "/main",
         active: segments.length === 0 || (segments.length === 1 && segments[0] === "main"),
       },
@@ -34,7 +34,23 @@ export function SiteHeader() {
       if (segment === "main") return; // Skip display for 'main' as it is hardcoded
 
       const isLast = index === segments.length - 1;
-      const label = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");
+      const labels: Record<string, string> = {
+        admin: "Admin",
+        links: "Links",
+        analytics: "Analytics",
+        "history-activity": "History & Activity",
+        "api-integrations": "API & Integrations",
+        support: "Support Inbox",
+        users: "Users",
+        "premium-codes": "Premium Codes",
+        generate: "Generate",
+        "email-campaigns": "Email Campaigns",
+        "support-tickets": "Support Tickets",
+        "security-policy": "Security Policy",
+        settings: "Settings",
+        help: "Get Help",
+      };
+      const label = labels[segment] ?? segment;
 
       items.push({
         label,
@@ -51,13 +67,15 @@ export function SiteHeader() {
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
         <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4" />
-        <Breadcrumb>
-          <BreadcrumbList>
+        <Breadcrumb className="min-w-0 flex-1">
+          <BreadcrumbList className="min-w-0 flex-nowrap">
             {breadcrumbs.map((item, index) => (
               <React.Fragment key={item.href}>
                 <BreadcrumbItem className={item.active ? "min-w-0" : "hidden md:block"}>
                   {item.active ? (
-                    <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                    <BreadcrumbPage className="block truncate" title={item.label}>
+                      {item.label}
+                    </BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
                   )}

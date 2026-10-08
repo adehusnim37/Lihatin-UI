@@ -4,7 +4,7 @@ import { IconExternalLink, IconEye, IconCopy } from "@tabler/icons-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
-import { ActiveInactiveBadge } from "@/components/ui/app-status-badges";
+import { LinkStatusBadge } from "@/components/ui/app-status-badges";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,9 +16,11 @@ interface ShortLink {
   title: string;
   is_active: boolean;
   created_at: string;
+  expires_at?: string | null;
   click_count?: number;
   detail?: {
     current_clicks?: number;
+    is_banned?: boolean;
   };
 }
 
@@ -76,7 +78,12 @@ export function RecentLinksTable({ links = [], isLoading = false }: RecentLinksT
                       <code className="min-w-0 max-w-full break-all text-sm leading-5 font-semibold">
                         {link.short_code}
                       </code>
-                      <ActiveInactiveBadge isActive={link.is_active} className="text-xs" />
+                      <LinkStatusBadge
+                        isActive={link.is_active}
+                        expiresAt={link.expires_at}
+                        isBanned={link.detail?.is_banned}
+                        className="text-xs"
+                      />
                       <Badge variant="secondary" className="text-xs">
                         {link.click_count ?? link.detail?.current_clicks ?? 0} clicks
                       </Badge>

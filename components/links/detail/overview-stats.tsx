@@ -204,7 +204,7 @@ export function OverviewStats({ link }: OverviewStatsProps) {
               <CardDescription>Volume over time</CardDescription>
             </div>
             <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-[120px] h-8 text-xs">
+              <SelectTrigger aria-label="Click growth period" className="w-[120px] h-8 text-sm">
                 <SelectValue placeholder="Period" />
               </SelectTrigger>
               <SelectContent>

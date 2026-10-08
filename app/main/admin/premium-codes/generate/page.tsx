@@ -148,9 +148,9 @@ export default function AdminGeneratePremiumCodesPage() {
       }
     >
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <SiteHeader />
-        <main className="flex flex-1 flex-col gap-6 p-4 md:p-6">
+        <main className="flex min-w-0 flex-1 flex-col gap-6 p-4 md:p-6">
           <header className="max-w-2xl space-y-2">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
@@ -190,21 +190,27 @@ export default function AdminGeneratePremiumCodesPage() {
                         value={mode}
                         onValueChange={(value) => setMode(value as GenerationMode)}
                       >
-                        <TabsList className="grid h-auto w-full grid-cols-2 p-1">
-                          <TabsTrigger value="single" className="h-auto justify-start px-3 py-3">
+                        <TabsList className="grid h-auto w-full grid-cols-2 items-stretch p-1">
+                          <TabsTrigger
+                            value="single"
+                            className="h-auto min-w-0 whitespace-normal justify-start px-2 py-3 sm:px-3"
+                          >
                             <IconKey />
-                            <span className="text-left">
+                            <span className="min-w-0 text-left">
                               <span className="block">Single code</span>
-                              <span className="mt-0.5 block text-[11px] font-normal text-muted-foreground">
+                              <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
                                 Issue one code now
                               </span>
                             </span>
                           </TabsTrigger>
-                          <TabsTrigger value="batch" className="h-auto justify-start px-3 py-3">
+                          <TabsTrigger
+                            value="batch"
+                            className="h-auto min-w-0 whitespace-normal justify-start px-2 py-3 sm:px-3"
+                          >
                             <IconPackages />
-                            <span className="text-left">
+                            <span className="min-w-0 text-left">
                               <span className="block">Batch</span>
-                              <span className="mt-0.5 block text-[11px] font-normal text-muted-foreground">
+                              <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
                                 Up to 100 codes
                               </span>
                             </span>
@@ -253,12 +259,14 @@ export default function AdminGeneratePremiumCodesPage() {
                         <div className="space-y-5 px-4 py-5 md:px-5">
                           <div className="space-y-2">
                             <div className="flex items-center justify-between gap-3">
-                              <Label className="text-xs">Custom date and time</Label>
-                              <span className="text-[11px] text-muted-foreground">
-                                Local timezone
-                              </span>
+                              <Label htmlFor="premium-code-expiry" className="text-xs">
+                                Custom date and time
+                              </Label>
+                              <span className="text-xs text-muted-foreground">Local timezone</span>
                             </div>
                             <DateTimePicker24hForm
+                              id="premium-code-expiry"
+                              ariaLabel="Premium code expiration"
                               value={validUntilDate}
                               onChange={handleCustomExpiryChange}
                               disablePast
@@ -547,7 +555,7 @@ function GeneratedCodeList({ codes }: { codes: AdminPremiumCode[] }) {
             >
               {code.secret_code}
             </code>
-            <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+            <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
               <span>
                 {code.usage_count} / {code.limit_usage ?? "∞"} used
               </span>

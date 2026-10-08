@@ -30,8 +30,12 @@ function LocaleToggle() {
       variant="outline"
       size="sm"
     >
-      <ToggleGroupItem value="id">ID</ToggleGroupItem>
-      <ToggleGroupItem value="en">EN</ToggleGroupItem>
+      <ToggleGroupItem value="id" className="max-md:min-h-[44px] max-md:min-w-[44px]">
+        ID
+      </ToggleGroupItem>
+      <ToggleGroupItem value="en" className="max-md:min-h-[44px] max-md:min-w-[44px]">
+        EN
+      </ToggleGroupItem>
     </ToggleGroup>
   );
 }
@@ -45,8 +49,12 @@ function APIDocumentationContent() {
           aria-label={t(gt.docTypeAriaLabel)}
           className="grid h-auto w-full grid-cols-2 sm:w-auto"
         >
-          <TabsTrigger value="reference">{t(gt.tabReference)}</TabsTrigger>
-          <TabsTrigger value="guide">{t(gt.tabGuide)}</TabsTrigger>
+          <TabsTrigger value="reference" className="min-w-0 whitespace-normal text-center">
+            {t(gt.tabReference)}
+          </TabsTrigger>
+          <TabsTrigger value="guide" className="min-w-0 whitespace-normal text-center">
+            {t(gt.tabGuide)}
+          </TabsTrigger>
         </TabsList>
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <LocaleToggle />

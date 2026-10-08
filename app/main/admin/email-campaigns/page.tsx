@@ -292,9 +292,9 @@ export default function AdminEmailCampaignsPage() {
       }
     >
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <SiteHeader />
-        <div className="flex flex-1 flex-col gap-6 p-6">
+        <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div className="space-y-1">
               <h1 className="text-2xl font-semibold tracking-tight">Email Campaigns</h1>
@@ -671,7 +671,7 @@ function CampaignEditorDialog({
               </div>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                 <Select value={templateID} onValueChange={setTemplateID}>
-                  <SelectTrigger className="flex-1">
+                  <SelectTrigger aria-label="Campaign template" className="flex-1">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -729,7 +729,7 @@ function CampaignEditorDialog({
                 maxLength={20000}
                 onChange={(event) => update("body", event.target.value)}
                 placeholder="Write the promotional message..."
-                className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 min-h-40 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+                className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring min-h-40 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
               />
               <p className="text-right text-xs text-muted-foreground">
                 {form.body.length.toLocaleString()}/20,000
@@ -757,7 +757,7 @@ function CampaignEditorDialog({
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <Label
                   htmlFor="campaign-image-file"
-                  className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent"
+                  className="inline-flex h-9 max-md:min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded-md border bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent"
                 >
                   <IconUpload className="size-4" />
                   {uploadingImage ? "Uploading..." : "Upload image"}
@@ -899,7 +899,7 @@ function ScheduleDialog({
           <div className="grid gap-2">
             <Label>Delivery timing</Label>
             <Select value={mode} onValueChange={(value) => onModeChange(value as "now" | "later")}>
-              <SelectTrigger>
+              <SelectTrigger aria-label="Delivery timing">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -990,7 +990,9 @@ function CampaignDetailDialog({
           >
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="deliveries">Deliveries ({campaign.recipient_count})</TabsTrigger>
+              <TabsTrigger value="deliveries" className="min-w-0 whitespace-normal">
+                Deliveries ({campaign.recipient_count})
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="overview" className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-3">
@@ -1052,7 +1054,7 @@ function CampaignDetailDialog({
             <TabsContent value="deliveries" className="space-y-4">
               <div className="flex justify-end">
                 <Select value={deliveryStatus} onValueChange={onDeliveryStatusChange}>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger aria-label="Delivery status filter" className="w-40">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

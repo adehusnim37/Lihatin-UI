@@ -41,7 +41,7 @@ export default function ApiIntegrationsPage() {
         <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6">
           {/* Header */}
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold flex items-center gap-3">API & Documentation</h1>
+            <h1 className="text-3xl font-bold flex items-center gap-3">API & Integrations</h1>
             <p className="text-muted-foreground">
               Manage your API keys and explore the API documentation.
             </p>
@@ -50,11 +50,17 @@ export default function ApiIntegrationsPage() {
           {/* Tabs for API Keys and Documentation */}
           <Tabs defaultValue="api-keys" className="space-y-6 w-full min-w-0">
             <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
-              <TabsTrigger value="api-keys" className="flex items-center gap-2">
+              <TabsTrigger
+                value="api-keys"
+                className="min-w-0 whitespace-normal flex items-center gap-2"
+              >
                 <Key className="size-4" />
                 API Keys
               </TabsTrigger>
-              <TabsTrigger value="documentation" className="flex items-center gap-2">
+              <TabsTrigger
+                value="documentation"
+                className="min-w-0 whitespace-normal flex items-center gap-2"
+              >
                 <BookOpen className="size-4" />
                 Documentation
               </TabsTrigger>
@@ -64,7 +70,7 @@ export default function ApiIntegrationsPage() {
             <TabsContent value="api-keys" className="space-y-6">
               <div>
                 {/* API Key Section */}
-                <div className="rounded-xl border bg-card p-6 space-y-4">
+                <div className="rounded-xl border bg-card p-4 sm:p-6 space-y-4">
                   <div className="flex items-center justify-between flex-wrap gap-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-amber-500/10">

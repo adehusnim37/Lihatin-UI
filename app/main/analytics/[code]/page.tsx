@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
-import { ActiveInactiveBadge } from "@/components/ui/app-status-badges";
+import { LinkStatusBadge } from "@/components/ui/app-status-badges";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
@@ -28,8 +28,13 @@ export default function AnalyticsDetailPage() {
 
   const handleCopy = async () => {
     if (!link) return;
-    const shortUrl = `${window.location.host}/${link.short_code}`;
-    await navigator.clipboard.writeText(shortUrl);
+    const shortUrl = `${window.location.origin}/${link.short_code}`;
+    try {
+      await navigator.clipboard.writeText(shortUrl);
+    } catch {
+      toast.error("Could not copy the link. Select the URL and copy it manually.");
+      return;
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
     toast.success("Link copied to clipboard");
@@ -57,7 +62,7 @@ export default function AnalyticsDetailPage() {
   }
 
   const shortUrl = `${
-    typeof window !== "undefined" ? window.location.host : ""
+    typeof window !== "undefined" ? window.location.origin : ""
   }/${link.short_code}`;
 
   return (
@@ -72,15 +77,19 @@ export default function AnalyticsDetailPage() {
       <AppSidebar />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1 flex-col gap-6 p-6">
+        <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-3xl font-bold tracking-tight">
+              <div className="min-w-0 space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="min-w-0 break-words text-2xl font-bold tracking-tight sm:text-3xl">
                     Analytics: {link.title || link.short_code}
                   </h1>
-                  <ActiveInactiveBadge isActive={link.is_active} />
+                  <LinkStatusBadge
+                    isActive={link.is_active}
+                    expiresAt={link.expires_at}
+                    isBanned={link.detail?.is_banned}
+                  />
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground text-sm">
                   <LinkIcon className="size-3 shrink-0" />
@@ -94,13 +103,14 @@ export default function AnalyticsDetailPage() {
                   </a>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 text-sm font-medium text-foreground bg-muted/50 px-3 py-1.5 rounded-md">
-                  <span className="truncate max-w-[200px]">{shortUrl}</span>
+              <div className="flex min-w-0 flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+                <div className="flex min-w-0 flex-1 items-center gap-2 text-sm font-medium text-foreground bg-muted/50 px-3 py-1.5 rounded-md">
+                  <span className="min-w-0 flex-1 break-all">{shortUrl}</span>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="size-6 ml-1 hover:bg-background/80"
+                    className="size-11 md:size-8 ml-1 hover:bg-background/80"
+                    aria-label={`Copy ${link.short_code} link`}
                     onClick={handleCopy}
                   >
                     {copied ? (
@@ -124,15 +134,24 @@ export default function AnalyticsDetailPage() {
           <Separator />
 
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList>
-              <TabsTrigger value="overview">
-                <BarChart2 className="mr-2 size-4" /> Overview
+            <TabsList className="grid h-auto w-full grid-cols-3 gap-1">
+              <TabsTrigger
+                className="min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
+                value="overview"
+              >
+                <BarChart2 className="hidden size-4 sm:block" /> Overview
               </TabsTrigger>
-              <TabsTrigger value="views">
-                <Users className="mr-2 size-4" /> Traffic Logs
+              <TabsTrigger
+                className="min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
+                value="views"
+              >
+                <Users className="hidden size-4 sm:block" /> Traffic Logs
               </TabsTrigger>
-              <TabsTrigger value="activity">
-                <Activity className="mr-2 size-4" /> Activity Log
+              <TabsTrigger
+                className="min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
+                value="activity"
+              >
+                <Activity className="hidden size-4 sm:block" /> Activity Log
               </TabsTrigger>
             </TabsList>
 

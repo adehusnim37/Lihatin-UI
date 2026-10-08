@@ -10,7 +10,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
-  AlertCircle,
   Edit3,
   Trash2,
   X,
@@ -22,6 +21,7 @@ import { toast } from "sonner";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { QueryError } from "@/components/query-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,12 +58,14 @@ const getActivityIcon = (method: string) => {
 
 const getActivityColor = (level: string, method: string) => {
   const levelLower = level.toLowerCase();
-  if (levelLower === "error") return "bg-red-500/10 text-red-500";
-  if (levelLower === "warning") return "bg-amber-500/10 text-amber-500";
-  if (levelLower === "success" || method === "POST") return "bg-green-500/10 text-green-500";
-  if (method === "DELETE") return "bg-red-500/10 text-red-500";
-  if (method === "GET") return "bg-blue-500/10 text-blue-500";
-  if (method === "PUT" || method === "PATCH") return "bg-amber-500/10 text-amber-500";
+  if (levelLower === "error") return "bg-red-500/10 text-red-700 dark:text-red-400";
+  if (levelLower === "warning") return "bg-amber-500/10 text-amber-800 dark:text-amber-400";
+  if (levelLower === "success" || method === "POST")
+    return "bg-green-500/10 text-green-700 dark:text-green-400";
+  if (method === "DELETE") return "bg-red-500/10 text-red-700 dark:text-red-400";
+  if (method === "GET") return "bg-blue-500/10 text-blue-700 dark:text-blue-400";
+  if (method === "PUT" || method === "PATCH")
+    return "bg-amber-500/10 text-amber-800 dark:text-amber-400";
   return "bg-muted text-muted-foreground";
 };
 
@@ -126,12 +128,16 @@ export default function HistoryActivityPage() {
     data: allLogsData,
     isLoading: allLogsLoading,
     error: allLogsError,
+    refetch: refetchAllLogs,
+    isFetching: allLogsFetching,
   } = useActivityLogs(page, limit, "created_at", "desc");
 
   const {
     data: filteredLogsData,
     isLoading: filteredLogsLoading,
     error: filteredLogsError,
+    refetch: refetchFilteredLogs,
+    isFetching: filteredLogsFetching,
   } = useLogsWithFilter(filterParams || { page: 1, limit: 20 });
 
   // Use filtered data if filter is active, otherwise use all logs
@@ -139,7 +145,13 @@ export default function HistoryActivityPage() {
   const isLoading = filterParams ? filteredLogsLoading : allLogsLoading;
   const error = filterParams ? filteredLogsError : allLogsError;
 
-  const { data: countsData, isLoading: countsLoading } = useLogCounts();
+  const {
+    data: countsData,
+    isLoading: countsLoading,
+    error: countsError,
+    refetch: refetchCounts,
+  } = useLogCounts();
+  const isFetching = filterParams ? filteredLogsFetching : allLogsFetching;
 
   const logs = data?.data?.logs || [];
   const totalCount = data?.data?.total_count || 0;
@@ -180,9 +192,9 @@ export default function HistoryActivityPage() {
       }
     >
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <SiteHeader />
-        <div className="flex flex-1 flex-col gap-8 p-6">
+        <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6">
           {/* Header */}
           <div className="flex flex-col gap-1">
             <h1 className="text-3xl font-bold tracking-tight">History & Activity</h1>
@@ -190,10 +202,10 @@ export default function HistoryActivityPage() {
           </div>
 
           {/* Filter Actions */}
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <Dialog open={showAdvancedFilter} onOpenChange={setShowAdvancedFilter}>
               <DialogTrigger asChild>
-                <button className="flex items-center gap-2 px-4 py-2 rounded-lg border bg-card hover:bg-accent transition-colors">
+                <Button variant="outline">
                   <SlidersHorizontal className="size-4" />
                   <span className="text-sm font-medium">Filters</span>
                   {(hasActiveFilters || filter !== "all") && (
@@ -202,10 +214,10 @@ export default function HistoryActivityPage() {
                         (filter !== "all" ? 1 : 0)}
                     </span>
                   )}
-                </button>
+                </Button>
               </DialogTrigger>
 
-              <DialogContent className="max-w-5xl max-h-[80vh] overflow-y-auto">
+              <DialogContent className="sm:max-w-5xl max-h-[calc(100dvh-2rem)] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
                     <SlidersHorizontal className="size-5" />
@@ -216,12 +228,18 @@ export default function HistoryActivityPage() {
 
                 <div className="mt-4 space-y-5">
                   {/* User & Action */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-medium mb-1.5 block">Username</label>
+                      <label
+                        htmlFor="activity-username"
+                        className="text-sm font-medium mb-1.5 block"
+                      >
+                        Username
+                      </label>
                       <input
                         type="text"
                         placeholder="Filter by user..."
+                        id="activity-username"
                         value={advancedFilters.username}
                         onChange={(e) => {
                           setAdvancedFilters({
@@ -230,14 +248,17 @@ export default function HistoryActivityPage() {
                           });
                           setPage(1);
                         }}
-                        className="w-full px-3 py-2 text-sm border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                        className="min-h-[44px] w-full px-3 py-2 text-sm border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-medium mb-1.5 block">Action</label>
+                      <label htmlFor="activity-action" className="text-sm font-medium mb-1.5 block">
+                        Action
+                      </label>
                       <input
                         type="text"
                         placeholder="e.g., login..."
+                        id="activity-action"
                         value={advancedFilters.action}
                         onChange={(e) => {
                           setAdvancedFilters({
@@ -246,7 +267,7 @@ export default function HistoryActivityPage() {
                           });
                           setPage(1);
                         }}
-                        className="w-full px-3 py-2 text-sm border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                        className="min-h-[44px] w-full px-3 py-2 text-sm border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
                       />
                     </div>
                   </div>
@@ -254,10 +275,13 @@ export default function HistoryActivityPage() {
                   {/* HTTP Details */}
                   <div className="space-y-3">
                     <div>
-                      <label className="text-xs font-medium mb-1.5 block">Route/Path</label>
+                      <label htmlFor="activity-route" className="text-sm font-medium mb-1.5 block">
+                        Route/Path
+                      </label>
                       <input
                         type="text"
                         placeholder="/api/auth/login"
+                        id="activity-route"
                         value={advancedFilters.route}
                         onChange={(e) => {
                           setAdvancedFilters({
@@ -266,13 +290,19 @@ export default function HistoryActivityPage() {
                           });
                           setPage(1);
                         }}
-                        className="w-full px-3 py-2 text-sm border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                        className="min-h-[44px] w-full px-3 py-2 text-sm border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
                       />
                     </div>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
-                        <label className="text-xs font-medium mb-1.5 block">Level</label>
+                        <label
+                          htmlFor="activity-level"
+                          className="text-sm font-medium mb-1.5 block"
+                        >
+                          Level
+                        </label>
                         <select
+                          id="activity-level"
                           value={advancedFilters.level}
                           onChange={(e) => {
                             setAdvancedFilters({
@@ -281,7 +311,7 @@ export default function HistoryActivityPage() {
                             });
                             setPage(1);
                           }}
-                          className="w-full px-3 py-2 text-sm border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                          className="min-h-[44px] w-full px-3 py-2 text-sm border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
                         >
                           <option value="">All</option>
                           <option value="info">INFO</option>
@@ -292,10 +322,16 @@ export default function HistoryActivityPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="text-xs font-medium mb-1.5 block">Status</label>
+                        <label
+                          htmlFor="activity-status_code"
+                          className="text-sm font-medium mb-1.5 block"
+                        >
+                          Status
+                        </label>
                         <input
                           type="number"
                           placeholder="200"
+                          id="activity-status_code"
                           value={advancedFilters.status_code}
                           onChange={(e) => {
                             setAdvancedFilters({
@@ -304,14 +340,20 @@ export default function HistoryActivityPage() {
                             });
                             setPage(1);
                           }}
-                          className="w-full px-3 py-2 text-sm border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                          className="min-h-[44px] w-full px-3 py-2 text-sm border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium mb-1.5 block">IP Address</label>
+                        <label
+                          htmlFor="activity-ip_address"
+                          className="text-sm font-medium mb-1.5 block"
+                        >
+                          IP Address
+                        </label>
                         <input
                           type="text"
                           placeholder="192.168.1.1"
+                          id="activity-ip_address"
                           value={advancedFilters.ip_address}
                           onChange={(e) => {
                             setAdvancedFilters({
@@ -320,17 +362,24 @@ export default function HistoryActivityPage() {
                             });
                             setPage(1);
                           }}
-                          className="w-full px-3 py-2 text-sm border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                          className="min-h-[44px] w-full px-3 py-2 text-sm border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Date Range */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-medium mb-1.5 block">From Date & Time</label>
+                      <label
+                        htmlFor="activity-date_from"
+                        className="text-sm font-medium mb-1.5 block"
+                      >
+                        From Date & Time
+                      </label>
                       <DateTimePicker24hForm
+                        id="activity-date_from"
+                        ariaLabel="From Date & Time"
                         value={
                           advancedFilters.date_from
                             ? new Date(advancedFilters.date_from)
@@ -382,8 +431,15 @@ export default function HistoryActivityPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-medium mb-1.5 block">To Date & Time</label>
+                      <label
+                        htmlFor="activity-date_to"
+                        className="text-sm font-medium mb-1.5 block"
+                      >
+                        To Date & Time
+                      </label>
                       <DateTimePicker24hForm
+                        id="activity-date_to"
+                        ariaLabel="To Date & Time"
                         disableBefore={
                           advancedFilters.date_from
                             ? new Date(advancedFilters.date_from)
@@ -452,157 +508,57 @@ export default function HistoryActivityPage() {
               </DialogContent>
             </Dialog>
 
-            {/* Active Filters Display */}
             {(hasActiveFilters || filter !== "all") && (
-              <div className="flex-1 flex items-center gap-2 overflow-x-auto">
-                <span className="text-xs text-muted-foreground whitespace-nowrap">Active:</span>
-                <div className="flex gap-1.5">
-                  {filter !== "all" && (
-                    <Badge variant="default" className="gap-1.5">
-                      {filter}
-                      <button
-                        type="button"
-                        className="inline-flex items-center hover:opacity-70"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setFilter("all");
-                        }}
-                      >
-                        <X className="size-3" />
-                      </button>
-                    </Badge>
-                  )}
-                  {advancedFilters.username && (
-                    <Badge variant="secondary" className="gap-1.5">
-                      {advancedFilters.username}
-                      <button
-                        type="button"
-                        className="inline-flex items-center hover:text-destructive"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setAdvancedFilters({
-                            ...advancedFilters,
-                            username: "",
-                          });
-                        }}
-                      >
-                        <X className="size-3" />
-                      </button>
-                    </Badge>
-                  )}
-                  {advancedFilters.action && (
-                    <Badge variant="secondary" className="gap-1.5">
-                      {advancedFilters.action}
-                      <button
-                        type="button"
-                        className="inline-flex items-center hover:text-destructive"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setAdvancedFilters({ ...advancedFilters, action: "" });
-                        }}
-                      >
-                        <X className="size-3" />
-                      </button>
-                    </Badge>
-                  )}
-                  {advancedFilters.level && (
-                    <Badge variant="secondary" className="gap-1.5">
-                      {advancedFilters.level}
-                      <button
-                        type="button"
-                        className="inline-flex items-center hover:text-destructive"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setAdvancedFilters({ ...advancedFilters, level: "" });
-                        }}
-                      >
-                        <X className="size-3" />
-                      </button>
-                    </Badge>
-                  )}
-                  {advancedFilters.status_code && (
-                    <Badge variant="secondary" className="gap-1.5">
-                      {advancedFilters.status_code}
-                      <button
-                        type="button"
-                        className="inline-flex items-center hover:text-destructive"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setAdvancedFilters({
-                            ...advancedFilters,
-                            status_code: "",
-                          });
-                        }}
-                      >
-                        <X className="size-3" />
-                      </button>
-                    </Badge>
-                  )}
-                  {advancedFilters.date_from && (
-                    <Badge variant="secondary" className="gap-1.5">
-                      From:{" "}
-                      {new Date(advancedFilters.date_from).toLocaleString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                      <button
-                        type="button"
-                        className="inline-flex items-center hover:text-destructive"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setAdvancedFilters({
-                            ...advancedFilters,
-                            date_from: "",
-                          });
-                        }}
-                      >
-                        <X className="size-3" />
-                      </button>
-                    </Badge>
-                  )}
-                  {advancedFilters.date_to && (
-                    <Badge variant="secondary" className="gap-1.5">
-                      To:{" "}
-                      {new Date(advancedFilters.date_to).toLocaleString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                      <button
-                        type="button"
-                        className="inline-flex items-center hover:text-destructive"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setAdvancedFilters({
-                            ...advancedFilters,
-                            date_to: "",
-                          });
-                        }}
-                      >
-                        <X className="size-3" />
-                      </button>
-                    </Badge>
-                  )}
-                </div>
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <span className="text-sm text-muted-foreground">Active:</span>
+                {filter !== "all" && (
+                  <Button
+                    variant="secondary"
+                    aria-label="Remove method filter"
+                    onClick={() => {
+                      setFilter("all");
+                      setPage(1);
+                    }}
+                  >
+                    {filter}
+                    <X className="size-4" />
+                  </Button>
+                )}
+                {Object.entries(advancedFilters)
+                  .filter(([, value]) => value)
+                  .map(([key, value]) => (
+                    <Button
+                      key={key}
+                      variant="secondary"
+                      className="h-auto min-h-[44px] max-w-full whitespace-normal text-left"
+                      aria-label={`Remove ${key.replace(/_/g, " ")} filter`}
+                      onClick={() => {
+                        setAdvancedFilters({ ...advancedFilters, [key]: "" });
+                        setPage(1);
+                      }}
+                    >
+                      <span className="min-w-0 break-all">
+                        {key.replace(/_/g, " ")}:{" "}
+                        {key.startsWith("date_") ? new Date(value).toLocaleString() : value}
+                      </span>
+                      <X className="size-4" />
+                    </Button>
+                  ))}
               </div>
             )}
           </div>
 
+          {countsError && (
+            <QueryError
+              message="Could not load activity totals."
+              onRetry={() => void refetchCounts()}
+            />
+          )}
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Total Card */}
             <div
-              className="rounded-2xl border bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 p-6 hover:shadow-md transition-all cursor-pointer group"
+              className="rounded-2xl border bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 p-6 hover:shadow-md transition-all cursor-pointer group outline-none focus-visible:ring-2 focus-visible:ring-ring"
               onClick={() => {
                 setFilter("all");
                 setPage(1);
@@ -615,6 +571,7 @@ export default function HistoryActivityPage() {
                 }
               }}
               role="button"
+              aria-pressed={filter === "all"}
               tabIndex={0}
             >
               <div className="flex items-center justify-between mb-4">
@@ -625,7 +582,7 @@ export default function HistoryActivityPage() {
                   <div>
                     <p className="text-sm text-muted-foreground">Total Activity</p>
                     <p className="text-2xl font-bold">
-                      {countsLoading ? "..." : totalAllCounts.toLocaleString()}
+                      {countsLoading ? "…" : countsError ? "—" : totalAllCounts.toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -635,10 +592,10 @@ export default function HistoryActivityPage() {
 
             {/* HTTP Methods Group */}
             <div className="md:col-span-2 rounded-2xl border bg-card p-6">
-              <h3 className="text-sm font-semibold text-muted-foreground mb-4 flex items-center gap-2">
+              <h2 className="text-sm font-semibold text-muted-foreground mb-4 flex items-center gap-2">
                 <Filter className="size-4" />
                 HTTP Methods
-              </h3>
+              </h2>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {[
                   {
@@ -653,14 +610,14 @@ export default function HistoryActivityPage() {
                     count: postCounts,
                     icon: <Link2 className="size-4" />,
                     color: "from-green-500/10 to-green-500/5 border-green-500/20",
-                    textColor: "text-green-600 dark:text-green-400",
+                    textColor: "text-green-700 dark:text-green-400",
                   },
                   {
                     method: "PUT",
                     count: putCounts,
                     icon: <Edit3 className="size-4" />,
                     color: "from-amber-500/10 to-amber-500/5 border-amber-500/20",
-                    textColor: "text-amber-600 dark:text-amber-400",
+                    textColor: "text-amber-800 dark:text-amber-400",
                   },
                   {
                     method: "PATCH",
@@ -691,15 +648,16 @@ export default function HistoryActivityPage() {
                       }
                     }}
                     role="button"
+                    aria-pressed={filter === method}
                     tabIndex={0}
-                    className={`rounded-lg border bg-gradient-to-br ${color} p-3 hover:shadow-md transition-all cursor-pointer group`}
+                    className={`rounded-lg border bg-gradient-to-br ${color} p-3 hover:shadow-md transition-all cursor-pointer group outline-none focus-visible:ring-2 focus-visible:ring-ring`}
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <div className={`${textColor}`}>{icon}</div>
                       <span className="text-xs font-medium text-muted-foreground">{method}</span>
                     </div>
                     <p className={`text-lg font-bold ${textColor}`}>
-                      {countsLoading ? "..." : count.toLocaleString()}
+                      {countsLoading ? "…" : countsError ? "—" : count.toLocaleString()}
                     </p>
                   </div>
                 ))}
@@ -710,15 +668,18 @@ export default function HistoryActivityPage() {
           {/* Logs Table */}
           <div className="rounded-xl border bg-card overflow-hidden">
             {isLoading ? (
-              <div className="flex items-center justify-center p-12">
+              <div
+                role="status"
+                aria-label="Loading activity logs"
+                className="flex items-center justify-center p-12"
+              >
                 <Loader2 className="size-8 animate-spin text-muted-foreground" />
               </div>
             ) : error ? (
-              <div className="flex flex-col items-center justify-center p-12 text-destructive">
-                <AlertCircle className="size-12 mb-4" />
-                <p className="text-lg font-semibold">Failed to load logs</p>
-                <p className="text-sm text-muted-foreground">Please try again later</p>
-              </div>
+              <QueryError
+                message="Could not load activity logs."
+                onRetry={() => void (filterParams ? refetchFilteredLogs() : refetchAllLogs())}
+              />
             ) : logs.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-12 text-muted-foreground">
                 <History className="size-12 mb-4" />
@@ -727,8 +688,21 @@ export default function HistoryActivityPage() {
               </div>
             ) : (
               <>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
+                {isFetching && (
+                  <p role="status" className="px-4 py-2 text-sm text-muted-foreground">
+                    Updating activity logs…
+                  </p>
+                )}
+                <div
+                  role="region"
+                  aria-label="Activity logs, scroll horizontally for more columns"
+                  tabIndex={0}
+                  className="overflow-x-auto outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <table className="w-full min-w-[640px]">
+                    <caption className="sr-only">
+                      Account activity logs. Use View log details to inspect an entry.
+                    </caption>
                     <thead className="border-b bg-muted/50">
                       <tr>
                         <th className="text-left p-4 font-semibold text-sm">Action</th>
@@ -740,18 +714,7 @@ export default function HistoryActivityPage() {
                     </thead>
                     <tbody>
                       {logs.map((log) => (
-                        <tr
-                          key={log.id}
-                          className="border-b hover:bg-muted/30 transition-colors cursor-pointer"
-                          onClick={() => setSelectedLogId(log.id)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              setSelectedLogId(log.id);
-                            }
-                          }}
-                          tabIndex={0}
-                        >
+                        <tr key={log.id} className="border-b hover:bg-muted/30 transition-colors">
                           <td className="p-4">
                             <div className="flex items-center gap-3">
                               <div
@@ -760,7 +723,14 @@ export default function HistoryActivityPage() {
                                 {getActivityIcon(log.method)}
                               </div>
                               <div>
-                                <p className="font-medium text-sm">{log.action || log.message}</p>
+                                <button
+                                  type="button"
+                                  className="min-h-[44px] text-left font-medium text-sm rounded outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                                  aria-label={`View log details: ${log.action || log.message}, ${log.method}, ${formatTimestamp(log.created_at)}`}
+                                  onClick={() => setSelectedLogId(log.id)}
+                                >
+                                  {log.action || log.message}
+                                </button>
                                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                                   <span className="font-mono font-semibold">{log.method}</span>
                                   <span>•</span>
@@ -786,10 +756,10 @@ export default function HistoryActivityPage() {
                             <span
                               className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                                 log.status_code >= 200 && log.status_code < 300
-                                  ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                                  ? "bg-green-500/10 text-green-700 dark:text-green-400"
                                   : log.status_code >= 400
                                     ? "bg-red-500/10 text-red-600 dark:text-red-400"
-                                    : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                    : "bg-amber-500/10 text-amber-800 dark:text-amber-400"
                               }`}
                             >
                               {log.status_code}
@@ -818,12 +788,12 @@ export default function HistoryActivityPage() {
                     </span>{" "}
                     logs
                   </p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap justify-center items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setPage((p) => p - 1)}
-                      disabled={!hasPrev || isLoading}
+                      disabled={!hasPrev || isFetching}
                     >
                       <ChevronLeft className="size-4 mr-1" />
                       Previous
@@ -835,7 +805,7 @@ export default function HistoryActivityPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => setPage((p) => p + 1)}
-                      disabled={!hasNext || isLoading}
+                      disabled={!hasNext || isFetching}
                     >
                       Next
                       <ChevronRight className="size-4 ml-1" />

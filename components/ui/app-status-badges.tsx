@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import {
   AlertTriangleIcon,
   BanIcon,
@@ -336,6 +339,35 @@ export function AccountHistoryActionBadge({
   return (
     <StatusBadge tone="neutral" className={className}>
       {action.toUpperCase()}
+    </StatusBadge>
+  );
+}
+
+export function LinkStatusBadge({
+  isActive,
+  expiresAt,
+  isBanned = false,
+  className,
+}: {
+  isActive: boolean;
+  expiresAt?: string | null;
+  isBanned?: boolean;
+  className?: string;
+}) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!expiresAt) return;
+    const remaining = new Date(expiresAt).getTime() - now;
+    if (remaining <= 0 || !Number.isFinite(remaining)) return;
+    const timer = setTimeout(() => setNow(Date.now()), Math.min(remaining + 1, 2147483647));
+    return () => clearTimeout(timer);
+  }, [expiresAt, now]);
+  const expired = !!expiresAt && new Date(expiresAt).getTime() <= now;
+  const label = isBanned ? "Banned" : expired ? "Expired" : isActive ? "Active" : "Inactive";
+  const tone = isBanned ? "danger" : expired ? "warning" : isActive ? "success" : "neutral";
+  return (
+    <StatusBadge tone={tone} className={className}>
+      {label}
     </StatusBadge>
   );
 }

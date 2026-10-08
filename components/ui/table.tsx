@@ -6,7 +6,17 @@ import { cn } from "@/lib/utils";
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
-    <div data-slot="table-container" className="relative w-full overflow-x-auto">
+    <div
+      data-slot="table-container"
+      role="region"
+      aria-label={
+        props["aria-label"]
+          ? `${props["aria-label"]}, scroll horizontally for more columns`
+          : "Data table, scroll horizontally for more columns"
+      }
+      tabIndex={0}
+      className="relative min-w-0 w-full overflow-x-auto outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
       <table
         data-slot="table"
         className={cn("w-full caption-bottom text-sm", className)}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
+import { QueryError } from "@/components/query-error";
 import { Key, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { APIKeyCard } from "./api-key-card";
@@ -23,7 +24,7 @@ export function APIKeyList() {
   const [refreshDialogOpen, setRefreshDialogOpen] = useState(false);
   const [usageDialogOpen, setUsageDialogOpen] = useState(false);
 
-  const { data, isLoading, error } = useAPIKeys();
+  const { data, isLoading, error, refetch } = useAPIKeys();
   const toggleStatusMutation = useToggleAPIKeyStatus();
 
   const handleEdit = (apiKey: APIKeyResponse) => {
@@ -52,18 +53,18 @@ export function APIKeyList() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
+      <div
+        role="status"
+        aria-label="Loading API keys"
+        className="flex items-center justify-center py-12"
+      >
         <Loader2 className="size-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (error) {
-    return (
-      <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
-        <p className="text-destructive">Failed to load API keys</p>
-      </div>
-    );
+    return <QueryError message="Could not load API keys." onRetry={() => void refetch()} />;
   }
 
   const apiKeys: APIKeyResponse[] = Array.isArray(data) ? data : [];

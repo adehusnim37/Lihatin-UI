@@ -185,9 +185,11 @@ function AdminUsersPageContent() {
     });
   }, [debouncedSearch, searchFromURL, updateListQuery]);
 
-  useEffect(() => {
+  const [previousSearchFromURL, setPreviousSearchFromURL] = useState(searchFromURL);
+  if (previousSearchFromURL !== searchFromURL) {
+    setPreviousSearchFromURL(searchFromURL);
     setSearchInput(searchFromURL);
-  }, [searchFromURL]);
+  }
 
   const {
     data: usersData,
@@ -478,9 +480,9 @@ function AdminUsersPageContent() {
       }
     >
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <SiteHeader />
-        <main className="flex flex-1 flex-col gap-6 p-4 md:p-6">
+        <main className="flex min-w-0 flex-1 flex-col gap-6 p-4 md:p-6">
           <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl">
               <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">User directory</h1>
@@ -563,7 +565,7 @@ function AdminUsersPageContent() {
                       })
                     }
                   >
-                    <SelectTrigger className="h-9 w-full">
+                    <SelectTrigger aria-label="All roles" className="h-9 w-full">
                       <SelectValue placeholder="All roles" />
                     </SelectTrigger>
                     <SelectContent>
@@ -583,7 +585,7 @@ function AdminUsersPageContent() {
                       })
                     }
                   >
-                    <SelectTrigger className="h-9 w-full">
+                    <SelectTrigger aria-label="All plans" className="h-9 w-full">
                       <SelectValue placeholder="All plans" />
                     </SelectTrigger>
                     <SelectContent>
@@ -603,7 +605,7 @@ function AdminUsersPageContent() {
                       })
                     }
                   >
-                    <SelectTrigger className="h-9 w-full">
+                    <SelectTrigger aria-label="All access" className="h-9 w-full">
                       <SelectValue placeholder="All access" />
                     </SelectTrigger>
                     <SelectContent>
@@ -624,7 +626,7 @@ function AdminUsersPageContent() {
                       });
                     }}
                   >
-                    <SelectTrigger className="h-9 w-full">
+                    <SelectTrigger aria-label="Sort users" className="h-9 w-full">
                       <SelectValue placeholder="Sort users" />
                     </SelectTrigger>
                     <SelectContent>
@@ -721,9 +723,17 @@ function AdminUsersPageContent() {
                                   </div>
                                   <div className="min-w-0">
                                     <div className="flex items-center gap-1.5">
-                                      <p className="max-w-52 truncate text-sm font-medium">
+                                      <button
+                                        type="button"
+                                        aria-label={`View user ${user.username}`}
+                                        className="max-w-52 min-h-[44px] truncate text-left text-sm font-medium rounded outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                                        onClick={(event) => {
+                                          event.stopPropagation();
+                                          openUserDetailPage(user.id);
+                                        }}
+                                      >
                                         {displayName}
-                                      </p>
+                                      </button>
                                       <IconChevronRight className="size-3.5 opacity-0 transition-opacity group-hover:opacity-60" />
                                     </div>
                                     <p className="max-w-64 truncate text-xs text-muted-foreground">
@@ -929,7 +939,7 @@ function AdminUsersPageContent() {
                       setProfileForm((prev) => ({ ...prev, role: normalizeRoleValue(value) }))
                     }
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger aria-label="Choose role" className="w-full">
                       <SelectValue placeholder="Choose role" />
                     </SelectTrigger>
                     <SelectContent>
@@ -956,7 +966,7 @@ function AdminUsersPageContent() {
 
       {/* Premium Action Dialog */}
       <Dialog open={isPremiumOpen} onOpenChange={setIsPremiumOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Manage Premium Access</DialogTitle>
             <DialogDescription>
@@ -984,7 +994,7 @@ function AdminUsersPageContent() {
               {activeUserStatus === "revoked" ? (
                 <div className="space-y-4">
                   {activeUserRevokeType === "permanent" && (
-                    <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+                    <div className="rounded-md border border-amber-300 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-200">
                       Permanently revoked. Super admin must confirm override before reactivate.
                     </div>
                   )}
@@ -992,7 +1002,7 @@ function AdminUsersPageContent() {
                     <Label htmlFor="reactivate_reason">Reactivation Reason</Label>
                     <textarea
                       id="reactivate_reason"
-                      className="min-h-[90px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      className="min-h-[90px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       placeholder="Explain why this premium should be reactivated..."
                       value={reason}
                       onChange={(event) => setReason(event.target.value)}
@@ -1016,7 +1026,7 @@ function AdminUsersPageContent() {
                       value={revokeType}
                       onValueChange={(value) => setRevokeType(value as RevokeType)}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger aria-label="Choose revoke type" className="w-full">
                         <SelectValue placeholder="Choose revoke type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1029,7 +1039,7 @@ function AdminUsersPageContent() {
                     <Label htmlFor="revoke_reason">Revoke Reason</Label>
                     <textarea
                       id="revoke_reason"
-                      className="min-h-[90px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      className="min-h-[90px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       placeholder="Explain why this premium must be revoked..."
                       value={reason}
                       onChange={(event) => setReason(event.target.value)}

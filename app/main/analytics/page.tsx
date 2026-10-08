@@ -1,5 +1,7 @@
 "use client";
 
+import { QueryError } from "@/components/query-error";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { format, subDays } from "date-fns";
@@ -57,17 +59,18 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { ActiveInactiveBadge } from "@/components/ui/app-status-badges";
+import { LinkStatusBadge } from "@/components/ui/app-status-badges";
 
 const chartConfig = {
   clicks: {
     label: "Clicks",
-    color: "hsl(var(--primary))",
+    color: "var(--primary)",
   },
 } satisfies ChartConfig;
 
 export default function AnalyticsPage() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [date, setDate] = useState<DateRange | undefined>({
     from: subDays(new Date(), 30),
     to: new Date(),
@@ -80,7 +83,13 @@ export default function AnalyticsPage() {
   const startDate = date?.from ? format(date.from, "yyyy-MM-dd") : undefined;
   const endDate = date?.to ? format(date.to, "yyyy-MM-dd") : undefined;
 
-  const { data: stats } = useDashboardStats(startDate, endDate);
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    isFetching: statsFetching,
+    isError: statsError,
+    refetch: retryStats,
+  } = useDashboardStats(startDate, endDate);
   const { data: linksData, isLoading: linksLoading } = useLinks(page, limit);
 
   const links = linksData?.short_links || [];
@@ -97,7 +106,7 @@ export default function AnalyticsPage() {
       <AppSidebar />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1 flex-col gap-8 p-6">
+        <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 sm:gap-8 sm:p-6">
           {/* Header & Date Picker */}
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-col gap-1">
@@ -137,273 +146,335 @@ export default function AnalyticsPage() {
                     defaultMonth={date?.from}
                     selected={date}
                     onSelect={setDate}
-                    numberOfMonths={2}
+                    numberOfMonths={isMobile ? 1 : 2}
                   />
                 </PopoverContent>
               </Popover>
             </div>
           </div>
 
-          {/* KPI Cards (SectionCards Style) */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Clicks</CardTitle>
-                <MousePointerClick className="size-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats?.total_clicks ?? 0}</div>
-                <p className="text-xs text-muted-foreground mt-1">In selected period</p>
-              </CardContent>
-            </Card>
+          {statsFetching && !statsLoading && (
+            <p role="status" className="text-sm text-muted-foreground">
+              Updating analytics for the selected period…
+            </p>
+          )}
+          {statsLoading ? (
+            <div role="status" className="text-sm text-muted-foreground">
+              Loading analytics…
+            </div>
+          ) : statsError ? (
+            <QueryError
+              message="Analytics could not be loaded. Your links are still available below."
+              onRetry={() => {
+                void retryStats();
+              }}
+            />
+          ) : (
+            <>
+              {/* KPI Cards (SectionCards Style) */}
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Clicks</CardTitle>
+                    <MousePointerClick className="size-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold tabular-nums">
+                      {stats?.total_clicks ?? 0}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">In selected period</p>
+                  </CardContent>
+                </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Unique Visitors</CardTitle>
-                <Users className="size-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats?.total_unique_visitors ?? 0}</div>
-                <p className="text-xs text-muted-foreground mt-1">Distinct audiences</p>
-              </CardContent>
-            </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Unique Visitors</CardTitle>
+                    <Users className="size-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold tabular-nums">
+                      {stats?.total_unique_visitors ?? 0}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Distinct audiences</p>
+                  </CardContent>
+                </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Links</CardTitle>
-                <LinkIcon className="size-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats?.active_links ?? 0}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Of {stats?.total_links ?? 0} total links
-                </p>
-              </CardContent>
-            </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Active Links</CardTitle>
+                    <LinkIcon className="size-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold tabular-nums">
+                      {stats?.active_links ?? 0}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Of {stats?.total_links ?? 0} total links
+                    </p>
+                  </CardContent>
+                </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Engagement Rate</CardTitle>
-                <TrendingUp className="size-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {stats?.total_clicks && stats.total_unique_visitors
-                    ? (stats.total_clicks / stats.total_unique_visitors).toFixed(1)
-                    : "0.0"}
-                  x
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">Clicks per visitor</p>
-              </CardContent>
-            </Card>
-          </div>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Clicks per Visitor</CardTitle>
+                    <TrendingUp className="size-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold tabular-nums">
+                      {stats?.total_unique_visitors
+                        ? (stats.total_clicks / stats.total_unique_visitors).toFixed(1)
+                        : "—"}
+                      {stats?.total_unique_visitors ? "x" : ""}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Average in selected period</p>
+                  </CardContent>
+                </Card>
+              </div>
 
-          {/* Main Chart Area (Line Chart) */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Click Performance</CardTitle>
-              <CardDescription>Daily click history for the selected period</CardDescription>
-            </CardHeader>
-            <CardContent className="pl-2">
-              <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
-                <LineChart
-                  accessibilityLayer
-                  data={stats?.click_history ?? []}
-                  margin={{
-                    left: 12,
-                    right: 12,
-                  }}
-                >
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="date"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    minTickGap={32}
-                    tickFormatter={(value) => {
-                      const date = new Date(value);
-                      return date.toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      });
-                    }}
-                  />
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        className="w-[150px]"
-                        nameKey="clicks"
-                        labelFormatter={(value) => {
-                          return new Date(value as string | number).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          });
+              {/* Main Chart Area (Line Chart) */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Click Performance</CardTitle>
+                  <CardDescription>Daily click history for the selected period</CardDescription>
+                </CardHeader>
+                <CardContent className="pl-2">
+                  {(stats?.click_history?.length ?? 0) === 0 ? (
+                    <p className="flex min-h-36 items-center justify-center p-4 text-center text-sm text-muted-foreground">
+                      No clicks in the selected period.
+                    </p>
+                  ) : (
+                    <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
+                      <LineChart
+                        accessibilityLayer
+                        data={stats?.click_history ?? []}
+                        margin={{
+                          left: 12,
+                          right: 12,
                         }}
-                      />
-                    }
-                  />
-                  <Line
-                    dataKey="count"
-                    type="monotone"
-                    stroke="#70c5df"
-                    strokeWidth={2}
-                    dot={{
-                      fill: "#70c5df",
-                    }}
-                    activeDot={{
-                      r: 6,
-                    }}
-                  />
-                </LineChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+                      >
+                        <CartesianGrid vertical={false} />
+                        <XAxis
+                          dataKey="date"
+                          tickLine={false}
+                          axisLine={false}
+                          tickMargin={8}
+                          minTickGap={32}
+                          tickFormatter={(value) => {
+                            const date = new Date(value);
+                            return date.toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                            });
+                          }}
+                        />
+                        <ChartTooltip
+                          content={
+                            <ChartTooltipContent
+                              className="w-[150px]"
+                              nameKey="clicks"
+                              labelFormatter={(value) => {
+                                return new Date(value as string | number).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  },
+                                );
+                              }}
+                            />
+                          }
+                        />
+                        <Line
+                          dataKey="count"
+                          type="monotone"
+                          stroke="var(--primary-ink)"
+                          strokeWidth={2}
+                          dot={{
+                            fill: "var(--primary)",
+                          }}
+                          activeDot={{
+                            r: 6,
+                          }}
+                        />
+                      </LineChart>
+                    </ChartContainer>
+                  )}
+                </CardContent>
+              </Card>
 
-          {/* Top Stats Grid */}
-          <div className="grid gap-4 md:grid-cols-3">
-            {/* Top Countries (Bar Chart) */}
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Globe className="size-4 text-muted-foreground" /> Top Countries
-                </CardTitle>
-                <CardDescription>Top locations by clicks</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 pb-0 min-w-0">
-                <ChartContainer
-                  config={chartConfig}
-                  className="mx-auto aspect-square max-h-[250px] w-full"
-                >
-                  <BarChart
-                    accessibilityLayer
-                    data={stats?.top_countries?.slice(0, 5) ?? []}
-                    layout="vertical"
-                    margin={{
-                      left: 0,
-                    }}
-                  >
-                    <YAxis
-                      dataKey="country"
-                      type="category"
-                      tickLine={false}
-                      tickMargin={10}
-                      axisLine={false}
-                      width={80}
-                      hide
-                    />
-                    <XAxis dataKey="count" type="number" hide />
-                    <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                    <Bar dataKey="count" radius={5} fill="#70c5df">
-                      <LabelList
-                        dataKey="country"
-                        position="insideLeft"
-                        offset={8}
-                        className="text-xs font-bold"
-                        fontSize={10}
-                        fill="#ffffff"
-                        formatter={(value: unknown) =>
-                          typeof value === "string" && value.trim().length > 0 ? value : "Unknown"
-                        }
-                      />
-                      <LabelList
-                        dataKey="count"
-                        position="right"
-                        offset={8}
-                        className="fill-foreground"
-                        fontSize={12}
-                        fill="#ffffff"
-                      />
-                    </Bar>
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
+              {/* Top Stats Grid */}
+              <div className="grid gap-4 md:grid-cols-3">
+                {/* Top Countries (Bar Chart) */}
+                <Card className="flex flex-col">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Globe className="size-4 text-muted-foreground" /> Top Countries
+                    </CardTitle>
+                    <CardDescription>Top locations by clicks</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-1 pb-0 min-w-0">
+                    {(stats?.top_countries?.length ?? 0) === 0 ? (
+                      <p className="flex min-h-36 items-center justify-center p-4 text-center text-sm text-muted-foreground">
+                        No location data in the selected period.
+                      </p>
+                    ) : (
+                      <ChartContainer
+                        config={chartConfig}
+                        className="mx-auto aspect-square max-h-[250px] w-full"
+                      >
+                        <BarChart
+                          accessibilityLayer
+                          data={stats?.top_countries?.slice(0, 5) ?? []}
+                          layout="vertical"
+                          margin={{
+                            left: 0,
+                          }}
+                        >
+                          <YAxis
+                            dataKey="country"
+                            type="category"
+                            tickLine={false}
+                            tickMargin={10}
+                            axisLine={false}
+                            width={80}
+                            hide
+                          />
+                          <XAxis dataKey="count" type="number" hide />
+                          <ChartTooltip
+                            cursor={false}
+                            content={<ChartTooltipContent hideLabel />}
+                          />
+                          <Bar dataKey="count" radius={5} fill="var(--primary)">
+                            <LabelList
+                              dataKey="country"
+                              position="insideLeft"
+                              offset={8}
+                              className="text-xs font-bold"
+                              fontSize={12}
+                              fill="var(--primary-foreground)"
+                              formatter={(value: unknown) =>
+                                typeof value === "string" && value.trim().length > 0
+                                  ? value
+                                  : "Unknown"
+                              }
+                            />
+                            <LabelList
+                              dataKey="count"
+                              position="right"
+                              offset={8}
+                              fontSize={12}
+                              fill="var(--foreground)"
+                            />
+                          </Bar>
+                        </BarChart>
+                      </ChartContainer>
+                    )}
+                  </CardContent>
+                </Card>
 
-            {/* Top Devices (Radial Chart) */}
-            <Card className="flex flex-col">
-              <CardHeader className="items-center pb-0">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Smartphone className="size-4 text-muted-foreground" /> Top Devices
-                </CardTitle>
-                <CardDescription>Device distribution</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 pb-0 min-w-0">
-                <ChartContainer
-                  config={chartConfig}
-                  className="mx-auto aspect-square max-h-[250px]"
-                >
-                  <RadialBarChart
-                    data={
-                      stats?.top_devices?.slice(0, 5).map((d, i) => ({
-                        ...d,
-                        fill: ["#70c5df", "#56d6de", "#c2faff", "#70c5df", "#56d6de"][i % 5],
-                      })) ?? []
-                    }
-                    startAngle={-90}
-                    endAngle={380}
-                    innerRadius={30}
-                    outerRadius={110}
-                  >
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent hideLabel nameKey="device" />}
-                    />
-                    <RadialBar dataKey="count" background>
-                      <LabelList
-                        position="insideStart"
-                        dataKey="device"
-                        className="fill-white capitalize mix-blend-luminosity"
-                        fontSize={11}
-                      />
-                    </RadialBar>
-                  </RadialBarChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
+                {/* Top Devices (Radial Chart) */}
+                <Card className="flex flex-col">
+                  <CardHeader className="items-center pb-0">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Smartphone className="size-4 text-muted-foreground" /> Top Devices
+                    </CardTitle>
+                    <CardDescription>Device distribution</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-1 pb-0 min-w-0">
+                    {(stats?.top_devices?.length ?? 0) === 0 ? (
+                      <p className="flex min-h-36 items-center justify-center p-4 text-center text-sm text-muted-foreground">
+                        No device data in the selected period.
+                      </p>
+                    ) : (
+                      <ChartContainer
+                        config={chartConfig}
+                        className="mx-auto aspect-square max-h-[250px]"
+                      >
+                        <RadialBarChart
+                          data={
+                            stats?.top_devices?.slice(0, 5).map((d, i) => ({
+                              ...d,
+                              fill: ["#70c5df", "#56d6de", "#c2faff", "#70c5df", "#56d6de"][i % 5],
+                            })) ?? []
+                          }
+                          startAngle={-90}
+                          endAngle={380}
+                          innerRadius={30}
+                          outerRadius={110}
+                        >
+                          <ChartTooltip
+                            cursor={false}
+                            content={<ChartTooltipContent hideLabel nameKey="device" />}
+                          />
+                          <RadialBar dataKey="count" background>
+                            <LabelList
+                              position="insideStart"
+                              dataKey="device"
+                              className="capitalize"
+                              fill="var(--primary-foreground)"
+                              fontSize={12}
+                            />
+                          </RadialBar>
+                        </RadialBarChart>
+                      </ChartContainer>
+                    )}
+                  </CardContent>
+                </Card>
 
-            {/* Top Referrers (Pie Chart) */}
-            <Card className="flex flex-col">
-              <CardHeader className="items-center pb-0">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Layout className="size-4 text-muted-foreground" /> Top Referrers
-                </CardTitle>
-                <CardDescription>Traffic sources</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 pb-0 min-w-0">
-                <ChartContainer
-                  config={chartConfig}
-                  className="mx-auto aspect-square max-h-[200px]"
-                >
-                  <PieChart>
-                    <ChartTooltip cursor={false} content={<ChartTooltipContent nameKey="host" />} />
-                    <Pie
-                      data={
-                        stats?.top_referrers?.slice(0, 5).map((r, i) => ({
-                          ...r,
-                          name: r.host || "Direct",
-                          fill: ["#70c5df", "#56d6de", "#c2faff", "#70c5df", "#56d6de"][i % 5],
-                        })) ?? []
-                      }
-                      dataKey="count"
-                      nameKey="name"
-                      innerRadius={50}
-                      outerRadius={80}
-                      strokeWidth={2}
-                      label={({ name, percent }) =>
-                        `${name?.substring(0, 10) || "Direct"}: ${((percent ?? 0) * 100).toFixed(
-                          0,
-                        )}%`
-                      }
-                      labelLine={false}
-                    />
-                  </PieChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-          </div>
-
+                {/* Top Referrers (Pie Chart) */}
+                <Card className="flex flex-col">
+                  <CardHeader className="items-center pb-0">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Layout className="size-4 text-muted-foreground" /> Top Referrers
+                    </CardTitle>
+                    <CardDescription>Traffic sources</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-1 pb-0 min-w-0">
+                    {(stats?.top_referrers?.length ?? 0) === 0 ? (
+                      <p className="flex min-h-36 items-center justify-center p-4 text-center text-sm text-muted-foreground">
+                        No referrer data in the selected period.
+                      </p>
+                    ) : (
+                      <ChartContainer
+                        config={chartConfig}
+                        className="mx-auto aspect-square max-h-[200px]"
+                      >
+                        <PieChart>
+                          <ChartTooltip
+                            cursor={false}
+                            content={<ChartTooltipContent nameKey="host" />}
+                          />
+                          <Pie
+                            data={
+                              stats?.top_referrers?.slice(0, 5).map((r, i) => ({
+                                ...r,
+                                name: r.host || "Direct",
+                                fill: ["#70c5df", "#56d6de", "#c2faff", "#70c5df", "#56d6de"][
+                                  i % 5
+                                ],
+                              })) ?? []
+                            }
+                            dataKey="count"
+                            nameKey="name"
+                            innerRadius={50}
+                            outerRadius={80}
+                            strokeWidth={2}
+                            label={({ name, percent }) =>
+                              `${name?.substring(0, 10) || "Direct"}: ${(
+                                (percent ?? 0) * 100
+                              ).toFixed(0)}%`
+                            }
+                            labelLine={false}
+                          />
+                        </PieChart>
+                      </ChartContainer>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          )}
           {/* Detailed Link Table (Restored for Desktop, modern responsive list for Mobile) */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -495,7 +566,11 @@ export default function AnalyticsPage() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <ActiveInactiveBadge isActive={link.is_active} />
+                            <LinkStatusBadge
+                              isActive={link.is_active}
+                              expiresAt={link.expires_at}
+                              isBanned={link.detail?.is_banned}
+                            />
                           </TableCell>
                           <TableCell className="text-right">
                             <Button
@@ -541,15 +616,19 @@ export default function AnalyticsPage() {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
-                          <h4 className="font-semibold text-sm truncate" title={link.title}>
+                          <h3 className="font-semibold text-sm truncate" title={link.title}>
                             {link.title || "Untitled"}
-                          </h4>
+                          </h3>
                           <span className="text-xs text-muted-foreground font-mono inline-block mt-0.5">
                             /{link.short_code}
                           </span>
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
-                          <ActiveInactiveBadge isActive={link.is_active} />
+                          <LinkStatusBadge
+                            isActive={link.is_active}
+                            expiresAt={link.expires_at}
+                            isBanned={link.detail?.is_banned}
+                          />
                           <Badge
                             variant="secondary"
                             className="text-[10px] font-semibold h-5 px-1.5"

@@ -188,9 +188,9 @@ export default function AdminUserDetailPage() {
       }
     >
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <SiteHeader />
-        <main className="flex flex-1 flex-col gap-6 p-4 md:p-6">
+        <main className="flex min-w-0 flex-1 flex-col gap-6 p-4 md:p-6">
           <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl">
               <div className="mb-2 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -570,6 +570,7 @@ export default function AdminUserDetailPage() {
                         <div className="relative">
                           <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                           <Input
+                            aria-label="Search user short links"
                             value={shortsSearchInput}
                             maxLength={100}
                             onChange={(event) => setShortsSearchInput(event.target.value)}
@@ -587,7 +588,7 @@ export default function AdminUserDetailPage() {
                             setShortsPage(1);
                           }}
                         >
-                          <SelectTrigger className="h-9 w-full">
+                          <SelectTrigger aria-label="Sort links" className="h-9 w-full">
                             <SelectValue placeholder="Sort links" />
                           </SelectTrigger>
                           <SelectContent>
@@ -606,7 +607,7 @@ export default function AdminUserDetailPage() {
                             setShortsPage(1);
                           }}
                         >
-                          <SelectTrigger className="h-9 w-full">
+                          <SelectTrigger aria-label="Page size" className="h-9 w-full">
                             <SelectValue placeholder="Page size" />
                           </SelectTrigger>
                           <SelectContent>
