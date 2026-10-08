@@ -327,7 +327,7 @@ export function ShortLinkCutTransition({
       >
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-primary-ink">
               {displayedPhase === "cutting" ? "Shortening route" : "Cut complete"}
             </p>
             <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">
@@ -340,7 +340,7 @@ export function ShortLinkCutTransition({
                   : "Your short link is ready"}
             </h2>
           </div>
-          <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/15 text-primary">
+          <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/15 text-primary-ink">
             {displayedPhase === "success" ? (
               <Check data-result-check className="size-5" strokeWidth={2.5} />
             ) : (
@@ -410,7 +410,7 @@ export function ShortLinkCutTransition({
             data-cut-result
             className="absolute inset-x-8 bottom-8 flex h-16 items-center gap-3 rounded-2xl border border-primary/35 bg-background px-4 shadow-lg shadow-primary/10"
           >
-            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
+            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary-ink">
               <Link2 className="size-4" />
             </span>
             <span className="min-w-0">

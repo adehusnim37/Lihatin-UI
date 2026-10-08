@@ -88,7 +88,7 @@ export function RecentLinksTable({ links = [], isLoading = false }: RecentLinksT
                       href={link.original_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex w-full min-w-0 items-center gap-1 text-xs text-muted-foreground hover:text-primary"
+                      className="inline-flex w-full min-w-0 items-center gap-1 text-xs text-muted-foreground hover:text-primary-ink"
                       title={link.original_url}
                     >
                       <span className="block min-w-0 flex-1 truncate">{link.original_url}</span>
@@ -99,7 +99,7 @@ export function RecentLinksTable({ links = [], isLoading = false }: RecentLinksT
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="size-10 sm:size-8"
+                      className="size-11 md:size-8"
                       onClick={() => copyToClipboard(link.short_code)}
                       title="Copy link"
                       aria-label={`Copy ${link.short_code} link`}
@@ -109,7 +109,7 @@ export function RecentLinksTable({ links = [], isLoading = false }: RecentLinksT
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="size-10 sm:size-8"
+                      className="size-11 md:size-8"
                       onClick={() => window.open(`/main/links/${link.short_code}`, "_blank")}
                       title="View stats"
                       aria-label={`View ${link.short_code} stats`}

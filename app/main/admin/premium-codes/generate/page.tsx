@@ -238,7 +238,7 @@ export default function AdminGeneratePremiumCodesPage() {
 
                       {isLifetime ? (
                         <div className="flex items-start gap-3 px-4 py-5 md:px-5">
-                          <div className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+                          <div className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary-ink">
                             <IconSparkles className="size-4" />
                           </div>
                           <div>

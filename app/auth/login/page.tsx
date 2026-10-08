@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
@@ -83,7 +82,6 @@ function LoginContent() {
   const [formData, setFormData] = useState({
     email_or_username: "",
     password: "",
-    keepSignedIn: false,
   });
   const isAnyLoading = isLoading || isGoogleLoading;
 
@@ -275,6 +273,7 @@ function LoginContent() {
           <Label htmlFor="email_or_username">Email or username</Label>
           <Input
             id="email_or_username"
+            autoComplete="username"
             placeholder="you@example.com"
             type="text"
             value={formData.email_or_username}
@@ -288,6 +287,7 @@ function LoginContent() {
           <Label htmlFor="password">Password</Label>
           <Input
             id="password"
+            autoComplete="current-password"
             placeholder="Enter your password"
             type="password"
             value={formData.password}
@@ -297,26 +297,10 @@ function LoginContent() {
             required
           />
         </div>
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="keepSignedIn"
-              checked={formData.keepSignedIn}
-              onCheckedChange={(checked) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  keepSignedIn: checked as boolean,
-                }))
-              }
-              disabled={isAnyLoading}
-            />
-            <Label htmlFor="keepSignedIn" className="text-sm font-normal">
-              Keep me signed in
-            </Label>
-          </div>
+        <div className="flex justify-end">
           <Link
             href="/auth/forgot-password"
-            className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            className="inline-flex min-h-11 items-center rounded-sm text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             Forgot password?
           </Link>
@@ -376,7 +360,7 @@ function LoginContent() {
           <p className="text-sm text-muted-foreground">Need help accessing your account?</p>
           <Link
             href={supportLink}
-            className="mt-1 inline-block text-sm font-semibold text-primary hover:underline"
+            className="mt-1 inline-block text-sm font-semibold text-primary-ink hover:underline"
           >
             Contact Support →
           </Link>

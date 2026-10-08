@@ -656,7 +656,7 @@ function AdminUsersPageContent() {
                     Search and filters run across the full directory.
                   </p>
                   {isFetching && (
-                    <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-primary">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-primary-ink">
                       Updating results
                     </p>
                   )}
@@ -716,7 +716,7 @@ function AdminUsersPageContent() {
                             >
                               <TableCell className="pl-5 md:pl-6">
                                 <div className="flex items-center gap-3">
-                                  <div className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                                  <div className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary-ink">
                                     {getInitials(displayName)}
                                   </div>
                                   <div className="min-w-0">

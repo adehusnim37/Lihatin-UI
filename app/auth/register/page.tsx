@@ -212,6 +212,7 @@ export default function RegisterPage() {
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
+            autoComplete="email"
             placeholder="you@example.com"
             type="email"
             value={formData.email}
@@ -222,7 +223,7 @@ export default function RegisterPage() {
           />
         </div>
 
-        <div className="flex items-start space-x-2">
+        <div className="flex min-h-11 items-center space-x-2">
           <Checkbox
             id="agree_terms"
             checked={formData.agree_terms}
@@ -235,7 +236,7 @@ export default function RegisterPage() {
             disabled={isAnyLoading}
             className="mt-0.5"
           />
-          <Label htmlFor="agree_terms" className="text-sm font-normal leading-5">
+          <Label htmlFor="agree_terms" className="min-h-11 text-sm font-normal leading-5">
             I agree to the <TermsDialog>Terms & Conditions</TermsDialog>
           </Label>
         </div>
@@ -254,7 +255,7 @@ export default function RegisterPage() {
 
       <div className="my-5 flex items-center gap-3">
         <span className="h-px flex-1 bg-border" />
-        <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+        <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
           or
         </span>
         <span className="h-px flex-1 bg-border" />

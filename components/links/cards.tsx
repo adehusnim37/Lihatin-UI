@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { toast } from "sonner";
 import {
   Copy,
   Check,
@@ -93,9 +95,14 @@ export default function ShortLinkCard({ data, baseUrl, onDelete, onToggle }: Sho
   const hasPasscode = !!data.detail?.passcode;
 
   const copyToClipboard = async () => {
-    await navigator.clipboard.writeText(shortUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(shortUrl);
+      setCopied(true);
+      toast.success("Link copied");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Could not copy the link", { description: "Select and copy the URL manually." });
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -150,57 +157,59 @@ export default function ShortLinkCard({ data, baseUrl, onDelete, onToggle }: Sho
 
         <CardHeader className="flex flex-row items-center justify-between py-3 px-4 relative z-10">
           <Item className="w-full p-0 gap-2.5">
-            {/* Status indicator dot */}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div
-                    className={cn("size-2.5 rounded-full shrink-0 shadow-sm", getStatusColor())}
-                  />
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  <p className="text-xs">{getStatusText()}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
             <ItemContent className="gap-0 min-w-0">
-              <ItemTitle
-                className="w-full min-w-0 text-sm font-semibold flex items-center gap-1.5 cursor-pointer hover:text-primary transition-colors"
-                onClick={handleNavigateToDetail}
-              >
-                <span className="min-w-0 flex-1 truncate">{data.title || "Untitled"}</span>
-                {/* Icons in Title */}
-                {hasPasscode && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Lock className="size-3.5 text-muted-foreground shrink-0" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="text-xs">Passcode Protected</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-                {isExpired && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Clock className="size-3.5 text-destructive shrink-0" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="text-xs">Link Expired</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+              <ItemTitle className="w-full min-w-0">
+                <Link
+                  href={`/main/links/${data.short_code}`}
+                  className="flex min-h-11 w-full min-w-0 items-center gap-1.5 rounded-sm font-semibold transition-colors hover:text-primary-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring md:min-h-0"
+                >
+                  <span className="min-w-0 flex-1 truncate">{data.title || "Untitled"}</span>
+                  {/* Icons in Title */}
+                  {hasPasscode && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Lock className="size-3.5 text-muted-foreground shrink-0" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="text-xs">Passcode Protected</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  {hasPasscode && <span className="sr-only">Passcode protected</span>}
+                  {isExpired && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Clock className="size-3.5 text-destructive shrink-0" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="text-xs">Link Expired</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </Link>
               </ItemTitle>
               <ItemDescription className="text-xs truncate">{data.short_code}</ItemDescription>
+              <span className="mt-1.5 inline-flex w-fit items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-foreground">
+                <span
+                  aria-hidden="true"
+                  className={cn("size-1.5 shrink-0 rounded-full", getStatusColor())}
+                />
+                {getStatusText()}
+              </span>
             </ItemContent>
             <ItemActions className="-me-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-8">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-11 md:size-8"
+                    aria-label={`Open menu for ${data.title || data.short_code}`}
+                  >
                     <MoreHorizontal className="size-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -254,11 +263,12 @@ export default function ShortLinkCard({ data, baseUrl, onDelete, onToggle }: Sho
         <CardContent className="p-0 flex flex-col flex-1 relative z-10">
           {/* Short URL Box (Restored Grey Box) */}
           <div className="bg-muted/50 border-y px-4 py-3 flex items-center gap-2">
-            <code className="text-xs font-mono truncate flex-1">{shortUrl}</code>
+            <code className="min-w-0 flex-1 break-all text-xs font-mono">{shortUrl}</code>
             <Button
               variant="ghost"
               size="icon"
-              className="size-7 shrink-0"
+              className="size-11 md:size-8 shrink-0"
+              aria-label={copied ? `Copy ${data.short_code} again` : `Copy ${data.short_code} link`}
               onClick={copyToClipboard}
             >
               {copied ? (
@@ -275,9 +285,13 @@ export default function ShortLinkCard({ data, baseUrl, onDelete, onToggle }: Sho
             {data.description && data.description.length > 60 ? (
               <Dialog>
                 <DialogTrigger asChild>
-                  <p className="text-xs font-medium text-muted-foreground line-clamp-2 leading-relaxed cursor-pointer hover:text-foreground transition-colors">
-                    {data.description}
-                  </p>
+                  <button
+                    type="button"
+                    aria-label={`Read full description for ${data.title || data.short_code}`}
+                    className="min-h-11 w-full rounded-sm text-left text-sm font-medium leading-relaxed text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                  >
+                    <span className="line-clamp-2">{data.description}</span>
+                  </button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>

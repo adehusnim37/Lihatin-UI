@@ -23,7 +23,7 @@ export default function SettingsPage() {
             <div className="text-center space-y-4">
               <div className="flex justify-center mb-6">
                 <div className="p-4 rounded-full bg-primary/10">
-                  <Settings className="size-12 text-primary" />
+                  <Settings className="size-12 text-primary-ink" />
                 </div>
               </div>
               <h1 className="text-3xl font-bold">Settings</h1>

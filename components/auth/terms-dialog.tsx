@@ -21,7 +21,7 @@ export function TermsDialog({ children }: TermsDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <button className="underline text-foreground hover:text-primary transition-colors">
+        <button className="underline text-foreground hover:text-primary-ink transition-colors">
           {children}
         </button>
       </DialogTrigger>

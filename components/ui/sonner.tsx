@@ -29,7 +29,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           toast: "!bg-card !text-card-foreground !border-2 !border-primary !shadow-xl !rounded-xl",
           title: "!text-card-foreground !font-bold !text-base",
           description: "!text-muted-foreground !text-sm",
-          icon: "!text-primary",
+          icon: "!text-primary-ink",
         },
       }}
       {...props}

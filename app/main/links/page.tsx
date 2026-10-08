@@ -69,7 +69,7 @@ export default function LinksPage() {
       <AppSidebar />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1 flex-col gap-6 p-6">
+        <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6">
           {/* Header */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -80,7 +80,13 @@ export default function LinksPage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="icon" onClick={() => refetch()} disabled={isFetching}>
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Refresh links"
+                onClick={() => refetch()}
+                disabled={isFetching}
+              >
                 <RefreshCw className={`size-4 ${isFetching ? "animate-spin" : ""}`} />
               </Button>
               <CreateLink />
@@ -93,15 +99,20 @@ export default function LinksPage() {
               <Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
               <Input
                 placeholder="Search links..."
+                aria-label="Search links"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="h-11 pl-9"
                 suppressHydrationWarning
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex min-w-0 gap-2">
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[140px]" suppressHydrationWarning>
+                <SelectTrigger
+                  aria-label="Sort links by"
+                  className="h-11 min-w-0 flex-1 sm:w-[140px] sm:flex-none"
+                  suppressHydrationWarning
+                >
                   <Filter className="mr-2 size-4" />
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
@@ -111,7 +122,11 @@ export default function LinksPage() {
                 </SelectContent>
               </Select>
               <Select value={orderBy} onValueChange={setOrderBy}>
-                <SelectTrigger className="w-[120px]" suppressHydrationWarning>
+                <SelectTrigger
+                  aria-label="Sort direction"
+                  className="h-11 min-w-0 flex-1 sm:w-[120px] sm:flex-none"
+                  suppressHydrationWarning
+                >
                   <SelectValue placeholder="Order" />
                 </SelectTrigger>
                 <SelectContent>

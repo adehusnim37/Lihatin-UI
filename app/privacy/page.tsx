@@ -25,7 +25,7 @@ export default function PrivacyPage() {
           {/* Header */}
           <div className="mb-10 flex items-center gap-4 border-b pb-8">
             <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10">
-              <IconShieldCheck className="size-6 text-primary" />
+              <IconShieldCheck className="size-6 text-primary-ink" />
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">Privacy Policy</h1>
@@ -128,7 +128,7 @@ export default function PrivacyPage() {
             Want to know the rules of using our service? Read our{" "}
             <Link
               href="/terms"
-              className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
+              className="font-medium text-foreground underline underline-offset-4 hover:text-primary-ink"
             >
               Terms of Service
             </Link>

@@ -195,7 +195,7 @@ const SectionCard = ({
 }) => (
   <div className={`rounded-xl border bg-card p-4 shadow-sm space-y-3 ${className}`}>
     <div className="flex items-start gap-3">
-      <div className="rounded-md bg-primary/10 p-2 text-primary">{icon}</div>
+      <div className="rounded-md bg-primary/10 p-2 text-primary-ink">{icon}</div>
       <div>
         <h4 className="text-sm font-semibold text-foreground">{title}</h4>
         <p className="text-xs text-muted-foreground">{subtitle}</p>

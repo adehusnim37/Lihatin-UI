@@ -563,7 +563,7 @@ export default function AnalyticsPage() {
                         href={link.original_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-xs text-muted-foreground hover:underline hover:text-primary truncate flex items-center gap-1 w-full"
+                        className="text-xs text-muted-foreground hover:underline hover:text-primary-ink truncate flex items-center gap-1 w-full"
                       >
                         <span className="truncate">{link.original_url}</span>
                         <ExternalLink className="size-3 shrink-0" />
@@ -587,7 +587,7 @@ export default function AnalyticsPage() {
                           size="sm"
                           variant="ghost"
                           onClick={() => router.push(`/main/analytics/${link.short_code}`)}
-                          className="h-8 px-2.5 text-xs text-primary hover:text-primary hover:bg-primary/10"
+                          className="h-8 px-2.5 text-xs text-primary-ink hover:text-primary-ink hover:bg-primary/10"
                         >
                           Details
                         </Button>

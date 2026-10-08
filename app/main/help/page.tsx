@@ -73,7 +73,7 @@ export default function HelpPage() {
           <div className="text-center space-y-4 py-8">
             <div className="flex justify-center">
               <div className="p-4 rounded-full bg-primary/10">
-                <HelpCircle className="size-10 text-primary" />
+                <HelpCircle className="size-10 text-primary-ink" />
               </div>
             </div>
             <h1 className="text-3xl font-bold">How can we help you?</h1>
@@ -104,7 +104,7 @@ export default function HelpPage() {
                     <category.icon className="size-6" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold group-hover:text-primary transition-colors">
+                    <h3 className="font-semibold group-hover:text-primary-ink transition-colors">
                       {category.title}
                     </h3>
                     <p className="text-sm text-muted-foreground mt-1">{category.description}</p>
@@ -128,7 +128,7 @@ export default function HelpPage() {
           {/* Popular Articles */}
           <div className="rounded-xl border bg-card p-6">
             <h2 className="font-semibold mb-4 flex items-center gap-2">
-              <FileText className="size-5 text-primary" />
+              <FileText className="size-5 text-primary-ink" />
               Popular Articles
             </h2>
             <ul className="space-y-3">
@@ -137,8 +137,8 @@ export default function HelpPage() {
                   key={article}
                   className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
                 >
-                  <span className="group-hover:text-primary transition-colors">{article}</span>
-                  <ChevronRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <span className="group-hover:text-primary-ink transition-colors">{article}</span>
+                  <ChevronRight className="size-4 text-muted-foreground group-hover:text-primary-ink transition-colors" />
                 </li>
               ))}
             </ul>
@@ -184,7 +184,7 @@ export default function HelpPage() {
           <div className="rounded-xl border bg-gradient-to-r from-primary/5 to-primary/10 p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Book className="size-6 text-primary" />
+                <Book className="size-6 text-primary-ink" />
                 <div>
                   <h3 className="font-semibold">Developer Documentation</h3>
                   <p className="text-sm text-muted-foreground">

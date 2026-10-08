@@ -175,7 +175,7 @@ function VerifyEmailOTPContent() {
         {supportLink && (
           <div className="text-center mt-4">
             <p className="text-sm text-muted-foreground mb-2">Need help accessing your account?</p>
-            <Link href={supportLink} className="text-sm text-primary hover:underline">
+            <Link href={supportLink} className="text-sm text-primary-ink hover:underline">
               Contact Support →
             </Link>
           </div>

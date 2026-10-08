@@ -31,7 +31,7 @@ export function RulesCard({
       <CardHeader className="pb-3 border-b">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ShieldAlert className="size-4 text-primary" />
+            <ShieldAlert className="size-4 text-primary-ink" />
             <CardTitle className="text-base">Rules</CardTitle>
           </div>
           <Button

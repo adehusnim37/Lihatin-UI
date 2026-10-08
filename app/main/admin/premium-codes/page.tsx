@@ -364,7 +364,7 @@ export default function AdminPremiumCodesPage() {
                                     <div className="min-w-0 space-y-2">
                                       <button
                                         type="button"
-                                        className="block max-w-[210px] truncate rounded text-left font-mono text-xs font-semibold tracking-wide outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
+                                        className="block max-w-[210px] truncate rounded text-left font-mono text-xs font-semibold tracking-wide outline-none transition-colors hover:text-primary-ink focus-visible:ring-2 focus-visible:ring-ring"
                                         onClick={() => openDetailDialog(code)}
                                         title={code.secret_code}
                                       >
@@ -862,7 +862,7 @@ function RecipientPicker({
                       className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left outline-none transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
                       onClick={() => onSelect(user)}
                     >
-                      <div className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                      <div className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary-ink">
                         {getInitials(user.username)}
                       </div>
                       <div className="min-w-0 flex-1">
@@ -871,7 +871,7 @@ function RecipientPicker({
                       </div>
                       {selected && (
                         <IconCheck
-                          className="size-4 shrink-0 text-primary"
+                          className="size-4 shrink-0 text-primary-ink"
                           aria-label={`${label} selected`}
                         />
                       )}
@@ -916,7 +916,7 @@ function PremiumCodeMobileCard({
         <div className="min-w-0 space-y-2">
           <button
             type="button"
-            className="block max-w-full truncate rounded text-left font-mono text-xs font-semibold tracking-wide outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
+            className="block max-w-full truncate rounded text-left font-mono text-xs font-semibold tracking-wide outline-none transition-colors hover:text-primary-ink focus-visible:ring-2 focus-visible:ring-ring"
             onClick={onOpen}
             title={code.secret_code}
           >
@@ -1053,7 +1053,7 @@ function RedeemerPreview({ labels }: { labels: string[] }) {
         </p>
       ))}
       {labels.length > 2 && (
-        <p className="text-xs font-medium text-primary">+{labels.length - 2} more</p>
+        <p className="text-xs font-medium text-primary-ink">+{labels.length - 2} more</p>
       )}
     </div>
   );
@@ -1099,7 +1099,7 @@ function UsageRow({
 
   return (
     <div className={`flex items-center gap-3 px-3 py-3 ${showBorder ? "border-b" : ""}`}>
-      <div className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+      <div className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary-ink">
         {getInitials(displayName)}
       </div>
       <div className="min-w-0 flex-1">

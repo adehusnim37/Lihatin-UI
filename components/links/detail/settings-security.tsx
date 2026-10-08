@@ -99,7 +99,7 @@ function PasscodeSection({
           viewBox="0 0 100 100"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="text-primary"
+          className="text-primary-ink"
         >
           <path
             d="M35 35V25C35 16.7157 41.7157 10 50 10C58.2843 10 65 16.7157 65 25V35"
@@ -142,7 +142,7 @@ function PasscodeSection({
             {hasPasscode ? (
               <>
                 <div className="bg-primary/10 p-2 rounded-full mb-0.5">
-                  <Lock className="size-4 text-primary" />
+                  <Lock className="size-4 text-primary-ink" />
                 </div>
                 <div className="text-center space-y-1.5 w-full">
                   <div className="flex items-center justify-center gap-1.5">

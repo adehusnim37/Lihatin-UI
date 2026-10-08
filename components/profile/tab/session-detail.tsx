@@ -125,14 +125,14 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
               <div className="min-w-0 space-y-1 rounded-lg border bg-card p-3">
                 <div className="text-xs text-muted-foreground">Browser</div>
                 <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
-                  <BrowserIcon className="size-4 shrink-0 text-primary" />
+                  <BrowserIcon className="size-4 shrink-0 text-primary-ink" />
                   <span className="truncate">{browser}</span>
                 </div>
               </div>
               <div className="min-w-0 space-y-1 rounded-lg border bg-card p-3">
                 <div className="text-xs text-muted-foreground">OS & Device</div>
                 <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
-                  <DeviceIcon className="size-4 shrink-0 text-primary" />
+                  <DeviceIcon className="size-4 shrink-0 text-primary-ink" />
                   <span className="truncate">{os}</span>
                 </div>
               </div>
@@ -174,7 +174,7 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
               <div className="min-w-0 space-y-1 rounded-lg border bg-card p-3">
                 <div className="text-xs text-muted-foreground">Account Identifier</div>
                 <div className="flex min-w-0 items-start gap-2 text-sm font-medium">
-                  <IconUser className="mt-0.5 size-4 shrink-0 text-primary" />
+                  <IconUser className="mt-0.5 size-4 shrink-0 text-primary-ink" />
                   <span className="min-w-0 break-all">{attempt.email_or_username}</span>
                 </div>
               </div>

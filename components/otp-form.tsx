@@ -152,19 +152,19 @@ export function OTPForm({
         <div data-otp-reveal className="relative flex items-center justify-between">
           <Link
             href="/auth/login"
-            className="inline-flex items-center gap-2 rounded-lg text-sm font-semibold text-foreground outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex items-center gap-2 rounded-lg text-sm font-semibold text-foreground outline-none transition-colors hover:text-primary-ink focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Image src="/logo.svg" alt="" width={30} height={30} className="size-7 rounded-lg" />
             Lihat.in
           </Link>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/8 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-primary">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/8 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-primary-ink">
             <ShieldCheck className="size-3.5" />
             Secure check
           </span>
         </div>
 
         <div data-otp-reveal className="relative mt-8 text-center">
-          <div className="mx-auto grid size-12 place-items-center rounded-2xl border border-primary/20 bg-primary/10 text-primary shadow-inner">
+          <div className="mx-auto grid size-12 place-items-center rounded-2xl border border-primary/20 bg-primary/10 text-primary-ink shadow-inner">
             {isComplete ? (
               <Check className="size-5" strokeWidth={2.5} />
             ) : (
@@ -260,7 +260,7 @@ export function OTPForm({
                 type="button"
                 onClick={handleResend}
                 disabled={cooldown > 0 || isResending}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary outline-none transition-colors hover:text-primary/75 focus-visible:rounded focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:text-muted-foreground"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-ink outline-none transition-colors hover:text-primary-ink/75 focus-visible:rounded focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:text-muted-foreground"
               >
                 <RefreshCw className={cn("size-3.5", isResending && "animate-spin")} />
                 {cooldown > 0

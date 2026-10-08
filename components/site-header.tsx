@@ -12,6 +12,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import React from "react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -54,7 +55,7 @@ export function SiteHeader() {
           <BreadcrumbList>
             {breadcrumbs.map((item, index) => (
               <React.Fragment key={item.href}>
-                <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbItem className={item.active ? "min-w-0" : "hidden md:block"}>
                   {item.active ? (
                     <BreadcrumbPage>{item.label}</BreadcrumbPage>
                   ) : (
@@ -68,7 +69,9 @@ export function SiteHeader() {
             ))}
           </BreadcrumbList>
         </Breadcrumb>
-        <div className="ml-auto flex items-center gap-2"></div>
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthTransitionLink } from "@/components/auth/auth-transition-link";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { ShortLinkCutTransition } from "@/components/links/short-link-cut-transition";
 import { createShortLink } from "@/lib/api/shortlinks";
 
@@ -169,11 +170,11 @@ function MorphingLinkVisual() {
       ref={visualRef}
       className="relative min-h-[420px] overflow-hidden rounded-[2rem] border border-primary/40 bg-gradient-to-br from-primary via-secondary to-third p-5 shadow-2xl shadow-primary/20 sm:min-h-[500px] sm:p-7"
     >
-      <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between p-5 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary-foreground/60 sm:p-7">
-        <span>Live link flow</span>
+      <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between p-5 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground/60 sm:p-7">
+        <span>Link flow demo</span>
         <span className="flex items-center gap-2">
           <span className="size-1.5 rounded-full bg-primary-foreground shadow-sm" />
-          Online
+          Example
         </span>
       </div>
 
@@ -233,7 +234,7 @@ function MorphingLinkVisual() {
         </p>
         <div className="mt-5 flex items-end justify-between border-t pt-4">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
               Today
             </p>
             <p className="mt-1 text-2xl font-bold text-foreground">1,284</p>
@@ -250,15 +251,15 @@ function MorphingLinkVisual() {
         </div>
       </div>
 
-      <div className="absolute bottom-5 left-5 right-5 z-20 flex items-center justify-between text-primary-foreground sm:bottom-7 sm:left-7 sm:right-7">
+      <div className="absolute bottom-5 left-5 right-5 z-20 flex items-center justify-between gap-3 rounded-2xl bg-card/95 p-3 text-card-foreground sm:bottom-7 sm:left-7 sm:right-7">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] opacity-60">
-            Response time
+          <p className="text-xs font-bold uppercase tracking-[0.18em] opacity-60">
+            Example response time
           </p>
           <p className="mt-1 text-2xl font-bold">18ms</p>
         </div>
-        <div className="rounded-full border border-primary-foreground/15 bg-background/40 px-3 py-1.5 text-xs font-semibold backdrop-blur">
-          Singapore edge
+        <div className="rounded-full border bg-background/40 px-3 py-1.5 text-xs font-semibold backdrop-blur">
+          Example edge
         </div>
       </div>
     </div>
@@ -267,33 +268,39 @@ function MorphingLinkVisual() {
 
 function AnimatedStats() {
   return (
-    <div
-      data-stats
-      className="grid overflow-hidden rounded-[1.75rem] border bg-card shadow-sm sm:grid-cols-3"
-    >
-      {stats.map((stat, index) => (
-        <div
-          key={stat.label}
-          className={`relative px-6 py-7 sm:px-7 sm:py-8 ${
-            index > 0 ? "border-t sm:border-l sm:border-t-0" : ""
-          }`}
-        >
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-            {stat.label}
-          </p>
-          <p
-            data-count
-            data-value={stat.value}
-            data-decimals={stat.decimals}
-            data-suffix={stat.suffix}
-            className="mt-3 text-4xl font-bold tracking-[-0.05em] text-foreground sm:text-5xl"
+    <section aria-label="Illustrative platform statistics">
+      <p className="mb-3 text-sm text-muted-foreground">
+        Illustrative figures for this demo; not live platform metrics.
+      </p>
+      <div
+        data-stats
+        className="grid overflow-hidden rounded-[1.75rem] border bg-card shadow-sm sm:grid-cols-3"
+      >
+        {stats.map((stat, index) => (
+          <div
+            key={stat.label}
+            className={`relative px-6 py-7 sm:px-7 sm:py-8 ${
+              index > 0 ? "border-t sm:border-l sm:border-t-0" : ""
+            }`}
           >
-            0{stat.suffix}
-          </p>
-          <p className="mt-2 text-sm text-muted-foreground">{stat.note}</p>
-        </div>
-      ))}
-    </div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+              {stat.label}
+            </p>
+            <p
+              data-count
+              data-value={stat.value}
+              data-decimals={stat.decimals}
+              data-suffix={stat.suffix}
+              className="mt-3 text-4xl font-bold tabular-nums tracking-[-0.03em] text-foreground sm:text-5xl"
+            >
+              {stat.value.toFixed(stat.decimals)}
+              {stat.suffix}
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">{stat.note}</p>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -664,9 +671,12 @@ export default function Index() {
               className="size-8 rounded-lg sm:size-9"
               priority
             />
-            <span className="text-base font-bold tracking-tight">Lihat.in</span>
+            <span className="hidden text-base font-bold tracking-tight min-[360px]:inline">
+              Lihat.in
+            </span>
           </Link>
-          <nav className="flex items-center gap-1.5 sm:gap-2" aria-label="Account navigation">
+          <nav className="flex items-center gap-1 sm:gap-2" aria-label="Account navigation">
+            <ThemeToggle />
             <AuthTransitionLink
               href="/auth/login"
               variant="ghost"
@@ -675,7 +685,11 @@ export default function Index() {
             >
               Sign in
             </AuthTransitionLink>
-            <AuthTransitionLink href="/auth/register" size="sm" className="rounded-full px-4">
+            <AuthTransitionLink
+              href="/auth/register"
+              size="sm"
+              className="rounded-full px-3 sm:px-4"
+            >
               Start free
             </AuthTransitionLink>
           </nav>
@@ -698,15 +712,15 @@ export default function Index() {
                 variant="outline"
                 className="rounded-full bg-background/70 px-3.5 py-1.5 text-foreground backdrop-blur"
               >
-                <IconSparkles className="mr-1.5 size-3.5 text-primary" />
+                <IconSparkles className="mr-1.5 size-3.5 text-primary-ink" />
                 Free, open source, and fast
               </Badge>
               <h1
                 data-hero-reveal
-                className="mt-6 text-[2.85rem] font-bold leading-[0.98] tracking-[-0.065em] text-foreground min-[390px]:text-[3.35rem] sm:text-7xl lg:text-[5.2rem]"
+                className="mt-6 text-[2.85rem] font-bold leading-[0.98] tracking-[-0.03em] text-foreground min-[390px]:text-[3.35rem] sm:text-7xl lg:text-[5.2rem]"
               >
                 Make every click
-                <span className="block text-primary">mean more.</span>
+                <span className="block text-primary-ink">mean more.</span>
               </h1>
               <p
                 data-hero-reveal
@@ -742,7 +756,7 @@ export default function Index() {
               >
                 {["No credit card", "Free forever plan", "Setup in seconds"].map((item) => (
                   <span key={item} className="flex items-center gap-1.5">
-                    <IconCheck className="size-3.5 text-primary" />
+                    <IconCheck className="size-3.5 text-primary-ink" />
                     {item}
                   </span>
                 ))}
@@ -771,9 +785,9 @@ export default function Index() {
                 </Badge>
                 <h2 className="mt-5 text-3xl font-bold leading-tight tracking-[-0.04em] sm:text-4xl">
                   Your long URL,
-                  <span className="block text-primary">made effortless.</span>
+                  <span className="block text-primary-ink">made effortless.</span>
                 </h2>
-                <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground sm:text-base">
+                <p className="mt-4 max-w-md text-base leading-6 text-muted-foreground sm:text-base">
                   Enter a destination and choose an alias. We&apos;ll create a real short link using
                   your account session.
                 </p>
@@ -829,16 +843,15 @@ export default function Index() {
                 {!createdShortURL && !cutTransition && (
                   <div className="mt-5 flex flex-col gap-3 rounded-xl border bg-muted/40 p-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
                     <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
                         Preview
                       </p>
-                      <p className="mt-1 truncate text-sm font-semibold text-foreground">
+                      <p className="mt-1 break-all text-sm font-semibold text-foreground">
                         {previewShortURL}
                       </p>
                     </div>
-                    <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-primary/20 px-2.5 py-1 text-[11px] font-semibold text-foreground">
-                      <span className="size-1.5 rounded-full bg-primary" />
-                      Available
+                    <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-primary/20 px-2.5 py-1 text-xs font-semibold text-foreground">
+                      Not checked
                     </span>
                   </div>
                 )}
@@ -846,7 +859,7 @@ export default function Index() {
                 {createdShortURL && (
                   <div className="mt-3 flex flex-col gap-3 rounded-xl border border-primary/40 bg-primary/15 p-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
                     <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
                         Created
                       </p>
                       <p className="mt-1 truncate text-sm font-semibold text-foreground">
@@ -876,10 +889,10 @@ export default function Index() {
         <section className="pb-8 sm:pb-16">
           <div className="container mx-auto max-w-6xl px-4 sm:px-6">
             <div data-section-reveal className="mb-10 max-w-2xl sm:mb-14">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary-ink">
                 One link, more clarity
               </p>
-              <h2 className="mt-4 text-3xl font-bold leading-tight tracking-[-0.045em] text-foreground sm:text-5xl">
+              <h2 className="mt-4 text-3xl font-bold leading-tight tracking-[-0.03em] text-foreground sm:text-5xl">
                 Everything you need.
                 <span className="block text-muted-foreground">Nothing you don&apos;t.</span>
               </h2>
@@ -898,11 +911,11 @@ export default function Index() {
                   >
                     <div
                       data-feature-icon
-                      className="flex size-12 items-center justify-center rounded-2xl bg-primary/15 text-primary"
+                      className="flex size-12 items-center justify-center rounded-2xl bg-primary/15 text-primary-ink"
                     >
                       <FeatureIcon className="size-5" />
                     </div>
-                    <p className="mt-8 text-xs font-bold uppercase tracking-[0.18em] text-primary">
+                    <p className="mt-8 text-xs font-bold uppercase tracking-[0.18em] text-primary-ink">
                       {feature.eyebrow}
                     </p>
                     <h3 className="mt-3 text-2xl font-bold leading-tight tracking-[-0.035em] text-foreground">
@@ -918,7 +931,7 @@ export default function Index() {
                           className="flex items-center gap-2 text-sm font-medium text-foreground"
                         >
                           <span className="flex size-5 items-center justify-center rounded-full bg-primary/15">
-                            <IconCheck className="size-3 text-primary" />
+                            <IconCheck className="size-3 text-primary-ink" />
                           </span>
                           {item}
                         </li>
@@ -933,10 +946,10 @@ export default function Index() {
 
         <section className="py-20 sm:py-28">
           <div data-section-reveal className="container mx-auto max-w-4xl px-4 text-center sm:px-6">
-            <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+            <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-primary/15 text-primary-ink">
               <IconBolt className="size-5" />
             </span>
-            <h2 className="mt-6 text-3xl font-bold tracking-[-0.05em] text-foreground sm:text-5xl">
+            <h2 className="mt-6 text-3xl font-bold tracking-[-0.03em] text-foreground sm:text-5xl">
               Ready to move faster?
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-muted-foreground">

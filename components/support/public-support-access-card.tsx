@@ -323,7 +323,7 @@ export function PublicSupportAccessCard() {
                   <button
                     type="button"
                     onClick={() => setShowOTPSection(true)}
-                    className="font-medium text-primary underline-offset-4 hover:underline"
+                    className="font-medium text-primary-ink underline-offset-4 hover:underline"
                   >
                     Verify with OTP instead
                   </button>

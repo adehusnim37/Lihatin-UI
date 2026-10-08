@@ -40,7 +40,7 @@ export function PublicSupportInfoCard({ className }: { className?: string }) {
         .join(" ")}
     >
       <CardHeader className="gap-1.5 px-5">
-        <Badge variant="outline" className="mb-1 border-primary/25 bg-primary/5 text-primary">
+        <Badge variant="outline" className="mb-1 border-primary/25 bg-primary/5 text-primary-ink">
           <IconInfoCircle />
           Good to know
         </Badge>

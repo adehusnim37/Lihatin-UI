@@ -115,7 +115,7 @@ export function SupportConversationBubble({
                   key={attachment.id}
                   type="button"
                   onClick={() => setPreview(attachment)}
-                  className="rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-muted/60"
+                  className="rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium text-primary-ink transition-colors hover:bg-muted/60"
                 >
                   {attachment.file_name} ({formatBytes(attachment.size_bytes)})
                 </button>
@@ -124,7 +124,7 @@ export function SupportConversationBubble({
                   key={attachment.id}
                   type="button"
                   onClick={() => download(attachment)}
-                  className="rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-muted/60"
+                  className="rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium text-primary-ink transition-colors hover:bg-muted/60"
                 >
                   {attachment.file_name} ({formatBytes(attachment.size_bytes)})
                 </button>

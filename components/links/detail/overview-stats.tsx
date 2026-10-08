@@ -124,7 +124,7 @@ export function OverviewStats({ link }: OverviewStatsProps) {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Clicks
             </CardTitle>
-            <MousePointerClick className="size-4 text-primary" />
+            <MousePointerClick className="size-4 text-primary-ink" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-medium -mt-4">{total_clicks}</div>

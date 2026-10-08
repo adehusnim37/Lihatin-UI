@@ -620,7 +620,7 @@ export default function HistoryActivityPage() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="p-3 rounded-xl bg-primary/20 group-hover:bg-primary/30 transition-colors">
-                    <History className="size-6 text-primary" />
+                    <History className="size-6 text-primary-ink" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Total Activity</p>
@@ -772,7 +772,7 @@ export default function HistoryActivityPage() {
                           <td className="p-4">
                             <div className="flex items-center gap-2">
                               <div className="p-1.5 rounded-full bg-primary/10">
-                                <User className="size-3 text-primary" />
+                                <User className="size-3 text-primary-ink" />
                               </div>
                               <span className="text-sm">{log.username || "Anonymous"}</span>
                             </div>

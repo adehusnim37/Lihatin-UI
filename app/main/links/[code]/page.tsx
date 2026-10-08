@@ -369,11 +369,11 @@ export default function LinkDetailPage() {
                 {/* Hero Link Card */}
                 <Card className="md:col-span-2 border-primary/20 shadow-sm overflow-hidden bg-gradient-to-br from-primary/5 via-background to-background relative h-full">
                   <div className="absolute top-0 right-0 p-3 opacity-10">
-                    <Globe className="size-24 text-primary" />
+                    <Globe className="size-24 text-primary-ink" />
                   </div>
                   <CardHeader className="pb-3 border-b bg-background/50">
                     <CardTitle className="text-base font-medium text-foreground flex items-center gap-2">
-                      <Globe className="size-4 text-primary" /> Short Link
+                      <Globe className="size-4 text-primary-ink" /> Short Link
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6 pt-6 flex flex-col justify-between h-[calc(100%-3.5rem)]">
@@ -441,7 +441,7 @@ export default function LinkDetailPage() {
                             role="button"
                             tabIndex={0}
                           >
-                            <span className="text-2xl sm:text-3xl font-bold tracking-tighter text-primary break-all hover:underline decoration-primary/30 underline-offset-4 transition-all">
+                            <span className="text-2xl sm:text-3xl font-bold tracking-tighter text-primary-ink break-all hover:underline decoration-primary/30 underline-offset-4 transition-all">
                               {host}/<span className="text-foreground">{link.short_code}</span>
                             </span>
                           </div>
@@ -449,7 +449,7 @@ export default function LinkDetailPage() {
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="size-8 hover:bg-primary/10 hover:text-primary transition-colors"
+                              className="size-8 hover:bg-primary/10 hover:text-primary-ink transition-colors"
                               onClick={() => {
                                 setSlugInput(code);
                                 setIsEditing(true);
@@ -460,7 +460,7 @@ export default function LinkDetailPage() {
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="size-8 hover:bg-primary/10 hover:text-primary transition-colors"
+                              className="size-8 hover:bg-primary/10 hover:text-primary-ink transition-colors"
                               onClick={handleCopy}
                             >
                               {copied ? (
@@ -556,7 +556,7 @@ export default function LinkDetailPage() {
                       viewBox="0 0 100 50"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      className="text-primary"
+                      className="text-primary-ink"
                     >
                       <path
                         d="M5 45L25 25L45 35L65 15L95 5"
@@ -575,7 +575,7 @@ export default function LinkDetailPage() {
                   <CardHeader className="pb-3 border-b relative z-10">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base font-medium text-foreground flex items-center gap-2">
-                        <MousePointerClick className="size-4 text-primary" /> Activity
+                        <MousePointerClick className="size-4 text-primary-ink" /> Activity
                       </CardTitle>
                       <Button
                         variant="ghost"
@@ -674,7 +674,7 @@ export default function LinkDetailPage() {
                       viewBox="0 0 100 100"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      className="text-primary"
+                      className="text-primary-ink"
                     >
                       <path
                         d="M30 20H70C75.5228 20 80 24.4772 80 30V80C80 85.5228 75.5228 90 70 90H30C24.4772 90 20 85.5228 20 80V30C20 24.4772 24.4772 20 30 20Z"
@@ -759,7 +759,7 @@ export default function LinkDetailPage() {
                       viewBox="0 0 100 100"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      className="text-primary"
+                      className="text-primary-ink"
                     >
                       <path
                         d="M20 50L50 20L80 50L50 80L20 50Z"
@@ -779,7 +779,7 @@ export default function LinkDetailPage() {
                   <CardHeader className="pb-3 border-b relative z-10">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base font-medium text-foreground flex items-center gap-2">
-                        <Tag className="size-4 text-primary" /> Tags
+                        <Tag className="size-4 text-primary-ink" /> Tags
                       </CardTitle>
                       {!isEditingTags && (
                         <Button

@@ -25,7 +25,7 @@ export default function TermsPage() {
           {/* Header */}
           <div className="mb-10 flex items-center gap-4 border-b pb-8">
             <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10">
-              <IconScale className="size-6 text-primary" />
+              <IconScale className="size-6 text-primary-ink" />
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">Terms of Service</h1>
@@ -116,7 +116,7 @@ export default function TermsPage() {
             Looking for how we handle your data? Read our{" "}
             <Link
               href="/privacy"
-              className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
+              className="font-medium text-foreground underline underline-offset-4 hover:text-primary-ink"
             >
               Privacy Policy
             </Link>

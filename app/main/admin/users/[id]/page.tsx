@@ -272,7 +272,7 @@ export default function AdminUserDetailPage() {
                               alt={`${user.first_name} ${user.last_name}`}
                             />
                           ) : null}
-                          <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
+                          <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary-ink">
                             {getInitials(
                               `${user.first_name} ${user.last_name}`.trim() || user.username,
                             )}
@@ -398,7 +398,7 @@ export default function AdminUserDetailPage() {
                 <Card className="overflow-hidden py-0">
                   <CardHeader className="border-b bg-muted/20 px-5 py-5 md:px-6">
                     <div className="flex items-start gap-3">
-                      <div className="grid size-9 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
+                      <div className="grid size-9 shrink-0 place-items-center rounded-md bg-primary/10 text-primary-ink">
                         <IconShieldCheck className="size-4.5" />
                       </div>
                       <div>
@@ -529,7 +529,7 @@ export default function AdminUserDetailPage() {
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
                         <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-tight">
-                          <IconLink className="size-5 text-primary" />
+                          <IconLink className="size-5 text-primary-ink" />
                           User short links
                         </CardTitle>
                         <CardDescription>
@@ -662,7 +662,7 @@ export default function AdminUserDetailPage() {
                                       href={short.original_url}
                                       target="_blank"
                                       rel="noreferrer"
-                                      className="text-sm text-foreground hover:text-primary hover:underline break-all line-clamp-2"
+                                      className="text-sm text-foreground hover:text-primary-ink hover:underline break-all line-clamp-2"
                                       title={short.original_url}
                                     >
                                       {short.original_url}

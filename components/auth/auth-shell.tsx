@@ -20,6 +20,7 @@ import {
   IconWorld,
 } from "@tabler/icons-react";
 import { gsap } from "gsap";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 
 interface AuthShellProps {
@@ -226,31 +227,32 @@ export function AuthShell({
         className="relative mx-auto grid min-h-[calc(100vh-1.5rem)] max-w-7xl overflow-hidden rounded-[1.75rem] border bg-card shadow-sm sm:min-h-[calc(100vh-2.5rem)] lg:min-h-[calc(100vh-3rem)] lg:grid-cols-[0.9fr_1.1fr]"
       >
         <section className="flex min-w-0 flex-col px-5 py-5 sm:px-9 sm:py-7 lg:px-12 lg:py-9 xl:px-16">
-          <Link
-            data-auth-brand
-            href="/"
-            className="inline-flex w-fit items-center gap-3 rounded-full pr-3 text-sm font-semibold text-foreground outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <Image
-              src="/logo.svg"
-              alt=""
-              width={38}
-              height={38}
-              className="size-9 rounded-xl"
-              priority
-            />
-            <span>Lihat.in</span>
-          </Link>
+          <div className="flex items-center justify-between gap-3">
+            <Link
+              data-auth-brand
+              href="/"
+              className="inline-flex w-fit items-center gap-3 rounded-full pr-3 text-sm font-semibold text-foreground outline-none transition-colors hover:text-primary-ink focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Image
+                src="/logo.svg"
+                alt=""
+                width={38}
+                height={38}
+                className="size-9 rounded-xl"
+                priority
+              />
+              <span>Lihat.in</span>
+            </Link>
+            <ThemeToggle />
+          </div>
 
           <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10 sm:py-12">
             <div data-auth-copy>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">{eyebrow}</p>
-              <h1 className="mt-3 text-3xl font-bold tracking-[-0.045em] text-foreground sm:text-4xl">
+              <p className="sr-only">{eyebrow}</p>
+              <h1 className="text-3xl font-bold tracking-[-0.03em] text-foreground sm:text-4xl">
                 {title}
               </h1>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
-                {description}
-              </p>
+              <p className="mt-3 text-base leading-7 text-muted-foreground">{description}</p>
             </div>
 
             <div data-auth-form-content className="mt-8">
@@ -260,7 +262,7 @@ export function AuthShell({
 
           <Link
             href="/"
-            className="inline-flex w-fit items-center gap-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex min-h-11 w-fit items-center gap-2 rounded-sm text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             <IconArrowLeft className="size-3.5" />
             Back to home
@@ -272,14 +274,14 @@ export function AuthShell({
           className="relative m-3 hidden min-h-0 overflow-hidden rounded-[1.4rem] border border-primary/25 bg-gradient-to-br from-primary/25 via-secondary/25 to-third/35 p-7 lg:flex lg:flex-col xl:p-9"
         >
           <div className="relative z-10 max-w-lg">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-background/55 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-primary backdrop-blur">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-background/55 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-primary-ink backdrop-blur">
               <span className="relative flex size-2">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-40" />
+                <span className="absolute inline-flex size-full motion-safe:animate-ping rounded-full bg-primary opacity-40" />
                 <span className="relative inline-flex size-2 rounded-full bg-primary" />
               </span>
-              Live link intelligence
+              Link intelligence demo
             </div>
-            <h2 className="mt-4 text-3xl font-bold leading-tight tracking-[-0.045em] text-foreground xl:text-[2.65rem]">
+            <h2 className="mt-4 text-3xl font-bold leading-tight tracking-[-0.03em] text-foreground xl:text-[2.65rem]">
               {visualTitle}
             </h2>
             <p className="mt-3 max-w-md text-sm leading-6 text-muted-foreground">
@@ -298,7 +300,7 @@ export function AuthShell({
             <svg
               viewBox="0 0 600 340"
               preserveAspectRatio="none"
-              className="pointer-events-none absolute inset-0 size-full text-primary/55"
+              className="pointer-events-none absolute inset-0 size-full text-primary-ink/55"
               aria-hidden="true"
             >
               <path
@@ -347,11 +349,11 @@ export function AuthShell({
               data-auth-float-node
               className="absolute left-[1%] top-[5%] z-30 flex items-center gap-2 rounded-xl border bg-background/90 px-3 py-2 shadow-lg shadow-primary/5 backdrop-blur"
             >
-              <span className="grid size-7 place-items-center rounded-lg bg-primary/12 text-primary">
+              <span className="grid size-7 place-items-center rounded-lg bg-primary/12 text-primary-ink">
                 <IconLink className="size-4" />
               </span>
               <div>
-                <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Short link
                 </p>
                 <p className="text-xs font-semibold text-foreground">lihat.in/launch</p>
@@ -366,7 +368,7 @@ export function AuthShell({
                 <IconWorld className="size-4" />
               </span>
               <div>
-                <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Top region
                 </p>
                 <p className="text-xs font-semibold text-foreground">Indonesia · 72%</p>
@@ -377,7 +379,7 @@ export function AuthShell({
               data-auth-float-node
               className="absolute bottom-[3%] right-[1%] z-30 flex items-center gap-2 rounded-xl border bg-background/90 px-3 py-2 shadow-lg shadow-primary/5 backdrop-blur"
             >
-              <span className="relative grid size-7 place-items-center rounded-lg bg-primary/12 text-primary">
+              <span className="relative grid size-7 place-items-center rounded-lg bg-primary/12 text-primary-ink">
                 <span
                   data-auth-pulse
                   className="absolute size-3 rounded-full border border-primary"
@@ -385,7 +387,7 @@ export function AuthShell({
                 <IconActivity className="relative size-4" />
               </span>
               <div>
-                <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Live traffic
                 </p>
                 <p className="text-xs font-semibold text-foreground">24 people now</p>
@@ -400,7 +402,7 @@ export function AuthShell({
                 <IconActivity className="size-4" />
               </span>
               <div>
-                <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Top device
                 </p>
                 <p className="text-xs font-semibold text-foreground">Mobile · 68%</p>
@@ -411,11 +413,11 @@ export function AuthShell({
               data-auth-float-node
               className="absolute left-0 top-[48%] z-30 hidden items-center gap-2 rounded-xl border bg-background/90 px-3 py-2 shadow-lg shadow-primary/5 backdrop-blur xl:flex"
             >
-              <span className="grid size-7 place-items-center rounded-lg bg-primary/12 text-primary">
+              <span className="grid size-7 place-items-center rounded-lg bg-primary/12 text-primary-ink">
                 <IconArrowUpRight className="size-4" />
               </span>
               <div>
-                <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Conversion
                 </p>
                 <p className="text-xs font-semibold text-foreground">+12.4% today</p>
@@ -432,13 +434,13 @@ export function AuthShell({
                     <IconChartBar className="size-4" />
                   </span>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                       Campaign pulse
                     </p>
                     <p className="text-xs font-semibold text-foreground">Product launch</p>
                   </div>
                 </div>
-                <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold text-primary">
+                <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold text-primary-ink">
                   Active
                   <IconArrowUpRight className="size-3" />
                 </span>
@@ -447,7 +449,7 @@ export function AuthShell({
               <div className="mt-6">
                 <p
                   data-auth-metric
-                  className="text-4xl font-bold tracking-[-0.055em] text-foreground"
+                  className="text-4xl font-bold tabular-nums tracking-[-0.03em] text-foreground"
                 >
                   {selectedProof.metric}
                 </p>
@@ -455,7 +457,7 @@ export function AuthShell({
                   <p data-auth-metric-detail className="text-xs text-muted-foreground">
                     {selectedProof.detail}
                   </p>
-                  <span className="text-[10px] font-semibold text-primary">
+                  <span className="text-xs font-semibold text-primary-ink">
                     {selectedProof.trend}
                   </span>
                 </div>
@@ -495,6 +497,9 @@ export function AuthShell({
             </div>
           </div>
 
+          <p className="relative z-30 mb-3 text-sm text-muted-foreground">
+            Illustrative data — not live traffic or a service-status report.
+          </p>
           <div className="relative z-30 grid grid-cols-3 gap-2">
             {proofPoints.map((item, index) => {
               const ProofIcon = item.icon;
@@ -519,7 +524,7 @@ export function AuthShell({
                       className={cn(
                         "size-4 transition-colors",
                         isActive
-                          ? "text-primary"
+                          ? "text-primary-ink"
                           : "text-muted-foreground group-hover:text-foreground",
                       )}
                     />
@@ -531,7 +536,7 @@ export function AuthShell({
                     />
                   </div>
                   <p className="mt-2 text-xs font-semibold text-foreground">{item.label}</p>
-                  <p className="mt-0.5 hidden text-[10px] text-muted-foreground xl:block">
+                  <p className="mt-0.5 hidden text-xs text-muted-foreground xl:block">
                     {item.detail}
                   </p>
                 </button>

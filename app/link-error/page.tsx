@@ -740,7 +740,7 @@ function ErrorVisual({
             className="absolute left-[4%] top-[24%] w-[47%] max-w-[260px] rounded-2xl border border-white/65 bg-card/75 p-3 shadow-xl shadow-foreground/5 backdrop-blur-xl dark:border-white/10 sm:left-[7%] sm:top-[27%] sm:p-4"
           >
             <div className="flex items-center gap-3">
-              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/20 text-primary sm:size-11">
+              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/20 text-primary-ink sm:size-11">
                 <Link2 className="size-4 sm:size-5" />
               </span>
               <span className="min-w-0">
@@ -758,7 +758,7 @@ function ErrorVisual({
             data-error-mark
             className="absolute left-1/2 top-1/2 grid size-[92px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-[1.7rem] border border-white/60 bg-card/80 text-foreground shadow-2xl shadow-foreground/10 backdrop-blur-xl dark:border-white/10 sm:size-[116px] sm:rounded-[2rem]"
           >
-            <Icon className="size-9 text-primary sm:size-11" strokeWidth={1.75} />
+            <Icon className="size-9 text-primary-ink sm:size-11" strokeWidth={1.75} />
             <span className="absolute -right-1.5 -top-1.5 grid size-7 place-items-center rounded-full border-4 border-card bg-foreground font-mono text-[10px] font-bold text-background sm:size-8">
               !
             </span>

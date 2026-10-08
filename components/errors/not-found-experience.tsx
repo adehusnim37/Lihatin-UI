@@ -324,7 +324,9 @@ export function NotFoundExperience() {
             </span>
           </div>
 
-          <p className="mb-3 font-mono text-sm font-semibold text-primary">Lost in the current</p>
+          <p className="mb-3 font-mono text-sm font-semibold text-primary-ink">
+            Lost in the current
+          </p>
           <h1
             id="error-title"
             className="max-w-lg text-balance text-5xl font-semibold tracking-[-0.055em] text-foreground sm:text-6xl lg:text-7xl"

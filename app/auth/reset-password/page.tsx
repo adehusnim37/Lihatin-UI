@@ -142,7 +142,7 @@ function ResetPasswordContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="size-8 animate-spin text-primary" />
+          <Loader2 className="size-8 animate-spin text-primary-ink" />
           <p className="text-muted-foreground">Validating reset token...</p>
         </div>
       </div>
@@ -295,7 +295,7 @@ export default function ResetPassword() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-background">
-          <Loader2 className="size-8 animate-spin text-primary" />
+          <Loader2 className="size-8 animate-spin text-primary-ink" />
         </div>
       }
     >
