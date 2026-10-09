@@ -1,7 +1,6 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { TabsContent } from "@radix-ui/react-tabs";
 import { IconKey, IconShield, IconUserCheck } from "@tabler/icons-react";
-import { Label } from "recharts";
 import ChangePasswordDialog from "../modal/changePassword";
 import SetupTOTPModal from "../modal/setupTOTP";
 import DisableTOTPModal from "../modal/disableTOTP";
@@ -39,7 +38,7 @@ export default function ProfileSecurityTab() {
   if (isLoading) {
     return (
       <TabsContent value="security" className="space-y-4">
-        <Card>
+        <Card className="min-w-0 shadow-none">
           <CardHeader>
             <CardTitle>Security Settings</CardTitle>
             <CardDescription>Manage your password and security preferences</CardDescription>
@@ -58,7 +57,7 @@ export default function ProfileSecurityTab() {
   if (profileError) {
     return (
       <TabsContent value="security" className="space-y-4">
-        <Card>
+        <Card className="min-w-0 shadow-none">
           <CardHeader>
             <CardTitle>Security Settings</CardTitle>
             <CardDescription>Failed to load security settings</CardDescription>
@@ -77,17 +76,17 @@ export default function ProfileSecurityTab() {
 
   return (
     <TabsContent value="security" className="space-y-4">
-      <Card>
+      <Card className="min-w-0 shadow-none">
         <CardHeader>
           <CardTitle>Security Settings</CardTitle>
           <CardDescription>Manage your password and security preferences</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Password</Label>
-            <div className="flex items-center justify-between p-3 rounded-lg border">
+            <h3 className="text-xs font-medium text-muted-foreground">Password</h3>
+            <div className="flex flex-col items-start justify-between gap-4 border-b py-5 sm:flex-row sm:items-center">
               <div className="flex items-center gap-3">
-                <IconKey className="size-5 text-muted-foreground" />
+                <IconKey className="size-5 shrink-0 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Change Password</p>
                   <p className="text-xs text-muted-foreground">
@@ -100,11 +99,11 @@ export default function ProfileSecurityTab() {
           </div>
 
           <div className="space-y-2">
-            <Label>Two-Factor Authentication</Label>
-            <div className="flex items-center justify-between p-3 rounded-lg border">
+            <h3 className="text-xs font-medium text-muted-foreground">Two-factor authentication</h3>
+            <div className="flex flex-col items-start justify-between gap-4 border-b py-5 sm:flex-row sm:items-center">
               <div className="flex items-center gap-3">
                 <IconShield
-                  className={`size-5 ${profileData?.auth.totp_enabled ? "text-green-600" : "text-muted-foreground"}`}
+                  className={`size-5 ${profileData?.auth.totp_enabled ? "text-green-700 dark:text-green-400" : "text-muted-foreground"}`}
                 />
                 <div>
                   <p className="text-sm font-medium">2FA Status</p>
@@ -127,10 +126,10 @@ export default function ProfileSecurityTab() {
           </div>
 
           <div className="space-y-2">
-            <Label>Account</Label>
-            <div className="flex items-center justify-between rounded-lg border p-3">
+            <h3 className="text-xs font-medium text-muted-foreground">Account</h3>
+            <div className="flex flex-col items-start justify-between gap-4 py-5 sm:flex-row sm:items-center">
               <div className="flex items-center gap-3">
-                <IconUserCheck className="size-5 text-muted-foreground" />
+                <IconUserCheck className="size-5 shrink-0 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Account Status</p>
                   <p className="text-xs text-muted-foreground">
@@ -141,7 +140,9 @@ export default function ProfileSecurityTab() {
               </div>
               <span
                 className={`text-sm font-medium ${
-                  profileData?.auth.account_status === "active" ? "text-green-600" : "text-red-600"
+                  profileData?.auth.account_status === "active"
+                    ? "text-green-700 dark:text-green-400"
+                    : "text-red-700 dark:text-red-400"
                 }`}
               >
                 {profileData?.auth.account_status === "active" ? "Active" : "Inactive"}

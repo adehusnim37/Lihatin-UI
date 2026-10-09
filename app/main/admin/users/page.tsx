@@ -122,6 +122,9 @@ function AdminUsersPageContent() {
   const premiumFilter = parsePremiumFilter(searchParams.get("premium_access_status"));
   const lockFilter = parseLockFilter(searchParams.get("lock_status"));
   const [searchInput, setSearchInput] = useState(searchFromURL);
+  const [filtersOpen, setFiltersOpen] = useState(
+    Boolean(roleFilter || premiumFilter || lockFilter),
+  );
   const debouncedSearch = useDebouncedValue(searchInput, 350);
   const isResettingQueryRef = useRef(false);
 
@@ -470,6 +473,61 @@ function AdminUsersPageContent() {
     );
   };
 
+  const renderUserActions = (user: AdminUserResponse) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-11 lg:size-9"
+          aria-label={`Actions for ${user.username}`}
+        >
+          <IconDotsVertical className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => openUserDetailPage(user.id)}>
+          <IconExternalLink />
+          Open account file
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => openUserDetail(user, "profile")}>
+          <IconPencil />
+          Edit profile
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => openUserDetail(user)}>
+          <IconClockHour4 />
+          View audit history
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className={user.account_status === "locked" ? "" : "text-destructive"}
+          disabled={lockUserMutation.isPending || unlockUserMutation.isPending}
+          onClick={() => handleToggleUserLock(user)}
+        >
+          <IconLock />
+          {user.account_status === "locked" ? "Unlock account" : "Lock account"}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className={
+            isUserCurrentlyRevoked(user)
+              ? ""
+              : hasActivePremiumAccess(user.premium_access)
+                ? "text-destructive"
+                : ""
+          }
+          onClick={() => openUserDetail(user, "premium")}
+        >
+          <IconCrown />
+          {isUserCurrentlyRevoked(user)
+            ? "Restore premium"
+            : hasActivePremiumAccess(user.premium_access)
+              ? "Revoke premium"
+              : "Review premium"}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   return (
     <SidebarProvider
       style={
@@ -482,13 +540,12 @@ function AdminUsersPageContent() {
       <AppSidebar />
       <SidebarInset className="min-w-0">
         <SiteHeader />
-        <main className="flex min-w-0 flex-1 flex-col gap-6 p-4 md:p-6">
+        <main className="mx-auto flex w-full min-w-0 max-w-[1328px] flex-1 flex-col gap-6 p-4 sm:p-6">
           <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl">
-              <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">User directory</h1>
+              <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Users</h1>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Find an account, inspect its current state, and move directly into profile, access,
-                or audit work.
+                Manage accounts, review access, and inspect account activity.
               </p>
             </div>
             <Button variant="outline" onClick={() => refetch()} disabled={isLoading || isFetching}>
@@ -526,142 +583,170 @@ function AdminUsersPageContent() {
           )}
 
           {typeof roleFromStorage !== "undefined" && !isLoading && !isError && isAdmin && (
-            <Card className="overflow-hidden py-0">
-              <CardHeader className="border-b bg-muted/20 px-5 py-5 md:px-6">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                  <div>
-                    <CardTitle>Operations index</CardTitle>
-                    <CardDescription className="mt-1">
-                      {pagination?.total_count ?? 0} matching account
-                      {(pagination?.total_count ?? 0) === 1 ? "" : "s"}
-                    </CardDescription>
+            <Card className="min-w-0 gap-0 overflow-hidden py-0 shadow-none">
+              <div className="space-y-3 border-b p-4 sm:p-5">
+                <div className="flex min-w-0 flex-col gap-3 sm:flex-row">
+                  <div className="min-w-0 flex-1">
+                    <div className="relative">
+                      <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        aria-label="Search users"
+                        className="h-11 pl-9 sm:h-10"
+                        maxLength={100}
+                        placeholder="Search name, username, or email"
+                        value={searchInput}
+                        onChange={(event) => setSearchInput(event.target.value)}
+                      />
+                    </div>
                   </div>
-                  <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-                    Showing {firstVisible}–{lastVisible}
-                  </p>
-                </div>
-              </CardHeader>
-
-              <div className="border-b px-5 py-4 md:px-6">
-                <div className="grid gap-3 xl:grid-cols-[minmax(260px,1.4fr)_repeat(3,minmax(150px,0.65fr))_minmax(190px,0.8fr)_auto]">
-                  <div className="relative">
-                    <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      aria-label="Search users"
-                      className="h-9 pl-9"
-                      maxLength={100}
-                      placeholder="Search name, username, or email"
-                      value={searchInput}
-                      onChange={(event) => setSearchInput(event.target.value)}
-                    />
+                  <div className="flex min-w-0 items-center gap-2">
+                    <Button
+                      type="button"
+                      variant={filtersOpen ? "secondary" : "outline"}
+                      aria-expanded={filtersOpen}
+                      aria-controls="user-directory-filters"
+                      className="h-11 sm:h-10"
+                      onClick={() => setFiltersOpen(!filtersOpen)}
+                    >
+                      <IconFilter className="size-4" />
+                      Filters
+                      {[roleFilter, premiumFilter, lockFilter].filter(Boolean).length > 0 && (
+                        <span className="rounded bg-muted px-1.5 text-xs tabular-nums">
+                          {[roleFilter, premiumFilter, lockFilter].filter(Boolean).length}
+                        </span>
+                      )}
+                    </Button>
+                    <div className="min-w-0 flex-1 sm:w-48">
+                      <Select
+                        value={`${sort}:${orderBy}`}
+                        onValueChange={(value) => {
+                          const [nextSort, nextOrder] = value.split(":");
+                          updateListQuery({
+                            sort: nextSort === "created_at" ? null : nextSort,
+                            order_by: nextOrder === "desc" ? null : nextOrder,
+                            page: null,
+                          });
+                        }}
+                      >
+                        <SelectTrigger aria-label="Sort users" className="h-11 w-full sm:h-10">
+                          <SelectValue placeholder="Sort users" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="created_at:desc">Newest accounts</SelectItem>
+                          <SelectItem value="created_at:asc">Oldest accounts</SelectItem>
+                          <SelectItem value="updated_at:desc">Recently changed</SelectItem>
+                          <SelectItem value="username:asc">Username A–Z</SelectItem>
+                          <SelectItem value="username:desc">Username Z–A</SelectItem>
+                          <SelectItem value="email:asc">Email A–Z</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-
-                  <Select
-                    value={roleFilter ?? "all"}
-                    onValueChange={(value) =>
-                      updateListQuery({
-                        role: value === "all" ? null : value,
-                        page: null,
-                      })
-                    }
-                  >
-                    <SelectTrigger aria-label="All roles" className="h-9 w-full">
-                      <SelectValue placeholder="All roles" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All roles</SelectItem>
-                      <SelectItem value="user">User</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="super_admin">Super admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <Select
-                    value={premiumFilter ?? "all"}
-                    onValueChange={(value) =>
-                      updateListQuery({
-                        premium_access_status: value === "all" ? null : value,
-                        page: null,
-                      })
-                    }
-                  >
-                    <SelectTrigger aria-label="All plans" className="h-9 w-full">
-                      <SelectValue placeholder="All plans" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All plans</SelectItem>
-                      <SelectItem value="free">Free</SelectItem>
-                      <SelectItem value="premium">Premium</SelectItem>
-                      <SelectItem value="revoked">Revoked</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <Select
-                    value={lockFilter ?? "all"}
-                    onValueChange={(value) =>
-                      updateListQuery({
-                        lock_status: value === "all" ? null : value,
-                        page: null,
-                      })
-                    }
-                  >
-                    <SelectTrigger aria-label="All access" className="h-9 w-full">
-                      <SelectValue placeholder="All access" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All access</SelectItem>
-                      <SelectItem value="unlocked">Unlocked</SelectItem>
-                      <SelectItem value="locked">Locked</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <Select
-                    value={`${sort}:${orderBy}`}
-                    onValueChange={(value) => {
-                      const [nextSort, nextOrder] = value.split(":");
-                      updateListQuery({
-                        sort: nextSort === "created_at" ? null : nextSort,
-                        order_by: nextOrder === "desc" ? null : nextOrder,
-                        page: null,
-                      });
-                    }}
-                  >
-                    <SelectTrigger aria-label="Sort users" className="h-9 w-full">
-                      <SelectValue placeholder="Sort users" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="created_at:desc">Newest accounts</SelectItem>
-                      <SelectItem value="created_at:asc">Oldest accounts</SelectItem>
-                      <SelectItem value="updated_at:desc">Recently changed</SelectItem>
-                      <SelectItem value="username:asc">Username A–Z</SelectItem>
-                      <SelectItem value="username:desc">Username Z–A</SelectItem>
-                      <SelectItem value="email:asc">Email A–Z</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <Button
-                    variant="ghost"
-                    className="h-9"
-                    disabled={activeFilterCount === 0}
-                    onClick={() => {
-                      isResettingQueryRef.current = true;
-                      setSearchInput("");
-                      router.replace(pathname, { scroll: false });
-                    }}
-                  >
-                    <IconX />
-                    Reset
-                  </Button>
                 </div>
-                <div className="mt-3 flex min-h-5 items-center justify-between gap-3">
-                  <p className="text-xs text-muted-foreground">
-                    Search and filters run across the full directory.
+                <div id="user-directory-filters" hidden={!filtersOpen}>
+                  <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto]">
+                    <div className="space-y-2">
+                      <Label htmlFor="directory-role">Role</Label>
+                      <Select
+                        value={roleFilter ?? "all"}
+                        onValueChange={(value) =>
+                          updateListQuery({
+                            role: value === "all" ? null : value,
+                            page: null,
+                          })
+                        }
+                      >
+                        <SelectTrigger
+                          id="directory-role"
+                          aria-label="Filter by role"
+                          className="h-11 w-full sm:h-10"
+                        >
+                          <SelectValue placeholder="All roles" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All roles</SelectItem>
+                          <SelectItem value="user">User</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="super_admin">Super admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="directory-plan">Plan</Label>
+                      <Select
+                        value={premiumFilter ?? "all"}
+                        onValueChange={(value) =>
+                          updateListQuery({
+                            premium_access_status: value === "all" ? null : value,
+                            page: null,
+                          })
+                        }
+                      >
+                        <SelectTrigger
+                          id="directory-plan"
+                          aria-label="Filter by plan"
+                          className="h-11 w-full sm:h-10"
+                        >
+                          <SelectValue placeholder="All plans" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All plans</SelectItem>
+                          <SelectItem value="free">Free</SelectItem>
+                          <SelectItem value="premium">Premium</SelectItem>
+                          <SelectItem value="revoked">Revoked</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="directory-access">Account access</Label>
+                      <Select
+                        value={lockFilter ?? "all"}
+                        onValueChange={(value) =>
+                          updateListQuery({
+                            lock_status: value === "all" ? null : value,
+                            page: null,
+                          })
+                        }
+                      >
+                        <SelectTrigger
+                          id="directory-access"
+                          aria-label="Filter by account access"
+                          className="h-11 w-full sm:h-10"
+                        >
+                          <SelectValue placeholder="All access" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All access</SelectItem>
+                          <SelectItem value="unlocked">Unlocked</SelectItem>
+                          <SelectItem value="locked">Locked</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      className="h-11 sm:h-10"
+                      disabled={activeFilterCount === 0}
+                      onClick={() => {
+                        isResettingQueryRef.current = true;
+                        setSearchInput("");
+                        router.replace(pathname, { scroll: false });
+                      }}
+                    >
+                      <IconX />
+                      Reset
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+                  <p>
+                    <span className="font-medium text-foreground tabular-nums">
+                      {pagination?.total_count ?? 0}
+                    </span>{" "}
+                    matching {(pagination?.total_count ?? 0) === 1 ? "account" : "accounts"}
                   </p>
-                  {isFetching && (
-                    <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-primary-ink">
-                      Updating results
-                    </p>
-                  )}
+                  <p role="status" aria-live="polite">
+                    {isFetching ? "Updating results…" : `Showing ${firstVisible}–${lastVisible}`}
+                  </p>
                 </div>
               </div>
 
@@ -691,160 +776,114 @@ function AdminUsersPageContent() {
                     )}
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <Table className="min-w-[980px]">
-                      <TableHeader>
-                        <TableRow className="hover:bg-transparent">
-                          <TableHead className="pl-5 md:pl-6">Account</TableHead>
-                          <TableHead>Role</TableHead>
-                          <TableHead>Account state</TableHead>
-                          <TableHead>Joined</TableHead>
-                          <TableHead>Last change</TableHead>
-                          <TableHead className="w-12 pr-5 text-right md:pr-6">
-                            <span className="sr-only">Actions</span>
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {users.map((user) => {
-                          const displayName =
-                            [user.first_name, user.last_name].filter(Boolean).join(" ") ||
-                            user.username;
-                          return (
-                            <TableRow
-                              key={user.id}
-                              className="group cursor-pointer"
-                              onClick={() => openUserDetailPage(user.id)}
-                            >
-                              <TableCell className="pl-5 md:pl-6">
-                                <div className="flex items-center gap-3">
-                                  <div className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary-ink">
-                                    {getInitials(displayName)}
-                                  </div>
-                                  <div className="min-w-0">
-                                    <div className="flex items-center gap-1.5">
-                                      <button
-                                        type="button"
-                                        aria-label={`View user ${user.username}`}
-                                        className="max-w-52 min-h-[44px] truncate text-left text-sm font-medium rounded outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
-                                        onClick={(event) => {
-                                          event.stopPropagation();
-                                          openUserDetailPage(user.id);
-                                        }}
-                                      >
-                                        {displayName}
-                                      </button>
-                                      <IconChevronRight className="size-3.5 opacity-0 transition-opacity group-hover:opacity-60" />
-                                    </div>
-                                    <p className="max-w-64 truncate text-xs text-muted-foreground">
-                                      @{user.username} · {user.email}
-                                    </p>
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <RoleBadge role={user.role} />
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex flex-wrap gap-1.5">
-                                  <PremiumStateBadge
-                                    isPremium={hasActivePremiumAccess(user.premium_access)}
-                                    isRevoked={isUserCurrentlyRevoked(user)}
-                                  />
-                                  <ActiveInactiveBadge
-                                    isActive={user.account_status === "active"}
-                                    activeLabel="Account active"
-                                    inactiveLabel={
-                                      user.account_status === "locked"
-                                        ? "Admin locked"
-                                        : "Account disabled"
-                                    }
-                                  />
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <p className="text-sm">{formatDate(user.created_at)}</p>
-                                <p className="text-[11px] text-muted-foreground">
-                                  {formatTime(user.created_at)}
-                                </p>
-                              </TableCell>
-                              <TableCell>
-                                <p className="text-sm">{formatDate(getLastAccountChange(user))}</p>
-                                <p className="text-[11px] text-muted-foreground">
-                                  {formatRelativeTime(getLastAccountChange(user))}
-                                </p>
-                              </TableCell>
-                              <TableCell
-                                className="pr-5 text-right md:pr-6"
-                                onClick={(event) => event.stopPropagation()}
+                  <Table
+                    aria-label="User directory"
+                    className="block w-full lg:table lg:min-w-[720px] lg:table-fixed"
+                  >
+                    <colgroup className="hidden lg:table-column-group">
+                      <col />
+                      <col className="w-[196px]" />
+                      <col className="w-[112px]" />
+                      <col className="w-[112px]" />
+                      <col className="w-[56px]" />
+                    </colgroup>
+                    <TableHeader className="hidden bg-muted/30 lg:table-header-group">
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead scope="col" className="px-5 text-xs text-muted-foreground">
+                          Account
+                        </TableHead>
+                        <TableHead scope="col" className="text-xs text-muted-foreground">
+                          Plan & access
+                        </TableHead>
+                        <TableHead scope="col" className="text-xs text-muted-foreground">
+                          Joined
+                        </TableHead>
+                        <TableHead scope="col" className="text-xs text-muted-foreground">
+                          Last change
+                        </TableHead>
+                        <TableHead scope="col">
+                          <span className="sr-only">Actions</span>
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody className="block lg:table-row-group">
+                      {users.map((user) => {
+                        const displayName =
+                          [user.first_name, user.last_name].filter(Boolean).join(" ") ||
+                          user.username;
+                        return (
+                          <TableRow
+                            key={user.id}
+                            className="group grid grid-cols-[minmax(0,1fr)_44px] gap-x-2 gap-y-3 p-4 lg:table-row lg:p-0"
+                          >
+                            <TableCell className="col-start-1 row-start-1 min-w-0 whitespace-normal p-0 lg:px-5 lg:py-3">
+                              <button
+                                type="button"
+                                aria-label={`View user ${user.username}`}
+                                className="flex min-h-11 w-full min-w-0 items-center gap-3 rounded-md text-left outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                                onClick={() => openUserDetailPage(user.id)}
                               >
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="size-8"
-                                      aria-label={`Actions for ${user.username}`}
-                                    >
-                                      <IconDotsVertical className="size-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => openUserDetailPage(user.id)}>
-                                      <IconExternalLink />
-                                      Open account file
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() => openUserDetail(user, "profile")}
-                                    >
-                                      <IconPencil />
-                                      Edit profile
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => openUserDetail(user)}>
-                                      <IconClockHour4 />
-                                      View audit history
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                      className={
-                                        user.account_status === "locked" ? "" : "text-destructive"
-                                      }
-                                      disabled={
-                                        lockUserMutation.isPending || unlockUserMutation.isPending
-                                      }
-                                      onClick={() => handleToggleUserLock(user)}
-                                    >
-                                      <IconLock />
-                                      {user.account_status === "locked"
-                                        ? "Unlock account"
-                                        : "Lock account"}
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      className={
-                                        isUserCurrentlyRevoked(user)
-                                          ? ""
-                                          : hasActivePremiumAccess(user.premium_access)
-                                            ? "text-destructive"
-                                            : ""
-                                      }
-                                      onClick={() => openUserDetail(user, "premium")}
-                                    >
-                                      <IconCrown />
-                                      {isUserCurrentlyRevoked(user)
-                                        ? "Restore premium"
-                                        : hasActivePremiumAccess(user.premium_access)
-                                          ? "Revoke premium"
-                                          : "Review premium"}
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                  </div>
+                                <span
+                                  aria-hidden="true"
+                                  className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary-ink"
+                                >
+                                  {getInitials(displayName)}
+                                </span>
+                                <span className="min-w-0 space-y-1">
+                                  <span className="flex flex-wrap items-center gap-2">
+                                    <span className="text-sm font-semibold [overflow-wrap:anywhere]">
+                                      {displayName}
+                                    </span>
+                                    <RoleBadge role={user.role} />
+                                  </span>
+                                  <span
+                                    className="block truncate text-xs text-muted-foreground"
+                                    title={`@${user.username} · ${user.email}`}
+                                  >
+                                    @{user.username} · {user.email}
+                                  </span>
+                                </span>
+                              </button>
+                            </TableCell>
+                            <TableCell className="col-span-2 row-start-2 whitespace-normal p-0 lg:px-2 lg:py-3">
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <PremiumStateBadge
+                                  isPremium={hasActivePremiumAccess(user.premium_access)}
+                                  isRevoked={isUserCurrentlyRevoked(user)}
+                                />
+                                <ActiveInactiveBadge
+                                  isActive={user.account_status === "active"}
+                                  activeLabel="Active"
+                                  inactiveLabel={
+                                    user.account_status === "locked" ? "Locked" : "Disabled"
+                                  }
+                                />
+                              </div>
+                            </TableCell>
+                            <TableCell className="col-span-2 row-start-3 whitespace-normal border-t pt-3 text-xs tabular-nums lg:border-0 lg:px-2 lg:py-3">
+                              <span className="mr-2 text-muted-foreground lg:hidden">Joined</span>
+                              <span>{formatDate(user.created_at)}</span>
+                              <span className="ml-2 text-muted-foreground lg:ml-0 lg:mt-1 lg:block">
+                                {formatTime(user.created_at)}
+                              </span>
+                            </TableCell>
+                            <TableCell className="col-span-2 row-start-4 whitespace-normal p-0 text-xs tabular-nums lg:px-2 lg:py-3">
+                              <span className="mr-2 text-muted-foreground lg:hidden">
+                                Last change
+                              </span>
+                              <span>{formatDate(getLastAccountChange(user))}</span>
+                              <span className="ml-2 text-muted-foreground lg:ml-0 lg:mt-1 lg:block">
+                                {formatRelativeTime(getLastAccountChange(user))}
+                              </span>
+                            </TableCell>
+                            <TableCell className="col-start-2 row-start-1 p-0 text-right lg:px-2 lg:py-3">
+                              {renderUserActions(user)}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
                 )}
 
                 <div className="flex flex-col gap-3 border-t px-5 py-4 text-sm sm:flex-row sm:items-center sm:justify-between md:px-6">

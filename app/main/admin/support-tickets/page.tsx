@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import {
   IconMessage2,
+  IconFilter,
+  IconChevronRight,
   IconPaperclip,
   IconRefresh,
   IconSearch,
@@ -42,15 +44,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import {
   getAdminSupportAttachmentURL,
@@ -74,7 +69,7 @@ const statusFilterOptions: {
   value: SupportTicketStatus | "all";
   label: string;
 }[] = [
-  { value: "all", label: "All Status" },
+  { value: "all", label: "All statuses" },
   { value: "open", label: "Open" },
   { value: "in_progress", label: "In Progress" },
   { value: "resolved", label: "Resolved" },
@@ -85,7 +80,7 @@ const categoryFilterOptions: {
   value: SupportCategory | "all";
   label: string;
 }[] = [
-  { value: "all", label: "All Category" },
+  { value: "all", label: "All categories" },
   { value: "account_locked", label: "Account Locked" },
   { value: "account_deactivated", label: "Account Deactivated" },
   { value: "email_verification", label: "Email Verification" },
@@ -101,7 +96,7 @@ const priorityFilterOptions: {
   value: SupportPriority | "all";
   label: string;
 }[] = [
-  { value: "all", label: "All Priority" },
+  { value: "all", label: "All priorities" },
   { value: "low", label: "Low" },
   { value: "normal", label: "Normal" },
   { value: "high", label: "High" },
@@ -117,6 +112,12 @@ export default function AdminSupportTicketsPage() {
   const [categoryFilter, setCategoryFilter] = useState<SupportCategory | "all">("all");
   const [priorityFilter, setPriorityFilter] = useState<SupportPriority | "all">("all");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
   const [activeTicketId, setActiveTicketId] = useState<string | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [draftMessage, setDraftMessage] = useState("");
@@ -141,7 +142,7 @@ export default function AdminSupportTicketsPage() {
       priority: priorityFilter,
       page,
       limit: PAGE_LIMIT,
-      search: search.trim() || undefined,
+      search: debouncedSearch || undefined,
     },
     !roleForbidden,
   );
@@ -333,16 +334,17 @@ export default function AdminSupportTicketsPage() {
       <AppSidebar />
       <SidebarInset className="min-w-0">
         <SiteHeader />
-        <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6">
+        <main className="mx-auto flex w-full min-w-0 max-w-[1328px] flex-1 flex-col gap-6 p-4 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-2">
-              <h1 className="text-2xl font-semibold tracking-tight">Support Tickets</h1>
+              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Support Tickets</h1>
               <p className="text-sm text-muted-foreground">
                 Review account access issues and resolve support requests.
               </p>
             </div>
             <Button
               variant="outline"
+              className="h-11 sm:h-10"
               onClick={() => void ticketsQuery.refetch()}
               disabled={state === "loading" || ticketsQuery.isFetching}
             >
@@ -352,58 +354,64 @@ export default function AdminSupportTicketsPage() {
           </div>
 
           <div className="space-y-6">
-            <Card className="min-w-0">
-              <CardHeader>
-                <CardTitle>Ticket List</CardTitle>
-                <CardDescription>Total tickets: {total}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="rounded-xl border bg-muted/20 p-3 md:p-4">
-                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                      Filters
-                    </p>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 px-2 text-xs"
-                      onClick={() => {
+            <Card className="min-w-0 gap-0 overflow-hidden py-0 shadow-none">
+              <div className="space-y-3 border-b p-4 sm:p-5">
+                <div className="flex min-w-0 flex-col gap-3 sm:flex-row">
+                  <div className="relative min-w-0 flex-1">
+                    <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      aria-label="Search support tickets"
+                      value={search}
+                      maxLength={150}
+                      onChange={(event) => {
                         setPage(1);
-                        setStatusFilter("all");
-                        setCategoryFilter("all");
-                        setPriorityFilter("all");
-                        setSearch("");
+                        setSearch(event.target.value);
                       }}
-                      disabled={!hasActiveFilters}
+                      className="h-11 pl-9 sm:h-10"
+                      placeholder="Search ticket code, subject, or email"
+                    />
+                  </div>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <Select
+                      value={statusFilter}
+                      onValueChange={(value) => {
+                        setPage(1);
+                        setStatusFilter(value as SupportTicketStatus | "all");
+                      }}
                     >
-                      <IconX className="mr-1.5 size-3.5" />
-                      Clear filters
+                      <SelectTrigger
+                        aria-label="Filter tickets by status"
+                        className="h-11 min-w-0 flex-1 sm:h-10 sm:w-40"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {statusFilterOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant={filtersOpen ? "secondary" : "outline"}
+                      className="h-11 sm:h-10"
+                      aria-expanded={filtersOpen}
+                      aria-controls="support-ticket-filters"
+                      onClick={() => setFiltersOpen(!filtersOpen)}
+                    >
+                      <IconFilter className="size-4" />
+                      Filters
+                      {(categoryFilter !== "all" || priorityFilter !== "all") && (
+                        <span className="rounded bg-muted px-1.5 text-xs">
+                          {Number(categoryFilter !== "all") + Number(priorityFilter !== "all")}
+                        </span>
+                      )}
                     </Button>
                   </div>
-                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="ticket-status-filter">Status</Label>
-                      <Select
-                        value={statusFilter}
-                        onValueChange={(value) => {
-                          setPage(1);
-                          setStatusFilter(value as SupportTicketStatus | "all");
-                        }}
-                      >
-                        <SelectTrigger id="ticket-status-filter" className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-72">
-                          {statusFilterOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
+                </div>
+                <div id="support-ticket-filters" hidden={!filtersOpen}>
+                  <div className="grid items-end gap-3 sm:grid-cols-[1fr_1fr_auto]">
                     <div className="space-y-2">
                       <Label htmlFor="ticket-category-filter">Category</Label>
                       <Select
@@ -413,7 +421,7 @@ export default function AdminSupportTicketsPage() {
                           setCategoryFilter(value as SupportCategory | "all");
                         }}
                       >
-                        <SelectTrigger id="ticket-category-filter" className="w-full">
+                        <SelectTrigger id="ticket-category-filter" className="h-11 w-full sm:h-10">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="max-h-72">
@@ -425,7 +433,6 @@ export default function AdminSupportTicketsPage() {
                         </SelectContent>
                       </Select>
                     </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="ticket-priority-filter">Priority</Label>
                       <Select
@@ -435,10 +442,10 @@ export default function AdminSupportTicketsPage() {
                           setPriorityFilter(value as SupportPriority | "all");
                         }}
                       >
-                        <SelectTrigger id="ticket-priority-filter" className="w-full">
+                        <SelectTrigger id="ticket-priority-filter" className="h-11 w-full sm:h-10">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="max-h-72">
+                        <SelectContent>
                           {priorityFilterOptions.map((option) => (
                             <SelectItem key={option.value} value={option.value}>
                               {option.label}
@@ -447,123 +454,160 @@ export default function AdminSupportTicketsPage() {
                         </SelectContent>
                       </Select>
                     </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="ticket-search-filter">Search</Label>
-                      <div className="relative">
-                        <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          id="ticket-search-filter"
-                          value={search}
-                          onChange={(event) => {
-                            setPage(1);
-                            setSearch(event.target.value);
-                          }}
-                          className="pl-9"
-                          placeholder="Ticket code, subject, or email"
-                        />
-                      </div>
-                    </div>
+                    <Button
+                      variant="ghost"
+                      className="h-11 sm:h-10"
+                      disabled={!hasActiveFilters}
+                      onClick={() => {
+                        setPage(1);
+                        setStatusFilter("all");
+                        setCategoryFilter("all");
+                        setPriorityFilter("all");
+                        setSearch("");
+                      }}
+                    >
+                      <IconX className="size-4" />
+                      Clear filters
+                    </Button>
                   </div>
                 </div>
-                {state === "loading" && <PageSkeleton />}
+                <div className="flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
+                  <p>
+                    <span className="font-medium text-foreground">{total}</span> matching{" "}
+                    {total === 1 ? "ticket" : "tickets"}
+                  </p>
+                  <p role="status" aria-live="polite">
+                    {ticketsQuery.isFetching || search.trim() !== debouncedSearch
+                      ? "Updating results…"
+                      : total > 0
+                        ? `Showing ${(page - 1) * PAGE_LIMIT + 1}–${Math.min(page * PAGE_LIMIT, total)}`
+                        : "No results"}
+                  </p>
+                </div>
+              </div>
+              <CardContent className="p-0">
+                {state === "loading" && (
+                  <div className="p-5">
+                    <PageSkeleton />
+                  </div>
+                )}
 
                 {state === "forbidden" && (
-                  <div className="text-sm text-muted-foreground">
+                  <div className="p-5 text-sm text-muted-foreground">
                     This page is available only for admin and super admin roles.
                   </div>
                 )}
 
                 {state === "error" && (
-                  <div className="text-sm text-muted-foreground">
-                    Failed to load support tickets.
+                  <div className="p-5">
+                    <QueryError
+                      message="Could not load support tickets."
+                      onRetry={() => void ticketsQuery.refetch()}
+                    />
                   </div>
                 )}
 
                 {state === "ready" && (
                   <>
-                    <div className="overflow-x-auto rounded-lg border">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Ticket</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Category</TableHead>
-                            <TableHead>Priority</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Created</TableHead>
-                            <TableHead>Updated</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {items.length === 0 ? (
-                            <TableRow>
-                              <TableCell colSpan={7} className="text-center text-muted-foreground">
-                                No support tickets found.
-                              </TableCell>
-                            </TableRow>
-                          ) : (
-                            items.map((item) => (
-                              <TableRow
-                                key={item.id}
-                                className="cursor-pointer"
-                                onClick={() => void handleOpenTicket(item.id)}
+                    {items.length === 0 ? (
+                      <div className="flex flex-col items-center gap-2 px-5 py-12 text-center">
+                        <IconMessage2 className="mb-1 size-7 text-muted-foreground" />
+                        <h2 className="text-base font-semibold">
+                          {hasActiveFilters
+                            ? "No tickets match this view"
+                            : "No support tickets yet"}
+                        </h2>
+                        <p className="max-w-sm text-sm leading-6 text-muted-foreground">
+                          {hasActiveFilters
+                            ? "Try another status, category, or search to find a ticket."
+                            : "New support requests will appear here, ready for your team to review."}
+                        </p>
+                        {hasActiveFilters && (
+                          <Button
+                            variant="outline"
+                            className="mt-2 h-11"
+                            onClick={() => {
+                              setPage(1);
+                              setStatusFilter("all");
+                              setCategoryFilter("all");
+                              setPriorityFilter("all");
+                              setSearch("");
+                            }}
+                          >
+                            View all tickets
+                          </Button>
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        <div className="hidden grid-cols-[minmax(0,1fr)_160px_150px_44px] gap-4 border-b bg-muted/20 px-5 py-3 text-xs text-muted-foreground lg:grid">
+                          <span>Request</span>
+                          <span>Status & priority</span>
+                          <span>Latest activity</span>
+                          <span className="sr-only">Open ticket</span>
+                        </div>
+                        <ul className="divide-y">
+                          {items.map((item) => (
+                            <li key={item.id}>
+                              <button
+                                type="button"
+                                aria-label={`View support ticket ${item.ticket_code}: ${item.subject}`}
+                                className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_24px] gap-3 p-4 text-left transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:p-5 lg:grid-cols-[minmax(0,1fr)_160px_150px_44px] lg:items-center lg:gap-4"
+                                onClick={() => handleOpenTicket(item.id)}
                               >
-                                <TableCell>
-                                  <button
-                                    type="button"
-                                    aria-label={`View support ticket ${item.ticket_code}`}
-                                    className="min-h-[44px] rounded text-left font-medium outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
-                                    onClick={(event) => {
-                                      event.stopPropagation();
-                                      void handleOpenTicket(item.id);
-                                    }}
-                                  >
-                                    {item.ticket_code}
-                                  </button>
-                                  <p className="text-xs text-muted-foreground">{item.subject}</p>
-                                </TableCell>
-                                <TableCell>{item.email}</TableCell>
-                                <TableCell>{toLabel(item.category)}</TableCell>
-                                <TableCell>
+                                <div className="min-w-0 space-y-1.5">
+                                  <p className="break-words text-sm font-semibold">
+                                    {item.subject}
+                                  </p>
+                                  <p className="break-all text-xs text-muted-foreground">
+                                    {item.email}
+                                  </p>
+                                  <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                                    <span className="font-mono">{item.ticket_code}</span>
+                                    <span>{toLabel(item.category)}</span>
+                                  </div>
+                                </div>
+                                <div className="col-span-2 flex flex-wrap gap-2 lg:col-span-1">
+                                  <SupportStatusBadge status={item.status} />
                                   <SupportPriorityBadge
                                     priority={item.priority as SupportPriority}
                                   />
-                                </TableCell>
-                                <TableCell>
-                                  <SupportStatusBadge status={item.status} />
-                                </TableCell>
-                                <TableCell>{formatDate(item.created_at)}</TableCell>
-                                <TableCell>
-                                  {item.updated_at && item.updated_at !== item.created_at
-                                    ? formatDate(item.updated_at)
-                                    : "-"}
-                                </TableCell>
-                              </TableRow>
-                            ))
-                          )}
-                        </TableBody>
-                      </Table>
-                    </div>
+                                </div>
+                                <div className="col-span-2 text-xs lg:col-span-1">
+                                  <p className="text-muted-foreground lg:hidden">Latest activity</p>
+                                  <p className="mt-1 tabular-nums lg:mt-0">
+                                    {formatDate(item.updated_at || item.created_at)}
+                                  </p>
+                                  <p className="mt-1 text-muted-foreground">
+                                    Created {formatDateLong(item.created_at)}
+                                  </p>
+                                </div>
+                                <IconChevronRight className="col-start-2 row-start-1 size-4 self-center text-muted-foreground lg:col-start-auto lg:row-start-auto lg:justify-self-end" />
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
 
-                    <div className="flex items-center justify-between pt-4 text-sm">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-t px-4 py-4 text-sm sm:px-5">
                       <p className="text-muted-foreground">
                         Page {page} of {totalPages}
                       </p>
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
-                          size="sm"
+                          className="h-11 sm:h-10"
                           onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                          disabled={page <= 1}
+                          disabled={page <= 1 || ticketsQuery.isFetching}
                         >
                           Previous
                         </Button>
                         <Button
                           variant="outline"
-                          size="sm"
+                          className="h-11 sm:h-10"
                           onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-                          disabled={page >= totalPages}
+                          disabled={page >= totalPages || ticketsQuery.isFetching}
                         >
                           Next
                         </Button>
@@ -576,18 +620,18 @@ export default function AdminSupportTicketsPage() {
           </div>
 
           <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
-            <DialogContent className="h-[min(96vh,1120px)] !w-[calc(100vw-24px)] !max-w-[1600px] gap-0 overflow-hidden rounded-xl p-0 shadow-lg">
+            <DialogContent className="flex max-h-[calc(100dvh-2rem)] !w-[calc(100vw-2rem)] !max-w-[1200px] flex-col gap-0 overflow-hidden rounded-xl p-0">
               <DialogHeader className="shrink-0 border-b bg-background px-5 py-4 pr-18 sm:px-6 sm:pr-20">
                 <div className="flex flex-col gap-4">
                   <div className="min-w-0 space-y-2">
                     <DialogTitle className="text-xl font-semibold tracking-tight">
-                      Ticket Detail
+                      {activeTicket?.subject || "Ticket details"}
                     </DialogTitle>
                     <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                       <span className="rounded-md bg-muted px-2.5 py-1 font-mono text-[12px] font-medium text-foreground">
                         #{activeTicket?.ticket_code || "TICKET"}
                       </span>
-                      <span className="truncate max-w-[420px]">
+                      <span className="max-w-full break-all">
                         {activeTicket?.email || "Select ticket from list"}
                       </span>
                       {activeTicket ? (
@@ -612,7 +656,7 @@ export default function AdminSupportTicketsPage() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="min-h-0 flex-1 overflow-y-auto bg-muted/20 px-4 py-4 sm:px-6 sm:py-5">
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5">
                 {detailsLoading && <PageSkeleton />}
 
                 {!detailsLoading && !activeTicket && (
@@ -623,335 +667,343 @@ export default function AdminSupportTicketsPage() {
 
                 {!detailsLoading && activeTicket && (
                   <>
-                    <div className="flex flex-col gap-5 xl:gap-6 lg:flex-row lg:items-start">
-                      <div className="min-w-0 space-y-5 lg:basis-[65%] lg:flex-1">
-                        <section className="rounded-xl border bg-card p-5 shadow-sm sm:p-6">
-                          <div className="space-y-5">
-                            <div className="space-y-3">
-                              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                                Ticket Overview
-                              </p>
-                              <h2 className="break-words text-2xl font-semibold tracking-tight">
-                                {activeTicket.subject}
-                              </h2>
-                            </div>
-
-                            <div className="space-y-3">
-                              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                                Description
-                              </p>
-                              <div className="whitespace-pre-wrap rounded-xl border bg-muted/20 px-4 py-4 text-sm leading-7 text-foreground/90 sm:px-5">
-                                {activeTicket.description}
-                              </div>
-                            </div>
-
-                            <div className="flex flex-wrap items-center gap-3 border-t pt-4 text-xs text-muted-foreground">
-                              <span>Created on {formatDateLong(activeTicket.created_at)}</span>
-                              {activeTicket.updated_at !== activeTicket.created_at ? (
-                                <span>Updated {formatDateLong(activeTicket.updated_at)}</span>
-                              ) : null}
-                            </div>
-                          </div>
-                        </section>
-
-                        <section className="rounded-xl border bg-card p-4 shadow-sm sm:p-5">
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="space-y-1">
-                              <p className="flex items-center gap-2 text-sm font-semibold">
-                                <IconMessage2 className="size-4" />
-                                Conversation
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                Full thread between support team and user.
-                              </p>
-                            </div>
-                            <Button
-                              type="button"
-                              size="icon-sm"
-                              variant="outline"
-                              onClick={() => void conversationQuery.refetch()}
-                              disabled={conversationQuery.isFetching}
-                              className="rounded-full"
-                              aria-label="Refresh conversation"
-                            >
-                              <IconRefresh className="size-4" />
-                            </Button>
-                          </div>
-
-                          {conversationLoading ? (
-                            <div className="mt-4">
-                              <PageSkeleton />
-                            </div>
-                          ) : conversationQuery.isError ? (
-                            <QueryError
-                              message="Could not load this conversation."
-                              onRetry={() => void conversationQuery.refetch()}
-                            />
-                          ) : (conversation?.messages ?? []).length === 0 ? (
-                            <p className="mt-4 rounded-xl border bg-muted/20 p-4 text-sm text-muted-foreground">
-                              No conversation yet.
-                            </p>
-                          ) : (
-                            <div className="mt-4 max-h-[440px] space-y-3 overflow-y-auto rounded-xl border bg-muted/20 p-3 sm:p-4">
-                              {(conversation?.messages ?? []).map((message) => (
-                                <SupportConversationBubble
-                                  key={message.id}
-                                  message={message}
-                                  getAttachmentUrl={getAdminSupportAttachmentURL}
-                                  isAdminView
-                                />
-                              ))}
-                            </div>
-                          )}
-
-                          {activeTicket.status === "resolved" ||
-                          activeTicket.status === "closed" ? (
-                            <Alert className="mt-4 border-emerald-500/25 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200">
-                              <IconMessage2 className="size-4 stroke-emerald-600" />
-                              <AlertTitle>Conversation Closed</AlertTitle>
-                              <AlertDescription className="text-emerald-800 dark:text-emerald-300">
-                                This ticket has been marked as {activeTicket.status} on{" "}
-                                {formatDate(activeTicket.updated_at)}. Cannot receive or send new
-                                messages.
-                              </AlertDescription>
-                            </Alert>
-                          ) : (
-                            <div className="mt-4 space-y-3 rounded-xl border bg-muted/20 p-3 sm:p-4">
-                              <div className="space-y-2">
-                                <Label htmlFor="admin-support-reply">Reply</Label>
-                                <textarea
-                                  id="admin-support-reply"
-                                  value={draftMessage}
-                                  onChange={(event) => setDraftMessage(event.target.value)}
-                                  className="min-h-28 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                                  placeholder="Write clear update for user"
-                                />
+                    <Tabs defaultValue="conversation" className="min-w-0 gap-4">
+                      <TabsList className="grid h-auto w-full grid-cols-2 lg:hidden">
+                        <TabsTrigger value="conversation" className="min-h-11">
+                          Conversation
+                        </TabsTrigger>
+                        <TabsTrigger value="manage" className="min-h-11">
+                          Manage ticket
+                        </TabsTrigger>
+                      </TabsList>
+                      <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+                        <TabsContent
+                          forceMount
+                          value="conversation"
+                          className="m-0 min-w-0 space-y-5 data-[state=inactive]:hidden lg:data-[state=inactive]:block"
+                        >
+                          <section className="border-b pb-5">
+                            <div className="space-y-5">
+                              <div className="space-y-3">
+                                <p className="text-sm font-medium text-muted-foreground">
+                                  Description
+                                </p>
+                                <div className="whitespace-pre-wrap break-words text-sm leading-7">
+                                  {activeTicket.description}
+                                </div>
                               </div>
 
-                              <input
-                                ref={attachmentInputRef}
-                                type="file"
-                                accept="application/pdf,image/jpeg,image/png,image/webp,image/gif"
-                                multiple
-                                className="hidden"
-                                onChange={(event) =>
-                                  setDraftFiles(Array.from(event.target.files || []))
-                                }
+                              <div className="flex flex-wrap items-center gap-3 border-t pt-4 text-xs text-muted-foreground">
+                                <span>Created on {formatDateLong(activeTicket.created_at)}</span>
+                                {activeTicket.updated_at !== activeTicket.created_at ? (
+                                  <span>Updated {formatDateLong(activeTicket.updated_at)}</span>
+                                ) : null}
+                              </div>
+                            </div>
+                          </section>
+
+                          <section className="space-y-3">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="space-y-1">
+                                <p className="flex items-center gap-2 text-sm font-semibold">
+                                  <IconMessage2 className="size-4" />
+                                  Conversation
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  Full thread between support team and user.
+                                </p>
+                              </div>
+                              <Button
+                                type="button"
+                                size="icon-sm"
+                                variant="outline"
+                                onClick={() => void conversationQuery.refetch()}
+                                disabled={conversationQuery.isFetching}
+                                className="size-11"
+                                aria-label="Refresh conversation"
+                              >
+                                <IconRefresh className="size-4" />
+                              </Button>
+                            </div>
+
+                            {conversationLoading ? (
+                              <div className="mt-4">
+                                <PageSkeleton />
+                              </div>
+                            ) : conversationQuery.isError ? (
+                              <QueryError
+                                message="Could not load this conversation."
+                                onRetry={() => void conversationQuery.refetch()}
                               />
-
-                              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  onClick={() => attachmentInputRef.current?.click()}
-                                  className="rounded-xl"
-                                >
-                                  <IconPaperclip className="mr-2 size-4" />
-                                  Attach Files
-                                </Button>
-
-                                <Button
-                                  type="button"
-                                  onClick={() => void handleSendMessage()}
-                                  disabled={
-                                    sendMessageMutation.isPending ||
-                                    (!draftMessage.trim() && draftFiles.length === 0)
-                                  }
-                                  className="rounded-xl"
-                                >
-                                  <IconSend className="mr-2 size-4" />
-                                  {sendMessageMutation.isPending ? "Sending..." : "Send Reply"}
-                                </Button>
-                              </div>
-
-                              {draftFiles.length > 0 ? (
-                                <div className="flex flex-wrap gap-2">
-                                  {draftFiles.map((file) => (
-                                    <span
-                                      key={`${file.name}-${file.size}`}
-                                      className="rounded-full bg-background px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-border"
-                                    >
-                                      {file.name}
-                                    </span>
-                                  ))}
-                                </div>
-                              ) : null}
-                            </div>
-                          )}
-                        </section>
-                      </div>
-
-                      <aside className="min-w-0 lg:sticky lg:top-0 lg:w-[420px] lg:min-w-[420px] lg:self-start xl:w-[460px] xl:min-w-[460px]">
-                        <div className="space-y-4 rounded-xl border bg-card p-4 shadow-sm sm:p-5">
-                          <div className="space-y-1">
-                            <p className="text-sm font-semibold">Admin Controls</p>
-                            <p className="text-sm text-muted-foreground">
-                              Update status, set priority, and leave internal notes.
-                            </p>
-                          </div>
-
-                          {activeTicket.status === "resolved" ||
-                          activeTicket.status === "closed" ? (
-                            <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-4 text-sm">
-                              <p className="font-medium text-emerald-900 dark:text-emerald-200">
-                                Ticket {toLabel(activeTicket.status)}
+                            ) : (conversation?.messages ?? []).length === 0 ? (
+                              <p className="mt-4 rounded-xl border bg-muted/20 p-4 text-sm text-muted-foreground">
+                                No conversation yet.
                               </p>
-                              <p className="mt-1 text-emerald-700 dark:text-emerald-300">
-                                Closed on {formatDate(activeTicket.updated_at)}. Editing disabled.
-                              </p>
-                              {activeTicket.admin_notes ? (
-                                <div className="mt-4 border-t border-emerald-200 pt-4">
-                                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700/80">
-                                    Final Admin Notes
-                                  </p>
-                                  <p className="whitespace-pre-wrap break-words text-emerald-800 dark:text-emerald-300">
-                                    {activeTicket.admin_notes}
-                                  </p>
-                                </div>
-                              ) : null}
-                            </div>
-                          ) : (
-                            <>
-                              <div className="flex flex-col gap-3 sm:flex-row">
-                                <div className="min-w-0 flex-1 space-y-2">
-                                  <Label htmlFor="admin-support-status">Next Status</Label>
-                                  <Select
-                                    value={resolvedNextStatus}
-                                    onValueChange={(value) =>
-                                      patchTicketDraft({
-                                        nextStatus: value as SupportTicketStatus,
-                                      })
-                                    }
-                                  >
-                                    <SelectTrigger
-                                      id="admin-support-status"
-                                      className="h-10 w-full rounded-xl"
-                                    >
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="open">Open</SelectItem>
-                                      <SelectItem value="in_progress">In Progress</SelectItem>
-                                      <SelectItem value="resolved">Resolved</SelectItem>
-                                      <SelectItem value="closed">Closed</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-
-                                <div className="min-w-0 flex-1 space-y-2">
-                                  <Label htmlFor="admin-support-priority">Priority</Label>
-                                  <Select
-                                    value={resolvedNextPriority}
-                                    onValueChange={(value) =>
-                                      patchTicketDraft({
-                                        nextPriority: value as SupportPriority,
-                                      })
-                                    }
-                                  >
-                                    <SelectTrigger
-                                      id="admin-support-priority"
-                                      className="h-10 w-full rounded-xl"
-                                    >
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="low">Low</SelectItem>
-                                      <SelectItem value="normal">Normal</SelectItem>
-                                      <SelectItem value="high">High</SelectItem>
-                                      <SelectItem value="urgent">Urgent</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
+                            ) : (
+                              <div className="mt-4 space-y-3">
+                                {(conversation?.messages ?? []).map((message) => (
+                                  <SupportConversationBubble
+                                    key={message.id}
+                                    message={message}
+                                    getAttachmentUrl={getAdminSupportAttachmentURL}
+                                    isAdminView
+                                  />
+                                ))}
                               </div>
+                            )}
 
-                              <div className="space-y-2">
-                                <Label htmlFor="admin-support-notes">Admin Notes</Label>
-                                <textarea
-                                  id="admin-support-notes"
-                                  value={resolvedAdminNotes}
+                            {activeTicket.status === "resolved" ||
+                            activeTicket.status === "closed" ? (
+                              <Alert className="mt-4 border-emerald-500/25 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200">
+                                <IconMessage2 className="size-4 stroke-emerald-600" />
+                                <AlertTitle>Conversation Closed</AlertTitle>
+                                <AlertDescription className="text-emerald-800 dark:text-emerald-300">
+                                  This ticket has been marked as {activeTicket.status} on{" "}
+                                  {formatDate(activeTicket.updated_at)}. Cannot receive or send new
+                                  messages.
+                                </AlertDescription>
+                              </Alert>
+                            ) : (
+                              <div className="mt-5 space-y-3 border-t pt-4">
+                                <div className="space-y-2">
+                                  <Label htmlFor="admin-support-reply">Reply</Label>
+                                  <textarea
+                                    id="admin-support-reply"
+                                    value={draftMessage}
+                                    onChange={(event) => setDraftMessage(event.target.value)}
+                                    className="min-h-28 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                                    placeholder="Write clear update for user"
+                                  />
+                                </div>
+
+                                <input
+                                  ref={attachmentInputRef}
+                                  type="file"
+                                  accept="application/pdf,image/jpeg,image/png,image/webp,image/gif"
+                                  multiple
+                                  className="hidden"
                                   onChange={(event) =>
-                                    patchTicketDraft({
-                                      adminNotes: event.target.value,
-                                    })
+                                    setDraftFiles(Array.from(event.target.files || []))
                                   }
-                                  className="min-h-36 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                                  placeholder="Internal notes, summary, or resolution context"
                                 />
-                              </div>
 
-                              <div className="space-y-2">
-                                <Button
-                                  onClick={() => void applyUpdate()}
-                                  disabled={updateTicketMutation.isPending}
-                                  className="h-11 w-full rounded-xl"
-                                >
-                                  Save Update
-                                </Button>
-
-                                <Button
-                                  variant="outline"
-                                  onClick={() => {
-                                    patchTicketDraft({ nextStatus: "resolved" });
-                                    void applyUpdate("manual_response", "resolved");
-                                  }}
-                                  disabled={updateTicketMutation.isPending}
-                                  className="h-11 w-full rounded-xl"
-                                >
-                                  Resolve Ticket
-                                </Button>
-                              </div>
-
-                              <div className="space-y-3 border-t pt-4">
-                                <div className="space-y-1">
-                                  <p className="text-sm font-medium">User Management</p>
-                                  <p className="text-sm text-muted-foreground">
-                                    Low-risk account actions for support flow.
-                                  </p>
-                                </div>
-
-                                <div className="grid gap-1.5">
+                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                   <Button
-                                    variant="ghost"
-                                    onClick={() => void applyUpdate("unlock_user")}
-                                    disabled={updateTicketMutation.isPending}
-                                    className="h-10 justify-start rounded-xl px-3"
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => attachmentInputRef.current?.click()}
+                                    className="h-11 rounded-lg"
                                   >
-                                    <IconShieldLock className="mr-2 size-4" />
-                                    Unlock User
+                                    <IconPaperclip className="mr-2 size-4" />
+                                    Attach Files
                                   </Button>
 
                                   <Button
-                                    variant="ghost"
-                                    onClick={() => void applyUpdate("activate_user")}
-                                    disabled={updateTicketMutation.isPending}
-                                    className="h-10 justify-start rounded-xl px-3"
-                                  >
-                                    <IconUserCheck className="mr-2 size-4" />
-                                    Activate Account
-                                  </Button>
-
-                                  <Button
-                                    variant="ghost"
-                                    onClick={() => void applyUpdate("resend_verification")}
-                                    disabled={updateTicketMutation.isPending}
-                                    className="h-10 justify-start rounded-xl px-3"
+                                    type="button"
+                                    onClick={() => void handleSendMessage()}
+                                    disabled={
+                                      sendMessageMutation.isPending ||
+                                      (!draftMessage.trim() && draftFiles.length === 0)
+                                    }
+                                    className="h-11 rounded-lg"
                                   >
                                     <IconSend className="mr-2 size-4" />
-                                    Resend Verification
+                                    {sendMessageMutation.isPending ? "Sending..." : "Send Reply"}
                                   </Button>
                                 </div>
+
+                                {draftFiles.length > 0 ? (
+                                  <div className="flex flex-wrap gap-2">
+                                    {draftFiles.map((file) => (
+                                      <span
+                                        key={`${file.name}-${file.size}`}
+                                        className="rounded-full bg-background px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-border"
+                                      >
+                                        {file.name}
+                                      </span>
+                                    ))}
+                                  </div>
+                                ) : null}
                               </div>
-                            </>
-                          )}
-                        </div>
-                      </aside>
-                    </div>
+                            )}
+                          </section>
+                        </TabsContent>
+                        <TabsContent
+                          forceMount
+                          value="manage"
+                          className="m-0 min-w-0 data-[state=inactive]:hidden lg:data-[state=inactive]:block"
+                        >
+                          <div className="space-y-4 border-t pt-5 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0">
+                            <div className="space-y-1">
+                              <p className="text-sm font-semibold">Admin Controls</p>
+                              <p className="text-sm text-muted-foreground">
+                                Update status, set priority, and leave internal notes.
+                              </p>
+                            </div>
+
+                            {activeTicket.status === "resolved" ||
+                            activeTicket.status === "closed" ? (
+                              <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-4 text-sm">
+                                <p className="font-medium text-emerald-900 dark:text-emerald-200">
+                                  Ticket {toLabel(activeTicket.status)}
+                                </p>
+                                <p className="mt-1 text-emerald-700 dark:text-emerald-300">
+                                  Closed on {formatDate(activeTicket.updated_at)}. Editing disabled.
+                                </p>
+                                {activeTicket.admin_notes ? (
+                                  <div className="mt-4 border-t border-emerald-200 pt-4">
+                                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700/80">
+                                      Final Admin Notes
+                                    </p>
+                                    <p className="whitespace-pre-wrap break-words text-emerald-800 dark:text-emerald-300">
+                                      {activeTicket.admin_notes}
+                                    </p>
+                                  </div>
+                                ) : null}
+                              </div>
+                            ) : (
+                              <>
+                                <div className="flex flex-col gap-3 sm:flex-row">
+                                  <div className="min-w-0 flex-1 space-y-2">
+                                    <Label htmlFor="admin-support-status">Next Status</Label>
+                                    <Select
+                                      value={resolvedNextStatus}
+                                      onValueChange={(value) =>
+                                        patchTicketDraft({
+                                          nextStatus: value as SupportTicketStatus,
+                                        })
+                                      }
+                                    >
+                                      <SelectTrigger
+                                        id="admin-support-status"
+                                        className="h-11 w-full rounded-lg"
+                                      >
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="open">Open</SelectItem>
+                                        <SelectItem value="in_progress">In Progress</SelectItem>
+                                        <SelectItem value="resolved">Resolved</SelectItem>
+                                        <SelectItem value="closed">Closed</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+
+                                  <div className="min-w-0 flex-1 space-y-2">
+                                    <Label htmlFor="admin-support-priority">Priority</Label>
+                                    <Select
+                                      value={resolvedNextPriority}
+                                      onValueChange={(value) =>
+                                        patchTicketDraft({
+                                          nextPriority: value as SupportPriority,
+                                        })
+                                      }
+                                    >
+                                      <SelectTrigger
+                                        id="admin-support-priority"
+                                        className="h-11 w-full rounded-lg"
+                                      >
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="low">Low</SelectItem>
+                                        <SelectItem value="normal">Normal</SelectItem>
+                                        <SelectItem value="high">High</SelectItem>
+                                        <SelectItem value="urgent">Urgent</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label htmlFor="admin-support-notes">Admin Notes</Label>
+                                  <textarea
+                                    id="admin-support-notes"
+                                    value={resolvedAdminNotes}
+                                    onChange={(event) =>
+                                      patchTicketDraft({
+                                        adminNotes: event.target.value,
+                                      })
+                                    }
+                                    className="min-h-36 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                                    placeholder="Internal notes, summary, or resolution context"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Button
+                                    onClick={() => void applyUpdate()}
+                                    disabled={updateTicketMutation.isPending}
+                                    className="h-11 w-full rounded-xl"
+                                  >
+                                    Save Update
+                                  </Button>
+
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                      patchTicketDraft({ nextStatus: "resolved" });
+                                      void applyUpdate("manual_response", "resolved");
+                                    }}
+                                    disabled={updateTicketMutation.isPending}
+                                    className="h-11 w-full rounded-xl"
+                                  >
+                                    Resolve Ticket
+                                  </Button>
+                                </div>
+
+                                <div className="space-y-3 border-t pt-4">
+                                  <div className="space-y-1">
+                                    <p className="text-sm font-medium">User Management</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      Actions that affect the requester’s account.
+                                    </p>
+                                  </div>
+
+                                  <div className="grid gap-1.5">
+                                    <Button
+                                      variant="ghost"
+                                      onClick={() => void applyUpdate("unlock_user")}
+                                      disabled={updateTicketMutation.isPending}
+                                      className="h-11 justify-start rounded-lg px-3"
+                                    >
+                                      <IconShieldLock className="mr-2 size-4" />
+                                      Unlock User
+                                    </Button>
+
+                                    <Button
+                                      variant="ghost"
+                                      onClick={() => void applyUpdate("activate_user")}
+                                      disabled={updateTicketMutation.isPending}
+                                      className="h-11 justify-start rounded-lg px-3"
+                                    >
+                                      <IconUserCheck className="mr-2 size-4" />
+                                      Activate Account
+                                    </Button>
+
+                                    <Button
+                                      variant="ghost"
+                                      onClick={() => void applyUpdate("resend_verification")}
+                                      disabled={updateTicketMutation.isPending}
+                                      className="h-11 justify-start rounded-lg px-3"
+                                    >
+                                      <IconSend className="mr-2 size-4" />
+                                      Resend Verification
+                                    </Button>
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </TabsContent>
+                      </div>
+                    </Tabs>
                   </>
                 )}
               </div>
             </DialogContent>
           </Dialog>
-        </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

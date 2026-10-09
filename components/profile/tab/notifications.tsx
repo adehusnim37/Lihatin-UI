@@ -33,9 +33,9 @@ function PreferenceRow({
   statusLabel,
 }: PreferenceRowProps) {
   return (
-    <div className="flex items-start justify-between gap-4 rounded-lg border p-4">
-      <div className="flex gap-3">
-        <div className="mt-0.5 text-muted-foreground">{icon}</div>
+    <div className="flex flex-col items-start justify-between gap-4 border-b py-5 last:border-0 sm:flex-row">
+      <div className="flex min-w-0 gap-3">
+        <div className="mt-0.5 shrink-0 text-muted-foreground">{icon}</div>
         <div className="space-y-1">
           <p className="text-sm font-medium">{title}</p>
           <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
@@ -77,7 +77,7 @@ export default function ProfileNotificationsTab() {
 
   return (
     <TabsContent value="notifications" className="space-y-4">
-      <Card>
+      <Card className="min-w-0 shadow-none">
         <CardHeader>
           <div className="flex items-center gap-3">
             <IconMail className="size-5 text-muted-foreground" />

@@ -16,7 +16,7 @@ export function PublicSupportShell({
   centered?: boolean;
 }) {
   return (
-    <div className="flex min-h-dvh flex-col bg-slate-50/70">
+    <div className="flex min-h-dvh flex-col bg-muted/30 text-foreground">
       <header className="border-b bg-background">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link href="/support" className="flex min-w-0 items-center gap-2.5">

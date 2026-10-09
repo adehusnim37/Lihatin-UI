@@ -186,7 +186,7 @@ export default function SessionTab() {
 
   return (
     <TabsContent value="session" className="space-y-4">
-      <Card className="min-w-0 overflow-hidden">
+      <Card className="min-w-0 overflow-hidden shadow-none">
         <CardHeader className="px-4 pb-0 sm:px-6">
           <CardTitle>Sessions</CardTitle>
           <CardDescription>
@@ -296,7 +296,7 @@ export default function SessionTab() {
                                 {browser} {isMobile ? "(Mobile)" : "(Desktop)"}
                               </p>
                               {session.is_current && (
-                                <span className="rounded-full bg-green-600/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-green-600">
+                                <span className="rounded-full bg-green-600/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-green-700 dark:text-green-400">
                                   Current
                                 </span>
                               )}
@@ -338,13 +338,13 @@ export default function SessionTab() {
                   </div>
                   <div className="border-b p-3 sm:border-b-0 sm:border-r">
                     <p className="text-xs text-muted-foreground">Successful</p>
-                    <p className="mt-1 text-xl font-semibold tabular-nums text-green-600">
+                    <p className="mt-1 text-xl font-semibold tabular-nums text-green-700 dark:text-green-400">
                       {recentActivity.successful_attempts}
                     </p>
                   </div>
                   <div className="border-r p-3">
                     <p className="text-xs text-muted-foreground">Failed</p>
-                    <p className="mt-1 text-xl font-semibold tabular-nums text-red-600">
+                    <p className="mt-1 text-xl font-semibold tabular-nums text-red-700 dark:text-red-400">
                       {recentActivity.failed_attempts}
                     </p>
                   </div>

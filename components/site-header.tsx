@@ -31,6 +31,7 @@ export function SiteHeader() {
     segments.forEach((segment, index) => {
       currentPath += `/${segment}`; // Always update path first
 
+      if (segment === "profile" && segments[index + 1] === "me") return;
       if (segment === "main") return; // Skip display for 'main' as it is hardcoded
 
       const isLast = index === segments.length - 1;
@@ -48,6 +49,8 @@ export function SiteHeader() {
         "support-tickets": "Support Tickets",
         "security-policy": "Security Policy",
         settings: "Settings",
+        profile: "Profile",
+        me: "Profile",
         help: "Get Help",
       };
       const label = labels[segment] ?? segment;

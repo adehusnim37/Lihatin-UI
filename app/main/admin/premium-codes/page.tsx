@@ -18,6 +18,7 @@ import {
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 
+import { PremiumCodeNavigation } from "@/components/premium-code-navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -46,14 +47,6 @@ import {
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge, type StatusBadgeTone } from "@/components/ui/status-badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   type AdminPremiumCode,
@@ -76,6 +69,8 @@ const RECIPIENT_PAGE_LIMIT = 20;
 export default function AdminPremiumCodesPage() {
   const [roleFromStorage, setRoleFromStorage] = useState<string | null | undefined>(undefined);
   const [page, setPage] = useState(1);
+  const [codeSearch, setCodeSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [detailOpen, setDetailOpen] = useState(false);
   const [activeCode, setActiveCode] = useState<AdminPremiumCode | null>(null);
   const [detailTab, setDetailTab] = useState<DetailTab>("overview");
@@ -104,6 +99,15 @@ export default function AdminPremiumCodesPage() {
   } = useAdminPremiumCodesQuery(page, PAGE_LIMIT);
   const codes = useMemo(() => codesData?.keys ?? [], [codesData?.keys]);
   const pagination = codesData ?? null;
+  const visibleCodes = useMemo(
+    () =>
+      codes.filter(
+        (code) =>
+          code.secret_code.toLowerCase().includes(codeSearch.trim().toLowerCase()) &&
+          (statusFilter === "all" || getCodeStatus(code).label === statusFilter),
+      ),
+    [codes, codeSearch, statusFilter],
+  );
 
   const debouncedRecipientSearch = useDebouncedValue(recipientSearch, 300);
   const {
@@ -251,20 +255,19 @@ export default function AdminPremiumCodesPage() {
       <AppSidebar />
       <SidebarInset className="min-w-0">
         <SiteHeader />
-        <main className="flex min-w-0 flex-1 flex-col gap-6 p-4 md:p-6">
+        <main className="mx-auto flex w-full min-w-0 max-w-[1328px] flex-1 flex-col gap-6 p-4 sm:p-6">
           <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl space-y-2">
               <div>
                 <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Premium codes</h1>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  Track redemption capacity, review every usage record, and deliver codes without
-                  losing context.
+                  Review redemption limits, expiration dates, and usage history.
                 </p>
               </div>
             </div>
             <Button
               variant="outline"
-              className="w-full sm:w-auto"
+              className="h-11 w-full sm:h-10 sm:w-auto"
               onClick={() => refetch()}
               disabled={isLoading || isFetching}
             >
@@ -272,6 +275,7 @@ export default function AdminPremiumCodesPage() {
               Refresh
             </Button>
           </header>
+          <PremiumCodeNavigation active="usage" />
 
           {(isLoading || typeof roleFromStorage === "undefined") && <PageSkeleton />}
 
@@ -298,20 +302,45 @@ export default function AdminPremiumCodesPage() {
           )}
 
           {!isLoading && !isError && isAdmin && (
-            <Card className="min-w-0 overflow-hidden py-0">
-              <CardHeader className="border-b bg-muted/20 px-5 py-5 md:px-6">
-                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <CardTitle>Code inventory</CardTitle>
-                    <CardDescription className="mt-1">
-                      {pagination?.total ?? 0} codes · newest first
-                    </CardDescription>
+            <Card className="min-w-0 gap-0 overflow-hidden py-0 shadow-none">
+              <div className="space-y-3 border-b p-4 sm:p-5">
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <div className="relative min-w-0 flex-1">
+                    <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      aria-label="Search codes on this page"
+                      placeholder="Search codes on this page"
+                      value={codeSearch}
+                      maxLength={100}
+                      onChange={(event) => setCodeSearch(event.target.value)}
+                      className="h-11 pl-9 sm:h-10"
+                    />
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Select a code to inspect its ledger
-                  </p>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger
+                      aria-label="Filter code status on this page"
+                      className="h-11 w-full sm:h-10 sm:w-48"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All statuses</SelectItem>
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Expired">Expired</SelectItem>
+                      <SelectItem value="Fully redeemed">Fully redeemed</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              </CardHeader>
+                <div className="flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
+                  <span>
+                    <span className="font-medium text-foreground">{pagination?.total ?? 0}</span>{" "}
+                    codes · newest first
+                  </span>
+                  <span role="status" aria-live="polite">
+                    {visibleCodes.length} of {codes.length} codes on this page
+                  </span>
+                </div>
+              </div>
               <CardContent className="p-0">
                 {codes.length === 0 ? (
                   <div className="flex min-h-56 flex-col items-center justify-center gap-2 px-6 text-center">
@@ -325,114 +354,40 @@ export default function AdminPremiumCodesPage() {
                   </div>
                 ) : (
                   <>
-                    <div className="space-y-3 p-4 xl:hidden">
-                      {codes.map((code) => (
+                    <div className="hidden grid-cols-[minmax(0,1fr)_140px_140px_120px_44px] gap-5 border-b bg-muted/20 px-5 py-3 text-xs text-muted-foreground lg:grid">
+                      <span>Code</span>
+                      <span>Redemptions</span>
+                      <span>Expiration</span>
+                      <span>Redeemers</span>
+                      <span className="sr-only">Details</span>
+                    </div>
+                    {visibleCodes.length === 0 ? (
+                      <div className="space-y-2 px-5 py-10 text-center">
+                        <p className="text-sm font-medium">No matching codes on this page</p>
+                        <p className="text-sm text-muted-foreground">
+                          Try another search or status, or browse the next page.
+                        </p>
+                        <Button
+                          variant="outline"
+                          className="mt-2 h-11"
+                          onClick={() => {
+                            setCodeSearch("");
+                            setStatusFilter("all");
+                          }}
+                        >
+                          Clear filters
+                        </Button>
+                      </div>
+                    ) : (
+                      visibleCodes.map((code) => (
                         <PremiumCodeMobileCard
                           key={code.id}
                           code={code}
                           usedBy={getUsedByLabels(code, userLabelById)}
                           onOpen={() => openDetailDialog(code)}
                         />
-                      ))}
-                    </div>
-
-                    <div className="hidden xl:block">
-                      <Table className="min-w-[920px]">
-                        <TableHeader>
-                          <TableRow className="hover:bg-transparent">
-                            <TableHead className="w-[270px] pl-5 md:pl-6">Code</TableHead>
-                            <TableHead className="w-[220px]">Capacity</TableHead>
-                            <TableHead>Validity</TableHead>
-                            <TableHead>Redeemers</TableHead>
-                            <TableHead>Last updated</TableHead>
-                            <TableHead className="w-12 pr-5 md:pr-6">
-                              <span className="sr-only">Open details</span>
-                            </TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {codes.map((code) => {
-                            const usedBy = getUsedByLabels(code, userLabelById);
-                            const status = getCodeStatus(code);
-                            const copyDisabled =
-                              status.label === "Expired" || status.label === "Fully redeemed";
-
-                            return (
-                              <TableRow key={code.id} className="group">
-                                <TableCell className="py-4 pl-5 md:pl-6">
-                                  <div className="flex items-start gap-2">
-                                    <div className="min-w-0 space-y-2">
-                                      <button
-                                        type="button"
-                                        className="block max-w-[210px] truncate rounded text-left font-mono text-xs font-semibold tracking-wide outline-none transition-colors hover:text-primary-ink focus-visible:ring-2 focus-visible:ring-ring"
-                                        onClick={() => openDetailDialog(code)}
-                                        title={code.secret_code}
-                                      >
-                                        {code.secret_code}
-                                      </button>
-                                      <StatusBadge tone={status.tone} className="text-[11px]">
-                                        {status.label}
-                                      </StatusBadge>
-                                    </div>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="size-7 shrink-0 opacity-60 group-hover:opacity-100"
-                                      disabled={copyDisabled}
-                                      onClick={() => void copyText(code.secret_code)}
-                                      title={copyDisabled ? status.label : "Copy premium code"}
-                                    >
-                                      {copyDisabled ? (
-                                        <IconClipboardOff className="size-3.5" />
-                                      ) : (
-                                        <IconCopy className="size-3.5" />
-                                      )}
-                                      <span className="sr-only">Copy premium code</span>
-                                    </Button>
-                                  </div>
-                                </TableCell>
-                                <TableCell className="py-4">
-                                  <CapacityMeter code={code} compact />
-                                </TableCell>
-                                <TableCell className="py-4">
-                                  <div className="space-y-1">
-                                    <p className="text-sm">
-                                      {formatDate(code.valid_until, code.is_lifetime)}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {getValidityLabel(code.valid_until, code.is_lifetime)}
-                                    </p>
-                                  </div>
-                                </TableCell>
-                                <TableCell className="py-4">
-                                  <RedeemerPreview labels={usedBy} />
-                                </TableCell>
-                                <TableCell className="py-4">
-                                  <div className="space-y-1">
-                                    <p className="text-sm">{formatDate(code.updated_at)}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {formatTime(code.updated_at)}
-                                    </p>
-                                  </div>
-                                </TableCell>
-                                <TableCell className="py-4 pr-5 text-right md:pr-6">
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="size-8"
-                                    onClick={() => openDetailDialog(code)}
-                                    title="Open code details"
-                                  >
-                                    <IconChevronRight className="size-4" />
-                                    <span className="sr-only">Open code details</span>
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
-                    </div>
+                      ))
+                    )}
                   </>
                 )}
 
@@ -444,18 +399,18 @@ export default function AdminPremiumCodesPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 min-[420px]:flex-none"
+                      className="h-11 flex-1 min-[420px]:flex-none sm:h-10"
                       onClick={() => setPage((previous) => Math.max(1, previous - 1))}
-                      disabled={!hasPrevious}
+                      disabled={!hasPrevious || isFetching}
                     >
                       Previous
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 min-[420px]:flex-none"
+                      className="h-11 flex-1 min-[420px]:flex-none sm:h-10"
                       onClick={() => setPage((previous) => Math.min(totalPages, previous + 1))}
-                      disabled={!hasNext}
+                      disabled={!hasNext || isFetching}
                     >
                       Next
                     </Button>
@@ -468,13 +423,13 @@ export default function AdminPremiumCodesPage() {
       </SidebarInset>
 
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="flex max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-none flex-col gap-0 overflow-hidden rounded-lg border p-0 sm:w-full sm:max-w-3xl">
+        <DialogContent className="flex max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-none flex-col gap-0 overflow-hidden rounded-xl border p-0 sm:w-full sm:max-w-3xl">
           {activeCode && (
             <>
               <DialogHeader className="shrink-0 border-b px-4 pb-4 pt-5 pr-12 text-left sm:px-5 sm:pb-5 sm:pt-6 md:px-6 md:pr-14">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
-                    <DialogTitle>Premium code ledger</DialogTitle>
+                    <DialogTitle>Code details</DialogTitle>
                     <DialogDescription className="mt-1">
                       Review capacity and redemption history before sharing this code.
                     </DialogDescription>
@@ -484,13 +439,13 @@ export default function AdminPremiumCodesPage() {
                   </StatusBadge>
                 </div>
                 <div className="mt-1 flex items-center gap-2 rounded-lg border bg-muted/30 p-2.5">
-                  <code className="min-w-0 flex-1 truncate font-mono text-xs font-semibold tracking-wide">
+                  <code className="min-w-0 flex-1 break-all font-mono text-xs font-medium">
                     {activeCode.secret_code}
                   </code>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="size-8 shrink-0"
+                    className="size-11 shrink-0 sm:size-8"
                     disabled={activeCodeExpired || activeCodeLimitReached}
                     onClick={() => void copyText(activeCode.secret_code)}
                     title="Copy premium code"
@@ -511,16 +466,16 @@ export default function AdminPremiumCodesPage() {
                 className="min-h-0 flex-1 gap-0"
               >
                 <div className="shrink-0 border-b px-4 py-3 sm:px-5 md:px-6">
-                  <TabsList className="grid w-full grid-cols-3">
+                  <TabsList className="grid h-auto w-full grid-cols-3">
                     <TabsTrigger
                       value="overview"
-                      className="min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
+                      className="min-h-11 min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
                     >
                       Overview
                     </TabsTrigger>
                     <TabsTrigger
                       value="usage"
-                      className="min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
+                      className="min-h-11 min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
                     >
                       Usage
                       <span className="rounded-full bg-background px-1.5 py-0.5 text-[10px] tabular-nums">
@@ -529,14 +484,14 @@ export default function AdminPremiumCodesPage() {
                     </TabsTrigger>
                     <TabsTrigger
                       value="send"
-                      className="min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
+                      className="min-h-11 min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
                     >
                       Send code
                     </TabsTrigger>
                   </TabsList>
                 </div>
 
-                <ScrollArea className="min-h-0 flex-1">
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
                   <TabsContent value="overview" className="m-0 space-y-5 px-4 py-5 sm:px-5 md:px-6">
                     <CapacityMeter code={activeCode} />
 
@@ -590,7 +545,8 @@ export default function AdminPremiumCodesPage() {
                           value={usageSearch}
                           onChange={(event) => setUsageSearch(event.target.value)}
                           placeholder="Search user or email"
-                          className="pl-9"
+                          aria-label="Search redemption history"
+                          className="h-11 pl-9"
                         />
                       </div>
                     </div>
@@ -734,10 +690,10 @@ export default function AdminPremiumCodesPage() {
                       </>
                     )}
                   </TabsContent>
-                </ScrollArea>
+                </div>
               </Tabs>
 
-              <DialogFooter className="shrink-0 border-t bg-muted/20 px-4 py-4 sm:px-5 md:px-6 [&_button]:w-full sm:[&_button]:w-auto">
+              <DialogFooter className="shrink-0 border-t bg-muted/20 px-4 py-4 sm:px-5 md:px-6 [&_button]:h-11 [&_button]:w-full sm:[&_button]:w-auto">
                 {detailTab !== "send" && (
                   <Button
                     variant="outline"
@@ -920,28 +876,25 @@ function PremiumCodeMobileCard({
   const copyDisabled = status.label === "Expired" || status.label === "Fully redeemed";
 
   return (
-    <article className="min-w-0 space-y-4 rounded-lg border p-4">
-      <div className="flex min-w-0 items-start justify-between gap-3">
-        <div className="min-w-0 space-y-2">
+    <article className="grid min-w-0 grid-cols-[minmax(0,1fr)_44px] gap-4 border-b p-4 last:border-b-0 lg:grid-cols-[minmax(0,1fr)_140px_140px_120px_44px] lg:items-center lg:gap-5 lg:px-5">
+      <div className="min-w-0 space-y-2">
+        <div className="flex min-w-0 items-center gap-1">
           <button
             type="button"
-            className="block max-w-full truncate rounded text-left font-mono text-xs font-semibold tracking-wide outline-none transition-colors hover:text-primary-ink focus-visible:ring-2 focus-visible:ring-ring"
+            className="min-h-11 min-w-0 flex-1 rounded text-left font-mono text-xs font-medium outline-none hover:text-primary-ink focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label={`View details for code ${code.secret_code}`}
             onClick={onOpen}
             title={code.secret_code}
           >
-            {code.secret_code}
+            <span className="block break-all">{code.secret_code}</span>
           </button>
-          <StatusBadge tone={status.tone} className="text-[11px]">
-            {status.label}
-          </StatusBadge>
-        </div>
-        <div className="flex shrink-0 items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
-            className="size-8"
+            className="size-11 shrink-0 lg:size-8"
             disabled={copyDisabled}
             onClick={() => void copyText(code.secret_code)}
+            aria-label="Copy premium code"
             title={copyDisabled ? status.label : "Copy premium code"}
           >
             {copyDisabled ? (
@@ -949,44 +902,41 @@ function PremiumCodeMobileCard({
             ) : (
               <IconCopy className="size-4" />
             )}
-            <span className="sr-only">Copy premium code</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8"
-            onClick={onOpen}
-            title="Open code details"
-          >
-            <IconChevronRight className="size-4" />
-            <span className="sr-only">Open code details</span>
           </Button>
         </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
+          <span className="text-xs text-muted-foreground">
+            Updated {formatDate(code.updated_at)}
+          </span>
+        </div>
       </div>
-
-      <CapacityMeter code={code} compact />
-
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t pt-3">
+      <div className="col-span-2 min-w-0 lg:col-span-1">
+        <p className="mb-2 text-xs text-muted-foreground lg:hidden">Redemptions</p>
+        <CapacityMeter code={code} compact />
+      </div>
+      <div className="col-span-2 grid min-w-0 grid-cols-2 gap-4 lg:contents">
         <div className="min-w-0">
-          <dt className="text-[11px] text-muted-foreground">Validity</dt>
-          <dd className="truncate text-sm font-medium">
-            {formatDate(code.valid_until, code.is_lifetime)}
-          </dd>
-          <dd className="truncate text-xs text-muted-foreground">
+          <p className="mb-1 text-xs text-muted-foreground lg:hidden">Expiration</p>
+          <p className="text-sm">{formatDate(code.valid_until, code.is_lifetime)}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
             {getValidityLabel(code.valid_until, code.is_lifetime)}
-          </dd>
+          </p>
         </div>
         <div className="min-w-0">
-          <dt className="text-[11px] text-muted-foreground">Last updated</dt>
-          <dd className="truncate text-sm font-medium">{formatDate(code.updated_at)}</dd>
-          <dd className="truncate text-xs text-muted-foreground">{formatTime(code.updated_at)}</dd>
+          <p className="mb-1 text-xs text-muted-foreground lg:hidden">Redeemers</p>
+          <RedeemerPreview labels={usedBy} />
         </div>
-      </dl>
-
-      <div className="min-w-0 border-t pt-3">
-        <p className="mb-1.5 text-[11px] text-muted-foreground">Redeemers</p>
-        <RedeemerPreview labels={usedBy} />
       </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="col-start-2 row-start-1 size-11 lg:col-start-auto lg:row-start-auto"
+        onClick={onOpen}
+        aria-label={`Open details for code ${code.secret_code}`}
+      >
+        <IconChevronRight className="size-4" />
+      </Button>
     </article>
   );
 }
@@ -997,13 +947,11 @@ function CapacityMeter({ code, compact = false }: { code: AdminPremiumCode; comp
   const percentage = unlimited ? 0 : Math.min(100, Math.round((code.usage_count / limit) * 100));
 
   return (
-    <div className={compact ? "w-full space-y-2" : "rounded-xl border bg-muted/20 p-4 md:p-5"}>
+    <div className={compact ? "w-full space-y-2" : "space-y-3 border-b pb-5"}>
       <div className="flex items-end justify-between gap-3">
         <div>
           {!compact && (
-            <p className="mb-1 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              Redemption capacity
-            </p>
+            <p className="mb-1 text-sm font-medium text-muted-foreground">Redemption capacity</p>
           )}
           <p className={compact ? "text-sm font-medium" : "text-2xl font-semibold"}>
             {code.usage_count}
@@ -1080,7 +1028,7 @@ function Metric({
   detail: string;
 }) {
   return (
-    <div className="flex gap-3 rounded-lg border p-4">
+    <div className="flex min-w-0 gap-3 border-b py-3">
       <div className="grid size-9 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground [&_svg]:size-4">
         {icon}
       </div>
@@ -1107,7 +1055,9 @@ function UsageRow({
   const displayName = label.split(" (")[0] || label;
 
   return (
-    <div className={`flex items-center gap-3 px-3 py-3 ${showBorder ? "border-b" : ""}`}>
+    <div
+      className={`grid grid-cols-[36px_minmax(0,1fr)] items-start gap-3 px-3 py-3 sm:grid-cols-[36px_minmax(0,1fr)_auto] ${showBorder ? "border-b" : ""}`}
+    >
       <div className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary-ink">
         {getInitials(displayName)}
       </div>
@@ -1117,7 +1067,7 @@ function UsageRow({
         </p>
         <p className="truncate font-mono text-[10px] text-muted-foreground">{usage.user_id}</p>
       </div>
-      <div className="shrink-0 text-right">
+      <div className="col-start-2 shrink-0 sm:col-start-auto sm:text-right">
         <p className="text-xs">{formatDate(usage.created_at)}</p>
         <p className="text-[11px] text-muted-foreground">{formatTime(usage.created_at)}</p>
       </div>
@@ -1141,7 +1091,7 @@ function UsageEmptyState() {
 
 function PageSkeleton() {
   return (
-    <Card className="min-w-0 overflow-hidden py-0">
+    <Card className="min-w-0 gap-0 overflow-hidden py-0 shadow-none">
       <CardHeader className="border-b px-4 py-5 sm:px-6">
         <Skeleton className="h-5 w-36" />
         <Skeleton className="h-4 w-52" />

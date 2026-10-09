@@ -3,14 +3,10 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { StatusBadge } from "@/components/ui/status-badge";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { IconCrown, IconUserQuestion, IconCamera, IconEye } from "@tabler/icons-react";
 import { useState, useEffect, Suspense, useRef } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useSearchParams } from "next/navigation";
 import {
   hasActivePremiumAccess,
@@ -21,14 +17,11 @@ import {
 } from "@/lib/api/auth";
 import { useProfileQuery, useUpdateProfileMutation } from "@/lib/hooks/queries/useProfileQuery";
 import { toast } from "sonner";
-import { BadgeCheckIcon, Loader2 } from "lucide-react";
+import { Loader2, UserRound, Shield, Laptop, Bell } from "lucide-react";
+import { ProfileOverview } from "@/components/profile/profile-overview";
 import { ProfileGeneralTab } from "@/components/profile/tab/general";
 import ProfileSecurityTab from "@/components/profile/tab/security";
-import { Item, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
-import { TooltipTrigger } from "@radix-ui/react-tooltip";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import SessionTab from "@/components/profile/tab/session";
 import {
   Dialog,
@@ -39,6 +32,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { QueryError } from "@/components/query-error";
 import Image from "next/image";
 import ProfileNotificationsTab from "@/components/profile/tab/notifications";
 
@@ -48,25 +42,20 @@ import ProfileNotificationsTab from "@/components/profile/tab/notifications";
  */
 function ProfilePageContent() {
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "general");
-  const [isRedeemOpen, setIsRedeemOpen] = useState(false);
-  const [secretCode, setSecretCode] = useState("");
+  const isMobile = useIsMobile();
+  const [activeTab, setActiveTab] = useState(() => {
+    const requested = searchParams.get("tab");
+    return requested && ["general", "security", "session", "notifications"].includes(requested)
+      ? requested
+      : "general";
+  });
+  const [redeemOpenOverride, setIsRedeemOpen] = useState<boolean | null>(null);
+  const [secretCode, setSecretCode] = useState(() => searchParams.get("redeem_code")?.trim() || "");
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isViewPhotoOpen, setIsViewPhotoOpen] = useState(false);
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [hasAppliedRedeemCodeParam, setHasAppliedRedeemCodeParam] = useState(false);
-  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
-  const openPopover = () => {
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-    setIsPopoverOpen(true);
-  };
-
-  const closePopoverWithDelay = () => {
-    hoverTimeoutRef.current = setTimeout(() => setIsPopoverOpen(false), 150);
-  };
   const { data: profileResponse, isLoading: isProfileLoading, refetch } = useProfileQuery();
   const updateProfileMutation = useUpdateProfileMutation();
   const refreshProfile = () => {
@@ -77,6 +66,8 @@ function ProfilePageContent() {
   const user = profile?.user;
   const userAuth = profile?.auth;
   const premiumAccessActive = hasActivePremiumAccess(user?.premium_access);
+  const isRedeemOpen =
+    redeemOpenOverride ?? (!!searchParams.get("redeem_code")?.trim() && !premiumAccessActive);
 
   useEffect(() => {
     if (user) {
@@ -84,29 +75,12 @@ function ProfilePageContent() {
     }
   }, [user]);
 
-  useEffect(() => {
-    if (!user || hasAppliedRedeemCodeParam || premiumAccessActive) {
-      return;
-    }
-
-    const redeemCodeParam = searchParams.get("redeem_code");
-    const normalizedRedeemCode = redeemCodeParam?.trim();
-    if (!normalizedRedeemCode) {
-      setHasAppliedRedeemCodeParam(true);
-      return;
-    }
-
-    setSecretCode(normalizedRedeemCode);
-    setIsRedeemOpen(true);
-    setHasAppliedRedeemCodeParam(true);
-  }, [hasAppliedRedeemCodeParam, premiumAccessActive, searchParams, user]);
-
   const handleSaveName = async (firstName: string, lastName: string) => {
     if (!user) return;
 
     const payload: UpdateProfileRequest = {};
-    if (firstName && firstName !== user.first_name) payload.first_name = firstName;
-    if (lastName && lastName !== user.last_name) payload.last_name = lastName;
+    if (firstName !== user.first_name) payload.first_name = firstName;
+    if (lastName !== user.last_name) payload.last_name = lastName;
 
     if (Object.keys(payload).length === 0) return;
 
@@ -193,10 +167,6 @@ function ProfilePageContent() {
     }
   };
 
-  const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-  };
-
   const normalizeAvatarURL = (rawURL?: string) => {
     if (!rawURL) return "";
 
@@ -225,77 +195,7 @@ function ProfilePageContent() {
 
   const avatarURL = normalizeAvatarURL(user?.avatar);
 
-  if (isProfileLoading && !user) {
-    return (
-      <SidebarProvider
-        style={
-          {
-            "--sidebar-width": "calc(var(--spacing) * 72)",
-            "--header-height": "calc(var(--spacing) * 12)",
-          } as React.CSSProperties
-        }
-      >
-        <AppSidebar />
-        <SidebarInset>
-          <SiteHeader />
-          <div className="flex flex-1 flex-col">
-            <div className="@container/main flex flex-1 flex-col gap-2">
-              <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
-                {/* Header Skeleton */}
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-2">
-                      <Skeleton className="h-9 w-32" />
-                      <Skeleton className="h-5 w-64" />
-                    </div>
-                    <Skeleton className="h-10 w-32" />
-                  </div>
-                </div>
-
-                {/* Profile Card Skeleton */}
-                <div className="grid gap-6 md:grid-cols-1">
-                  <Card className="md:col-span-1 mx-auto w-full max-w-md">
-                    <CardHeader className="text-center">
-                      <div className="flex justify-center mb-4">
-                        <Skeleton className="size-32 rounded-full" />
-                      </div>
-                      <Skeleton className="h-8 w-48 mx-auto mb-2" />
-                      <Skeleton className="h-5 w-32 mx-auto" />
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <Separator />
-                      <Skeleton className="h-12 w-full" />
-                      <Skeleton className="h-12 w-full" />
-                      <Skeleton className="h-12 w-full" />
-                    </CardContent>
-                  </Card>
-
-                  {/* Tabs Skeleton */}
-                  <div className="md:col-span-2">
-                    <div className="space-y-4">
-                      <Skeleton className="h-10 w-full max-w-md" />
-                      <Card>
-                        <CardHeader>
-                          <Skeleton className="h-7 w-40" />
-                          <Skeleton className="h-5 w-64" />
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <Skeleton className="h-20 w-full" />
-                          <Skeleton className="h-20 w-full" />
-                          <Skeleton className="h-20 w-full" />
-                          <Skeleton className="h-20 w-full" />
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
-    );
-  }
+  if (isProfileLoading && !user) return <ProfilePageSkeleton />;
 
   if (!user) {
     return (
@@ -308,15 +208,13 @@ function ProfilePageContent() {
         }
       >
         <AppSidebar />
-        <SidebarInset>
+        <SidebarInset className="min-w-0">
           <SiteHeader />
-          <div className="flex h-full items-center justify-center">
-            <Card className="w-full max-w-md">
-              <CardHeader>
-                <CardTitle>No Profile Data</CardTitle>
-                <CardDescription>Please log in to view your profile</CardDescription>
-              </CardHeader>
-            </Card>
+          <div className="mx-auto w-full max-w-xl p-6">
+            <QueryError
+              message="Your profile could not be loaded."
+              onRetry={() => void refetch()}
+            />
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -333,11 +231,11 @@ function ProfilePageContent() {
       }
     >
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <SiteHeader />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
+            <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-6 px-4 py-6 sm:px-6">
               {/* Profile Header */}
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
@@ -350,280 +248,150 @@ function ProfilePageContent() {
                 </div>
               </div>
 
-              {/* Profile Content */}
-              <div className="grid gap-6 md:grid-cols-1">
-                {/* Center Column - Profile Card */}
-                <Card className="md:col-span-1 mx-auto w-full max-w-md">
-                  <CardHeader className="text-center">
-                    <div className="flex flex-col items-center gap-3 mb-2">
-                      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-                        <PopoverTrigger asChild>
-                          <div
-                            className="relative cursor-pointer rounded-full transition-all duration-300 ease-out hover:scale-105 ring-2 ring-border hover:ring-4 hover:ring-primary/40 hover:shadow-xl hover:shadow-primary/20"
-                            onMouseEnter={openPopover}
-                            onMouseLeave={closePopoverWithDelay}
-                          >
-                            <Avatar className="size-32">
-                              <AvatarImage
-                                src={avatarURL}
-                                alt={`${user.first_name} ${user.last_name}`}
-                              />
-                              <AvatarFallback className="text-2xl">
-                                {getInitials(user.first_name, user.last_name)}
-                              </AvatarFallback>
-                            </Avatar>
+              {/* Account overview and settings */}
+              <div className="flex min-w-0 flex-col gap-6">
+                <ProfileOverview
+                  user={user}
+                  avatarURL={avatarURL}
+                  verified={!!userAuth?.is_email_verified}
+                  premium={premiumAccessActive}
+                  uploading={isUploadingAvatar}
+                  joined={formatDate(user.created_at)}
+                  onUpload={handleAvatarUploadClick}
+                  onViewPhoto={() => setIsViewPhotoOpen(true)}
+                  onRedeem={() => setIsRedeemOpen(true)}
+                />
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="hidden"
+                  aria-label="Upload profile photo"
+                  onChange={handleAvatarSelected}
+                />
+                <Dialog open={isViewPhotoOpen} onOpenChange={setIsViewPhotoOpen}>
+                  <DialogContent className="sm:max-w-2xl p-0 overflow-hidden rounded-2xl border-0 shadow-2xl">
+                    <DialogHeader className="sr-only">
+                      <DialogTitle>Profile Photo</DialogTitle>
+                      <DialogDescription>Full-size profile photo preview</DialogDescription>
+                    </DialogHeader>
+                    {avatarURL ? (
+                      <div className="relative">
+                        <Image
+                          src={avatarURL}
+                          alt={`${user.first_name} ${user.last_name}`}
+                          className="w-full h-auto object-cover max-h-[70vh]"
+                          width={500}
+                          height={500}
+                          unoptimized
+                        />
+                        {/* Name caption at bottom */}
+                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-4 py-3">
+                          <p className="text-white font-semibold text-sm">
+                            {user.first_name} {user.last_name}
+                          </p>
+                          <p className="text-white/70 text-xs">@{user.username}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
+                        No photo uploaded
+                      </div>
+                    )}
+                  </DialogContent>
+                </Dialog>
 
-                            {isUploadingAvatar && (
-                              <div className="absolute inset-0 rounded-full backdrop-blur-[2px] bg-black/50 flex flex-col items-center justify-center text-white">
-                                <Loader2 className="size-6 animate-spin" />
-                                <span className="text-[11px] font-semibold tracking-wide">
-                                  Uploading…
-                                </span>
-                              </div>
-                            )}
-
-                            <input
-                              ref={avatarInputRef}
-                              type="file"
-                              accept="image/jpeg,image/png,image/webp,image/gif"
-                              className="hidden"
-                              onChange={handleAvatarSelected}
-                            />
-                          </div>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          className="w-auto min-w-[140px] p-1"
-                          side="right"
-                          align="center"
-                          sideOffset={12}
-                          onMouseEnter={openPopover}
-                          onMouseLeave={closePopoverWithDelay}
-                        >
-                          <div className="flex flex-col gap-0.5">
-                            {avatarURL && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setIsViewPhotoOpen(true);
-                                  setIsPopoverOpen(false);
-                                }}
-                                className="flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors duration-150 w-full text-left"
-                                aria-label="View profile photo"
-                              >
-                                <IconEye className="size-4" />
-                                <span>View Photo</span>
-                              </button>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                handleAvatarUploadClick();
-                                setIsPopoverOpen(false);
-                              }}
-                              className="flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors duration-150 w-full text-left"
-                              aria-label={
-                                user.avatar ? "Change profile photo" : "Upload profile photo"
-                              }
-                            >
-                              <IconCamera className="size-4" />
-                              <span>{user.avatar ? "Change Photo" : "Upload Photo"}</span>
-                            </button>
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-
-                      {/* View Photo Dialog */}
-                      <Dialog open={isViewPhotoOpen} onOpenChange={setIsViewPhotoOpen}>
-                        <DialogContent className="sm:max-w-2xl p-0 overflow-hidden rounded-2xl border-0 shadow-2xl">
-                          <DialogHeader className="sr-only">
-                            <DialogTitle>Profile Photo</DialogTitle>
-                            <DialogDescription>Full-size profile photo preview</DialogDescription>
-                          </DialogHeader>
-                          {avatarURL ? (
-                            <div className="relative">
-                              <Image
-                                src={avatarURL}
-                                alt={`${user.first_name} ${user.last_name}`}
-                                className="w-full h-auto object-cover max-h-[70vh]"
-                                width={500}
-                                height={500}
-                                unoptimized
-                              />
-                              {/* Name caption at bottom */}
-                              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-4 py-3">
-                                <p className="text-white font-semibold text-sm">
-                                  {user.first_name} {user.last_name}
-                                </p>
-                                <p className="text-white/70 text-xs">@{user.username}</p>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
-                              No photo uploaded
-                            </div>
-                          )}
-                        </DialogContent>
-                      </Dialog>
+                <Dialog open={isRedeemOpen} onOpenChange={setIsRedeemOpen}>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Redeem Premium Code</DialogTitle>
+                      <DialogDescription>
+                        Enter your secret code to upgrade this account to premium.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-2">
+                      <label htmlFor="premium-code" className="text-sm font-medium">
+                        Premium code
+                      </label>
+                      <Input
+                        id="premium-code"
+                        autoComplete="off"
+                        placeholder="Enter secret code"
+                        value={secretCode}
+                        onChange={(e) => setSecretCode(e.target.value)}
+                        disabled={isRedeeming}
+                      />
                     </div>
-                    <CardTitle className="text-2xl">
-                      {user.first_name} {user.last_name}
-                    </CardTitle>
-                    <CardDescription className="flex items-center justify-center gap-1">
-                      @{user.username}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Separator />
-                    <Item variant={"outline"} size={"sm"}>
-                      {userAuth?.is_email_verified ? (
-                        <ItemContent>
-                          <ItemTitle className="text-sm text-muted-foreground">
-                            Your Profile is Verified
-                          </ItemTitle>
-                        </ItemContent>
-                      ) : (
-                        <ItemContent>
-                          <ItemTitle className="text-sm text-muted-foreground">
-                            Your Profile is Not Verified
-                          </ItemTitle>
-                        </ItemContent>
-                      )}
-                      {userAuth?.is_email_verified ? (
-                        <ItemMedia>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="inline-flex">
-                                <BadgeCheckIcon className="size-5 text-green-600" />
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              Verified Email Address. Enjoy access to all features.
-                            </TooltipContent>
-                          </Tooltip>
-                        </ItemMedia>
-                      ) : (
-                        <ItemMedia>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="inline-flex">
-                                <IconUserQuestion className="size-5" />
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>Unverified Email Address</TooltipContent>
-                          </Tooltip>
-                        </ItemMedia>
-                      )}
-                    </Item>
-
-                    <Item variant={"outline"} size={"sm"}>
-                      <ItemContent>
-                        <ItemTitle className="text-sm text-muted-foreground">
-                          Account Tier
-                        </ItemTitle>
-                      </ItemContent>
-                      {premiumAccessActive ? (
-                        <StatusBadge tone="success" withIcon={false} className="gap-1">
-                          <IconCrown className="size-3" />
-                          Premium
-                        </StatusBadge>
-                      ) : (
-                        <Dialog open={isRedeemOpen} onOpenChange={setIsRedeemOpen}>
-                          <StatusBadge
-                            tone="neutral"
-                            withIcon={false}
-                            className="cursor-pointer transition-colors hover:bg-secondary/80"
-                            onClick={() => setIsRedeemOpen(true)}
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault();
-                                setIsRedeemOpen(true);
-                              }
-                            }}
-                          >
-                            Free
-                          </StatusBadge>
-                          <DialogContent className="sm:max-w-md">
-                            <DialogHeader>
-                              <DialogTitle>Redeem Premium Code</DialogTitle>
-                              <DialogDescription>
-                                Enter your secret code to upgrade this account to premium.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="space-y-2">
-                              <Input
-                                placeholder="Enter secret code"
-                                value={secretCode}
-                                onChange={(e) => setSecretCode(e.target.value)}
-                                disabled={isRedeeming}
-                              />
-                            </div>
-                            <DialogFooter>
-                              <Button
-                                variant="outline"
-                                onClick={() => setIsRedeemOpen(false)}
-                                disabled={isRedeeming}
-                              >
-                                Cancel
-                              </Button>
-                              <Button onClick={handleRedeemPremium} disabled={isRedeeming}>
-                                {isRedeeming ? (
-                                  <>
-                                    <Loader2 className="mr-2 size-4 animate-spin" />
-                                    Redeeming...
-                                  </>
-                                ) : (
-                                  "Redeem"
-                                )}
-                              </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                      )}
-                    </Item>
-                    <Item variant={"outline"} size={"sm"}>
-                      <ItemContent>
-                        <ItemTitle className="text-sm text-muted-foreground">
-                          Member Since
-                        </ItemTitle>
-                      </ItemContent>
-                      <span className="text-sm font-medium">{formatDate(user.created_at)}</span>
-                    </Item>
-                  </CardContent>
-                </Card>
-
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsRedeemOpen(false)}
+                        disabled={isRedeeming}
+                      >
+                        Cancel
+                      </Button>
+                      <Button onClick={handleRedeemPremium} disabled={isRedeeming}>
+                        {isRedeeming ? (
+                          <>
+                            <Loader2 className="mr-2 size-4 animate-spin" />
+                            Redeeming...
+                          </>
+                        ) : (
+                          "Redeem"
+                        )}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
                 {/* Right Column - Details & Settings */}
-                <div className="md:col-span-2">
+                <div className="min-w-0">
                   <Tabs
-                    defaultValue={activeTab}
+                    value={activeTab}
+                    orientation={isMobile ? "horizontal" : "vertical"}
                     onValueChange={(value) => setActiveTab(value)}
-                    className="space-y-4"
+                    className="grid min-w-0 items-start gap-6 md:grid-cols-[176px_minmax(0,1fr)] md:gap-8 [&_[data-slot=card]]:rounded-none [&_[data-slot=card]]:border-0 [&_[data-slot=card]]:bg-transparent [&_[data-slot=card]]:py-0 [&_[data-slot=card]]:shadow-none [&_[data-slot=card-header]]:px-0 [&_[data-slot=card-content]]:px-0"
                   >
-                    <TabsList className="grid h-auto w-full grid-cols-2 sm:h-9 sm:w-fit sm:grid-cols-4">
-                      <TabsTrigger value="general">General</TabsTrigger>
-                      <TabsTrigger value="security">Security</TabsTrigger>
-                      <TabsTrigger value="session">Sessions</TabsTrigger>
-                      <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                    <TabsList
+                      aria-label="Profile settings"
+                      className="grid h-auto w-full grid-cols-2 gap-1 rounded-none border-b bg-transparent p-0 pb-4 md:sticky md:top-6 md:flex md:flex-col md:items-stretch md:border-0 md:pb-0 [&>[data-slot=tabs-trigger]]:h-11 [&>[data-slot=tabs-trigger]]:justify-start [&>[data-slot=tabs-trigger]]:gap-2.5 [&>[data-slot=tabs-trigger]]:px-3 [&>[data-slot=tabs-trigger]]:shadow-none [&>[data-state=active]]:bg-primary/10 [&>[data-state=active]]:text-primary-ink dark:[&>[data-state=active]]:bg-primary/10"
+                    >
+                      <TabsTrigger value="general" className="min-h-11 md:flex-none">
+                        <UserRound aria-hidden="true" className="size-4" />
+                        General
+                      </TabsTrigger>
+                      <TabsTrigger value="security" className="min-h-11 md:flex-none">
+                        <Shield aria-hidden="true" className="size-4" />
+                        Security
+                      </TabsTrigger>
+                      <TabsTrigger value="session" className="min-h-11 md:flex-none">
+                        <Laptop aria-hidden="true" className="size-4" />
+                        Sessions
+                      </TabsTrigger>
+                      <TabsTrigger value="notifications" className="min-h-11 md:flex-none">
+                        <Bell aria-hidden="true" className="size-4" />
+                        Notifications
+                      </TabsTrigger>
                     </TabsList>
 
-                    {/* General Tab */}
-                    <ProfileGeneralTab
-                      user={user}
-                      formatDate={formatDate}
-                      onSaveName={handleSaveName}
-                      onEmailChanged={refreshProfile}
-                      onUsernameChanged={refreshProfile}
-                    />
+                    <div className="min-w-0">
+                      {/* General Tab */}
+                      <ProfileGeneralTab
+                        key={`${user.id}:${user.first_name}:${user.last_name}`}
+                        user={user}
+                        onSaveName={handleSaveName}
+                        onEmailChanged={refreshProfile}
+                        onUsernameChanged={refreshProfile}
+                      />
 
-                    {/* Security Tab */}
-                    <ProfileSecurityTab />
+                      {/* Security Tab */}
+                      <ProfileSecurityTab />
 
-                    {/* Sessions Tab */}
-                    <SessionTab />
+                      {/* Sessions Tab */}
+                      <SessionTab />
 
-                    {/* Notifications Tab */}
-                    <ProfileNotificationsTab />
+                      {/* Notifications Tab */}
+                      <ProfileNotificationsTab />
+                    </div>
                   </Tabs>
                 </div>
               </div>
@@ -663,29 +431,31 @@ function ProfilePageSkeleton() {
       }
     >
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <SiteHeader />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-2">
-                    <Skeleton className="h-9 w-32" />
-                    <Skeleton className="h-5 w-64" />
-                  </div>
-                  <Skeleton className="h-10 w-32" />
-                </div>
-              </div>
-              <div className="grid gap-6 md:grid-cols-1">
-                <Card className="md:col-span-1 mx-auto w-full max-w-md">
-                  <CardHeader className="items-center text-center">
-                    <Skeleton className="size-24 rounded-full" />
-                    <Skeleton className="h-6 w-32 mt-4" />
-                    <Skeleton className="h-4 w-48" />
-                  </CardHeader>
-                </Card>
-              </div>
+        <div
+          role="status"
+          aria-label="Loading profile"
+          className="mx-auto w-full max-w-[1120px] space-y-6 px-4 py-6 sm:px-6"
+        >
+          <div className="space-y-2">
+            <Skeleton className="h-9 w-32" />
+            <Skeleton className="h-5 w-full max-w-sm" />
+          </div>
+          <div className="flex items-center gap-4 border-b pb-6">
+            <Skeleton className="size-16 shrink-0 rounded-full" />
+            <div className="w-full space-y-3">
+              <Skeleton className="h-6 w-2/3" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+          </div>
+          <div className="grid gap-6 md:grid-cols-[176px_minmax(0,1fr)]">
+            <Skeleton className="h-40 w-full" />
+            <div className="space-y-6">
+              <Skeleton className="h-6 w-1/2" />
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-11 w-full" />
+              <Skeleton className="h-40 w-full" />
             </div>
           </div>
         </div>

@@ -1,35 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { TabsContent } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import {
-  IconUser,
-  IconMail,
-  IconCalendar,
-  IconShield,
-  IconPencil,
-  IconCheck,
-  IconX,
-  IconAt,
-} from "@tabler/icons-react";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import ChangeEmailModal from "../modal/changeEmail";
 import ChangeUsernameModal from "../modal/changeUsername";
 import type { AuthProfileData } from "@/lib/api/auth";
 
 export function ProfileGeneralTab({
   user,
-  formatDate,
   onEmailChanged,
   onUsernameChanged,
   onSaveName,
 }: {
   user: AuthProfileData["user"];
-  formatDate: (dateString: string) => string;
   onEmailChanged?: () => void;
   onUsernameChanged?: () => void;
   onSaveName?: (firstName: string, lastName: string) => Promise<void>;
@@ -40,145 +30,147 @@ export function ProfileGeneralTab({
   const [isChangeUsernameOpen, setIsChangeUsernameOpen] = useState(false);
   const [isChangeEmailOpen, setIsChangeEmailOpen] = useState(false);
 
-  useEffect(() => {
-    setFirstName(user?.first_name || "");
-    setLastName(user?.last_name || "");
-  }, [user?.first_name, user?.last_name]);
-
-  const hasNameChanged = firstName !== user?.first_name || lastName !== user?.last_name;
+  const hasNameChanged =
+    firstName.trim() !== user?.first_name || lastName.trim() !== user?.last_name;
 
   const handleSaveName = async () => {
     if (!hasNameChanged || !onSaveName) return;
     setIsSavingNames(true);
     try {
       await onSaveName(firstName.trim(), lastName.trim());
+    } catch (error) {
+      toast.error("Profile could not be saved", {
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
     } finally {
       setIsSavingNames(false);
     }
   };
 
   return (
-    <TabsContent value="general" className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Personal Information</CardTitle>
-            <CardDescription>Update your personal details and contact information</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+    <TabsContent value="general" className="min-w-0">
+      <Card className="min-w-0 gap-5 shadow-none">
+        <CardHeader>
+          <CardTitle className="text-lg">Personal information</CardTitle>
+          <CardDescription>
+            Manage how your name and contact details appear on your account.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="min-w-0 space-y-6">
+          <form
+            className="space-y-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void handleSaveName();
+            }}
+          >
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="first_name" className="flex items-center gap-1.5">
-                  <IconUser className="size-3.5 text-muted-foreground" />
-                  First Name
-                </Label>
+                <Label htmlFor="first_name">First name</Label>
                 <Input
                   id="first_name"
+                  name="first_name"
+                  autoComplete="given-name"
+                  disabled={isSavingNames}
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="last_name" className="flex items-center gap-1.5">
-                  <IconUser className="size-3.5 text-muted-foreground" />
-                  Last Name
-                </Label>
+                <Label htmlFor="last_name">Last name</Label>
                 <Input
                   id="last_name"
+                  name="last_name"
+                  autoComplete="family-name"
+                  disabled={isSavingNames}
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                 />
               </div>
             </div>
-
-            <Separator />
-
-            <div className="space-y-2">
-              <Label className="flex items-center gap-1.5">
-                <IconAt className="size-3.5 text-muted-foreground" />
-                Username
-              </Label>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p aria-live="polite" className="text-xs text-muted-foreground">
+                {hasNameChanged ? "You have unsaved changes." : "Your profile is up to date."}
+              </p>
               <div className="flex items-center gap-2">
-                <Input value={user.username} disabled readOnly className="flex-1" />
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="shrink-0"
-                  onClick={() => setIsChangeUsernameOpen(true)}
-                >
-                  <IconPencil className="size-4" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="flex items-center gap-1.5">
-                <IconMail className="size-3.5 text-muted-foreground" />
-                Email Address
-              </Label>
-              <div className="flex items-center gap-2">
-                <Input value={user.email} disabled readOnly className="flex-1" />
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="shrink-0"
-                  onClick={() => setIsChangeEmailOpen(true)}
-                >
-                  <IconPencil className="size-4" />
-                </Button>
-              </div>
-            </div>
-
-            {hasNameChanged && (
-              <>
-                <Separator />
-                <div className="flex items-center justify-end gap-2">
+                {hasNameChanged && (
                   <Button
-                    variant="outline"
-                    size="sm"
+                    type="button"
+                    variant="ghost"
+                    disabled={isSavingNames}
                     onClick={() => {
-                      setFirstName(user?.first_name || "");
-                      setLastName(user?.last_name || "");
+                      setFirstName(user.first_name || "");
+                      setLastName(user.last_name || "");
                     }}
                   >
-                    <IconX className="mr-1.5 size-4" />
                     Cancel
                   </Button>
-                  <Button size="sm" onClick={handleSaveName} disabled={isSavingNames}>
-                    <IconCheck className="mr-1.5 size-4" />
-                    {isSavingNames ? "Saving..." : "Save Changes"}
-                  </Button>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Account Information</CardTitle>
-            <CardDescription>View your account status and details</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 rounded-lg border px-4 py-3">
-                <IconCalendar className="size-5 shrink-0 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">Joined</p>
-                  <p className="text-xs text-muted-foreground">{formatDate(user.created_at)}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 rounded-lg border px-4 py-3">
-                <IconShield className="size-5 shrink-0 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">Account ID</p>
-                  <p className="text-xs text-muted-foreground font-mono">{user.id}</p>
-                </div>
+                )}
+                <Button type="submit" disabled={!hasNameChanged || isSavingNames}>
+                  {isSavingNames && <Loader2 className="size-4 animate-spin" />}
+                  {isSavingNames ? "Saving…" : "Save changes"}
+                </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </form>
+          <Separator />
+          <section aria-labelledby="profile-contact-heading" className="space-y-4">
+            <div>
+              <h3 id="profile-contact-heading" className="text-sm font-semibold">
+                Sign-in details
+              </h3>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Manage the username and email you use for your account.
+              </p>
+            </div>
+            <dl className="divide-y">
+              <div className="flex min-w-0 items-center justify-between gap-3 py-3">
+                <div className="min-w-0 space-y-1">
+                  <dt className="text-xs text-muted-foreground">Username</dt>
+                  <dd className="text-sm font-medium [overflow-wrap:anywhere]">@{user.username}</dd>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  aria-label="Change username"
+                  onClick={() => setIsChangeUsernameOpen(true)}
+                >
+                  Change
+                </Button>
+              </div>
+              <div className="flex min-w-0 items-center justify-between gap-3 py-3">
+                <div className="min-w-0 space-y-1">
+                  <dt className="text-xs text-muted-foreground">Email address</dt>
+                  <dd className="text-sm font-medium [overflow-wrap:anywhere]">{user.email}</dd>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  aria-label="Change email address"
+                  onClick={() => setIsChangeEmailOpen(true)}
+                >
+                  Change
+                </Button>
+              </div>
+            </dl>
+          </section>
+          <section aria-labelledby="profile-account-heading" className="border-t pt-5">
+            <h3 id="profile-account-heading" className="mb-3 text-sm font-semibold">
+              Account information
+            </h3>
+            <dl className="text-sm">
+              <div className="min-w-0 space-y-1">
+                <dt className="text-xs text-muted-foreground">Account ID</dt>
+                <dd className="font-mono text-xs leading-5 text-muted-foreground [overflow-wrap:anywhere]">
+                  {user.id}
+                </dd>
+              </div>
+            </dl>
+          </section>
+        </CardContent>
+      </Card>
 
       <ChangeUsernameModal
         currentUsername={user.username}

@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import {
-  IconArrowRight,
   IconCalendar,
   IconClock,
   IconCopy,
@@ -14,6 +13,7 @@ import {
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 
+import { PremiumCodeNavigation } from "@/components/premium-code-navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
@@ -150,17 +150,18 @@ export default function AdminGeneratePremiumCodesPage() {
       <AppSidebar />
       <SidebarInset className="min-w-0">
         <SiteHeader />
-        <main className="flex min-w-0 flex-1 flex-col gap-6 p-4 md:p-6">
+        <main className="mx-auto flex w-full min-w-0 max-w-[1328px] flex-1 flex-col gap-6 p-4 sm:p-6">
           <header className="max-w-2xl space-y-2">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
                 Generate premium codes
               </h1>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Define one entitlement policy, then issue a single code or a controlled batch.
+                Create a single code or a batch with shared expiration and redemption limits.
               </p>
             </div>
           </header>
+          <PremiumCodeNavigation active="generate" />
 
           {typeof roleFromStorage === "undefined" ? (
             <GeneratePageSkeleton />
@@ -175,204 +176,135 @@ export default function AdminGeneratePremiumCodesPage() {
             </Card>
           ) : (
             <>
-              <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-                <Card className="overflow-hidden py-0">
-                  <CardHeader className="border-b bg-muted/20 px-5 py-5 md:px-6">
-                    <CardTitle>Issuance rules</CardTitle>
-                    <CardDescription>
-                      Every generated code in this run shares these rules.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-7 px-5 py-6 md:px-6">
-                    <div className="space-y-3">
-                      <Label>Generation mode</Label>
-                      <Tabs
-                        value={mode}
-                        onValueChange={(value) => setMode(value as GenerationMode)}
+              <div className="grid min-w-0 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_340px]">
+                <div className="min-w-0 space-y-7">
+                  <section className="space-y-3" aria-labelledby="generation-mode-title">
+                    <h2 id="generation-mode-title" className="text-base font-semibold">
+                      Generation mode
+                    </h2>
+                    <Tabs value={mode} onValueChange={(value) => setMode(value as GenerationMode)}>
+                      <TabsList
+                        aria-label="Generation mode"
+                        className="grid h-auto w-full grid-cols-2 items-stretch p-1"
                       >
-                        <TabsList className="grid h-auto w-full grid-cols-2 items-stretch p-1">
-                          <TabsTrigger
-                            value="single"
-                            className="h-auto min-w-0 whitespace-normal justify-start px-2 py-3 sm:px-3"
-                          >
-                            <IconKey />
-                            <span className="min-w-0 text-left">
-                              <span className="block">Single code</span>
-                              <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
-                                Issue one code now
-                              </span>
-                            </span>
-                          </TabsTrigger>
-                          <TabsTrigger
-                            value="batch"
-                            className="h-auto min-w-0 whitespace-normal justify-start px-2 py-3 sm:px-3"
-                          >
-                            <IconPackages />
-                            <span className="min-w-0 text-left">
-                              <span className="block">Batch</span>
-                              <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
-                                Up to 100 codes
-                              </span>
-                            </span>
-                          </TabsTrigger>
-                        </TabsList>
-                      </Tabs>
-                    </div>
-
-                    <section className="overflow-hidden rounded-xl border bg-muted/10">
-                      <div className="flex flex-col gap-4 border-b px-4 py-4 sm:flex-row sm:items-center sm:justify-between md:px-5">
-                        <div>
-                          <Label className="text-sm">Code validity</Label>
-                          <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                            Choose how long these codes can be redeemed.
-                          </p>
-                        </div>
-                        <div className="flex shrink-0 items-center justify-between gap-3 rounded-lg border bg-background px-3 py-2 sm:justify-start">
-                          <Label
-                            htmlFor="is_lifetime"
-                            className="cursor-pointer text-xs font-medium"
-                          >
-                            No expiry
-                          </Label>
-                          <Switch
-                            id="is_lifetime"
-                            checked={isLifetime}
-                            onCheckedChange={setIsLifetime}
-                          />
-                        </div>
+                        <TabsTrigger
+                          value="single"
+                          className="min-h-12 min-w-0 whitespace-normal px-3 py-3"
+                        >
+                          <IconKey />
+                          Single code
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="batch"
+                          className="min-h-12 min-w-0 whitespace-normal px-3 py-3"
+                        >
+                          <IconPackages />
+                          Batch of codes
+                        </TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                    <p className="text-sm text-muted-foreground">
+                      {isBatch
+                        ? "Create up to 100 unique codes with the same rules."
+                        : "Create one code with the rules below."}
+                    </p>
+                  </section>
+                  {isBatch && (
+                    <section className="grid gap-3 border-t pt-6 sm:grid-cols-[minmax(0,1fr)_180px] sm:items-center">
+                      <div>
+                        <Label htmlFor="amount">Number of codes</Label>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Between 1 and {MAX_BATCH_SIZE} codes.
+                        </p>
                       </div>
-
-                      {isLifetime ? (
-                        <div className="flex items-start gap-3 px-4 py-5 md:px-5">
-                          <div className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary-ink">
-                            <IconSparkles className="size-4" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">These codes never expire</p>
-                            <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                              Redemption remains available until the codes are disabled or fully
-                              used.
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="space-y-5 px-4 py-5 md:px-5">
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between gap-3">
-                              <Label htmlFor="premium-code-expiry" className="text-xs">
-                                Custom date and time
-                              </Label>
-                              <span className="text-xs text-muted-foreground">Local timezone</span>
-                            </div>
-                            <DateTimePicker24hForm
-                              id="premium-code-expiry"
-                              ariaLabel="Premium code expiration"
-                              value={validUntilDate}
-                              onChange={handleCustomExpiryChange}
-                              disablePast
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label className="text-xs">Quick select</Label>
-                            <div
-                              className="grid grid-cols-2 gap-2 sm:grid-cols-5"
-                              role="group"
-                              aria-label="Expiration presets"
-                            >
-                              {EXPIRY_PRESETS.map(({ days, label }) => {
-                                const isSelected = selectedExpiryPreset === days;
-                                return (
-                                  <Button
-                                    key={days}
-                                    type="button"
-                                    variant={isSelected ? "default" : "outline"}
-                                    className="h-auto min-h-14 flex-col gap-0.5 rounded-lg px-2 py-2.5 last:col-span-2 sm:last:col-span-1"
-                                    aria-pressed={isSelected}
-                                    onClick={() => handleExpiryPresetChange(days)}
-                                  >
-                                    <span>{label}</span>
-                                    <span
-                                      className={
-                                        isSelected
-                                          ? "text-[10px] font-normal text-primary-foreground/75"
-                                          : "text-[10px] font-normal text-muted-foreground"
-                                      }
-                                    >
-                                      {days} days
-                                    </span>
-                                  </Button>
-                                );
-                              })}
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
-                            <IconClock className="size-3.5 shrink-0" />
-                            <span>{expirySummary}</span>
-                          </div>
-                        </div>
-                      )}
+                      <CounterInput
+                        id="amount"
+                        value={amount}
+                        onChange={setAmount}
+                        min={1}
+                        max={MAX_BATCH_SIZE}
+                        className="h-11"
+                      />
                     </section>
-
-                    <div className="rounded-xl border bg-muted/20 p-4">
-                      <div className="grid gap-4 sm:grid-cols-[1fr_220px] sm:items-center">
-                        <div>
-                          <Label htmlFor="limit_usage">Redemptions per code</Label>
-                          <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                            Maximum successful activations allowed for each code.
-                          </p>
-                        </div>
-                        <CounterInput
-                          id="limit_usage"
-                          value={limitUsage}
-                          onChange={setLimitUsage}
-                          min={1}
-                          max={100_000}
+                  )}
+                  <section className="space-y-4 border-t pt-6" aria-labelledby="validity-title">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <h2 id="validity-title" className="text-base font-semibold">
+                          Expiration
+                        </h2>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Choose the deadline for redeeming a code.
+                        </p>
+                      </div>
+                      <div className="flex min-h-11 items-center gap-3">
+                        <Label htmlFor="is_lifetime" className="cursor-pointer">
+                          No expiry
+                        </Label>
+                        <Switch
+                          id="is_lifetime"
+                          checked={isLifetime}
+                          onCheckedChange={setIsLifetime}
                         />
                       </div>
                     </div>
-
-                    {isBatch && (
-                      <div className="rounded-xl border bg-muted/20 p-4">
-                        <div className="grid gap-4 sm:grid-cols-[1fr_220px] sm:items-center">
-                          <div>
-                            <Label htmlFor="amount">Number of codes</Label>
-                            <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                              Each code is unique and follows the same expiry and redemption limit.
-                            </p>
-                          </div>
-                          <CounterInput
-                            id="amount"
-                            value={amount}
-                            onChange={setAmount}
-                            min={1}
-                            max={MAX_BATCH_SIZE}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex flex-col gap-3 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
-                      <p className="text-xs text-muted-foreground">
-                        Codes are shown once generated. Store them securely.
+                    {isLifetime ? (
+                      <p className="rounded-lg bg-muted/40 p-4 text-sm text-muted-foreground">
+                        These codes have no expiration date. The redemption limit still applies.
                       </p>
-                      <Button
-                        className="w-full sm:w-auto"
-                        onClick={handleGenerate}
-                        disabled={isSubmitting}
-                      >
-                        <IconSparkles />
-                        {isSubmitting
-                          ? "Generating..."
-                          : isBatch
-                            ? `Generate ${amount} codes`
-                            : "Generate code"}
-                      </Button>
+                    ) : (
+                      <>
+                        <div
+                          role="group"
+                          aria-label="Expiration presets"
+                          className="flex flex-wrap gap-2"
+                        >
+                          {EXPIRY_PRESETS.map(({ days, label }) => (
+                            <Button
+                              key={days}
+                              type="button"
+                              variant={selectedExpiryPreset === days ? "secondary" : "outline"}
+                              className="min-h-11 px-3"
+                              aria-pressed={selectedExpiryPreset === days}
+                              onClick={() => handleExpiryPresetChange(days)}
+                            >
+                              {label}
+                            </Button>
+                          ))}
+                        </div>
+                        <div className="space-y-2 [&_button[aria-haspopup=dialog]]:min-h-11">
+                          <Label htmlFor="premium-code-expiry">Date and time</Label>
+                          <DateTimePicker24hForm
+                            id="premium-code-expiry"
+                            ariaLabel="Premium code expiration"
+                            value={validUntilDate}
+                            onChange={handleCustomExpiryChange}
+                            disablePast
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Local timezone · {expirySummary}
+                          </p>
+                        </div>
+                      </>
+                    )}
+                  </section>
+                  <section className="grid gap-3 border-t pt-6 sm:grid-cols-[minmax(0,1fr)_180px] sm:items-center">
+                    <div>
+                      <Label htmlFor="limit_usage">Redemptions per code</Label>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Maximum successful activations for each code.
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
-
+                    <CounterInput
+                      id="limit_usage"
+                      value={limitUsage}
+                      onChange={setLimitUsage}
+                      min={1}
+                      max={100_000}
+                      className="h-11"
+                    />
+                  </section>
+                </div>
                 <IssuanceManifest
                   codeCount={codeCount}
                   limitUsage={limitUsage}
@@ -381,10 +313,24 @@ export default function AdminGeneratePremiumCodesPage() {
                   expirySummary={expirySummary}
                   mode={mode}
                   isLifetime={isLifetime}
+                  actions={
+                    <Button
+                      className="h-11 w-full"
+                      onClick={handleGenerate}
+                      disabled={isSubmitting}
+                    >
+                      <IconSparkles />
+                      {isSubmitting
+                        ? "Generating…"
+                        : isBatch
+                          ? `Generate ${amount} codes`
+                          : "Generate code"}
+                    </Button>
+                  }
                 />
               </div>
 
-              <Card className="overflow-hidden py-0">
+              <Card className="overflow-hidden py-0 shadow-none">
                 <CardHeader className="border-b bg-muted/20 px-5 py-5 md:px-6">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
@@ -422,13 +368,13 @@ export default function AdminGeneratePremiumCodesPage() {
                 </CardHeader>
                 <CardContent className="p-0">
                   {generatedCount === 0 ? (
-                    <div className="flex min-h-60 flex-col items-center justify-center px-6 text-center">
+                    <div className="flex min-h-32 flex-col items-center justify-center px-6 text-center">
                       <div className="grid size-11 place-items-center rounded-full bg-muted">
                         <IconKey className="size-5 text-muted-foreground" />
                       </div>
                       <p className="mt-3 text-sm font-medium">No codes issued in this session</p>
                       <p className="mt-1 max-w-sm text-xs leading-5 text-muted-foreground">
-                        Configure the issuance rules above, then generate your first code or batch.
+                        Generated codes will appear here, ready to copy.
                       </p>
                     </div>
                   ) : generatedCount > 5 ? (
@@ -463,6 +409,7 @@ function IssuanceManifest({
   expirySummary,
   mode,
   isLifetime,
+  actions,
 }: {
   codeCount: number;
   limitUsage: number;
@@ -471,14 +418,15 @@ function IssuanceManifest({
   expirySummary: string;
   mode: GenerationMode;
   isLifetime: boolean;
+  actions: ReactNode;
 }) {
   return (
-    <Card className="overflow-hidden border-l-4 border-l-primary py-0 xl:sticky xl:top-6">
+    <Card className="min-w-0 gap-0 overflow-hidden py-0 shadow-none lg:sticky lg:top-6">
       <CardHeader className="border-b px-5 py-5">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <CardTitle className="text-base">Issuance manifest</CardTitle>
-            <CardDescription className="mt-1">Live summary before generation</CardDescription>
+            <CardTitle className="text-base">Generation summary</CardTitle>
+            <CardDescription className="mt-1">Review before creating codes</CardDescription>
           </div>
           <StatusBadge tone="info">{mode === "batch" ? "Batch" : "Single"}</StatusBadge>
         </div>
@@ -504,9 +452,11 @@ function IssuanceManifest({
           detail={isLifetime ? "Lifetime access" : expirySummary}
         />
       </CardContent>
-      <div className="flex items-center gap-2 border-t bg-muted/20 px-5 py-4 text-xs text-muted-foreground">
-        <IconArrowRight className="size-3.5" />
-        Review the manifest, then generate.
+      <div className="space-y-3 border-t p-5">
+        {actions}
+        <p className="text-xs leading-5 text-muted-foreground">
+          Generated codes appear below and in Usage.
+        </p>
       </div>
     </Card>
   );
@@ -550,7 +500,7 @@ function GeneratedCodeList({ codes }: { codes: AdminPremiumCode[] }) {
           </div>
           <div className="min-w-0">
             <code
-              className="block truncate font-mono text-xs font-semibold tracking-wide"
+              className="block break-all font-mono text-sm font-medium"
               title={code.secret_code}
             >
               {code.secret_code}
@@ -569,7 +519,7 @@ function GeneratedCodeList({ codes }: { codes: AdminPremiumCode[] }) {
           <Button
             variant="outline"
             size="sm"
-            className="w-full sm:w-auto"
+            className="h-11 w-full sm:w-auto"
             onClick={() => copyText(code.secret_code)}
           >
             <IconCopy />
