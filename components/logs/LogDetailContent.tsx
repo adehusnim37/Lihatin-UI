@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { format } from "date-fns";
 import { ChevronDown, Copy, FileJson, WrapText } from "lucide-react";
 import { toast } from "sonner";
@@ -47,168 +47,174 @@ async function copyText(value: string, label: string) {
 }
 
 export function LogDetailContent({ log, className }: LogDetailContentProps) {
-  const [metadataOpen, setMetadataOpen] = useState(false);
-  const metadataId = useId();
   return (
     <div className={cn("min-w-0", className)}>
-      <div className="space-y-3 border-b pb-5 sm:pb-6">
-        <div className="flex flex-wrap items-center gap-2">
-          <HttpMethodBadge method={log.method} className="font-mono" />
-          <HttpStatusCodeBadge statusCode={log.status_code} className="font-mono" />
-          <span className="text-sm tabular-nums text-muted-foreground">
-            {log.response_time == null ? "Duration not recorded" : `${log.response_time} ms`}
-          </span>
-          <span className="text-sm text-muted-foreground">{valueText(log.level)}</span>
-          {log.route && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="ml-auto"
-              aria-label="Copy request route"
-              onClick={() => void copyText(log.route, "Route")}
-            >
-              <Copy className="size-4" />
-            </Button>
-          )}
-        </div>
-        <div className="flex items-start gap-2">
-          <p className="min-w-0 flex-1 font-mono text-base font-semibold leading-relaxed [overflow-wrap:anywhere] sm:text-xl">
-            {valueText(log.route)}
-          </p>
-        </div>
-        <p className="max-w-[80ch] text-sm leading-6 text-muted-foreground [overflow-wrap:anywhere]">
-          {valueText(log.message)}
-        </p>
-      </div>
-
-      <div className="grid min-w-0 gap-6 pt-5 sm:pt-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-8">
-        <div className="min-w-0">
+      <section aria-label="Request summary" className="space-y-4">
+        <div className="relative">
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="flex min-h-11 flex-wrap items-center gap-2 pr-14">
+              <HttpMethodBadge method={log.method} className="font-mono" />
+              <HttpStatusCodeBadge statusCode={log.status_code} className="font-mono" />
+              <span className="text-xs font-medium text-muted-foreground">
+                {valueText(log.level).toLowerCase()}
+              </span>
+            </div>
+            <p className="font-mono text-base font-semibold leading-6 [overflow-wrap:anywhere] sm:text-lg">
+              {valueText(log.route)}
+            </p>
+          </div>
           <Button
             variant="outline"
-            className="w-full justify-between lg:hidden"
-            aria-expanded={metadataOpen}
-            aria-controls={metadataId}
-            onClick={() => setMetadataOpen(!metadataOpen)}
+            size="icon"
+            className="absolute right-0 top-0"
+            aria-label="Copy request route"
+            disabled={!log.route}
+            onClick={() => void copyText(log.route, "Route")}
           >
-            Event & client details
-            <ChevronDown
-              className={cn("size-4 transition-transform", metadataOpen && "rotate-180")}
-            />
+            <Copy className="size-4" />
           </Button>
-          <aside
-            id={metadataId}
-            className={cn(
-              "min-w-0 space-y-6 lg:block",
-              metadataOpen ? "mt-5 block lg:mt-0" : "hidden",
-            )}
-          >
+        </div>
+        <dl className="grid grid-cols-2 gap-x-5 gap-y-3 border-y py-3 sm:grid-cols-4">
+          <Summary label="Response time" mono>
+            {log.response_time == null ? "Not recorded" : `${log.response_time} ms`}
+          </Summary>
+          <Summary label="Action">{valueText(log.action)}</Summary>
+          <Summary label="User">{valueText(log.username)}</Summary>
+          <Summary label="IP address" mono>
+            {valueText(log.ip_address)}
+          </Summary>
+        </dl>
+      </section>
+      <Tabs defaultValue="response" className="mt-4 min-w-0 gap-4">
+        <TabsList
+          aria-label="Log information"
+          className="grid h-auto w-full grid-cols-5 rounded-none border-b bg-transparent p-0"
+        >
+          {[
+            ["response", "Response"],
+            ["request", "Request"],
+            ["headers", "Headers"],
+            ["params", "Params"],
+            ["details", "Details"],
+          ].map(([value, label]) => (
+            <TabsTrigger
+              key={value}
+              value={value}
+              className="min-h-11 min-w-0 rounded-none border-0 border-b-2 border-transparent px-1 text-xs shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary-ink data-[state=active]:shadow-none sm:text-sm"
+            >
+              {label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        <TabsContent value="response" className="min-w-0">
+          <PayloadViewer
+            title="Response body"
+            value={log.response_body}
+            emptyText="No response body was recorded for this request."
+          />
+        </TabsContent>
+        <TabsContent value="request" className="min-w-0">
+          <PayloadViewer
+            title="Request body"
+            value={log.request_body}
+            emptyText="No request body was recorded. Requests such as GET often have no body."
+          />
+        </TabsContent>
+        <TabsContent value="headers" className="min-w-0">
+          <PayloadViewer
+            title="Request headers"
+            value={log.request_headers}
+            emptyText="No request headers were recorded."
+          />
+        </TabsContent>
+        <TabsContent value="params" className="min-w-0 space-y-4">
+          <PayloadViewer
+            title="Route parameters"
+            value={log.route_params}
+            emptyText="No route parameters were recorded."
+          />
+          <PayloadViewer
+            title="Query parameters"
+            value={log.query_params}
+            emptyText="No query parameters were recorded."
+          />
+        </TabsContent>
+        <TabsContent value="details" className="min-w-0 space-y-5 py-1">
+          <div className="grid gap-6 sm:grid-cols-2">
             <section aria-label="Event metadata">
-              <h3 className="mb-3 text-sm font-semibold">Event</h3>
-              <dl className="space-y-3 text-sm">
+              <h3 className="mb-4 text-sm font-semibold">Event</h3>
+              <dl className="space-y-4 text-sm">
                 <Metadata label="Recorded">{recordedAt(log.timestamp)}</Metadata>
                 <Metadata label="Action">{valueText(log.action)}</Metadata>
+                <Metadata label="Level">{valueText(log.level)}</Metadata>
+                <Metadata label="Message">{valueText(log.message)}</Metadata>
               </dl>
             </section>
-            <section aria-label="Client metadata" className="border-t pt-5">
-              <h3 className="mb-3 text-sm font-semibold">Client</h3>
-              <dl className="space-y-3 text-sm">
+            <section aria-label="Client metadata">
+              <h3 className="mb-4 text-sm font-semibold">Client</h3>
+              <dl className="space-y-4 text-sm">
                 <Metadata label="Username">{valueText(log.username)}</Metadata>
                 <Metadata label="IP address" mono>
                   {valueText(log.ip_address)}
                 </Metadata>
                 <Metadata label="Browser">{valueText(log.browser_info)}</Metadata>
               </dl>
-              <details className="group mt-4">
-                <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-2 rounded-md text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+              <details className="group mt-3">
+                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between rounded-md text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
                   User agent
-                  <ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180" />
+                  <ChevronDown className="size-4 transition-transform group-open:rotate-180" />
                 </summary>
-                <p className="mt-1 font-mono text-xs leading-6 text-muted-foreground [overflow-wrap:anywhere]">
+                <p className="font-mono text-xs leading-6 [overflow-wrap:anywhere]">
                   {valueText(log.user_agent)}
                 </p>
               </details>
             </section>
-            <section className="border-t pt-5" aria-label="Log identifier">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <h3 className="text-sm font-semibold">Log ID</h3>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Copy log ID"
-                  onClick={() => void copyText(log.id, "Log ID")}
-                >
-                  <Copy className="size-4" />
-                </Button>
-              </div>
-              <p className="font-mono text-xs leading-6 text-muted-foreground [overflow-wrap:anywhere]">
+          </div>
+          <section
+            aria-label="Log identifier"
+            className="flex items-start justify-between gap-3 border-t pt-4"
+          >
+            <div className="min-w-0">
+              <h3 className="mb-1 text-xs text-muted-foreground">Log ID</h3>
+              <p className="font-mono text-xs leading-6 [overflow-wrap:anywhere]">
                 {valueText(log.id)}
               </p>
-            </section>
-          </aside>
-        </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Copy log ID"
+              onClick={() => void copyText(log.id, "Log ID")}
+            >
+              <Copy className="size-4" />
+            </Button>
+          </section>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
 
-        <Tabs defaultValue="response" className="min-w-0 gap-4">
-          <TabsList aria-label="Log payload" className="grid h-auto w-full grid-cols-4">
-            <TabsTrigger
-              value="response"
-              className="min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
-            >
-              Response
-            </TabsTrigger>
-            <TabsTrigger
-              value="request"
-              className="min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
-            >
-              Request
-            </TabsTrigger>
-            <TabsTrigger
-              value="headers"
-              className="min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
-            >
-              Headers
-            </TabsTrigger>
-            <TabsTrigger
-              value="params"
-              className="min-w-0 whitespace-normal px-1 text-xs sm:text-sm"
-            >
-              Params
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="response" className="min-w-0">
-            <PayloadViewer
-              title="Response body"
-              value={log.response_body}
-              emptyText="No response body was recorded for this request."
-            />
-          </TabsContent>
-          <TabsContent value="request" className="min-w-0">
-            <PayloadViewer
-              title="Request body"
-              value={log.request_body}
-              emptyText="No request body was recorded. Requests such as GET often have no body."
-            />
-          </TabsContent>
-          <TabsContent value="headers" className="min-w-0">
-            <PayloadViewer
-              title="Request headers"
-              value={log.request_headers}
-              emptyText="No request headers were recorded."
-            />
-          </TabsContent>
-          <TabsContent value="params" className="min-w-0 space-y-5">
-            <PayloadViewer
-              title="Route parameters"
-              value={log.route_params}
-              emptyText="No route parameters were recorded."
-            />
-            <PayloadViewer
-              title="Query parameters"
-              value={log.query_params}
-              emptyText="No query parameters were recorded."
-            />
-          </TabsContent>
-        </Tabs>
-      </div>
+function Summary({
+  label,
+  children,
+  mono = false,
+}: {
+  label: string;
+  children: ReactNode;
+  mono?: boolean;
+}) {
+  return (
+    <div className="min-w-0 space-y-1">
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd
+        className={cn(
+          "text-sm font-medium [overflow-wrap:anywhere]",
+          mono && "font-mono tabular-nums",
+        )}
+      >
+        {children}
+      </dd>
     </div>
   );
 }
@@ -295,15 +301,29 @@ function PayloadViewer({
           role="region"
           aria-label={`${title}, code viewer`}
           tabIndex={0}
-          className="max-h-[min(56dvh,640px)] min-h-40 overflow-auto bg-muted/10 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+          className="max-h-[32dvh] min-h-40 sm:max-h-[min(420px,calc(90dvh-440px))] overflow-auto bg-muted/20 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
         >
           <pre
             className={cn(
-              "p-4 font-mono text-[13px] leading-6 tabular-nums sm:p-5",
+              "py-3 font-mono text-xs leading-6 tabular-nums sm:text-[13px]",
               wrap ? "whitespace-pre-wrap [overflow-wrap:anywhere]" : "whitespace-pre",
             )}
           >
-            <code>{isJson ? <JsonText text={serialized} /> : serialized}</code>
+            <code className="block">
+              {serialized.split("\n").map((line, index) => (
+                <span key={index} className="flex min-w-full">
+                  <span
+                    aria-hidden="true"
+                    className="sticky left-0 mr-4 w-10 shrink-0 select-none border-r bg-muted px-2 text-right text-muted-foreground"
+                  >
+                    {index + 1}
+                  </span>
+                  <span className="min-w-0 flex-1 pr-4">
+                    {isJson ? <JsonText text={line} /> : line || " "}
+                  </span>
+                </span>
+              ))}
+            </code>
           </pre>
         </div>
       )}
