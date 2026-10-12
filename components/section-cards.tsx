@@ -35,7 +35,7 @@ export function SectionCards({
 }: SectionCardsProps) {
   if (isLoading) {
     return (
-      <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-2 gap-3 sm:gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 px-4 sm:grid-cols-2 sm:gap-4 lg:px-6 @5xl/main:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
           <Card key={i} className="@container/card gap-3 py-4 sm:gap-6 sm:py-6">
             <CardHeader className="px-3 sm:px-6">
@@ -52,8 +52,8 @@ export function SectionCards({
   }
 
   return (
-    <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-2 gap-3 sm:gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-      <Card className="@container/card gap-3 py-4 sm:gap-6 sm:py-6">
+    <div className="grid grid-cols-1 gap-3 px-4 sm:grid-cols-2 sm:gap-4 lg:px-6 @5xl/main:grid-cols-4">
+      <Card className="@container/card min-w-0 gap-3 py-4 sm:gap-6 sm:py-6">
         <CardHeader className="px-3 sm:px-6">
           <h2 className="text-sm text-muted-foreground">Total Links</h2>
           <CardTitle
@@ -76,7 +76,7 @@ export function SectionCards({
           <div className="text-muted-foreground">Total short links created</div>
         </CardFooter>
       </Card>
-      <Card className="@container/card gap-3 py-4 sm:gap-6 sm:py-6">
+      <Card className="@container/card min-w-0 gap-3 py-4 sm:gap-6 sm:py-6">
         <CardHeader className="px-3 sm:px-6">
           <h2 className="text-sm text-muted-foreground">Total Clicks</h2>
           <CardTitle
@@ -102,7 +102,7 @@ export function SectionCards({
           </div>
         </CardFooter>
       </Card>
-      <Card className="@container/card gap-3 py-4 sm:gap-6 sm:py-6">
+      <Card className="@container/card min-w-0 gap-3 py-4 sm:gap-6 sm:py-6">
         <CardHeader className="px-3 sm:px-6">
           <h2 className="text-sm text-muted-foreground">Activity Logs</h2>
           <CardTitle
@@ -123,7 +123,7 @@ export function SectionCards({
           <div className="text-muted-foreground">System-wide request logs</div>
         </CardFooter>
       </Card>
-      <Card className="@container/card gap-3 py-4 sm:gap-6 sm:py-6">
+      <Card className="@container/card min-w-0 gap-3 py-4 sm:gap-6 sm:py-6">
         <CardHeader className="px-3 sm:px-6">
           <h2 className="text-sm text-muted-foreground">Recent Activity</h2>
           <CardTitle

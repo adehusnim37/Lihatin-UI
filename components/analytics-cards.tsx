@@ -55,7 +55,7 @@ export function AnalyticsCards({
   return (
     <div className={containerClass}>
       {/* Top Countries */}
-      <Card>
+      <Card className="min-w-0">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-base">
             <IconWorld className="size-4" />
@@ -88,7 +88,7 @@ export function AnalyticsCards({
       </Card>
 
       {/* Top Devices */}
-      <Card>
+      <Card className="min-w-0 @xl/main:col-span-2 @5xl/main:col-span-1">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-base">
             <IconDeviceDesktop className="size-4" />
@@ -125,7 +125,7 @@ export function AnalyticsCards({
       </Card>
 
       {/* Top Referrers */}
-      <Card>
+      <Card className="min-w-0">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-base">
             <IconExternalLink className="size-4" />

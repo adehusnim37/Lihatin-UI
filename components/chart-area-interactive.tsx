@@ -113,8 +113,8 @@ export function ChartAreaInteractive({
 
   return (
     <Card className="@container/card min-w-0 overflow-hidden">
-      <CardHeader className="min-w-0">
-        <CardTitle className="truncate">{title}</CardTitle>
+      <CardHeader className="min-w-0 gap-1">
+        <CardTitle className="truncate text-base sm:text-lg">{title}</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">{desc}</span>
           <span className="@[540px]/card:hidden">{mobileDescription}</span>
@@ -155,7 +155,7 @@ export function ChartAreaInteractive({
           </Select>
         </CardAction>
       </CardHeader>
-      <CardContent className="min-w-0 px-2 pt-4 pb-8 sm:px-6 sm:pt-6 sm:pb-6">
+      <CardContent className="min-w-0 px-2 pt-3 pb-6 sm:px-6 sm:pt-5 sm:pb-6">
         {filteredData.length === 0 ? (
           <div className="flex min-h-36 items-center justify-center px-4 text-center text-sm text-muted-foreground sm:min-h-48">
             {emptyMessage}

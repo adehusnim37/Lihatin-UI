@@ -137,12 +137,12 @@ export default function Page() {
         <AppSidebar />
         <SidebarInset>
           <SiteHeader />
-          <div className="flex flex-1 flex-col">
-            <div className="@container/main flex flex-1 flex-col gap-2">
-              <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-                <div className="px-4 lg:px-6">
-                  <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-                  <p className="mt-1 text-sm text-muted-foreground">
+          <div className="flex flex-1 flex-col bg-muted/30">
+            <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-2">
+              <div className="flex flex-col gap-5 py-5 md:gap-7 md:py-7">
+                <div className="space-y-1 px-4 lg:px-6">
+                  <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Dashboard</h1>
+                  <p className="max-w-2xl text-sm text-muted-foreground">
                     Your links, traffic, and recent activity at a glance.
                   </p>
                 </div>
@@ -203,8 +203,8 @@ export default function Page() {
 
                 {/* OPTION 3: Hybrid Layout (Table + Analytics) */}
                 {LAYOUT === "OPTION_3" && (
-                  <div className="grid grid-cols-1 gap-4 px-4 lg:px-6 @3xl/main:grid-cols-2">
-                    {/* Recent Links Table */}
+                  <div className="flex flex-col gap-5">
+                    <div className="px-4 lg:px-6">
                     {linksError ? (
                       <QueryError
                         message="Recent links could not be loaded."
@@ -218,15 +218,16 @@ export default function Page() {
                         isLoading={linksLoading}
                       />
                     )}
+                    </div>
 
-                    {/* Analytics Mini Cards - Stacked Vertically */}
+                    {/* Analytics Mini Cards */}
                     {!statsError && (
                       <AnalyticsCards
                         topCountries={dashboardStats?.top_countries ?? []}
                         topDevices={dashboardStats?.top_devices ?? []}
                         topReferrers={dashboardStats?.top_referrers ?? []}
                         isLoading={statsLoading}
-                        variant="stack"
+                        variant="grid"
                       />
                     )}
                   </div>
