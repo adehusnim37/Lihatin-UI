@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -58,6 +58,14 @@ export function UpdateClickLimitDialog({
       limit: currentLimit && currentLimit > 0 ? currentLimit : 100,
     },
   });
+
+  useEffect(() => {
+    if (open)
+      form.reset({
+        enabled: !!(currentLimit && currentLimit > 0),
+        limit: currentLimit && currentLimit > 0 ? currentLimit : 100,
+      });
+  }, [open, currentLimit, form]);
 
   const isEnabled = form.watch("enabled");
 

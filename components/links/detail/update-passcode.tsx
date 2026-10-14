@@ -67,12 +67,13 @@ export function UpdatePasscodeDialog({
 
   useEffect(() => {
     if (open) {
+      form.reset({ passcode: currentPasscode || "" });
       const timer = setTimeout(() => {
         form.setFocus("passcode");
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [open, form]);
+  }, [open, currentPasscode, form]);
 
   const onSubmit = async (data: PasscodeFormValues) => {
     setIsLoading(true);

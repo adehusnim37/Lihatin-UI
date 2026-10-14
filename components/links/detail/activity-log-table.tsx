@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { HttpMethodBadge, HttpStatusCodeBadge } from "@/components/ui/app-status-badges";
 import {
@@ -34,7 +35,11 @@ interface ActivityLogTableProps {
 export function ActivityLogTable({ code }: ActivityLogTableProps) {
   const [page, setPage] = useState(1);
   const limit = 10;
-  const { data, isLoading, error } = useShortLinkLogs(code, page, limit);
+  const { data, isLoading, error, refetch, isFetching, isPlaceholderData } = useShortLinkLogs(
+    code,
+    page,
+    limit,
+  );
 
   const logs = data?.data?.logs || [];
   const paginationData = data?.data;
@@ -47,22 +52,41 @@ export function ActivityLogTable({ code }: ActivityLogTableProps) {
     if (page > 1) setPage((p) => p - 1);
   };
 
-  if (isLoading) {
+  if (isLoading)
     return (
-      <div className="p-8 text-center text-muted-foreground animate-pulse">
-        Loading activity logs...
+      <div
+        role="status"
+        aria-label="Loading activity logs"
+        className="space-y-4 rounded-xl border p-4"
+      >
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-14 w-full" />
+        ))}
       </div>
     );
-  }
-
-  if (error) {
-    return <div className="p-8 text-center text-red-500">Failed to load logs.</div>;
-  }
+  if (error)
+    return (
+      <div
+        role="alert"
+        className="flex min-h-48 flex-col items-center justify-center gap-3 rounded-xl border p-6 text-center"
+      >
+        <p className="text-sm text-muted-foreground">Failed to load activity logs.</p>
+        <Button
+          variant="outline"
+          disabled={isFetching}
+          onClick={() => {
+            void refetch();
+          }}
+        >
+          Try again
+        </Button>
+      </div>
+    );
 
   if (logs.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 bg-muted/10 border-2 border-dashed rounded-lg">
-        <Server className="size-10 text-muted-foreground mb-4 opacity-50" />
+      <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border p-6 text-center">
+        <Server className="size-6 text-muted-foreground mb-3" />
         <h3 className="text-lg font-medium">No Activity Yet</h3>
         <p className="text-muted-foreground text-sm mt-1">
           Access logs will appear here once the link is visited.
@@ -72,9 +96,12 @@ export function ActivityLogTable({ code }: ActivityLogTableProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-md border">
-        <Table>
+    <div className="min-w-0 space-y-4" aria-busy={isFetching}>
+      <p className="text-xs text-muted-foreground md:hidden">
+        Scroll horizontally to see all request details.
+      </p>
+      <div className="rounded-xl border bg-card overflow-hidden">
+        <Table className="min-w-[680px]">
           <TableHeader>
             <TableRow>
               <TableHead className="w-[100px]">Status</TableHead>
@@ -110,7 +137,7 @@ export function ActivityLogTable({ code }: ActivityLogTableProps) {
                       {log.ip_address}
                     </span>
                     <span
-                      className="text-muted-foreground/70 truncate w-[150px]"
+                      className="text-muted-foreground truncate w-[150px]"
                       title={log.user_agent}
                     >
                       {log.browser_info || "Unknown Browser"}
@@ -131,7 +158,7 @@ export function ActivityLogTable({ code }: ActivityLogTableProps) {
       </div>
 
       {paginationData && (
-        <div className="flex items-center justify-between px-2">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs text-muted-foreground">
             Page {paginationData.page} of {paginationData.total_pages} ({paginationData.total_count}{" "}
             entries)
@@ -140,18 +167,20 @@ export function ActivityLogTable({ code }: ActivityLogTableProps) {
             <Button
               variant="outline"
               size="sm"
+              aria-label="Previous activity page"
               onClick={handlePrev}
-              disabled={page === 1}
-              className="size-8 p-0"
+              disabled={page <= 1 || isFetching || isPlaceholderData}
+              className="size-10 p-0"
             >
               <ChevronLeft className="size-4" />
             </Button>
             <Button
               variant="outline"
               size="sm"
+              aria-label="Next activity page"
               onClick={handleNext}
-              disabled={page === paginationData.total_pages}
-              className="size-8 p-0"
+              disabled={page >= paginationData.total_pages || isFetching || isPlaceholderData}
+              className="size-10 p-0"
             >
               <ChevronRight className="size-4" />
             </Button>
@@ -170,7 +199,7 @@ function LogDetailSheet({ log }: { log: ActivityLog }) {
           variant="ghost"
           size="icon"
           aria-label="View log details"
-          className="size-8 hover:bg-muted"
+          className="size-10 hover:bg-muted"
         >
           <Search className="size-4 text-muted-foreground" />
         </Button>

@@ -36,7 +36,14 @@ export function ViewsTable({ code }: ViewsTableProps) {
   const [page, setPage] = useState(1);
   const limit = 10;
   // Note: we use 'views' query key in the hook, ensure it matches the one we updated
-  const { data: viewsData, isLoading, error } = useShortLinkViews(code, page, limit);
+  const {
+    data: viewsData,
+    isLoading,
+    error,
+    refetch,
+    isFetching,
+    isPlaceholderData,
+  } = useShortLinkViews(code, page, limit);
 
   const views = viewsData?.recent_views || [];
   const meta = viewsData;
@@ -55,17 +62,29 @@ export function ViewsTable({ code }: ViewsTableProps) {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center text-red-500 bg-red-50/50 rounded-lg border border-red-100">
-        <p>Failed to load traffic data.</p>
+      <div
+        role="alert"
+        className="flex flex-col items-center justify-center gap-3 rounded-xl border p-8 text-center"
+      >
+        <p className="text-sm text-muted-foreground">Failed to load traffic data.</p>
+        <Button
+          variant="outline"
+          disabled={isFetching}
+          onClick={() => {
+            void refetch();
+          }}
+        >
+          Try again
+        </Button>
       </div>
     );
   }
 
   if (views.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-16 bg-muted/5 border border-dashed rounded-xl">
-        <div className="size-16 bg-muted/20 rounded-full flex items-center justify-center mb-4">
-          <Globe className="size-8 text-muted-foreground opacity-50" />
+      <div className="flex min-h-64 flex-col items-center justify-center gap-2 rounded-xl border p-6 text-center">
+        <div className="flex items-center justify-center mb-2">
+          <Globe className="size-6 text-muted-foreground" />
         </div>
         <h3 className="text-lg font-semibold text-foreground">No Traffic Yet</h3>
         <p className="text-muted-foreground text-sm mt-1 max-w-sm text-center">
@@ -77,16 +96,18 @@ export function ViewsTable({ code }: ViewsTableProps) {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Summary Header could go here if we had aggregated stats in this response */}
+    <div className="min-w-0 space-y-4" aria-busy={isFetching}>
+      <p className="text-xs text-muted-foreground md:hidden">
+        Scroll horizontally to see all traffic details.
+      </p>
 
-      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-        <Table>
+      <div className="rounded-xl border bg-card overflow-hidden">
+        <Table className="min-w-[640px]">
           <TableHeader className="bg-muted/30">
             <TableRow>
               <TableHead className="w-[30%] pl-6">Visitor</TableHead>
               <TableHead className="w-[25%]">Device & OS</TableHead>
-              <TableHead className="w-[25%] hidden md:table-cell">Source / Referer</TableHead>
+              <TableHead className="w-[25%]">Source / Referer</TableHead>
               <TableHead className="text-right pr-6">Time</TableHead>
             </TableRow>
           </TableHeader>
@@ -97,7 +118,7 @@ export function ViewsTable({ code }: ViewsTableProps) {
                 <TableRow key={view.id} className="hover:bg-muted/30 transition-colors">
                   <TableCell className="pl-6">
                     <div className="flex items-center gap-3">
-                      <div className="size-9 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 text-blue-600">
+                      <div className="flex items-center justify-center shrink-0 text-muted-foreground">
                         <MapPin className="size-4" />
                       </div>
                       <div className="flex flex-col min-w-0">
@@ -127,7 +148,7 @@ export function ViewsTable({ code }: ViewsTableProps) {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="hidden md:table-cell">
+                  <TableCell className="">
                     {view.referer ? (
                       <TooltipProvider>
                         <Tooltip>
@@ -177,26 +198,28 @@ export function ViewsTable({ code }: ViewsTableProps) {
 
       {/* Pagination Controls */}
       {meta && (
-        <div className="flex items-center justify-between px-2">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs text-muted-foreground">
-            Page {page} of {meta.total_pages} ({meta.total_count} entries)
+            Page {meta.page} of {meta.total_pages} ({meta.total_count} entries)
           </p>
           <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
+              aria-label="Previous traffic page"
               onClick={handlePrev}
-              disabled={page === 1}
-              className="size-8 p-0"
+              disabled={page <= 1 || isFetching || isPlaceholderData}
+              className="size-10 p-0"
             >
               <ChevronLeft className="size-4" />
             </Button>
             <Button
               variant="outline"
               size="sm"
+              aria-label="Next traffic page"
               onClick={handleNext}
-              disabled={page === meta.total_pages}
-              className="size-8 p-0"
+              disabled={page >= meta.total_pages || isFetching || isPlaceholderData}
+              className="size-10 p-0"
             >
               <ChevronRight className="size-4" />
             </Button>
@@ -209,31 +232,10 @@ export function ViewsTable({ code }: ViewsTableProps) {
 
 function ViewsTableSkeleton() {
   return (
-    <div className="space-y-4">
-      <div className="rounded-xl border bg-card/50 p-6 space-y-4">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 w-[30%]">
-              <Skeleton className="size-9 rounded-full" />
-              <div className="space-y-1.5 flex-1">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-3 w-16" />
-              </div>
-            </div>
-            <div className="w-[25%] space-y-1.5">
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-3 w-14" />
-            </div>
-            <div className="w-[25%]">
-              <Skeleton className="h-6 w-24 rounded-full" />
-            </div>
-            <div className="flex-1 flex flex-col items-end space-y-1.5">
-              <Skeleton className="h-4 w-12" />
-              <Skeleton className="h-3 w-16" />
-            </div>
-          </div>
-        ))}
-      </div>
+    <div role="status" aria-label="Loading traffic" className="space-y-4 rounded-xl border p-4">
+      {[1, 2, 3].map((i) => (
+        <Skeleton key={i} className="h-14 w-full" />
+      ))}
     </div>
   );
 }

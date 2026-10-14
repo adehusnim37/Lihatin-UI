@@ -3,82 +3,71 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import QRCode from "qrcode";
+import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Download, Loader2 } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface LinkQRCodeProps {
-  url: string;
-  title?: string;
-}
-
-export function LinkQRCode({ url, title }: LinkQRCodeProps) {
-  const [qrDataUrl, setQrDataUrl] = useState<string>("");
-  const [loading, setLoading] = useState(true);
-
+export function LinkQRCode({ url, title }: { url: string; title?: string }) {
+  const [result, setResult] = useState({ url: "", data: "", error: false });
+  const loading = result.url !== url;
+  const error = result.error;
+  const qrDataUrl = result.data;
   useEffect(() => {
-    const generateQR = async () => {
+    let cancelled = false;
+    async function generate() {
       try {
-        setLoading(true);
-        const dataUrl = await QRCode.toDataURL(url, {
-          width: 300,
+        const data = await QRCode.toDataURL(url, {
+          width: 600,
           margin: 2,
-          color: {
-            dark: "#000000",
-            light: "#ffffff",
-          },
+          color: { dark: "#000000", light: "#ffffff" },
         });
-        setQrDataUrl(dataUrl);
-      } catch (err) {
-        console.error("Failed to generate QR code", err);
-      } finally {
-        setLoading(false);
+        if (!cancelled) setResult({ url, data, error: false });
+      } catch {
+        if (!cancelled) setResult({ url, data: "", error: true });
       }
+    }
+    void generate();
+    return () => {
+      cancelled = true;
     };
-    void generateQR();
   }, [url]);
-
-  const downloadQR = () => {
+  const download = () => {
     if (!qrDataUrl) return;
-    const link = document.createElement("a");
-    link.href = qrDataUrl;
-    link.download = `qrcode-${title || "link"}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const anchor = document.createElement("a");
+    anchor.href = qrDataUrl;
+    anchor.download = `qrcode-${title || "link"}.png`;
+    anchor.click();
   };
-
   return (
-    <Card className="size-full flex flex-col">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">QR Code</CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 flex items-center justify-center p-6 bg-white/5 rounded-lg mx-6 my-2 border border-dashed border-gray-200/20">
+    <div className="space-y-4">
+      <div className="flex min-h-52 items-center justify-center py-2">
         {loading ? (
-          <Loader2 className="size-8 animate-spin text-muted-foreground" />
+          <Skeleton className="size-52 rounded-lg" aria-label="Generating QR code" />
+        ) : error ? (
+          <p role="alert" className="text-center text-sm text-muted-foreground">
+            Couldn’t generate the QR code. Close this dialog and try again.
+          </p>
         ) : (
-          qrDataUrl && (
-            <Image
-              src={qrDataUrl}
-              alt="QR Code"
-              width={200}
-              height={200}
-              unoptimized
-              className="w-full max-w-[200px] h-auto rounded-md shadow-sm bg-white p-2"
-            />
-          )
+          <Image
+            src={qrDataUrl}
+            alt={`QR code for ${title || "short link"}`}
+            width={208}
+            height={208}
+            unoptimized
+            className="rounded-lg bg-white"
+          />
         )}
-      </CardContent>
-      <CardFooter className="pt-2">
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={downloadQR}
-          disabled={loading || !qrDataUrl}
-        >
-          <Download className="mr-2 size-4" /> Download PNG
-        </Button>
-      </CardFooter>
-    </Card>
+      </div>
+      <p className="break-all text-center text-xs text-muted-foreground">{url}</p>
+      <Button
+        variant="outline"
+        className="h-10 w-full"
+        onClick={download}
+        disabled={loading || !qrDataUrl || error}
+      >
+        <Download className="size-4" />
+        Download PNG
+      </Button>
+    </div>
   );
 }

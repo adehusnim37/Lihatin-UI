@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -54,6 +54,11 @@ export function UpdateExpirationDialog({
       expires_at: currentExpiration ? new Date(currentExpiration) : undefined,
     },
   });
+
+  useEffect(() => {
+    if (open)
+      form.reset({ expires_at: currentExpiration ? new Date(currentExpiration) : undefined });
+  }, [open, currentExpiration, form]);
 
   const onSubmit = async (data: ExpirationFormValues) => {
     setIsLoading(true);
