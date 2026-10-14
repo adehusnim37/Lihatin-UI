@@ -6,11 +6,16 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
+const PAGE_SIZE_BY_VIEW = { cards: 12, list: 10 } as const;
+
 interface LinksUIState {
   // Search & Filter
   searchQuery: string;
   sortBy: string;
   orderBy: string;
+
+  view: "cards" | "list";
+  setView: (view: "cards" | "list") => void;
 
   // Pagination
   page: number;
@@ -41,17 +46,24 @@ export const useLinksUIStore = create<LinksUIState>()(
   devtools(
     (set) => ({
       // Initial state
+      view: "list",
+      setView: (view) =>
+        set((state) => {
+          const limit = PAGE_SIZE_BY_VIEW[view];
+          const firstItemIndex = (state.page - 1) * state.limit;
+          return { view, limit, page: Math.floor(firstItemIndex / limit) + 1 };
+        }),
       searchQuery: "",
       sortBy: "created_at",
       orderBy: "desc",
       page: 1,
-      limit: 8,
+      limit: PAGE_SIZE_BY_VIEW.list,
       isCreateModalOpen: false,
       isEditModalOpen: false,
       editingLinkId: null,
 
       // Actions
-      setSearchQuery: (query) => set({ searchQuery: query, page: 1 }),
+      setSearchQuery: (query) => set({ searchQuery: query }),
       setSortBy: (sort) => set({ sortBy: sort, page: 1 }),
       setOrderBy: (order) => set({ orderBy: order, page: 1 }),
       setPage: (page) => set({ page }),

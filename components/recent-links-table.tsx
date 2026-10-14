@@ -3,7 +3,6 @@
 import { IconExternalLink, IconEye, IconCopy } from "@tabler/icons-react";
 import { toast } from "sonner";
 
-import { Badge } from "@/components/ui/badge";
 import { LinkStatusBadge } from "@/components/ui/app-status-badges";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -71,77 +70,81 @@ export function RecentLinksTable({ links = [], isLoading = false }: RecentLinksT
         <CardTitle className="text-base sm:text-lg">Recent Links</CardTitle>
         <CardDescription>Your most recently created short links</CardDescription>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="@container pt-0">
         {links.length === 0 ? (
           <div className="flex min-h-32 items-center justify-center px-4 text-center text-sm text-muted-foreground">
             No links created yet
           </div>
         ) : (
-          <div className="divide-y">
+          <div className="@3xl:grid @3xl:grid-cols-[minmax(0,1fr)_max-content_max-content_max-content] @3xl:gap-x-4">
             {links.slice(0, 5).map((link) => (
               <div
                 key={link.id}
-                className="group -mx-3 flex min-w-0 flex-col gap-4 rounded-lg px-3 py-4 transition-colors hover:bg-muted/50 focus-within:bg-muted/50 first:pt-2 last:pb-2 sm:gap-3 sm:flex-row sm:items-start sm:justify-between"
+                className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-b py-3 transition-colors hover:bg-muted/30 focus-within:bg-muted/30 first:pt-0 last:border-b-0 last:pb-0 @3xl:col-span-4 @3xl:grid-cols-subgrid @3xl:gap-x-4 @3xl:gap-y-0"
               >
-                <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5">
-                      <code className="min-w-0 max-w-full break-all text-sm leading-5 font-semibold tracking-tight">
-                        {link.short_code}
-                      </code>
-                      <LinkStatusBadge
-                        isActive={link.is_active}
-                        expiresAt={link.expires_at}
-                        isBanned={link.detail?.is_banned}
-                        className="text-xs"
-                      />
-                      <Badge variant="secondary" className="text-xs">
-                        {link.click_count ?? link.detail?.current_clicks ?? 0} clicks
-                      </Badge>
-                    </div>
-                    <p className="line-clamp-2 text-sm font-medium text-foreground sm:line-clamp-1">
-                      {link.title || "Untitled"}
-                    </p>
-                    <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                      <a
-                        href={link.original_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex min-w-0 max-w-full items-center gap-1 hover:text-primary-ink"
-                        title={link.original_url}
-                      >
-                        <span className="block min-w-0 max-w-[30rem] truncate">{link.original_url}</span>
-                        <IconExternalLink className="size-3 flex-shrink-0" />
-                      </a>
-                    </div>
-                  </div>
-                  <div className="flex w-full shrink-0 items-center justify-between border-t pt-3 sm:w-auto sm:flex-col sm:items-center sm:justify-start sm:gap-1 sm:self-start sm:border-t-0 sm:pt-0">
-                    <span className="order-2 whitespace-nowrap text-xs leading-none text-muted-foreground sm:order-1 sm:mt-4 sm:text-[12px]">
-                      {formatCreatedAt(link.created_at)}
-                    </span>
-                    <div className="order-1 flex items-center gap-1 sm:order-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-10 sm:size-8"
-                        onClick={() => copyToClipboard(link.short_code)}
-                        title="Copy link"
-                        aria-label={`Copy ${link.short_code} link`}
-                      >
-                        <IconCopy className="size-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-10 sm:size-8"
-                        onClick={() => window.open(`/main/links/${link.short_code}`, "_blank")}
-                        title="View stats"
-                        aria-label={`View ${link.short_code} stats`}
-                      >
-                        <IconEye className="size-4" />
-                      </Button>
-                    </div>
-                  </div>
+                <div className="col-span-2 min-w-0 space-y-1 @3xl:col-span-1">
+                  <code
+                    className="block truncate text-sm font-semibold tracking-tight"
+                    title={link.short_code}
+                  >
+                    {link.short_code}
+                  </code>
+                  <p
+                    className="truncate text-sm font-medium text-foreground"
+                    title={link.title || "Untitled"}
+                  >
+                    {link.title || "Untitled"}
+                  </p>
+                  <a
+                    href={link.original_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex w-fit min-w-0 max-w-full items-center gap-1 text-xs text-muted-foreground hover:text-primary-ink"
+                    title={link.original_url}
+                  >
+                    <span className="truncate">{link.original_url}</span>
+                    <IconExternalLink className="size-3 shrink-0" />
+                  </a>
+                </div>
+                <div className="col-span-2 flex flex-wrap items-center gap-2 @3xl:col-span-1 @3xl:grid @3xl:grid-cols-[5rem_max-content]">
+                  <LinkStatusBadge
+                    isActive={link.is_active}
+                    expiresAt={link.expires_at}
+                    isBanned={link.detail?.is_banned}
+                    className="h-6 text-xs leading-4"
+                  />
+                  <span className="whitespace-nowrap text-xs text-muted-foreground tabular-nums">
+                    {link.click_count ?? link.detail?.current_clicks ?? 0}{" "}
+                    {(link.click_count ?? link.detail?.current_clicks ?? 0) === 1
+                      ? "click"
+                      : "clicks"}
+                  </span>
+                </div>
+                <span className="col-start-1 whitespace-nowrap text-xs text-muted-foreground tabular-nums @3xl:col-start-auto @3xl:text-right">
+                  <span className="@3xl:sr-only">Created </span>
+                  {formatCreatedAt(link.created_at)}
+                </span>
+                <div className="col-start-2 row-start-3 flex items-center justify-end gap-1 @3xl:col-start-auto @3xl:row-auto @3xl:row-span-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-10 text-muted-foreground hover:text-foreground @3xl:size-9"
+                    onClick={() => copyToClipboard(link.short_code)}
+                    title="Copy link"
+                    aria-label={`Copy ${link.short_code} link`}
+                  >
+                    <IconCopy className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-10 text-muted-foreground hover:text-foreground @3xl:size-9"
+                    onClick={() => window.open(`/main/links/${link.short_code}`, "_blank")}
+                    title="View stats"
+                    aria-label={`View ${link.short_code} stats`}
+                  >
+                    <IconEye className="size-4" />
+                  </Button>
                 </div>
               </div>
             ))}

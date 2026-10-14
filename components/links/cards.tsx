@@ -16,12 +16,10 @@ import {
   Lock,
   Calendar,
   MousePointerClick,
-  Clock,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -37,7 +35,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { LinkStatusBadge } from "@/components/ui/app-status-badges";
 import { DetailLink } from "@/lib/api/shortlinks";
@@ -65,6 +62,7 @@ export interface ShortLinkData {
 
 interface ShortLinkCardProps {
   data: ShortLinkData;
+  view?: "cards" | "list";
   baseUrl?: string;
   onEdit?: (data: ShortLinkData) => void;
   onDelete?: (id: string) => void;
@@ -72,7 +70,13 @@ interface ShortLinkCardProps {
   onToggle?: (code: string) => Promise<void>;
 }
 
-export default function ShortLinkCard({ data, baseUrl, onDelete, onToggle }: ShortLinkCardProps) {
+export default function ShortLinkCard({
+  data,
+  baseUrl,
+  onDelete,
+  onToggle,
+  view = "cards",
+}: ShortLinkCardProps) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [showActivateDialog, setShowActivateDialog] = useState(false);
@@ -114,7 +118,8 @@ export default function ShortLinkCard({ data, baseUrl, onDelete, onToggle }: Sho
     });
   };
 
-  const isExpired = data.expires_at ? new Date(data.expires_at) < new Date() : false;
+  const clicks = data.click_count ?? data.detail?.current_clicks ?? 0;
+  const isList = view === "list";
 
   const handleUpdate = async (code: string, updateData: UpdateShortLinkRequest) => {
     return updateMutation.mutateAsync({ code, data: updateData });
@@ -130,205 +135,178 @@ export default function ShortLinkCard({ data, baseUrl, onDelete, onToggle }: Sho
 
   return (
     <>
-      <Card className="flex flex-col size-full overflow-hidden hover:shadow-lg transition-all duration-300 min-h-[210px] relative group border-transparent ring-1 ring-border hover:ring-primary/20">
-        {/* Background Pattern */}
+      <article
+        className={cn(
+          "min-w-0 bg-card text-card-foreground transition-colors",
+          isList
+            ? "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 border-b px-4 py-4 last:border-b-0 hover:bg-muted/30 @3xl:col-span-5 @3xl:grid-cols-subgrid @3xl:gap-x-5"
+            : "grid h-full grid-cols-[minmax(0,1fr)_auto] grid-rows-[1fr_auto_auto] items-center gap-x-3 gap-y-4 rounded-xl border p-5 hover:border-muted-foreground/40",
+        )}
+      >
         <div
-          className="absolute inset-0 z-0 opacity-[0.03]"
-          style={{
-            backgroundImage: "radial-gradient(#000 1px, transparent 1px)",
-            backgroundSize: "20px 20px",
-          }}
-        />
-
-        {/* Decorative Stronger Blobs */}
-        <div className="absolute -top-20 -right-20 size-40 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-full blur-3xl pointer-events-none group-hover:from-primary/30 group-hover:to-purple-500/30 transition-all duration-500" />
-        <div className="absolute -bottom-20 -left-20 size-40 bg-gradient-to-tr from-blue-500/20 to-teal-500/20 rounded-full blur-3xl pointer-events-none group-hover:from-blue-500/30 group-hover:to-teal-500/30 transition-all duration-500" />
-
-        <CardHeader className="flex flex-row items-center justify-between py-3 px-4 relative z-10">
-          <Item className="w-full p-0 gap-2.5">
-            <ItemContent className="gap-0 min-w-0">
-              <ItemTitle className="w-full min-w-0">
-                <Link
-                  href={`/main/links/${data.short_code}`}
-                  className="flex min-h-11 w-full min-w-0 items-center gap-1.5 rounded-sm font-semibold transition-colors hover:text-primary-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring md:min-h-0"
-                >
-                  <span className="min-w-0 flex-1 truncate">{data.title || "Untitled"}</span>
-                  {/* Icons in Title */}
-                  {hasPasscode && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Lock className="size-3.5 text-muted-foreground shrink-0" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs">Passcode Protected</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                  {hasPasscode && <span className="sr-only">Passcode protected</span>}
-                  {isExpired && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Clock className="size-3.5 text-destructive shrink-0" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs">Link Expired</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </Link>
-              </ItemTitle>
-              <ItemDescription className="text-xs truncate">{data.short_code}</ItemDescription>
-              <LinkStatusBadge
-                className="mt-1.5 w-fit"
-                isActive={data.is_active}
-                expiresAt={data.expires_at}
-                isBanned={data.detail?.is_banned}
-              />
-            </ItemContent>
-            <ItemActions className="-me-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-11 md:size-8"
-                    aria-label={`Open menu for ${data.title || data.short_code}`}
-                  >
-                    <MoreHorizontal className="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleNavigateToAnalytics}>
-                    <BarChart3 className="mr-2 size-4" />
-                    Analytics
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleNavigateToDetail}>
-                    <Edit className="mr-2 size-4" />
-                    Edit
-                  </DropdownMenuItem>
-
-                  {/* New Menu Items */}
-                  <DropdownMenuItem onClick={() => setShowPasscodeDialog(true)}>
-                    <Lock className="mr-2 size-4" />
-                    {hasPasscode ? "Change Passcode" : "Set Passcode"}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setShowExpirationDialog(true)}>
-                    <Calendar className="mr-2 size-4" />
-                    {data.expires_at ? "Change Expiration" : "Set Expiration"}
-                  </DropdownMenuItem>
-
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => {
-                      if (data.is_active) {
-                        setShowDeactivateDialog(true);
-                      } else {
-                        setShowActivateDialog(true);
-                      }
-                    }}
-                  >
-                    <Power className="mr-2 size-4" />
-                    {data.is_active ? "Deactivate" : "Activate"}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="text-destructive"
-                    onClick={() => onDelete?.(data.id)}
-                  >
-                    <Trash2 className="mr-2 size-4" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </ItemActions>
-          </Item>
-        </CardHeader>
-
-        <CardContent className="p-0 flex flex-col flex-1 relative z-10">
-          {/* Short URL Box (Restored Grey Box) */}
-          <div className="bg-muted/50 border-y px-4 py-3 flex items-center gap-2">
-            <code className="min-w-0 flex-1 break-all text-xs font-mono">{shortUrl}</code>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-11 md:size-8 shrink-0"
-              aria-label={copied ? `Copy ${data.short_code} again` : `Copy ${data.short_code} link`}
-              onClick={copyToClipboard}
-            >
-              {copied ? (
-                <Check className="size-3.5 text-green-500" />
-              ) : (
-                <Copy className="size-3.5" />
-              )}
-            </Button>
-          </div>
-
-          {/* Content */}
-          <div className="py-3 px-4 space-y-2 flex flex-col flex-1">
-            {/* Description */}
-            {data.description && data.description.length > 60 ? (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <button
-                    type="button"
-                    aria-label={`Read full description for ${data.title || data.short_code}`}
-                    className="min-h-11 w-full rounded-sm text-left text-sm font-medium leading-relaxed text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                  >
-                    <span className="line-clamp-2">{data.description}</span>
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>{data.title || "Description"}</DialogTitle>
-                    <DialogDescription>Full description</DialogDescription>
-                  </DialogHeader>
-                  <div className="text-sm text-muted-foreground whitespace-pre-wrap">
-                    {data.description}
-                  </div>
-                </DialogContent>
-              </Dialog>
-            ) : (
-              <p className="text-xs font-medium text-muted-foreground line-clamp-2 leading-relaxed">
-                {data.description ? (
-                  data.description
-                ) : (
-                  <span className="italic">No description</span>
-                )}
-              </p>
+          className={cn(
+            "min-w-0 space-y-2",
+            isList ? "col-span-2 @3xl:col-span-1" : "col-span-2 self-start",
+          )}
+        >
+          <Link
+            href={`/main/links/${data.short_code}`}
+            className="flex min-w-0 items-center gap-2 rounded-sm text-sm font-semibold hover:text-primary-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+          >
+            <span className="truncate" title={data.title || "Untitled"}>
+              {data.title || "Untitled"}
+            </span>
+            {hasPasscode && (
+              <>
+                <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <span className="sr-only">Passcode protected</span>
+              </>
             )}
-
-            {/* Original URL */}
+          </Link>
+          <div className="min-w-0 space-y-1">
+            <code className="block truncate text-xs text-primary-ink" title={shortUrl}>
+              {shortUrl}
+            </code>
             <a
               href={data.original_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs font-medium text-muted-foreground hover:text-foreground flex w-full min-w-0 items-center gap-1.5 transition-colors"
+              className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+              title={data.original_url}
             >
+              <span className="truncate">{data.original_url}</span>
               <ExternalLink className="size-3 shrink-0" />
-              <span className="min-w-0 flex-1 truncate">{data.original_url}</span>
             </a>
-
-            {/* Metadata Row Pinned to Bottom */}
-            <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1 mt-auto">
-              <div className="flex items-center gap-1.5" title="Total Clicks">
-                <MousePointerClick className="size-3.5" />
-                <span>{data.click_count ?? data.detail?.current_clicks ?? 0} clicks</span>
-              </div>
-              <div
-                className="flex items-center gap-1.5"
-                title={`Created on ${formatDate(data.created_at)}`}
-              >
-                <Calendar className="size-3.5" />
-                <span>{formatDate(data.created_at)}</span>
-              </div>
-            </div>
           </div>
-        </CardContent>
+          {data.description && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <button
+                  className={cn(
+                    "max-w-full truncate rounded-sm text-left text-xs text-muted-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring",
+                    "block",
+                  )}
+                  aria-label={`Read full description for ${data.title || data.short_code}`}
+                >
+                  {data.description}
+                </button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>{data.title || "Description"}</DialogTitle>
+                  <DialogDescription>Full description</DialogDescription>
+                </DialogHeader>
+                <p className="whitespace-pre-wrap break-words text-sm text-muted-foreground">
+                  {data.description}
+                </p>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
+        <LinkStatusBadge
+          className="h-6 text-xs"
+          isActive={data.is_active}
+          expiresAt={data.expires_at}
+          isBanned={data.detail?.is_banned}
+        />
+        <span
+          className={cn(
+            "inline-flex items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground tabular-nums",
+            isList ? "justify-self-end @3xl:justify-self-start" : "justify-self-end",
+          )}
+        >
+          <MousePointerClick className="size-3.5" aria-hidden="true" />
+          {clicks.toLocaleString("en-US")} {clicks === 1 ? "click" : "clicks"}
+        </span>
+        <span
+          className="whitespace-nowrap text-xs text-muted-foreground tabular-nums"
+          title={`Created on ${formatDate(data.created_at)}`}
+        >
+          <span className={isList ? "@3xl:sr-only" : ""}>Created </span>
+          {formatDate(data.created_at)}
+        </span>
+        <div className={cn("flex items-center gap-1", "justify-end")}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-10 text-muted-foreground hover:text-foreground"
+            onClick={copyToClipboard}
+            title="Copy link"
+            aria-label={`Copy ${data.short_code} link`}
+          >
+            {copied ? <Check className="size-4 text-green-600" /> : <Copy className="size-4" />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-10 text-muted-foreground hover:text-foreground"
+            onClick={handleNavigateToAnalytics}
+            title="View analytics"
+            aria-label={`View analytics for ${data.short_code}`}
+          >
+            <BarChart3 className="size-4" />
+          </Button>
+          <div className="shrink-0">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-11 md:size-8"
+                  aria-label={`Open menu for ${data.title || data.short_code}`}
+                >
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleNavigateToAnalytics}>
+                  <BarChart3 className="mr-2 size-4" />
+                  Analytics
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleNavigateToDetail}>
+                  <Edit className="mr-2 size-4" />
+                  Edit
+                </DropdownMenuItem>
 
+                {/* New Menu Items */}
+                <DropdownMenuItem onClick={() => setShowPasscodeDialog(true)}>
+                  <Lock className="mr-2 size-4" />
+                  {hasPasscode ? "Change Passcode" : "Set Passcode"}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowExpirationDialog(true)}>
+                  <Calendar className="mr-2 size-4" />
+                  {data.expires_at ? "Change Expiration" : "Set Expiration"}
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (data.is_active) {
+                      setShowDeactivateDialog(true);
+                    } else {
+                      setShowActivateDialog(true);
+                    }
+                  }}
+                >
+                  <Power className="mr-2 size-4" />
+                  {data.is_active ? "Deactivate" : "Activate"}
+                </DropdownMenuItem>
+                {onDelete && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-destructive"
+                      onClick={() => onDelete(data.id)}
+                    >
+                      <Trash2 className="size-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
         {/* Dialogs */}
         {onToggle && (
           <>
@@ -360,7 +338,7 @@ export default function ShortLinkCard({ data, baseUrl, onDelete, onToggle }: Sho
           onOpenChange={setShowExpirationDialog}
           onUpdate={handleUpdate}
         />
-      </Card>
+      </article>
     </>
   );
 }
