@@ -521,18 +521,22 @@ export function SecuritySettings() {
               )}
               {task?.kind !== "rename" && (
                 <div className="space-y-3">
-                  <p className="text-sm font-medium">Confirm it&apos;s you</p>
                   {passkeys.length > 0 && supported && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full"
-                      disabled={busy || (task?.kind === "add" && !name.trim())}
-                      onClick={() => void execute(true)}
-                    >
-                      <Fingerprint className="size-4" />
-                      Verify with an existing passkey
-                    </Button>
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        Use an existing passkey to verify your identity.
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        disabled={busy || (task?.kind === "add" && !name.trim())}
+                        onClick={() => void execute(true)}
+                      >
+                        <Fingerprint className="size-4" />
+                        Verify with an existing passkey
+                      </Button>
+                    </>
                   )}
                   <div className="space-y-2">
                     <Label htmlFor="security-proof">

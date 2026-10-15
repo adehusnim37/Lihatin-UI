@@ -1146,11 +1146,11 @@ function getCodeStatus(code: AdminPremiumCode): {
   label: "Active" | "Expired" | "Fully redeemed";
   tone: StatusBadgeTone;
 } {
-  if (!code.is_lifetime && isDateInPast(code.valid_until)) {
-    return { label: "Expired", tone: "danger" };
-  }
   if (hasReachedLimit(code)) {
     return { label: "Fully redeemed", tone: "warning" };
+  }
+  if (!code.is_lifetime && isDateInPast(code.valid_until)) {
+    return { label: "Expired", tone: "danger" };
   }
   return { label: "Active", tone: "success" };
 }
