@@ -86,7 +86,7 @@ import {
 
 const PAGE_LIMIT = 10;
 const TITLE_MAX_LENGTH = 100;
-const BODY_MAX_LENGTH = 150;
+const BODY_MAX_LENGTH = 300;
 const HREF_MAX_LENGTH = 150;
 
 const EMPTY_FORM: AnnouncementDraft = {
