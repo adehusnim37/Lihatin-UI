@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { formatLoginFailureReason } from "@/lib/utils/format-login-failure-reason";
 
 interface SessionDetailProps {
   attempt: {
@@ -186,7 +187,7 @@ export function SessionDetail({ attempt }: SessionDetailProps) {
                     Failure Reason
                   </div>
                   <div className="break-words text-sm text-red-800 dark:text-red-300">
-                    {attempt.fail_reason}
+                    {formatLoginFailureReason(attempt.fail_reason)}
                   </div>
                 </div>
               )}

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useEffect, Suspense, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   hasActivePremiumAccess,
   redeemPremiumCode,
@@ -17,12 +17,11 @@ import {
 } from "@/lib/api/auth";
 import { useProfileQuery, useUpdateProfileMutation } from "@/lib/hooks/queries/useProfileQuery";
 import { toast } from "sonner";
-import { Loader2, UserRound, Shield, Laptop, Bell } from "lucide-react";
+import { Loader2, UserRound, Shield, Bell } from "lucide-react";
 import { ProfileOverview } from "@/components/profile/profile-overview";
 import { ProfileGeneralTab } from "@/components/profile/tab/general";
 import ProfileSecurityTab from "@/components/profile/tab/security";
 import { Skeleton } from "@/components/ui/skeleton";
-import SessionTab from "@/components/profile/tab/session";
 import {
   Dialog,
   DialogContent,
@@ -41,11 +40,12 @@ import ProfileNotificationsTab from "@/components/profile/tab/notifications";
  * Uses useSearchParams() so must be wrapped in Suspense
  */
 function ProfilePageContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState(() => {
     const requested = searchParams.get("tab");
-    return requested && ["general", "security", "session", "notifications"].includes(requested)
+    return requested && ["general", "security", "notifications"].includes(requested)
       ? requested
       : "general";
   });
@@ -68,6 +68,12 @@ function ProfilePageContent() {
   const premiumAccessActive = hasActivePremiumAccess(user?.premium_access);
   const isRedeemOpen =
     redeemOpenOverride ?? (!!searchParams.get("redeem_code")?.trim() && !premiumAccessActive);
+
+  useEffect(() => {
+    if (searchParams.get("tab") === "session") {
+      router.replace("/profile/sessions");
+    }
+  }, [router, searchParams]);
 
   useEffect(() => {
     if (user) {
@@ -353,7 +359,7 @@ function ProfilePageContent() {
                   >
                     <TabsList
                       aria-label="Profile settings"
-                      className="grid h-auto w-full grid-cols-2 gap-1 rounded-none border-b bg-transparent p-0 pb-4 md:sticky md:top-6 md:flex md:flex-col md:items-stretch md:border-0 md:pb-0 [&>[data-slot=tabs-trigger]]:h-11 [&>[data-slot=tabs-trigger]]:justify-start [&>[data-slot=tabs-trigger]]:gap-2.5 [&>[data-slot=tabs-trigger]]:px-3 [&>[data-slot=tabs-trigger]]:shadow-none [&>[data-state=active]]:bg-primary/10 [&>[data-state=active]]:text-primary-ink dark:[&>[data-state=active]]:bg-primary/10"
+                      className="grid h-auto w-full grid-cols-3 gap-1 rounded-none border-b bg-transparent p-0 pb-4 md:sticky md:top-6 md:flex md:flex-col md:items-stretch md:border-0 md:pb-0 [&>[data-slot=tabs-trigger]]:h-11 [&>[data-slot=tabs-trigger]]:justify-start [&>[data-slot=tabs-trigger]]:gap-2.5 [&>[data-slot=tabs-trigger]]:px-3 [&>[data-slot=tabs-trigger]]:shadow-none [&>[data-state=active]]:bg-primary/10 [&>[data-state=active]]:text-primary-ink dark:[&>[data-state=active]]:bg-primary/10"
                     >
                       <TabsTrigger value="general" className="min-h-11 md:flex-none">
                         <UserRound aria-hidden="true" className="size-4" />
@@ -362,10 +368,6 @@ function ProfilePageContent() {
                       <TabsTrigger value="security" className="min-h-11 md:flex-none">
                         <Shield aria-hidden="true" className="size-4" />
                         Security
-                      </TabsTrigger>
-                      <TabsTrigger value="session" className="min-h-11 md:flex-none">
-                        <Laptop aria-hidden="true" className="size-4" />
-                        Sessions
                       </TabsTrigger>
                       <TabsTrigger value="notifications" className="min-h-11 md:flex-none">
                         <Bell aria-hidden="true" className="size-4" />
@@ -385,9 +387,6 @@ function ProfilePageContent() {
 
                       {/* Security Tab */}
                       <ProfileSecurityTab />
-
-                      {/* Sessions Tab */}
-                      <SessionTab />
 
                       {/* Notifications Tab */}
                       <ProfileNotificationsTab />

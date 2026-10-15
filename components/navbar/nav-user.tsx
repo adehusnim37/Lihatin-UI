@@ -168,9 +168,9 @@ export function NavUser() {
                 <IconShield />
                 MFA/2FA
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push("/profile/me?tab=session")}>
+              <DropdownMenuItem onClick={() => router.push("/profile/sessions")}>
                 <IconDeviceDesktop />
-                Session
+                Sessions
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

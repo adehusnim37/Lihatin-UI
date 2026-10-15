@@ -145,7 +145,7 @@ components:
 
 ## Overview
 
-The existing dashboard identity is the authority: cool cyan actions, zinc neutral surfaces, English copy, and a practical sans serif hierarchy. This document records the implemented system from `app/globals.css`, `app/layout.tsx`, shared UI primitives, and the completed notification surfaces. It does not replace the visual identity of other dashboard routes.
+The existing dashboard identity is the authority: cool cyan actions, zinc neutral surfaces, English copy, and a practical sans serif hierarchy. This document records the implemented system from `app/globals.css`, `app/layout.tsx`, shared UI primitives, and completed notification and account-session surfaces. It does not replace the visual identity of other dashboard routes.
 
 The notification extension inherits that identity and uses a shared channel navigation, message list, and detail sheet. Its specific composition belongs to the notification workspace; it is not a mandatory layout for every product screen.
 
@@ -186,6 +186,8 @@ Page headings use the headline role above the small breakpoint and the compact r
 The reused spacing steps in the frontmatter correspond to the existing Tailwind spacing rhythm. Notification pages use a broad list below a heading, channel navigation, a single divided summary strip, and adjacent filters. Table rows use generous vertical padding (1rem). The summary wraps into two columns on narrow screens and a horizontal group at the small breakpoint.
 
 Notification detail uses a full-height right sheet, full width on narrow screens and capped at 42rem from the small breakpoint. Its header stays distinct while the detail body or audience list scrolls inside the available height. Pagination stays outside the audience scroll region.
+
+The account Sessions page places its title and purpose above a two-tab workspace for Active sessions and Login history. Device rows stack their sign-out action below the device details on narrow screens and align it to the right at the small breakpoint. Login history uses selectable cards below the large breakpoint and a horizontally scrollable table at and above it; pagination follows the list. Attempt details open in a full-width sheet on narrow screens, capped at 37.5rem from the small breakpoint, with its header fixed above a bounded detail scroll area.
 
 The composer is bounded by the viewport (`min(56rem, 94dvh)`), with persistent header and footer actions. At the large breakpoint, compose and preview use columns in a 1:0.9 ratio and scroll independently. Below that breakpoint, Compose and Preview tabs switch between those regions. Fixed actions here mean a persistent footer within the dialog, not an overlay positioned over page content.
 
@@ -234,6 +236,10 @@ Form and preview share the bounded composer described in Layout. Closing a dirty
 ### Bell inbox and reader
 
 Unread rows use a faint cyan fill, stronger title, and status dot. Clicking a row opens the full announcement and marks it read. Read history remains available; Read again reopens the same reader while preserving read status. A separate optional link opens the announcement's URL. Loading, empty, failure, retry, and pagination states remain explicit. Long titles, bodies, and URLs wrap within the bounded panel.
+
+### Account sessions
+
+Keep current device access and past sign-in activity in one compact workspace with two familiar tabs. Active-session rows pair a browser and device label with IP and relative activity time; mark the current device with a subtle cyan pill. Keep individual sign-out actions with their device rows and place sign-out-all beside refresh, using the shared destructive confirmation dialog before either action. Login history uses the existing status badge and semantic success/failure colors, with responsive cards for smaller screens and a table for wide screens. Selecting an attempt opens a bounded detail sheet that groups status, device, network, and security context; preserve readable wrapping for IP addresses, identifiers, and user-agent strings.
 
 ## Do's and Don'ts
 

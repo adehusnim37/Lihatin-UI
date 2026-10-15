@@ -54,6 +54,7 @@ export function SiteHeader() {
         settings: "Settings",
         profile: "Profile",
         me: "Profile",
+        sessions: "Sessions",
         help: "Get Help",
       };
       const label = labels[segment] ?? segment;

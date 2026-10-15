@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useLoginAttemptsQuery,
@@ -48,6 +47,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { SessionDetail } from "./session-detail";
+import { formatLoginFailureReason } from "@/lib/utils/format-login-failure-reason";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -100,6 +100,7 @@ export default function SessionTab() {
   const {
     data: attemptsData,
     isLoading,
+    error: attemptsError,
     refetch,
     isRefetching,
   } = useLoginAttemptsQuery({
@@ -185,16 +186,8 @@ export default function SessionTab() {
   };
 
   return (
-    <TabsContent value="session" className="space-y-4">
-      <Card className="min-w-0 overflow-hidden shadow-none">
-        <CardHeader className="px-4 pb-0 sm:px-6">
-          <CardTitle>Sessions</CardTitle>
-          <CardDescription>
-            Manage signed-in devices and review recent login activity.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="px-4 pt-4 sm:px-6">
-          <Tabs defaultValue="active" className="space-y-4">
+    <div className="space-y-6">
+          <Tabs defaultValue="active" className="space-y-5">
             <TabsList className="grid w-full grid-cols-2 sm:w-fit">
               <TabsTrigger value="active">
                 Active sessions
@@ -209,12 +202,17 @@ export default function SessionTab() {
 
             <TabsContent value="active" className="mt-0 space-y-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-muted-foreground">
-                  {sessionsLoading
-                    ? "Loading devices signed in to your account"
-                    : `${activeSessionCount} active ${activeSessionCount === 1 ? "session" : "sessions"} signed in to your account`}
-                </p>
-                <div className="flex items-center gap-2">
+                <div>
+                  <p className="text-sm font-medium">
+                    {sessionsLoading
+                      ? "Loading active devices"
+                      : `${activeSessionCount} active ${activeSessionCount === 1 ? "session" : "sessions"}`}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Sign out devices you no longer use or don’t recognize.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 self-end sm:self-auto">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -236,7 +234,7 @@ export default function SessionTab() {
                         }
                       >
                         <IconTrash />
-                        {activeSessionCount === 1 ? "Sign out" : "Sign out all devices"}
+                        Sign out all devices
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
@@ -273,10 +271,21 @@ export default function SessionTab() {
                   ))}
                 </div>
               ) : sessionsError ? (
-                <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-                  {sessionsError instanceof Error
-                    ? sessionsError.message
-                    : "Failed to load active sessions"}
+                <div className="flex flex-col items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive sm:flex-row sm:items-center sm:justify-between">
+                  <span>
+                    {sessionsError instanceof Error
+                      ? sessionsError.message
+                      : "Active sessions could not be loaded."}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void refetchSessions()}
+                    disabled={sessionsRefetching}
+                    className="shrink-0"
+                  >
+                    Try again
+                  </Button>
                 </div>
               ) : activeSessions.length > 0 ? (
                 <div className="grid grid-cols-1 gap-2">
@@ -296,26 +305,50 @@ export default function SessionTab() {
                                 {browser} {isMobile ? "(Mobile)" : "(Desktop)"}
                               </p>
                               {session.is_current && (
-                                <span className="rounded-full bg-green-600/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-green-700 dark:text-green-400">
+                                <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary-ink dark:text-primary-ink-dark">
                                   Current
                                 </span>
                               )}
                             </div>
-                            <p className="truncate text-xs text-muted-foreground">
-                              {session.ip_address} · last seen {formatDate(session.last_seen)}
+                            <p className="mt-1 flex flex-wrap gap-x-2 text-xs text-muted-foreground">
+                              <span>{session.ip_address}</span>
+                              <span aria-hidden="true">·</span>
+                              <span>Last active {formatDate(session.last_seen)}</span>
                             </p>
                           </div>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full shrink-0 sm:w-auto"
-                          onClick={() => handleRevokeSession(session.session_id)}
-                          disabled={revokeSessionMutation.isPending}
-                        >
-                          <IconLogout />
-                          Sign out
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full shrink-0 sm:w-auto"
+                              disabled={revokeSessionMutation.isPending}
+                            >
+                              <IconLogout />
+                              Sign out
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Sign out this device?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {session.is_current
+                                  ? "You’ll be signed out of Lihat.in on this device and need to sign in again."
+                                  : `This ${browser} session will need to sign in again to access your account.`}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-destructive text-white hover:bg-destructive/90 dark:bg-destructive/60"
+                                onClick={() => handleRevokeSession(session.session_id)}
+                              >
+                                Sign out device
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     );
                   })}
@@ -382,6 +415,23 @@ export default function SessionTab() {
                     <Skeleton key={index} className="h-16 w-full" />
                   ))}
                 </div>
+              ) : attemptsError ? (
+                <div className="flex flex-col items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive sm:flex-row sm:items-center sm:justify-between">
+                  <span>
+                    {attemptsError instanceof Error
+                      ? attemptsError.message
+                      : "Login history could not be loaded."}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void refetch()}
+                    disabled={isRefetching}
+                    className="shrink-0"
+                  >
+                    Try again
+                  </Button>
+                </div>
               ) : attemptsData && attemptsData.attempts.length > 0 ? (
                 <>
                   <div className="space-y-2 lg:hidden">
@@ -419,7 +469,9 @@ export default function SessionTab() {
                               {attempt.ip_address}
                             </code>
                             {!attempt.success && attempt.fail_reason && (
-                              <span className="line-clamp-1 min-w-0">{attempt.fail_reason}</span>
+                              <span className="line-clamp-1 min-w-0">
+                                {formatLoginFailureReason(attempt.fail_reason)}
+                              </span>
                             )}
                           </div>
                         </button>
@@ -475,7 +527,7 @@ export default function SessionTab() {
                               </TableCell>
                               <TableCell className="hidden text-sm text-muted-foreground lg:table-cell">
                                 <div className="max-w-[200px] truncate">
-                                  {attempt.fail_reason || "-"}
+                                  {formatLoginFailureReason(attempt.fail_reason) || "-"}
                                 </div>
                               </TableCell>
                             </TableRow>
@@ -523,9 +575,6 @@ export default function SessionTab() {
               )}
             </TabsContent>
           </Tabs>
-        </CardContent>
-      </Card>
-
       {/* Detail Sheet */}
       <Sheet open={isDetailOpen} onOpenChange={setIsDetailOpen}>
         <SheetContent className="w-full max-w-none gap-0 overflow-hidden p-0 sm:max-w-[600px]">
@@ -554,6 +603,6 @@ export default function SessionTab() {
           )}
         </SheetContent>
       </Sheet>
-    </TabsContent>
+    </div>
   );
 }
