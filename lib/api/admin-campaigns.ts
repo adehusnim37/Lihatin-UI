@@ -36,6 +36,7 @@ export interface AdminPromotionalCampaignList {
   limit: number;
   total: number;
   total_pages: number;
+  status_counts?: Record<string, number>;
 }
 
 export interface AdminPromotionalDelivery {
@@ -86,11 +87,12 @@ async function request<T>(url: string, init?: RequestInit, allowEmptyData = fals
   return result.data as T;
 }
 
-export function getAdminCampaigns(page = 1, limit = 20) {
+export function getAdminCampaigns(page = 1, limit = 20, status = "") {
   const params = new URLSearchParams({
     page: String(page),
     limit: String(limit),
   });
+  if (status) params.set("status", status);
   return request<AdminPromotionalCampaignList>(`${CAMPAIGN_URL}?${params.toString()}`);
 }
 

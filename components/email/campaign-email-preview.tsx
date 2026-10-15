@@ -23,15 +23,15 @@ export function CampaignEmailPreview({
 
   return (
     <div className="overflow-hidden rounded-xl border bg-[#f4f7fb] p-3 sm:p-6">
-      <div className="mx-auto max-w-[640px] overflow-hidden rounded-xl border border-[#e5eaf2] bg-white text-[#0f172a] shadow-sm">
+      <div className="mx-auto max-w-[640px] overflow-hidden rounded-xl border border-[#e5eaf2] bg-white text-[#0f172a] shadow-none">
         <div className="border-b border-[#edf1f7] px-5 py-6 sm:px-7">
           <span className="inline-flex rounded-full border border-[#d4e6f7] bg-[#e9f2fc] px-2.5 py-1 text-xs font-semibold text-[#2f5f8c]">
             Lihatin
           </span>
-          <h2 className="mt-4 text-xl font-bold leading-tight text-[#111827] sm:text-2xl">
+          <h2 className="mt-4 break-words text-xl font-bold leading-tight text-[#111827] sm:text-2xl">
             {subject?.trim() || "Your email subject will appear here"}
           </h2>
-          <p className="mt-2 text-sm text-[#64748b]">
+          <p className="mt-2 break-words text-sm text-[#64748b]">
             {preheader?.trim() || "News and offers from Lihatin."}
           </p>
         </div>
@@ -48,7 +48,7 @@ export function CampaignEmailPreview({
 
         <div className="px-5 py-6 text-[15px] leading-relaxed sm:px-7">
           <p className="font-medium text-[#111827]">Hi Alex,</p>
-          <p className="mt-3 whitespace-pre-line text-[#334155]">
+          <p className="mt-3 whitespace-pre-line break-words text-[#334155]">
             {body?.trim() || "Your campaign message will appear here as you write."}
           </p>
 

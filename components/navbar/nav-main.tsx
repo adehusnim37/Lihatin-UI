@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { IconCirclePlusFilled, type Icon } from "@tabler/icons-react";
+import { IconChevronRight, IconCirclePlusFilled } from "@tabler/icons-react";
 
 import {
   SidebarGroup,
@@ -16,14 +16,9 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import type { NavItem } from "@/components/sidebar.data";
+import { cn } from "@/lib/utils";
 import QuickCreateLinkDialog from "./modal/quick-create-link-dialog";
-
-type NavItem = {
-  title: string;
-  url?: string;
-  icon?: Icon;
-  children?: NavItem[];
-};
 
 export function NavMain({
   items,
@@ -33,8 +28,8 @@ export function NavMain({
   items: NavItem[];
   label?: string;
   showQuickCreate?: boolean;
-}) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+}) {  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const pathname = usePathname();
 
   return (
@@ -66,23 +61,42 @@ export function NavMain({
             const isActive = hasChildren
               ? isAnyChildActive || isRouteActive(pathname, item.url, { exact: true })
               : isRouteActive(pathname, item.url);
+            // Groups holding the active route always stay expanded so the current
+            // page is never hidden behind a collapsed parent.
+            const isCollapsed = hasChildren && collapsed[item.title] === true && !isAnyChildActive;
 
             return (
               <SidebarMenuItem key={item.title}>
-                {item.url ? (
+                <div className="flex items-center gap-1">
                   <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
                     <Link href={item.url}>
                       {item.icon && <item.icon />}
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
-                ) : (
-                  <SidebarMenuButton tooltip={item.title} isActive={isActive}>
-                    {item.icon && <item.icon />}
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                )}
-                {hasChildren && (
+                  {hasChildren && (
+                    <button
+                      type="button"
+                      aria-expanded={!isCollapsed}
+                      aria-label={`${isCollapsed ? "Expand" : "Collapse"} ${item.title}`}
+                      onClick={() =>
+                        setCollapsed((current) => ({
+                          ...current,
+                          [item.title]: !current[item.title],
+                        }))
+                      }
+                      className="text-sidebar-foreground/70 ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 flex size-6 shrink-0 items-center justify-center rounded-md outline-none transition-transform"
+                    >
+                      <IconChevronRight
+                        className={cn(
+                          "size-4 transition-transform duration-200",
+                          !isCollapsed && "rotate-90",
+                        )}
+                      />
+                    </button>
+                  )}
+                </div>
+                {hasChildren && !isCollapsed && (
                   <SidebarMenuSub>
                     {children.map((child) => {
                       const isChildActive = isRouteActive(pathname, child.url, {
@@ -91,19 +105,12 @@ export function NavMain({
 
                       return (
                         <SidebarMenuSubItem key={`${item.title}-${child.title}`}>
-                          {child.url ? (
-                            <SidebarMenuSubButton asChild isActive={isChildActive}>
-                              <Link href={child.url}>
-                                {child.icon && <child.icon />}
-                                <span>{child.title}</span>
-                              </Link>
-                            </SidebarMenuSubButton>
-                          ) : (
-                            <SidebarMenuSubButton isActive={isChildActive}>
+                          <SidebarMenuSubButton asChild isActive={isChildActive}>
+                            <Link href={child.url}>
                               {child.icon && <child.icon />}
                               <span>{child.title}</span>
-                            </SidebarMenuSubButton>
-                          )}
+                            </Link>
+                          </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                       );
                     })}

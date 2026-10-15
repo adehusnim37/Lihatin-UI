@@ -1,5 +1,6 @@
 import {
   IconApi,
+  IconBellRinging,
   IconChartBar,
   IconCirclePlus,
   IconDashboard,
@@ -12,7 +13,15 @@ import {
   IconTicket,
   IconUnlink,
   IconUsers,
+  type Icon,
 } from "@tabler/icons-react";
+
+export type NavItem = {
+  title: string;
+  url: string;
+  icon: Icon;
+  children?: Omit<NavItem, "children">[];
+};
 
 export const SidebarData = {
   navMain: [
@@ -78,9 +87,21 @@ export const SidebarData = {
       ],
     },
     {
-      title: "Email Campaigns",
-      url: "/main/admin/email-campaigns",
-      icon: IconMail,
+      title: "Notifications",
+      url: "/main/admin/in-app-notifications",
+      icon: IconBellRinging,
+      children: [
+        {
+          title: "In-app",
+          url: "/main/admin/in-app-notifications",
+          icon: IconBellRinging,
+        },
+        {
+          title: "Email Campaigns",
+          url: "/main/admin/email-campaigns",
+          icon: IconMail,
+        },
+      ],
     },
     {
       title: "Support Tickets",

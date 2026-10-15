@@ -3,7 +3,6 @@
 import * as React from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { type Icon } from "@tabler/icons-react";
 
 import {
   SidebarGroup,
@@ -12,16 +11,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import type { NavItem } from "@/components/sidebar.data";
 
 export function NavSecondary({
   items,
   ...props
 }: {
-  items: {
-    title: string;
-    url: string;
-    icon: Icon;
-  }[];
+  items: Omit<NavItem, "children">[];
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
   const pathname = usePathname();
 
@@ -37,7 +33,7 @@ export function NavSecondary({
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild tooltip={item.title} isActive={isActive} size="sm">
                   <Link href={item.url}>
-                    <item.icon className="size-4" />
+                    {item.icon ? <item.icon className="size-4" /> : null}
                     <span>{item.title}</span>
                   </Link>
                 </SidebarMenuButton>

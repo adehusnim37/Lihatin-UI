@@ -1,69 +1,78 @@
 "use client";
 
+import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { BellRing, BookOpen, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/app/context/AuthContext";
-import { Button } from "@/components/ui/button";
+import { AnnouncementReaderDialog } from "@/components/notifications/announcement-reader-dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  dismissAnnouncement,
+  presentAnnouncement,
+  useAnnouncementSession,
+} from "@/lib/hooks/useAnnouncementSessionGuard";
 import { useInAppAnnouncements } from "@/lib/hooks/queries/useInAppAnnouncementsQuery";
 
+/**
+ * Presents undismissed announcements one at a time on the dashboard.
+ *
+ * An announcement is only auto-presented once per browser session: the
+ * presentation state lives in `sessionStorage` via `useAnnouncementSession`, so
+ * client-side navigation cannot re-open it. The header inbox always keeps the
+ * full list, so nothing becomes unreachable after dismissal.
+ */
 export function InAppAnnouncementDialog({ blocked = false }: { blocked?: boolean }) {
   const router = useRouter();
   const { user } = useAuth();
   const { query, markRead } = useInAppAnnouncements(user?.id);
-  const announcement = query.data?.data?.[0];
+  const { shown, active, hydrated } = useAnnouncementSession();
 
-  const acknowledge = async (openDocs: boolean) => {
+  // Stable identity so the queueing effect does not re-run on every render.
+  const pending = useMemo(() => query.data?.data ?? [], [query.data]);
+
+  // Queue the next announcement that has not been presented in this session.
+  // Only runs when nothing is on screen, so dismissing one advances the queue
+  // instead of stacking dialogs. This updates an external store, not React
+  // state, which is why it is safe inside an effect.
+  useEffect(() => {
+    if (!hydrated || blocked || active !== null) return;
+    const next = pending.find((item) => !shown.includes(item.id));
+    if (next) {
+      presentAnnouncement(next.id);
+    }
+  }, [hydrated, blocked, active, pending, shown]);
+
+  const announcement = active ? pending.find((item) => item.id === active) : undefined;
+
+  const acknowledge = async () => {
     if (!announcement || markRead.isPending) return;
+    dismissAnnouncement();
     try {
       await markRead.mutateAsync(announcement.id);
-      if (openDocs) router.push(announcement.href);
     } catch {
       toast.error("Could not save this notification. Please try again.");
     }
   };
 
+  const openLink = () => {
+    if (!announcement?.href) return;
+    if (/^https?:\/\//i.test(announcement.href))
+      window.open(announcement.href, "_blank", "noopener,noreferrer");
+    else router.push(announcement.href);
+    void acknowledge();
+  };
+
   return (
-    <Dialog
+    <AnnouncementReaderDialog
       open={Boolean(announcement) && !blocked}
-      onOpenChange={(open) => {
-        if (!open) void acknowledge(false);
+      onOpenChange={(next) => {
+        if (!next) void acknowledge();
       }}
-    >
-      <DialogContent showCloseButton={false} className="sm:max-w-md">
-        <DialogHeader>
-          <span className="mb-2 flex size-10 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400">
-            <BellRing className="size-5" aria-hidden="true" />
-          </span>
-          <p className="text-xs font-semibold uppercase tracking-wide text-sky-600 dark:text-sky-400">
-            Product update
-          </p>
-          <DialogTitle>{announcement?.title}</DialogTitle>
-          <DialogDescription className="pt-2 leading-6">{announcement?.body}</DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            disabled={markRead.isPending}
-            onClick={() => void acknowledge(false)}
-          >
-            {markRead.isPending && <Loader2 className="size-4 animate-spin" />}
-            Got it
-          </Button>
-          <Button disabled={markRead.isPending} onClick={() => void acknowledge(true)}>
-            <BookOpen className="size-4" />
-            View API docs
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      title={announcement?.title}
+      body={announcement?.body}
+      href={announcement?.href}
+      busy={markRead.isPending}
+      onDone={() => void acknowledge()}
+      onOpenLink={openLink}
+    />
   );
 }

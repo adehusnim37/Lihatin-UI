@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import React from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { NotificationInbox } from "@/components/notifications/notification-inbox";
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -45,6 +46,8 @@ export function SiteHeader() {
         users: "Users",
         "premium-codes": "Premium Codes",
         generate: "Generate",
+        notifications: "Notifications",
+        "in-app-notifications": "In-app",
         "email-campaigns": "Email Campaigns",
         "support-tickets": "Support Tickets",
         "security-policy": "Security Policy",
@@ -91,6 +94,7 @@ export function SiteHeader() {
           </BreadcrumbList>
         </Breadcrumb>
         <div className="ml-auto flex shrink-0 items-center gap-2">
+          <NotificationInbox />
           <ThemeToggle />
         </div>
       </div>

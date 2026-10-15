@@ -13,16 +13,17 @@ import {
 
 export const adminCampaignKeys = {
   all: ["admin", "promotional-campaigns"] as const,
-  list: (page: number, limit: number) => [...adminCampaignKeys.all, "list", page, limit] as const,
+  list: (page: number, limit: number, status = "") =>
+    [...adminCampaignKeys.all, "list", page, limit, status] as const,
   detail: (id: string) => [...adminCampaignKeys.all, "detail", id] as const,
   deliveries: (id: string, page: number, limit: number, status: string) =>
     [...adminCampaignKeys.all, "deliveries", id, page, limit, status] as const,
 };
 
-export function useAdminCampaignsQuery(page: number, limit: number, enabled = true) {
+export function useAdminCampaignsQuery(page: number, limit: number, enabled = true, status = "") {
   return useQuery({
-    queryKey: adminCampaignKeys.list(page, limit),
-    queryFn: () => getAdminCampaigns(page, limit),
+    queryKey: adminCampaignKeys.list(page, limit, status),
+    queryFn: () => getAdminCampaigns(page, limit, status),
     placeholderData: (previous) => previous,
     enabled,
   });
