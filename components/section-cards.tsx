@@ -1,14 +1,4 @@
-import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react";
-
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardAction,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface SectionCardsProps {
@@ -33,117 +23,69 @@ export function SectionCards({
   recentActivityCount = 0,
   isLoading = false,
 }: SectionCardsProps) {
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 gap-3 px-4 sm:grid-cols-2 sm:gap-4 lg:px-6 @5xl/main:grid-cols-4">
-        {[1, 2, 3, 4].map((i) => (
-          <Card key={i} className="@container/card gap-3 py-4 sm:gap-6 sm:py-6">
-            <CardHeader className="px-3 sm:px-6">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-8 w-32" />
-            </CardHeader>
-            <CardFooter>
-              <Skeleton className="h-4 w-full" />
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
-    );
-  }
+  const stats = [
+    {
+      label: "Total Links",
+      value: totalLinks,
+      detail: `${activeLinks.toLocaleString()} active links`,
+      description: "Total short links created",
+    },
+    {
+      label: "Total Clicks",
+      value: totalClicks,
+      detail: `${clicksLast24h.toLocaleString()} in the last 24h`,
+      description: `${uniqueVisitors.toLocaleString()} unique visitors`,
+    },
+    {
+      label: "Activity Logs",
+      value: totalLogs,
+      detail: "All-time API activity",
+      description: "System-wide request logs",
+    },
+    {
+      label: "Recent Activity",
+      value: recentActivityCount,
+      detail: "Security events · Last 7d",
+      description: "Login attempts monitored",
+    },
+  ];
 
   return (
-    <div className="grid grid-cols-1 gap-3 px-4 sm:grid-cols-2 sm:gap-4 lg:px-6 @5xl/main:grid-cols-4">
-      <Card className="@container/card min-w-0 gap-3 py-4 sm:gap-6 sm:py-6">
-        <CardHeader className="px-3 sm:px-6">
-          <h2 className="text-sm text-muted-foreground">Total Links</h2>
-          <CardTitle
-            as="div"
-            className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl"
-          >
-            {totalLinks.toLocaleString()}
-          </CardTitle>
-          <CardAction className="col-start-1 row-start-3 sm:col-start-2 sm:row-start-1">
-            <Badge variant="outline">
-              {activeLinks > 0 ? <IconTrendingUp /> : <IconTrendingDown />}
-              {activeLinks} Active
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1 px-3 text-xs sm:gap-1.5 sm:px-6 sm:text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            {activeLinks} active short links
-          </div>
-          <div className="text-muted-foreground">Total short links created</div>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card min-w-0 gap-3 py-4 sm:gap-6 sm:py-6">
-        <CardHeader className="px-3 sm:px-6">
-          <h2 className="text-sm text-muted-foreground">Total Clicks</h2>
-          <CardTitle
-            as="div"
-            className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl"
-          >
-            {totalClicks.toLocaleString()}
-          </CardTitle>
-          <CardAction className="col-start-1 row-start-3 sm:col-start-2 sm:row-start-1">
-            <Badge variant="outline">
-              {clicksLast24h > 0 ? <IconTrendingUp /> : <IconTrendingDown />}
-              {clicksLast24h} today
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1 px-3 text-xs sm:gap-1.5 sm:px-6 sm:text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            {clicksLast24h} clicks in last 24h{" "}
-            {clicksLast24h > 0 && <IconTrendingUp className="size-4" />}
-          </div>
-          <div className="text-muted-foreground">
-            {uniqueVisitors.toLocaleString()} unique visitors
-          </div>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card min-w-0 gap-3 py-4 sm:gap-6 sm:py-6">
-        <CardHeader className="px-3 sm:px-6">
-          <h2 className="text-sm text-muted-foreground">Activity Logs</h2>
-          <CardTitle
-            as="div"
-            className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl"
-          >
-            {totalLogs.toLocaleString()}
-          </CardTitle>
-          <CardAction className="col-start-1 row-start-3 sm:col-start-2 sm:row-start-1">
-            <Badge variant="outline">
-              <IconTrendingUp />
-              All Time
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1 px-3 text-xs sm:gap-1.5 sm:px-6 sm:text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">Total API activity tracked</div>
-          <div className="text-muted-foreground">System-wide request logs</div>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card min-w-0 gap-3 py-4 sm:gap-6 sm:py-6">
-        <CardHeader className="px-3 sm:px-6">
-          <h2 className="text-sm text-muted-foreground">Recent Activity</h2>
-          <CardTitle
-            as="div"
-            className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl"
-          >
-            {recentActivityCount.toLocaleString()}
-          </CardTitle>
-          <CardAction className="col-start-1 row-start-3 sm:col-start-2 sm:row-start-1">
-            <Badge variant="outline">
-              <IconTrendingUp />
-              Last 7d
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1 px-3 text-xs sm:gap-1.5 sm:px-6 sm:text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">Recent security events</div>
-          <div className="text-muted-foreground">Login attempts monitored</div>
-        </CardFooter>
-      </Card>
-    </div>
+    <section
+      aria-label="Dashboard statistics"
+      className="grid min-w-0 grid-cols-1 gap-3 px-4 min-[360px]:grid-cols-2 lg:px-6 @5xl/main:grid-cols-4"
+    >
+      {stats.map((stat) => (
+        <Card
+          key={stat.label}
+          className="min-w-0 justify-between gap-4 px-4 py-4 shadow-none sm:px-5 sm:py-5"
+        >
+          {isLoading ? (
+            <div
+              role="status"
+              aria-label={`Loading ${stat.label.toLowerCase()}`}
+              className="space-y-3"
+            >
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-8 w-24" />
+              <Skeleton className="h-4 w-full" />
+            </div>
+          ) : (
+            <>
+              <div className="space-y-2">
+                <h2 className="text-sm text-muted-foreground">{stat.label}</h2>
+                <p className="text-2xl font-semibold leading-tight tracking-tight tabular-nums [overflow-wrap:anywhere] sm:text-3xl">
+                  {stat.value.toLocaleString()}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-medium leading-5 sm:text-sm">{stat.detail}</p>
+                <p className="text-xs leading-5 text-muted-foreground">{stat.description}</p>
+              </div>
+            </>
+          )}
+        </Card>
+      ))}
+    </section>
   );
 }

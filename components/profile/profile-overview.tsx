@@ -28,9 +28,9 @@ export function ProfileOverview({
 }) {
   const name = `${user.first_name} ${user.last_name}`.trim() || user.username;
   return (
-    <section aria-label="Account overview" className="min-w-0 border-b pb-6">
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-center gap-4">
+    <section aria-label="Account overview" className="min-w-0 rounded-xl border bg-muted/20 p-5 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-5">
+        <div className="flex min-w-0 flex-1 basis-72 items-center gap-4">
           <Avatar className="size-16 shrink-0 sm:size-18">
             <AvatarImage src={avatarURL} alt={name} />
             <AvatarFallback className="text-xl">
@@ -56,7 +56,7 @@ export function ProfileOverview({
             <p className="text-xs text-muted-foreground">Member since {joined}</p>
           </div>
         </div>
-        <div className="shrink-0 space-y-2">
+        <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" disabled={uploading} onClick={onUpload}>
               {uploading ? (

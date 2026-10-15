@@ -82,7 +82,7 @@ export default function ProfileNotificationsTab() {
           <div className="flex items-center gap-3">
             <IconMail className="size-5 text-muted-foreground" />
             <div>
-              <CardTitle>Notification Preferences</CardTitle>
+              <CardTitle className="text-lg">Notification preferences</CardTitle>
               <CardDescription>Choose the optional emails you want to receive.</CardDescription>
             </div>
           </div>

@@ -15,6 +15,14 @@ import React from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { NotificationInbox } from "@/components/notifications/notification-inbox";
 
+/**
+ * Some path segments are only grouping folders and have no `page.tsx` of their
+ * own, so linking to them would 404. Point them at their canonical child route.
+ */
+const SEGMENT_HREF_OVERRIDES: Record<string, string> = {
+  profile: "/profile/me",
+};
+
 export function SiteHeader() {
   const pathname = usePathname();
   const segments = pathname.split("/").filter((segment) => segment !== "");
@@ -32,10 +40,12 @@ export function SiteHeader() {
     segments.forEach((segment, index) => {
       currentPath += `/${segment}`; // Always update path first
 
-      if (segment === "profile" && segments[index + 1] === "me") return;
-      if (segment === "main") return; // Skip display for 'main' as it is hardcoded
-
       const isLast = index === segments.length - 1;
+      // Skip 'main' as it is hardcoded, and collapse redundant profile segments
+      // (e.g. /profile/me -> a single "Profile" crumb).
+      if (segment === "main") return;
+      if (segment === "profile" && segments[index + 1] === "me") return;
+
       const labels: Record<string, string> = {
         admin: "Admin",
         links: "Links",
@@ -55,13 +65,14 @@ export function SiteHeader() {
         profile: "Profile",
         me: "Profile",
         sessions: "Sessions",
+        security: "Sign-in & Security",
         help: "Get Help",
       };
       const label = labels[segment] ?? segment;
 
       items.push({
         label,
-        href: currentPath,
+        href: SEGMENT_HREF_OVERRIDES[segment] ?? currentPath,
         active: isLast,
       });
     });

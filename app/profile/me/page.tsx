@@ -6,7 +6,6 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useEffect, Suspense, useRef } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   hasActivePremiumAccess,
@@ -42,13 +41,10 @@ import ProfileNotificationsTab from "@/components/profile/tab/notifications";
 function ProfilePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isMobile = useIsMobile();
-  const [activeTab, setActiveTab] = useState(() => {
-    const requested = searchParams.get("tab");
-    return requested && ["general", "security", "notifications"].includes(requested)
-      ? requested
-      : "general";
-  });
+  const requestedTab = searchParams.get("tab");
+  const activeTab = requestedTab && ["general", "security", "notifications"].includes(requestedTab)
+    ? requestedTab
+    : "general";
   const [redeemOpenOverride, setIsRedeemOpen] = useState<boolean | null>(null);
   const [secretCode, setSecretCode] = useState(() => searchParams.get("redeem_code")?.trim() || "");
   const [isRedeeming, setIsRedeeming] = useState(false);
@@ -70,6 +66,14 @@ function ProfilePageContent() {
     redeemOpenOverride ?? (!!searchParams.get("redeem_code")?.trim() && !premiumAccessActive);
 
   useEffect(() => {
+    if (searchParams.get("openSetupTOTP") === "1" || searchParams.get("tab") === "mfa") {
+      router.replace(
+        searchParams.get("openSetupTOTP") === "1"
+          ? "/profile/security?setup=authenticator"
+          : "/profile/security",
+      );
+      return;
+    }
     if (searchParams.get("tab") === "session") {
       router.replace("/profile/sessions");
     }
@@ -241,13 +245,13 @@ function ProfilePageContent() {
         <SiteHeader />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-6 px-4 py-6 sm:px-6">
+            <main className="mx-auto flex w-full max-w-[960px] flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
               {/* Profile Header */}
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
-                    <p className="text-muted-foreground">
+                    <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Profile</h1>
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">
                       Manage your account settings and preferences
                     </p>
                   </div>
@@ -353,24 +357,27 @@ function ProfilePageContent() {
                 <div className="min-w-0">
                   <Tabs
                     value={activeTab}
-                    orientation={isMobile ? "horizontal" : "vertical"}
-                    onValueChange={(value) => setActiveTab(value)}
-                    className="grid min-w-0 items-start gap-6 md:grid-cols-[176px_minmax(0,1fr)] md:gap-8 [&_[data-slot=card]]:rounded-none [&_[data-slot=card]]:border-0 [&_[data-slot=card]]:bg-transparent [&_[data-slot=card]]:py-0 [&_[data-slot=card]]:shadow-none [&_[data-slot=card-header]]:px-0 [&_[data-slot=card-content]]:px-0"
+                    onValueChange={(value) => {
+                      const params = new URLSearchParams(searchParams.toString());
+                      params.set("tab", value);
+                      router.replace(`/profile/me?${params.toString()}`, { scroll: false });
+                    }}
+                    className="min-w-0 gap-5"
                   >
                     <TabsList
                       aria-label="Profile settings"
-                      className="grid h-auto w-full grid-cols-3 gap-1 rounded-none border-b bg-transparent p-0 pb-4 md:sticky md:top-6 md:flex md:flex-col md:items-stretch md:border-0 md:pb-0 [&>[data-slot=tabs-trigger]]:h-11 [&>[data-slot=tabs-trigger]]:justify-start [&>[data-slot=tabs-trigger]]:gap-2.5 [&>[data-slot=tabs-trigger]]:px-3 [&>[data-slot=tabs-trigger]]:shadow-none [&>[data-state=active]]:bg-primary/10 [&>[data-state=active]]:text-primary-ink dark:[&>[data-state=active]]:bg-primary/10"
+                      className="grid h-auto w-full grid-cols-3 gap-1 rounded-xl p-1 [&>[data-slot=tabs-trigger]]:min-h-11 [&>[data-slot=tabs-trigger]]:gap-2 [&>[data-slot=tabs-trigger]]:px-2 [&>[data-slot=tabs-trigger]]:shadow-none [&>[data-state=active]]:text-primary-ink"
                     >
-                      <TabsTrigger value="general" className="min-h-11 md:flex-none">
-                        <UserRound aria-hidden="true" className="size-4" />
+                      <TabsTrigger value="general">
+                        <UserRound aria-hidden="true" className="hidden size-4 sm:block" />
                         General
                       </TabsTrigger>
-                      <TabsTrigger value="security" className="min-h-11 md:flex-none">
-                        <Shield aria-hidden="true" className="size-4" />
+                      <TabsTrigger value="security">
+                        <Shield aria-hidden="true" className="hidden size-4 sm:block" />
                         Security
                       </TabsTrigger>
-                      <TabsTrigger value="notifications" className="min-h-11 md:flex-none">
-                        <Bell aria-hidden="true" className="size-4" />
+                      <TabsTrigger value="notifications">
+                        <Bell aria-hidden="true" className="hidden size-4 sm:block" />
                         Notifications
                       </TabsTrigger>
                     </TabsList>
@@ -394,7 +401,7 @@ function ProfilePageContent() {
                   </Tabs>
                 </div>
               </div>
-            </div>
+            </main>
           </div>
         </div>
       </SidebarInset>
@@ -435,7 +442,7 @@ function ProfilePageSkeleton() {
         <div
           role="status"
           aria-label="Loading profile"
-          className="mx-auto w-full max-w-[1120px] space-y-6 px-4 py-6 sm:px-6"
+          className="mx-auto w-full max-w-[960px] space-y-6 px-4 py-6 sm:px-6 sm:py-8"
         >
           <div className="space-y-2">
             <Skeleton className="h-9 w-32" />
@@ -448,8 +455,8 @@ function ProfilePageSkeleton() {
               <Skeleton className="h-4 w-1/2" />
             </div>
           </div>
-          <div className="grid gap-6 md:grid-cols-[176px_minmax(0,1fr)]">
-            <Skeleton className="h-40 w-full" />
+          <div className="grid gap-5">
+            <Skeleton className="h-13 w-full rounded-xl" />
             <div className="space-y-6">
               <Skeleton className="h-6 w-1/2" />
               <Skeleton className="h-16 w-full" />

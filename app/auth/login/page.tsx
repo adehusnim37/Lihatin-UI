@@ -18,6 +18,7 @@ import {
 } from "@/lib/api/auth";
 import { buildAuthSupportURL, getAuthSupportReasonFromMessage } from "@/lib/auth-support";
 import { useAuth } from "@/app/context/AuthContext";
+import { PasskeyLoginButton } from "@/components/auth/passkey-login-button";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthenticatedTransition } from "@/components/auth/authenticated-transition";
 
@@ -83,7 +84,8 @@ function LoginContent() {
     email_or_username: "",
     password: "",
   });
-  const isAnyLoading = isLoading || isGoogleLoading;
+  const [passkeyBusy, setPasskeyBusy] = useState(false);
+  const isAnyLoading = isLoading || isGoogleLoading || passkeyBusy;
 
   // Check for error query parameters from email verification
   useEffect(() => {
@@ -319,10 +321,16 @@ function LoginContent() {
 
       <div className="my-5 flex items-center gap-3">
         <span className="h-px flex-1 bg-border" />
-        <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-          or
-        </span>
+        <span className="text-xs font-medium text-muted-foreground">or</span>
         <span className="h-px flex-1 bg-border" />
+      </div>
+
+      <div className="mb-3">
+        <PasskeyLoginButton
+          disabled={isLoading || isGoogleLoading}
+          onBusyChange={setPasskeyBusy}
+          destination={searchParams.get("redirect") || "/main"}
+        />
       </div>
 
       <Button

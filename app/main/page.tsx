@@ -135,7 +135,7 @@ export default function Page() {
         }
       >
         <AppSidebar />
-        <SidebarInset>
+        <SidebarInset className="min-w-0">
           <SiteHeader />
           <div className="flex flex-1 flex-col bg-muted/30">
             <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-2">

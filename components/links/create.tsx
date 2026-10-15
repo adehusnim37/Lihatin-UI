@@ -18,15 +18,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Field,
   FieldGroup,
@@ -40,12 +40,10 @@ import { Switch } from "@/components/ui/switch";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 import { Separator } from "@/components/ui/separator";
-import { DateTimePicker24hForm } from "../ui/datepickerhour";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEffect } from "react";
 import { useCreateLink } from "@/lib/hooks/queries/useLinksQuery";
 import { hasRepeatedConsecutiveDigits } from "@/lib/validators/passcode";
-import { IconInfoCircle } from "@tabler/icons-react";
+import { LinkOptions } from "./link-options";
 import { ShortLinkCutTransition } from "./short-link-cut-transition";
 
 const FRONTEND_BASE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
@@ -113,11 +111,12 @@ const formSchema = z.object({
     .max(3, { message: "Maximum 3 links are allowed" }),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+export type FormValues = z.infer<typeof formSchema>;
 
 export default function CreateLink() {
   const formId = React.useId();
   const [open, setOpen] = React.useState(false);
+  const [expandedOptions, setExpandedOptions] = React.useState<Record<string, boolean>>({});
   const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
   const [pendingData, setPendingData] = React.useState<FormValues | null>(null);
   const [cutTransition, setCutTransition] = React.useState<{
@@ -129,15 +128,7 @@ export default function CreateLink() {
 
   const createLinkMutation = useCreateLink();
 
-  const {
-    register,
-    control,
-    handleSubmit,
-    watch,
-    reset,
-    setValue,
-    formState: { errors },
-  } = useForm<FormValues>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       is_bulky: false,
@@ -162,6 +153,15 @@ export default function CreateLink() {
       ],
     },
   });
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors },
+  } = form;
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -191,6 +191,7 @@ export default function CreateLink() {
         custom_code: link.custom_code || undefined,
         description: link.description || undefined,
         passcode: link.passcode || undefined,
+        enable_stats: link.enable_stats,
         expires_at: link.expires_at || undefined,
         limit: link.limit && link.limit > 0 ? link.limit : undefined,
         tags: {
@@ -224,13 +225,14 @@ export default function CreateLink() {
               }
             : null,
         );
+        setOpen(false);
+        setExpandedOptions({});
         reset();
       },
       onError: () => {
         setCutTransition(null);
       },
     });
-    setOpen(false);
     setShowConfirmDialog(false);
     setPendingData(null);
   }
@@ -261,24 +263,26 @@ export default function CreateLink() {
 
   return (
     <>
-      <Drawer autoFocus open={open} onOpenChange={setOpen}>
-        <DrawerTrigger asChild>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
           <Button>
             <Plus className="mr-1/2 size-4" />
             Create New Link
           </Button>
-        </DrawerTrigger>
-        <DrawerContent className="flex flex-col">
-          <div className="mx-auto w-full max-w-xl flex-grow flex flex-col overflow-hidden">
-            <DrawerHeader>
-              <DrawerTitle>Create New Link</DrawerTitle>
-              <DrawerDescription>Add a new short link to your dashboard.</DrawerDescription>
-            </DrawerHeader>
+        </DialogTrigger>
+        <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden rounded-xl p-0 sm:max-w-xl">
+          <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+            <DialogHeader className="shrink-0 border-b px-5 py-5 pr-12 text-left sm:px-6 sm:pr-12">
+              <DialogTitle className="text-xl">Create a short link</DialogTitle>
+              <DialogDescription>
+                Start with a destination URL and a name for your link.
+              </DialogDescription>
+            </DialogHeader>
 
             <form
-              id="create-link-form"
+              id={`${formId}-create-link-form`}
               onSubmit={handleSubmit(onSubmit)}
-              className="space-y-6 flex-grow flex flex-col p-4 overflow-hidden min-h-0"
+              className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto overscroll-contain [&>*]:shrink-0 px-5 py-5 sm:px-6"
             >
               <Controller
                 control={control}
@@ -286,30 +290,35 @@ export default function CreateLink() {
                 render={({ field }) => (
                   <Field
                     orientation="horizontal"
-                    className="flex flex-row items-center justify-between rounded-lg border p-4"
+                    className="flex flex-row items-center justify-between gap-4 rounded-lg bg-muted/40 p-3"
                   >
                     <div className="space-y-0.5">
-                      <FieldLabel htmlFor={`${formId}-bulk`} className="text-base">
-                        Bulk Creation
+                      <FieldLabel htmlFor={`${formId}-bulk`} className="text-sm">
+                        Create multiple links
                       </FieldLabel>
-                      <FieldDescription>
-                        Enable to add multiple links at once. (Max 3 links)
-                      </FieldDescription>
+                      <FieldDescription>Up to 3 links in one batch.</FieldDescription>
+                      {fields.length > 1 && (
+                        <p id={`${formId}-bulk-help`} className="text-xs text-muted-foreground">
+                          Remove extra links to return to single-link mode.
+                        </p>
+                      )}
                     </div>
                     <Switch
                       id={`${formId}-bulk`}
                       checked={field.value}
+                      disabled={fields.length > 1}
+                      aria-describedby={fields.length > 1 ? `${formId}-bulk-help` : undefined}
                       onCheckedChange={field.onChange}
                     />
                   </Field>
                 )}
               />
 
-              <div className="flex-grow overflow-y-auto px-3">
+              <div className="min-w-0">
                 <div className="">
                   <FieldGroup>
                     {fields.map((field, index) => (
-                      <FieldSet key={field.id}>
+                      <FieldSet key={field.id} className="min-w-0 gap-5">
                         {isBulky && (
                           <div className="flex items-center justify-between">
                             <h4 className="text-sm font-medium">Link #{index + 1}</h4>
@@ -328,27 +337,8 @@ export default function CreateLink() {
                         )}
 
                         <Field>
-                          <FieldLabel htmlFor={`${formId}-${index}-title`}>Title</FieldLabel>
-                          <Input
-                            placeholder="My Awesome Link"
-                            id={`${formId}-${index}-title`}
-                            aria-invalid={!!errors.links?.[index]?.title}
-                            aria-describedby={
-                              errors.links?.[index]?.title
-                                ? `${formId}-${index}-title-error`
-                                : undefined
-                            }
-                            {...register(`links.${index}.title`)}
-                          />
-                          <FieldError
-                            id={`${formId}-${index}-title-error`}
-                            errors={[errors.links?.[index]?.title]}
-                          />
-                        </Field>
-
-                        <Field>
                           <FieldLabel htmlFor={`${formId}-${index}-original_url`}>
-                            Original URL
+                            Destination URL
                           </FieldLabel>
                           <Input
                             type="url"
@@ -370,268 +360,68 @@ export default function CreateLink() {
                           />
                         </Field>
 
-                        <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2">
-                          <Field>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <FieldLabel htmlFor={`${formId}-${index}-custom_code`}>
-                                  Custom Code (Optional)
-                                </FieldLabel>
-                              </TooltipTrigger>
-                              <TooltipContent sideOffset={4} align="start">
-                                <p>
-                                  It is used to identify the specific link. Eg:{" "}
-                                  <code>{`${FRONTEND_BASE_URL}/my-link`}</code>
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                            <Input
-                              placeholder="my-link"
-                              id={`${formId}-${index}-custom_code`}
-                              aria-invalid={!!errors.links?.[index]?.custom_code}
-                              aria-describedby={
-                                errors.links?.[index]?.custom_code
-                                  ? `${formId}-${index}-custom_code-error`
-                                  : undefined
-                              }
-                              {...register(`links.${index}.custom_code`)}
-                            />
-                            <FieldError
-                              id={`${formId}-${index}-custom_code-error`}
-                              errors={[errors.links?.[index]?.custom_code]}
-                            />
-                          </Field>
-
-                          <Field>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <FieldLabel htmlFor={`${formId}-${index}-passcode`}>
-                                  Passcode (Optional)
-                                </FieldLabel>
-                              </TooltipTrigger>
-                              <TooltipContent sideOffset={4} align="start">
-                                <p>
-                                  It is used to secure the link, so that only those with the
-                                  passcode can access it.
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                            <Input
-                              placeholder="123456"
-                              type="number"
-                              inputMode="numeric"
-                              pattern="[0-9]*"
-                              maxLength={6}
-                              id={`${formId}-${index}-passcode`}
-                              aria-invalid={!!errors.links?.[index]?.passcode}
-                              aria-describedby={
-                                errors.links?.[index]?.passcode
-                                  ? `${formId}-${index}-passcode-error`
-                                  : undefined
-                              }
-                              {...register(`links.${index}.passcode`)}
-                              onChange={(e) => {
-                                const value = e.target.value.replace(/\D/g, "").slice(0, 6);
-                                setValue(`links.${index}.passcode`, value);
-                              }}
-                            />
-                            <FieldError
-                              id={`${formId}-${index}-passcode-error`}
-                              errors={[errors.links?.[index]?.passcode]}
-                            />
-                          </Field>
-                        </div>
-
                         <Field>
-                          <Tooltip>
-                            <FieldLabel htmlFor={`${formId}-${index}-limit`}>
-                              Click Limit (Optional)
-                              <TooltipTrigger asChild>
-                                <IconInfoCircle className="size-4 ml-1 inline-block" />
-                              </TooltipTrigger>
-                            </FieldLabel>
-                            <TooltipContent sideOffset={4} align="start">
-                              <p>
-                                Set the maximum number of clicks allowed for this link. Leave empty
-                                for unlimited clicks.
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <Controller
-                            control={control}
-                            name={`links.${index}.limit`}
-                            render={({ field }) => (
-                              <Input
-                                id={`${formId}-${index}-limit`}
-                                aria-invalid={!!errors.links?.[index]?.limit}
-                                aria-describedby={
-                                  errors.links?.[index]?.limit
-                                    ? `${formId}-${index}-limit-error`
-                                    : undefined
-                                }
-                                placeholder="Leave empty for unlimited"
-                                inputMode="numeric"
-                                value={field.value ? field.value.toLocaleString("en-US") : ""}
-                                onChange={(e) => {
-                                  // Remove all non-digit characters
-                                  const rawValue = e.target.value.replace(/\D/g, "");
-                                  // Convert to number or undefined if empty
-                                  const numValue = rawValue ? parseInt(rawValue, 10) : undefined;
-                                  // Limit to max 1,000,000
-                                  if (numValue && numValue > 1000000) {
-                                    field.onChange(1000000);
-                                  } else {
-                                    field.onChange(numValue);
-                                  }
-                                }}
-                              />
-                            )}
-                          />
-                          <FieldError
-                            id={`${formId}-${index}-limit-error`}
-                            errors={[errors.links?.[index]?.limit]}
-                          />
-                        </Field>
-
-                        <Field>
-                          <FieldLabel htmlFor={`${formId}-${index}-expires`}>
-                            Expires At (Optional)
-                          </FieldLabel>
-                          <Controller
-                            control={control}
-                            name={`links.${index}.expires_at`}
-                            render={({ field }) => (
-                              <DateTimePicker24hForm
-                                id={`${formId}-${index}-expires`}
-                                ariaLabel="Expiration date and time (optional)"
-                                disablePast
-                                value={field.value ? new Date(field.value) : undefined}
-                                onChange={(date) => field.onChange(date?.toISOString() ?? "")}
-                              />
-                            )}
-                          />
-                          <FieldError errors={[errors.links?.[index]?.expires_at]} />
-                        </Field>
-
-                        <Field>
-                          <FieldLabel htmlFor={`${formId}-${index}-description`}>
-                            Description (Optional)
-                          </FieldLabel>
-                          <textarea
-                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            placeholder="Add a description..."
-                            id={`${formId}-${index}-description`}
-                            aria-invalid={!!errors.links?.[index]?.description}
+                          <FieldLabel htmlFor={`${formId}-${index}-title`}>Title</FieldLabel>
+                          <Input
+                            placeholder="e.g. Summer campaign"
+                            id={`${formId}-${index}-title`}
+                            aria-invalid={!!errors.links?.[index]?.title}
                             aria-describedby={
-                              errors.links?.[index]?.description
-                                ? `${formId}-${index}-description-error`
+                              errors.links?.[index]?.title
+                                ? `${formId}-${index}-title-error`
                                 : undefined
                             }
-                            {...register(`links.${index}.description`)}
+                            {...register(`links.${index}.title`)}
                           />
                           <FieldError
-                            id={`${formId}-${index}-description-error`}
-                            errors={[errors.links?.[index]?.description]}
+                            id={`${formId}-${index}-title-error`}
+                            errors={[errors.links?.[index]?.title]}
                           />
                         </Field>
 
-                        <Field
-                          orientation="horizontal"
-                          className="flex flex-row items-center justify-between rounded-lg border p-4"
+                        <Collapsible
+                          open={
+                            expandedOptions[field.id] ||
+                            Boolean(
+                              errors.links?.[index]?.custom_code ||
+                              errors.links?.[index]?.passcode ||
+                              errors.links?.[index]?.limit ||
+                              errors.links?.[index]?.expires_at ||
+                              errors.links?.[index]?.description,
+                            )
+                          }
+                          onOpenChange={(value) =>
+                            setExpandedOptions((current) => ({ ...current, [field.id]: value }))
+                          }
+                          className="min-w-0 w-full border-t pt-4"
                         >
-                          <div className="space-y-0.5">
-                            <Tooltip>
-                              <FieldLabel htmlFor={`${formId}-${index}-stats`}>
-                                Enable Statistics
-                                <TooltipTrigger asChild>
-                                  <IconInfoCircle className="size-4" />
-                                </TooltipTrigger>
-                              </FieldLabel>
-                              <TooltipContent sideOffset={1} align="start">
-                                <p>
-                                  What is statistics? Statistics is a feature that tracks the number
-                                  of clicks on a link. If disabled, the link will not be tracked.
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
-                          <Controller
-                            control={control}
-                            name={`links.${index}.enable_stats`}
-                            render={({ field }) => (
-                              <Switch
-                                id={`${formId}-${index}-stats`}
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
+                          <CollapsibleTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              className="group h-auto min-h-11 w-full justify-between px-0 text-left hover:bg-transparent has-[>svg]:px-0"
+                            >
+                              <span className="min-w-0">
+                                <span className="block">Link options</span>
+                                <span className="mt-1 block whitespace-normal text-sm font-normal leading-6 text-muted-foreground">
+                                  Optional settings — open only what you need
+                                </span>
+                              </span>
+                              <ChevronDown
+                                aria-hidden="true"
+                                className="size-4 shrink-0 transition-transform group-data-[state=open]:rotate-180 motion-reduce:transition-none"
                               />
-                            )}
-                          />
-                        </Field>
-
-                        <Collapsible className="rounded-lg border p-4">
-                          <div className="flex items-center justify-between">
-                            <FieldLabel>UTM Tags (Advanced)</FieldLabel>
-                            <CollapsibleTrigger asChild>
-                              <Button variant="ghost" size="sm" className="w-9 p-0">
-                                <ChevronDown className="size-4 transition-transform duration-200 data-[state=open]:rotate-180" />
-                                <span className="sr-only">Toggle UTM tags</span>
-                              </Button>
-                            </CollapsibleTrigger>
-                          </div>
-                          <CollapsibleContent className="pt-4 grid grid-cols-2 gap-4">
-                            <Field>
-                              <FieldLabel htmlFor={`${formId}-${index}-utm_source`}>
-                                UTM Source
-                              </FieldLabel>
-                              <Input
-                                placeholder="e.g. instagram"
-                                id={`${formId}-${index}-utm_source`}
-                                {...register(`links.${index}.tags.utm_source`)}
-                              />
-                            </Field>
-                            <Field>
-                              <FieldLabel htmlFor={`${formId}-${index}-utm_medium`}>
-                                UTM Medium
-                              </FieldLabel>
-                              <Input
-                                placeholder="e.g. social"
-                                id={`${formId}-${index}-utm_medium`}
-                                {...register(`links.${index}.tags.utm_medium`)}
-                              />
-                            </Field>
-                            <Field>
-                              <FieldLabel htmlFor={`${formId}-${index}-utm_campaign`}>
-                                UTM Campaign
-                              </FieldLabel>
-                              <Input
-                                placeholder="e.g. summer_sale"
-                                id={`${formId}-${index}-utm_campaign`}
-                                {...register(`links.${index}.tags.utm_campaign`)}
-                              />
-                            </Field>
-                            <Field>
-                              <FieldLabel htmlFor={`${formId}-${index}-utm_term`}>
-                                UTM Term
-                              </FieldLabel>
-                              <Input
-                                placeholder="e.g. running_shoes"
-                                id={`${formId}-${index}-utm_term`}
-                                {...register(`links.${index}.tags.utm_term`)}
-                              />
-                            </Field>
-                            <Field className="col-span-2">
-                              <FieldLabel htmlFor={`${formId}-${index}-utm_content`}>
-                                UTM Content
-                              </FieldLabel>
-                              <Input
-                                placeholder="e.g. banner_top"
-                                id={`${formId}-${index}-utm_content`}
-                                {...register(`links.${index}.tags.utm_content`)}
-                              />
-                            </Field>
+                            </Button>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="pt-4">
+                            <LinkOptions
+                              form={form}
+                              index={index}
+                              prefix={`${formId}-${index}`}
+                              baseURL={FRONTEND_BASE_URL}
+                            />
                           </CollapsibleContent>
                         </Collapsible>
-
                         {isBulky && index < fields.length - 1 && <Separator />}
                       </FieldSet>
                     ))}
@@ -671,20 +461,30 @@ export default function CreateLink() {
               )}
             </form>
 
-            <DrawerFooter className="flex-row justify-end gap-2">
-              <DrawerClose asChild>
-                <Button type="button" variant="outline">
+            <DialogFooter className="shrink-0 flex-row justify-end gap-3 border-t bg-background px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">
+              <DialogClose asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 sm:flex-none"
+                  disabled={createLinkMutation.isPending}
+                >
                   Cancel
                 </Button>
-              </DrawerClose>
-              <Button type="submit" form="create-link-form" disabled={createLinkMutation.isPending}>
+              </DialogClose>
+              <Button
+                type="submit"
+                form={`${formId}-create-link-form`}
+                className="flex-1 sm:flex-none"
+                disabled={createLinkMutation.isPending}
+              >
                 {createLinkMutation.isPending ? "Creating..." : "Create Link"}
-                {isBulky && "s"}
+                {isBulky && `s (${fields.length})`}
               </Button>
-            </DrawerFooter>
+            </DialogFooter>
           </div>
-        </DrawerContent>
-      </Drawer>
+        </DialogContent>
+      </Dialog>
 
       {/* Bulk Creation Confirmation Dialog */}
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>

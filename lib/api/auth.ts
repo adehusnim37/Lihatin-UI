@@ -1736,7 +1736,8 @@ export interface TOTPSetupResponse {
  */
 export interface VerifyTOTPLoginRequest {
   pending_auth_token: string;
-  totp_code: string;
+  totp_code?: string;
+  recovery_code?: string;
 }
 
 export interface VerifyLoginEmailOTPRequest {

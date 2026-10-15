@@ -164,9 +164,9 @@ export function NavUser() {
                 <IconUserCircle />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push("/profile/security")}>
                 <IconShield />
-                MFA/2FA
+                Auth & PassKeys
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => router.push("/profile/sessions")}>
                 <IconDeviceDesktop />
