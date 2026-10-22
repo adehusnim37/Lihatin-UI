@@ -104,6 +104,8 @@ export interface AdminListSupportTicketsResponse {
 }
 
 export interface AdminSupportTicketDetailResponse {
+  requester_verified_at?: string | null;
+  credential_reset?: SupportCredentialReset | null;
   id: string;
   ticket_code: string;
   email: string;
@@ -568,4 +570,40 @@ export async function sendUserSupportMessage(
 
 export function getUserSupportAttachmentURL(attachmentID: string): string {
   return `${API_URL}/auth/support/attachments/${encodeURIComponent(attachmentID)}`;
+}
+
+export type SupportResetMethod = "totp" | "passkeys" | "all";
+export interface SupportCredentialReset {
+  ticket_id: string;
+  ticket_code: string;
+  user_id: string;
+  approved_by: string;
+  method: SupportResetMethod;
+  reason: string;
+  created_at: string;
+  notification_sent_at?: string | null;
+}
+export interface ApproveSupportCredentialResetRequest {
+  method: SupportResetMethod;
+  approved: true;
+  reason: string;
+  ticket_code: string;
+  verification_token: string;
+}
+export async function approveSupportCredentialReset(
+  id: string,
+  payload: ApproveSupportCredentialResetRequest,
+): Promise<APIResponse<SupportCredentialReset>> {
+  const response = await fetchWithAuth(
+    `${API_URL}/auth/admin/support/tickets/${encodeURIComponent(id)}/credential-reset`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    },
+  );
+  const result: APIResponse<SupportCredentialReset> = await response.json();
+  if (!response.ok) throw new Error(getErrorMessage(result) || "Recovery approval failed");
+  return result;
 }

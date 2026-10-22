@@ -21,6 +21,7 @@ import {
   SupportPriorityBadge,
   SupportStatusBadge,
 } from "@/components/support/support-ticket-badges";
+import { SupportCredentialResetActions } from "@/components/support/support-credential-reset-actions";
 import { SupportConversationBubble } from "@/components/support/support-conversation-bubble";
 import { SiteHeader } from "@/components/site-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -983,6 +984,11 @@ export default function AdminSupportTicketsPage() {
                                       <IconSend className="mr-2 size-4" />
                                       Resend Verification
                                     </Button>
+                                    <SupportCredentialResetActions
+                                      key={activeTicket.id}
+                                      ticket={activeTicket}
+                                      disabled={updateTicketMutation.isPending}
+                                    />
                                   </div>
                                 </div>
                               </>

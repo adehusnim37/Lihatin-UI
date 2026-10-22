@@ -10,6 +10,8 @@ export { supportKeys } from "@/lib/support/query-cache";
 
 import {
   createSupportTicket,
+  approveSupportCredentialReset,
+  type ApproveSupportCredentialResetRequest,
   getAdminSupportConversation,
   getAdminSupportTicket,
   getUserSupportConversation,
@@ -319,5 +321,22 @@ export function useSendUserSupportMessageMutation() {
       return ensureSuccess(response, "Failed to send support message");
     },
     onSuccess: (_data, variables) => refreshUserSupportTicket(queryClient, variables.id),
+  });
+}
+
+export function useApproveSupportCredentialResetMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: ApproveSupportCredentialResetRequest;
+    }) => {
+      const response = await approveSupportCredentialReset(id, payload);
+      return ensureSuccess(response, "Recovery approval failed");
+    },
+    onSuccess: (_data, variables) => refreshAdminSupportTicket(queryClient, variables.id),
   });
 }
