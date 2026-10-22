@@ -277,12 +277,6 @@ export default function AdminSupportTicketsPage() {
           ? `Action: ${response.action_applied}`
           : "Ticket status updated.",
       });
-
-      await Promise.all([
-        ticketsQuery.refetch(),
-        ticketDetailQuery.refetch(),
-        conversationQuery.refetch(),
-      ]);
     } catch (error) {
       toast.error("Update failed", {
         description: error instanceof Error ? error.message : "Please try again.",
@@ -313,7 +307,6 @@ export default function AdminSupportTicketsPage() {
         attachmentInputRef.current.value = "";
       }
 
-      await Promise.all([conversationQuery.refetch(), ticketsQuery.refetch()]);
       toast.success("Message sent");
     } catch (error) {
       toast.error("Failed to send message", {

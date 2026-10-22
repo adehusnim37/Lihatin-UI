@@ -61,21 +61,15 @@ export function useAdminInAppAnnouncementAudienceQuery(
 
 function useAnnouncementMutationInvalidation() {
   const queryClient = useQueryClient();
-  return (id?: string) => {
-    void queryClient.invalidateQueries({ queryKey: adminAnnouncementKeys.all });
-    if (id) {
-      void queryClient.invalidateQueries({
-        queryKey: adminAnnouncementKeys.detail(id),
-      });
-    }
-  };
+  // This prefix already includes list, detail and related child queries.
+  return () => queryClient.invalidateQueries({ queryKey: adminAnnouncementKeys.all });
 }
 
 export function useCreateAdminInAppAnnouncementMutation() {
   const invalidate = useAnnouncementMutationInvalidation();
   return useMutation({
     mutationFn: (payload: CreateAnnouncementPayload) => createAdminInAppAnnouncement(payload),
-    onSuccess: (announcement) => invalidate(announcement.id),
+    onSuccess: () => invalidate(),
   });
 }
 
@@ -84,7 +78,7 @@ export function useUpdateAdminInAppAnnouncementMutation() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: AnnouncementPayload }) =>
       updateAdminInAppAnnouncement(id, payload),
-    onSuccess: (announcement) => invalidate(announcement.id),
+    onSuccess: () => invalidate(),
   });
 }
 
@@ -92,7 +86,7 @@ export function usePublishAdminInAppAnnouncementMutation() {
   const invalidate = useAnnouncementMutationInvalidation();
   return useMutation({
     mutationFn: (id: string) => publishAdminInAppAnnouncement(id),
-    onSuccess: (announcement) => invalidate(announcement.id),
+    onSuccess: () => invalidate(),
   });
 }
 
@@ -100,7 +94,7 @@ export function useArchiveAdminInAppAnnouncementMutation() {
   const invalidate = useAnnouncementMutationInvalidation();
   return useMutation({
     mutationFn: (id: string) => archiveAdminInAppAnnouncement(id),
-    onSuccess: (_response, id) => invalidate(id),
+    onSuccess: () => invalidate(),
   });
 }
 
@@ -108,6 +102,6 @@ export function useDeleteAdminInAppAnnouncementMutation() {
   const invalidate = useAnnouncementMutationInvalidation();
   return useMutation({
     mutationFn: (id: string) => deleteAdminInAppAnnouncement(id),
-    onSuccess: (_announcement, id) => invalidate(id),
+    onSuccess: () => invalidate(),
   });
 }

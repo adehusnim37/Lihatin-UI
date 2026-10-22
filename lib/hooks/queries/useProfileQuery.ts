@@ -46,9 +46,7 @@ export function useUpdateProfileMutation() {
       }
       return response;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: profileKeys.detail() });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: profileKeys.detail() }),
   });
 }
 
@@ -67,9 +65,7 @@ export function useRevokeDeviceMutation() {
       }
       return response;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: profileKeys.detail() });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: profileKeys.detail() }),
   });
 }
 
@@ -98,10 +94,11 @@ export function useChangeEmailMutation() {
       }
       return response;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: profileKeys.detail() });
-      queryClient.invalidateQueries({ queryKey: profileKeys.emailEligibility() });
-    },
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: profileKeys.detail() }),
+        queryClient.invalidateQueries({ queryKey: profileKeys.emailEligibility() }),
+      ]),
   });
 }
 
@@ -130,12 +127,11 @@ export function useChangeUsernameMutation() {
       }
       return response;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: profileKeys.detail() });
-      queryClient.invalidateQueries({
-        queryKey: profileKeys.usernameEligibility(),
-      });
-    },
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: profileKeys.detail() }),
+        queryClient.invalidateQueries({ queryKey: profileKeys.usernameEligibility() }),
+      ]),
   });
 }
 
@@ -168,10 +164,11 @@ export function useRevokeSessionMutation() {
       }
       return response;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: sessionKeys.list() });
-      queryClient.invalidateQueries({ queryKey: profileKeys.detail() });
-    },
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: sessionKeys.list() }),
+        queryClient.invalidateQueries({ queryKey: profileKeys.detail() }),
+      ]),
   });
 }
 
@@ -186,9 +183,10 @@ export function useRevokeAllSessionsMutation() {
       }
       return response;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: sessionKeys.list() });
-      queryClient.invalidateQueries({ queryKey: profileKeys.detail() });
-    },
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: sessionKeys.list() }),
+        queryClient.invalidateQueries({ queryKey: profileKeys.detail() }),
+      ]),
   });
 }

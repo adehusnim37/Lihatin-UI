@@ -252,13 +252,17 @@ export async function verifySupportAccessCode(payload: {
   return result;
 }
 
-export async function listPublicSupportConversation(params: {
-  ticket: string;
-}): Promise<APIResponse<SupportConversationResponse>> {
+export async function listPublicSupportConversation(
+  params: {
+    ticket: string;
+  },
+  signal?: AbortSignal,
+): Promise<APIResponse<SupportConversationResponse>> {
   const response = await fetch(
     `${API_URL}/support/tickets/${encodeURIComponent(params.ticket)}/messages`,
     {
       method: "GET",
+      signal,
       credentials: "include",
     },
   );
@@ -335,15 +339,18 @@ export async function revokePublicSupportAccess(ticket: string): Promise<void> {
   }
 }
 
-export async function listAdminSupportTickets(params?: {
-  status?: SupportTicketStatus | "all";
-  category?: SupportCategory | "all";
-  priority?: SupportPriority | "all";
-  page?: number;
-  limit?: number;
-  search?: string;
-  email?: string;
-}): Promise<APIResponse<AdminListSupportTicketsResponse>> {
+export async function listAdminSupportTickets(
+  params?: {
+    status?: SupportTicketStatus | "all";
+    category?: SupportCategory | "all";
+    priority?: SupportPriority | "all";
+    page?: number;
+    limit?: number;
+    search?: string;
+    email?: string;
+  },
+  signal?: AbortSignal,
+): Promise<APIResponse<AdminListSupportTicketsResponse>> {
   const query = new URLSearchParams();
 
   if (params?.status && params.status !== "all") query.set("status", params.status);
@@ -359,6 +366,7 @@ export async function listAdminSupportTickets(params?: {
     `${API_URL}/auth/admin/support/tickets${suffix ? `?${suffix}` : ""}`,
     {
       method: "GET",
+      signal,
       headers: {
         "Content-Type": "application/json",
       },
@@ -375,11 +383,13 @@ export async function listAdminSupportTickets(params?: {
 
 export async function getAdminSupportTicket(
   id: string,
+  signal?: AbortSignal,
 ): Promise<APIResponse<AdminSupportTicketDetailResponse>> {
   const response = await fetchWithAuth(
     `${API_URL}/auth/admin/support/tickets/${encodeURIComponent(id)}`,
     {
       method: "GET",
+      signal,
       headers: {
         "Content-Type": "application/json",
       },
@@ -419,11 +429,13 @@ export async function updateAdminSupportTicket(
 
 export async function getAdminSupportConversation(
   id: string,
+  signal?: AbortSignal,
 ): Promise<APIResponse<SupportConversationResponse>> {
   const response = await fetchWithAuth(
     `${API_URL}/auth/admin/support/tickets/${encodeURIComponent(id)}/messages`,
     {
       method: "GET",
+      signal,
       headers: {
         "Content-Type": "application/json",
       },
@@ -473,10 +485,13 @@ export function getAdminSupportAttachmentURL(attachmentID: string): string {
   return `${API_URL}/auth/admin/support/attachments/${encodeURIComponent(attachmentID)}`;
 }
 
-export async function listUserSupportTickets(params?: {
-  page?: number;
-  limit?: number;
-}): Promise<APIResponse<UserListSupportTicketsResponse>> {
+export async function listUserSupportTickets(
+  params?: {
+    page?: number;
+    limit?: number;
+  },
+  signal?: AbortSignal,
+): Promise<APIResponse<UserListSupportTicketsResponse>> {
   const query = new URLSearchParams();
   if (params?.page) query.set("page", String(params.page));
   if (params?.limit) query.set("limit", String(params.limit));
@@ -485,6 +500,7 @@ export async function listUserSupportTickets(params?: {
     `${API_URL}/auth/support/tickets${query.toString() ? `?${query.toString()}` : ""}`,
     {
       method: "GET",
+      signal,
       headers: {
         "Content-Type": "application/json",
       },
@@ -501,11 +517,13 @@ export async function listUserSupportTickets(params?: {
 
 export async function getUserSupportConversation(
   id: string,
+  signal?: AbortSignal,
 ): Promise<APIResponse<SupportConversationResponse>> {
   const response = await fetchWithAuth(
     `${API_URL}/auth/support/tickets/${encodeURIComponent(id)}/messages`,
     {
       method: "GET",
+      signal,
       headers: {
         "Content-Type": "application/json",
       },

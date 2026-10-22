@@ -12,6 +12,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1";
 // CSRF token storage (in-memory for security)
 let csrfToken: string | null = null;
 let csrfTokenPromise: Promise<string> | null = null;
+let csrfVersion = 0;
+let authVersion = 0;
+let authRefreshPromise: Promise<void> | null = null;
+let sessionExpired = false;
 
 /**
  * Fetch CSRF token from server
@@ -36,6 +40,7 @@ async function fetchCSRFToken(): Promise<string> {
 
       const data = await response.json();
       csrfToken = data.data?.csrfToken || null;
+      if (csrfToken) csrfVersion++;
 
       if (!csrfToken) {
         console.warn("CSRF token not found in response");
@@ -68,6 +73,7 @@ export async function getCSRFToken(): Promise<string> {
  * Clear CSRF token (call on logout)
  */
 export function clearCSRFToken(): void {
+  sessionExpired = false;
   csrfToken = null;
   csrfTokenPromise = null;
 }
@@ -76,6 +82,7 @@ export function clearCSRFToken(): void {
  * Refresh CSRF token (call after login)
  */
 export async function refreshCSRFToken(): Promise<string> {
+  sessionExpired = false;
   csrfToken = null;
   return fetchCSRFToken();
 }
@@ -105,128 +112,117 @@ function isCSRFErrorPayload(payload: unknown): boolean {
   return `${String(response.message || "")} ${errorText}`.toLowerCase().includes("csrf");
 }
 
+// Include the CSRF refresh in the shared recovery so waiters never replay
+// requests with the previous session's token. Versioning also covers late 401s.
+async function recoverSession(requestVersion: number): Promise<void> {
+  if (requestVersion !== authVersion) return;
+  if (!authRefreshPromise) {
+    authRefreshPromise = (async () => {
+      await refreshToken();
+      await refreshCSRFToken();
+      authVersion++;
+    })().finally(() => {
+      authRefreshPromise = null;
+    });
+  }
+  await authRefreshPromise;
+}
+
+function expireSession(): void {
+  if (sessionExpired) return;
+  clearCSRFToken();
+  sessionExpired = true;
+  clearUserData();
+  if (typeof window !== "undefined") {
+    window.location.replace("/auth/login?error=session_expired");
+  }
+}
+
 /**
- * Wrapper around fetch that handles 401 errors with automatic token refresh
- * and CSRF token attachment for mutating requests
- * @param input - URL or Request object
- * @param init - RequestInit options
- * @param retryOnRefresh - Whether to retry the request after refreshing (default: true)
+ * Sends a request, with at most one replay for each explicit auth/CSRF rejection.
+ * Network errors and other HTTP failures never replay a write automatically.
+ * Shared session recovery continues if a caller aborts, but that caller's
+ * original request is not replayed after cancellation.
  */
 export async function fetchWithAuth(
   input: RequestInfo | URL,
   init?: RequestInit,
   retryOnRefresh: boolean = true,
 ): Promise<Response> {
-  const method = init?.method?.toUpperCase() || "GET";
+  const source = input instanceof Request ? input.clone() : input;
+  const method = (
+    init?.method || (source instanceof Request ? source.method : "GET")
+  ).toUpperCase();
+  const headers = new Headers(
+    init?.headers ?? (source instanceof Request ? source.headers : undefined),
+  );
+  const signal = init?.signal ?? (source instanceof Request ? source.signal : undefined);
+  signal?.throwIfAborted();
 
-  // Prepare headers
-  const headers = new Headers(init?.headers);
-
-  // Attach device fingerprint (metadata only) on the browser side. The value
-  // is used by the backend for session/device tracking, not authorization.
   if (typeof window !== "undefined") {
     const deviceID = await getDeviceID();
-    if (deviceID) {
-      headers.set("X-Device-ID", deviceID);
-    }
+    if (deviceID) headers.set("X-Device-ID", deviceID);
   }
-
-  // Attach CSRF token for mutating requests.
   if (requiresCSRF(method)) {
     const token = await getCSRFToken();
-    if (token) {
-      headers.set("X-CSRF-Token", token);
-    } else {
-      console.warn(`[CSRF] No token available for ${method} request`);
-    }
+    if (token) headers.set("X-CSRF-Token", token);
   }
 
-  // Ensure credentials: 'include' for cookie transmission
-  const config: RequestInit = {
-    ...init,
-    headers,
-    credentials: "include",
-  };
+  const requestAuthVersion = authVersion;
+  let requestCSRFVersion = csrfVersion;
+  let retriedAuth = false;
+  let retriedCSRF = false;
+  for (;;) {
+    signal?.throwIfAborted();
+    const response = await fetch(source instanceof Request ? source.clone() : source, {
+      ...init,
+      headers,
+      signal,
+      credentials: "include",
+    });
 
-  // Make initial request
-  const response = await fetch(input, config);
-
-  // Handle CSRF token error (403 with CSRF message)
-  if (response.status === 403) {
-    const clonedResponse = response.clone();
-    try {
-      const errorData = await clonedResponse.json();
-      if (isCSRFErrorPayload(errorData)) {
-        console.log("CSRF token expired, refreshing...");
-        await refreshCSRFToken();
-
-        // Retry with new CSRF token
-        const newToken = await getCSRFToken();
-        if (newToken) {
-          headers.set("X-CSRF-Token", newToken);
-        }
-
-        return fetch(input, { ...config, headers });
+    if (response.status === 403 && !retriedCSRF && requiresCSRF(method)) {
+      let csrfRejected = false;
+      try {
+        csrfRejected = isCSRFErrorPayload(await response.clone().json());
+      } catch {
+        // A non-JSON 403 is a normal authorization error.
       }
-    } catch {
-      // Not JSON response, continue with original response
+      if (csrfRejected) {
+        signal?.throwIfAborted();
+        const token =
+          requestCSRFVersion === csrfVersion ? await refreshCSRFToken() : await getCSRFToken();
+        if (!token) return response;
+        headers.set("X-CSRF-Token", token);
+        requestCSRFVersion = csrfVersion;
+        retriedCSRF = true;
+        continue;
+      }
     }
-  }
 
-  // If 401 and retry enabled, attempt token refresh
-  if (response.status === 401 && retryOnRefresh) {
-    try {
-      console.log("Access token expired, refreshing...");
-
-      // Attempt to refresh token (uses refresh_token cookie)
-      await refreshToken();
-
-      // Also refresh CSRF token after auth refresh
-      await refreshCSRFToken();
-
-      console.log("Token refreshed successfully, retrying request...");
-
-      // Get new CSRF token for retry
+    if (response.status === 401 && retryOnRefresh) {
+      if (retriedAuth || sessionExpired) {
+        expireSession();
+        return response;
+      }
+      signal?.throwIfAborted();
+      try {
+        await recoverSession(requestAuthVersion);
+      } catch {
+        expireSession();
+        return response;
+      }
+      signal?.throwIfAborted();
       if (requiresCSRF(method)) {
-        const newToken = await getCSRFToken();
-        if (newToken) {
-          headers.set("X-CSRF-Token", newToken);
-        }
+        const token = await getCSRFToken();
+        if (token) headers.set("X-CSRF-Token", token);
       }
-
-      // Retry original request with new tokens
-      const retryResponse = await fetch(input, { ...config, headers });
-
-      // A successful refresh must not hide a session that Redis has revoked.
-      // HTTP-only cookies are expired by the backend; clear client auth state
-      // and leave the protected UI when the retried request is still rejected.
-      if (retryResponse.status === 401) {
-        clearCSRFToken();
-        clearUserData();
-        if (typeof window !== "undefined") {
-          window.location.replace("/auth/login?error=session_expired");
-        }
-      }
-
-      return retryResponse;
-    } catch (refreshError) {
-      console.error("Token refresh failed:", refreshError);
-
-      // Clear CSRF token on auth failure
-      clearCSRFToken();
-      clearUserData();
-
-      // Redirect to login if refresh fails
-      if (typeof window !== "undefined") {
-        window.location.replace("/auth/login?error=session_expired");
-      }
-
-      // Return original 401 response
-      return response;
+      requestCSRFVersion = csrfVersion;
+      retriedAuth = true;
+      continue;
     }
+    return response;
   }
-
-  return response;
 }
 
 /**

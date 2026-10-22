@@ -54,21 +54,15 @@ export function useAdminCampaignDeliveriesQuery(
 
 function useCampaignMutationInvalidation() {
   const queryClient = useQueryClient();
-  return (id?: string) => {
-    void queryClient.invalidateQueries({ queryKey: adminCampaignKeys.all });
-    if (id) {
-      void queryClient.invalidateQueries({
-        queryKey: adminCampaignKeys.detail(id),
-      });
-    }
-  };
+  // This prefix already includes list, detail and related child queries.
+  return () => queryClient.invalidateQueries({ queryKey: adminCampaignKeys.all });
 }
 
 export function useCreateAdminCampaignMutation() {
   const invalidate = useCampaignMutationInvalidation();
   return useMutation({
     mutationFn: (payload: CampaignPayload) => createAdminCampaign(payload),
-    onSuccess: (campaign) => invalidate(campaign.id),
+    onSuccess: () => invalidate(),
   });
 }
 
@@ -77,7 +71,7 @@ export function useUpdateAdminCampaignMutation() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: Partial<CampaignPayload> }) =>
       updateAdminCampaign(id, payload),
-    onSuccess: (campaign) => invalidate(campaign.id),
+    onSuccess: () => invalidate(),
   });
 }
 
@@ -86,7 +80,7 @@ export function useScheduleAdminCampaignMutation() {
   return useMutation({
     mutationFn: ({ id, scheduledAt }: { id: string; scheduledAt?: string }) =>
       scheduleAdminCampaign(id, scheduledAt),
-    onSuccess: (campaign) => invalidate(campaign.id),
+    onSuccess: () => invalidate(),
   });
 }
 
@@ -94,7 +88,7 @@ export function useCancelAdminCampaignMutation() {
   const invalidate = useCampaignMutationInvalidation();
   return useMutation({
     mutationFn: (id: string) => cancelAdminCampaign(id),
-    onSuccess: (campaign) => invalidate(campaign.id),
+    onSuccess: () => invalidate(),
   });
 }
 

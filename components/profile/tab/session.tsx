@@ -163,8 +163,6 @@ export default function SessionTab() {
 
         if (wasCurrent) {
           setTimeout(() => router.push("/auth/login"), 800);
-        } else {
-          void refetchSessions();
         }
       },
       onError: (error) => {

@@ -42,9 +42,10 @@ function ProfilePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get("tab");
-  const activeTab = requestedTab && ["general", "security", "notifications"].includes(requestedTab)
-    ? requestedTab
-    : "general";
+  const activeTab =
+    requestedTab && ["general", "security", "notifications"].includes(requestedTab)
+      ? requestedTab
+      : "general";
   const [redeemOpenOverride, setIsRedeemOpen] = useState<boolean | null>(null);
   const [secretCode, setSecretCode] = useState(() => searchParams.get("redeem_code")?.trim() || "");
   const [isRedeeming, setIsRedeeming] = useState(false);
@@ -54,9 +55,6 @@ function ProfilePageContent() {
 
   const { data: profileResponse, isLoading: isProfileLoading, refetch } = useProfileQuery();
   const updateProfileMutation = useUpdateProfileMutation();
-  const refreshProfile = () => {
-    void refetch();
-  };
 
   const profile = profileResponse?.data;
   const user = profile?.user;
@@ -95,7 +93,6 @@ function ProfilePageContent() {
     if (Object.keys(payload).length === 0) return;
 
     await updateProfileMutation.mutateAsync(payload);
-    await refetch();
     toast.success("Profile Updated", {
       description: "Your profile has been updated successfully.",
     });
@@ -388,8 +385,6 @@ function ProfilePageContent() {
                         key={`${user.id}:${user.first_name}:${user.last_name}`}
                         user={user}
                         onSaveName={handleSaveName}
-                        onEmailChanged={refreshProfile}
-                        onUsernameChanged={refreshProfile}
                       />
 
                       {/* Security Tab */}

@@ -102,7 +102,6 @@ export default function UserSupportPage() {
         fileInputRef.current.value = "";
       }
 
-      await Promise.all([conversationQuery.refetch(), ticketsQuery.refetch()]);
       toast.success("Message sent");
     } catch (error) {
       toast.error("Failed to send message", {

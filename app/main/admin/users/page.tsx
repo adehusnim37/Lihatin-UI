@@ -446,31 +446,17 @@ function AdminUsersPageContent() {
     if (lockUserMutation.isPending || unlockUserMutation.isPending) return;
 
     if (targetUser.account_status === "locked") {
-      unlockUserMutation.mutate(
-        {
-          userId: targetUser.id,
-          payload: { reason: "Unlocked via admin users action" },
-        },
-        {
-          onSuccess: () => {
-            void refetch();
-          },
-        },
-      );
+      unlockUserMutation.mutate({
+        userId: targetUser.id,
+        payload: { reason: "Unlocked via admin users action" },
+      });
       return;
     }
 
-    lockUserMutation.mutate(
-      {
-        userId: targetUser.id,
-        payload: { reason: "Locked via admin users action" },
-      },
-      {
-        onSuccess: () => {
-          void refetch();
-        },
-      },
-    );
+    lockUserMutation.mutate({
+      userId: targetUser.id,
+      payload: { reason: "Locked via admin users action" },
+    });
   };
 
   const renderUserActions = (user: AdminUserResponse) => (

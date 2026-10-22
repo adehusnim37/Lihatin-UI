@@ -1,37 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { type QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { createQueryClient } from "@/lib/query-client";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
-function makeQueryClient() {
-  return new QueryClient({
-    defaultOptions: {
-      queries: {
-        // Data dianggap fresh selama 90 detik
-        staleTime: 90 * 1000,
-        // Retry 1x jika gagal
-        retry: 1,
-        // Refetch saat window focus (bagus untuk real-time data)
-        refetchOnWindowFocus: true,
-      },
-      mutations: {
-        // Retry 1x untuk mutations
-        retry: 1,
-      },
-    },
-  });
-}
 
 let browserQueryClient: QueryClient | undefined = undefined;
 
 function getQueryClient() {
   if (typeof window === "undefined") {
     // Server: selalu buat QueryClient baru
-    return makeQueryClient();
+    return createQueryClient();
   } else {
     // Browser: reuse QueryClient yang sama
-    if (!browserQueryClient) browserQueryClient = makeQueryClient();
+    if (!browserQueryClient) browserQueryClient = createQueryClient();
     return browserQueryClient;
   }
 }

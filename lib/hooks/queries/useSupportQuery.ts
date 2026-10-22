@@ -2,6 +2,13 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  supportKeys,
+  refreshAdminSupportTicket,
+  refreshUserSupportTicket,
+} from "@/lib/support/query-cache";
+export { supportKeys } from "@/lib/support/query-cache";
+
+import {
   createSupportTicket,
   getAdminSupportConversation,
   getAdminSupportTicket,
@@ -85,24 +92,6 @@ const ensureSuccess = <TData>(
   return response.data;
 };
 
-export const supportKeys = {
-  all: ["support"] as const,
-  public: () => [...supportKeys.all, "public"] as const,
-  publicConversation: (ticket: string) =>
-    [...supportKeys.public(), "conversation", ticket] as const,
-  admin: () => [...supportKeys.all, "admin"] as const,
-  adminTickets: () => [...supportKeys.admin(), "tickets"] as const,
-  adminTicketList: (params: AdminTicketListParams) =>
-    [...supportKeys.adminTickets(), "list", params] as const,
-  adminTicketDetail: (id: string) => [...supportKeys.adminTickets(), "detail", id] as const,
-  adminConversation: (id: string) => [...supportKeys.adminTickets(), "conversation", id] as const,
-  user: () => [...supportKeys.all, "user"] as const,
-  userTickets: () => [...supportKeys.user(), "tickets"] as const,
-  userTicketList: (params: UserTicketListParams) =>
-    [...supportKeys.userTickets(), "list", params] as const,
-  userConversation: (id: string) => [...supportKeys.userTickets(), "conversation", id] as const,
-};
-
 export function useCreateSupportTicketMutation() {
   return useMutation({
     mutationFn: async (
@@ -170,8 +159,8 @@ export function usePublicSupportConversationQuery(
 ) {
   return useQuery({
     queryKey: supportKeys.publicConversation(params.ticket),
-    queryFn: async (): Promise<SupportConversationResponse> => {
-      const response = await listPublicSupportConversation(params);
+    queryFn: async ({ signal }): Promise<SupportConversationResponse> => {
+      const response = await listPublicSupportConversation(params, signal);
       return ensureSuccess(response, "Failed to load conversation");
     },
     enabled: enabled && Boolean(params.ticket),
@@ -201,8 +190,16 @@ export function useRevokePublicSupportAccessMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (ticket: string) => revokePublicSupportAccess(ticket),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: supportKeys.public() });
+    onMutate: (ticket: string) =>
+      queryClient.cancelQueries({
+        queryKey: supportKeys.publicConversation(ticket),
+        exact: true,
+      }),
+    onSuccess: (_data, ticket) => {
+      queryClient.removeQueries({
+        queryKey: supportKeys.publicConversation(ticket),
+        exact: true,
+      });
     },
   });
 }
@@ -213,14 +210,16 @@ export function useAdminSupportTicketsQuery(
 ) {
   return useQuery({
     queryKey: supportKeys.adminTicketList(params),
-    queryFn: async (): Promise<{
+    queryFn: async ({
+      signal,
+    }): Promise<{
       items: AdminSupportTicketItem[];
       total: number;
       page: number;
       limit: number;
       total_pages: number;
     }> => {
-      const response = await listAdminSupportTickets(params);
+      const response = await listAdminSupportTickets(params, signal);
       return ensureSuccess(response, "Failed to get support tickets");
     },
     enabled,
@@ -231,8 +230,8 @@ export function useAdminSupportTicketsQuery(
 export function useAdminSupportTicketDetailQuery(id: string, enabled: boolean = true) {
   return useQuery({
     queryKey: supportKeys.adminTicketDetail(id),
-    queryFn: async (): Promise<AdminSupportTicketDetailResponse> => {
-      const response = await getAdminSupportTicket(id);
+    queryFn: async ({ signal }): Promise<AdminSupportTicketDetailResponse> => {
+      const response = await getAdminSupportTicket(id, signal);
       return ensureSuccess(response, "Failed to get support ticket");
     },
     enabled: enabled && Boolean(id),
@@ -242,8 +241,8 @@ export function useAdminSupportTicketDetailQuery(id: string, enabled: boolean = 
 export function useAdminSupportConversationQuery(id: string, enabled: boolean = true) {
   return useQuery({
     queryKey: supportKeys.adminConversation(id),
-    queryFn: async (): Promise<SupportConversationResponse> => {
-      const response = await getAdminSupportConversation(id);
+    queryFn: async ({ signal }): Promise<SupportConversationResponse> => {
+      const response = await getAdminSupportConversation(id, signal);
       return ensureSuccess(response, "Failed to get support conversation");
     },
     enabled: enabled && Boolean(id),
@@ -267,19 +266,7 @@ export function useUpdateAdminSupportTicketMutation() {
       const response = await updateAdminSupportTicket(id, payload);
       return ensureSuccess(response, "Failed to update support ticket");
     },
-    onSuccess: async (_data, variables) => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: supportKeys.adminTickets(),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: supportKeys.adminTicketDetail(variables.id),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: supportKeys.adminConversation(variables.id),
-        }),
-      ]);
-    },
+    onSuccess: (_data, variables) => refreshAdminSupportTicket(queryClient, variables.id),
   });
 }
 
@@ -294,24 +281,15 @@ export function useSendAdminSupportMessageMutation() {
       const response = await sendAdminSupportMessage(id, payload);
       return ensureSuccess(response, "Failed to send support message");
     },
-    onSuccess: async (_data, variables) => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: supportKeys.adminConversation(variables.id),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: supportKeys.adminTickets(),
-        }),
-      ]);
-    },
+    onSuccess: (_data, variables) => refreshAdminSupportTicket(queryClient, variables.id),
   });
 }
 
 export function useUserSupportTicketsQuery(params: UserTicketListParams, enabled: boolean = true) {
   return useQuery({
     queryKey: supportKeys.userTicketList(params),
-    queryFn: async (): Promise<UserListSupportTicketsResponse> => {
-      const response = await listUserSupportTickets(params);
+    queryFn: async ({ signal }): Promise<UserListSupportTicketsResponse> => {
+      const response = await listUserSupportTickets(params, signal);
       return ensureSuccess(response, "Failed to get support tickets");
     },
     enabled,
@@ -321,8 +299,8 @@ export function useUserSupportTicketsQuery(params: UserTicketListParams, enabled
 export function useUserSupportConversationQuery(id: string, enabled: boolean = true) {
   return useQuery({
     queryKey: supportKeys.userConversation(id),
-    queryFn: async (): Promise<SupportConversationResponse> => {
-      const response = await getUserSupportConversation(id);
+    queryFn: async ({ signal }): Promise<SupportConversationResponse> => {
+      const response = await getUserSupportConversation(id, signal);
       return ensureSuccess(response, "Failed to get support conversation");
     },
     enabled: enabled && Boolean(id),
@@ -340,15 +318,6 @@ export function useSendUserSupportMessageMutation() {
       const response = await sendUserSupportMessage(id, payload);
       return ensureSuccess(response, "Failed to send support message");
     },
-    onSuccess: async (_data, variables) => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: supportKeys.userConversation(variables.id),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: supportKeys.userTickets(),
-        }),
-      ]);
-    },
+    onSuccess: (_data, variables) => refreshUserSupportTicket(queryClient, variables.id),
   });
 }

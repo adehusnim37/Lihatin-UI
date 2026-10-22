@@ -54,6 +54,7 @@ function PublicSupportConversationContent() {
   );
   const [draftMessage, setDraftMessage] = useState("");
   const [draftFiles, setDraftFiles] = useState<File[]>([]);
+  const [revokedTicket, setRevokedTicket] = useState<string | null>(null);
 
   useEffect(() => {
     clearLegacyPublicSupportAccessTokens();
@@ -64,7 +65,7 @@ function PublicSupportConversationContent() {
 
   const conversationQuery = usePublicSupportConversationQuery(
     { ticket: ticketCode },
-    Boolean(ticketCode),
+    Boolean(ticketCode) && revokedTicket !== ticketCode,
   );
   const sendMessageMutation = useSendPublicSupportMessageMutation();
   const revokeAccessMutation = useRevokePublicSupportAccessMutation();
@@ -114,6 +115,9 @@ function PublicSupportConversationContent() {
   };
 
   const handleResetAccess = async () => {
+    if (revokeAccessMutation.isPending) return;
+    // Keep this query disabled until navigation, including after cache removal.
+    setRevokedTicket(ticketCode);
     try {
       await revokeAccessMutation.mutateAsync(ticketCode);
     } finally {
