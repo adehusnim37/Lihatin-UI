@@ -12,6 +12,7 @@ import { toast } from "sonner";
 
 import { QueryError } from "@/components/query-error";
 import { AppSidebar } from "@/components/app-sidebar";
+import { SupportRecoveryVerification } from "@/components/support/support-recovery-verification";
 import { SupportStatusBadge } from "@/components/support/support-ticket-badges";
 import { SiteHeader } from "@/components/site-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -246,6 +247,14 @@ export default function UserSupportPage() {
                         <span className="text-muted-foreground">-</span>
                       )}
                     </div>
+
+                    {conversation && (
+                      <SupportRecoveryVerification
+                        key={conversation.ticket_id}
+                        conversation={conversation}
+                        target={{ access: "user", id: conversation.ticket_id }}
+                      />
+                    )}
 
                     <div className="max-h-[420px] space-y-3 overflow-y-auto rounded-lg border bg-muted/20 p-3">
                       {(conversation?.messages || []).length === 0 ? (

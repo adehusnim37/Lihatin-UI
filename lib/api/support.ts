@@ -71,6 +71,7 @@ export interface SupportMessageResponse {
 }
 
 export interface SupportConversationResponse {
+  recovery_verification?: SupportRecoveryVerificationStatus | null;
   ticket_code: string;
   ticket_id: string;
   category: SupportCategory;
@@ -104,6 +105,8 @@ export interface AdminListSupportTicketsResponse {
 }
 
 export interface AdminSupportTicketDetailResponse {
+  recovery_verification_requested_at?: string | null;
+  recovery_verification_expires_at?: string | null;
   requester_verified_at?: string | null;
   credential_reset?: SupportCredentialReset | null;
   id: string;
@@ -607,3 +610,60 @@ export async function approveSupportCredentialReset(
   if (!response.ok) throw new Error(getErrorMessage(result) || "Recovery approval failed");
   return result;
 }
+
+export interface SupportRecoveryVerificationStatus {
+  requested_at?: string | null;
+  expires_at?: string | null;
+  verified_at?: string | null;
+}
+export interface SupportRecoveryOTPResponse {
+  requested_at: string;
+  expires_at: string;
+  cooldown_seconds: number;
+}
+export type SupportRecoveryTarget =
+  { access: "public"; ticket: string } | { access: "user"; id: string };
+
+async function recoveryRequest<T>(
+  path: string,
+  body: unknown,
+  authenticated: boolean,
+): Promise<APIResponse<T>> {
+  const init: RequestInit = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(body),
+    cache: "no-store",
+  };
+  const response = await (authenticated
+    ? fetchWithAuth(`${API_URL}${path}`, init)
+    : fetch(`${API_URL}${path}`, init));
+  const result: APIResponse<T> = await response.json();
+  if (!response.ok || !result.success)
+    throw new Error(getErrorMessage(result) || "Recovery verification failed. Please try again.");
+  return result;
+}
+function recoveryTicketPath(target: SupportRecoveryTarget) {
+  return target.access === "public"
+    ? `/support/tickets/${encodeURIComponent(target.ticket)}/recovery`
+    : `/auth/support/tickets/${encodeURIComponent(target.id)}/recovery`;
+}
+export const requestAdminRecoveryOTP = (id: string) =>
+  recoveryRequest<SupportRecoveryOTPResponse>(
+    `/auth/admin/support/tickets/${encodeURIComponent(id)}/recovery/otp`,
+    {},
+    true,
+  );
+export const requestSupportRecoveryOTP = (target: SupportRecoveryTarget) =>
+  recoveryRequest<SupportRecoveryOTPResponse>(
+    `${recoveryTicketPath(target)}/otp`,
+    {},
+    target.access === "user",
+  );
+export const verifySupportRecoveryOTP = (target: SupportRecoveryTarget, otp_code: string) =>
+  recoveryRequest<SupportRecoveryVerificationStatus>(
+    `${recoveryTicketPath(target)}/verify-otp`,
+    { otp_code, confirmed: true },
+    target.access === "user",
+  );

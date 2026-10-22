@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { IconKeyOff, IconShieldOff } from "@tabler/icons-react";
+import { IconKeyOff, IconShieldOff, IconMail } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,10 @@ import {
 } from "@/components/ui/select";
 import type { AdminSupportTicketDetailResponse, SupportResetMethod } from "@/lib/api/support";
 import { verifySecurityAction, verifyWithPasskey } from "@/lib/api/security";
-import { useApproveSupportCredentialResetMutation } from "@/lib/hooks/queries/useSupportQuery";
+import {
+  useApproveSupportCredentialResetMutation,
+  useRequestAdminRecoveryOTPMutation,
+} from "@/lib/hooks/queries/useSupportQuery";
 
 export function SupportCredentialResetActions({
   ticket,
@@ -35,9 +38,10 @@ export function SupportCredentialResetActions({
 }) {
   const [now, setNow] = useState(Date.now);
   useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 60_000);
+    if (ticket.category !== "lost_2fa") return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [ticket.category]);
   const [method, setMethod] = useState<SupportResetMethod | null>(null);
   const [reason, setReason] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -46,13 +50,29 @@ export function SupportCredentialResetActions({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const mutation = useApproveSupportCredentialResetMutation();
+  const requestOTP = useRequestAdminRecoveryOTPMutation();
+  const [deliveryError, setDeliveryError] = useState<string | null>(null);
   if (ticket.category !== "lost_2fa") return null;
 
   const verifiedAt = ticket.requester_verified_at ? Date.parse(ticket.requester_verified_at) : 0;
   const recentlyVerified = verifiedAt > now - 24 * 60 * 60 * 1000 && verifiedAt <= now;
+  const requestedAt = Date.parse(ticket.recovery_verification_requested_at ?? "");
+  const expiresAt = Date.parse(ticket.recovery_verification_expires_at ?? "");
+  const cooldown = Math.max(0, Math.ceil((requestedAt + 60_000 - now) / 1000)) || 0;
+  const awaitingVerification = expiresAt > now && !recentlyVerified;
+  const requestUnavailable =
+    disabled ||
+    busy ||
+    requestOTP.isPending ||
+    ticket.status !== "in_progress" ||
+    !ticket.user_id ||
+    recentlyVerified ||
+    Boolean(ticket.credential_reset) ||
+    cooldown > 0;
   const unavailable =
     disabled ||
     busy ||
+    requestOTP.isPending ||
     ticket.status !== "in_progress" ||
     !ticket.user_id ||
     !recentlyVerified ||
@@ -63,6 +83,33 @@ export function SupportCredentialResetActions({
     reason.trim().length <= 1000 &&
     confirmation.trim() === ticket.ticket_code &&
     !unavailable;
+
+  const sendRecoveryCode = async () => {
+    if (requestUnavailable) return;
+    setDeliveryError(null);
+    try {
+      await requestOTP.mutateAsync(ticket.id);
+      toast.success("Recovery code sent", {
+        description:
+          "The requester must enter it in their protected ticket conversation. Never ask them to share it with you.",
+      });
+    } catch (err) {
+      setDeliveryError(
+        err instanceof Error ? err.message : "Recovery email could not be sent. Try again.",
+      );
+    }
+  };
+  const blockedReason = ticket.credential_reset
+    ? "Recovery is complete. This ticket cannot approve another reset."
+    : !ticket.user_id
+      ? "This ticket must be linked to an existing user account."
+      : ticket.status !== "in_progress"
+        ? "Set the ticket to In Progress and save the update to start recovery verification."
+        : !recentlyVerified
+          ? awaitingVerification
+            ? "Waiting for the requester to verify the code in their ticket. This status updates automatically."
+            : "Send a recovery code to the requester. Reset actions unlock after they verify it in their ticket."
+          : "Email ownership verified. Review the ownership evidence before giving explicit approval for a reset.";
 
   const open = (value: SupportResetMethod) => {
     setMethod(value);
@@ -110,6 +157,40 @@ export function SupportCredentialResetActions({
 
   return (
     <>
+      <div className="space-y-3 border-t px-3 pt-4">
+        <div className="space-y-1">
+          <p className="text-sm font-medium">Account recovery verification</p>
+          <p className="text-sm leading-6 text-muted-foreground" role="status">
+            {blockedReason}
+          </p>
+        </div>
+        {!ticket.credential_reset &&
+          !recentlyVerified &&
+          ticket.status === "in_progress" &&
+          ticket.user_id && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void sendRecoveryCode()}
+              disabled={requestUnavailable}
+              className="h-auto min-h-10 w-full justify-start whitespace-normal py-2 text-left"
+            >
+              <IconMail className="mr-2 size-4 shrink-0" />
+              {requestOTP.isPending
+                ? "Sending recovery code…"
+                : cooldown > 0
+                  ? `Resend in ${cooldown}s`
+                  : ticket.recovery_verification_requested_at
+                    ? "Resend recovery OTP"
+                    : "Send recovery OTP"}
+            </Button>
+          )}
+        {deliveryError && (
+          <Alert variant="destructive" role="alert">
+            <AlertDescription>{deliveryError}</AlertDescription>
+          </Alert>
+        )}
+      </div>
       <Button
         variant="ghost"
         onClick={() => open("totp")}
@@ -131,7 +212,9 @@ export function SupportCredentialResetActions({
       <p className="px-3 text-xs text-muted-foreground">
         {ticket.credential_reset
           ? `Recovery approved (${ticket.credential_reset.method}). Security email ${ticket.credential_reset.notification_sent_at ? "sent" : "queued"}.`
-          : "Requires In Progress status, requester email OTP verification within 24 hours, and your explicit approval. Admin accounts are excluded."}
+          : recentlyVerified
+            ? "Verification is valid for 24 hours. Your own authenticator or passkey is required to approve a reset. Admin accounts are excluded."
+            : "Codes expire after 10 minutes. Only the requester enters the code; verification does not approve a reset. Admin accounts are excluded."}
       </p>
       <Dialog
         open={method !== null}

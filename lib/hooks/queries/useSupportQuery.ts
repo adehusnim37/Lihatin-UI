@@ -10,6 +10,10 @@ export { supportKeys } from "@/lib/support/query-cache";
 
 import {
   createSupportTicket,
+  requestAdminRecoveryOTP,
+  requestSupportRecoveryOTP,
+  verifySupportRecoveryOTP,
+  type SupportRecoveryTarget,
   approveSupportCredentialReset,
   type ApproveSupportCredentialResetRequest,
   getAdminSupportConversation,
@@ -166,6 +170,7 @@ export function usePublicSupportConversationQuery(
       return ensureSuccess(response, "Failed to load conversation");
     },
     enabled: enabled && Boolean(params.ticket),
+    refetchInterval: (query) => conversationRecoveryInterval(query.state.data),
   });
 }
 
@@ -237,6 +242,18 @@ export function useAdminSupportTicketDetailQuery(id: string, enabled: boolean = 
       return ensureSuccess(response, "Failed to get support ticket");
     },
     enabled: enabled && Boolean(id),
+    refetchInterval: (query) => {
+      const ticket = query.state.data;
+      const expiresAt = Date.parse(ticket?.recovery_verification_expires_at ?? "");
+      const verifiedAt = Date.parse(ticket?.requester_verified_at ?? "");
+      const requestedAt = Date.parse(ticket?.recovery_verification_requested_at ?? "");
+      return ticket?.status === "in_progress" &&
+        !ticket.credential_reset &&
+        expiresAt > Date.now() &&
+        !(verifiedAt >= requestedAt)
+        ? 10_000
+        : false;
+    },
   });
 }
 
@@ -306,6 +323,7 @@ export function useUserSupportConversationQuery(id: string, enabled: boolean = t
       return ensureSuccess(response, "Failed to get support conversation");
     },
     enabled: enabled && Boolean(id),
+    refetchInterval: (query) => conversationRecoveryInterval(query.state.data),
   });
 }
 
@@ -338,5 +356,42 @@ export function useApproveSupportCredentialResetMutation() {
       return ensureSuccess(response, "Recovery approval failed");
     },
     onSuccess: (_data, variables) => refreshAdminSupportTicket(queryClient, variables.id),
+  });
+}
+
+// Refresh only an active recovery conversation awaiting the requester proof.
+function conversationRecoveryInterval(conversation?: SupportConversationResponse): number | false {
+  if (conversation?.category !== "lost_2fa" || conversation.status !== "in_progress") return false;
+  const verifiedAt = Date.parse(conversation.recovery_verification?.verified_at ?? "");
+  return verifiedAt > Date.now() - 24 * 60 * 60 * 1000 ? false : 15_000;
+}
+
+export function useRequestAdminRecoveryOTPMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) =>
+      ensureSuccess(await requestAdminRecoveryOTP(id), "Recovery email could not be sent"),
+    onSuccess: (_data, id) => refreshAdminSupportTicket(queryClient, id),
+  });
+}
+
+export function useSupportRecoveryMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ target, code }: { target: SupportRecoveryTarget; code?: string }) => {
+      return code === undefined
+        ? ensureSuccess(await requestSupportRecoveryOTP(target), "Recovery email could not be sent")
+        : ensureSuccess(
+            await verifySupportRecoveryOTP(target, code),
+            "Recovery verification failed",
+          );
+    },
+    onSuccess: (_data, { target }) =>
+      target.access === "public"
+        ? queryClient.invalidateQueries({
+            queryKey: supportKeys.publicConversation(target.ticket),
+            exact: true,
+          })
+        : refreshUserSupportTicket(queryClient, target.id),
   });
 }

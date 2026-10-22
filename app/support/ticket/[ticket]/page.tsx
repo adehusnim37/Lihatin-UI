@@ -10,6 +10,7 @@ import {
   SupportConversationBubble,
   formatDate,
 } from "@/components/support/support-conversation-bubble";
+import { SupportRecoveryVerification } from "@/components/support/support-recovery-verification";
 import { PublicSupportShell } from "@/components/support/public-support-shell";
 import { SupportStatusBadge } from "@/components/support/support-ticket-badges";
 import { Button } from "@/components/ui/button";
@@ -168,6 +169,12 @@ function PublicSupportConversationContent() {
                     {conversationQuery.isFetching ? "Refreshing..." : "Refresh"}
                   </Button>
                 </div>
+
+                <SupportRecoveryVerification
+                  key={conversation.ticket_id}
+                  conversation={conversation}
+                  target={{ access: "public", ticket: ticketCode }}
+                />
 
                 <div className="max-h-[560px] space-y-3 overflow-y-auto rounded-lg bg-muted/35 p-3">
                   {conversation.messages.length === 0 ? (
