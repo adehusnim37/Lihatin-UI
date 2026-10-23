@@ -183,8 +183,8 @@ export default function SetupTOTPModal({
           {step === "init" && (
             <div className="space-y-4 py-4">
               <div className="flex flex-col items-center text-center space-y-4">
-                <div className="size-20 rounded-full bg-blue-50 flex items-center justify-center">
-                  <IconLock className="size-10 text-blue-600" />
+                <div className="size-20 rounded-full bg-blue-50 flex items-center justify-center dark:bg-blue-950/40">
+                  <IconLock className="size-10 text-blue-600 dark:text-blue-300" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg">Secure Your Account</h3>
@@ -215,7 +215,7 @@ export default function SetupTOTPModal({
                 </p>
 
                 <div className="flex justify-center w-full">
-                  <div className="p-4 bg-white rounded-lg border-2 border-gray-200">
+                  <div className="p-4 bg-white rounded-lg border-2 border-gray-200 dark:border-border">
                     {qrCodeDataURL ? (
                       <Image
                         src={qrCodeDataURL}
@@ -226,7 +226,7 @@ export default function SetupTOTPModal({
                         className="rounded"
                       />
                     ) : (
-                      <div className="w-[200px] h-[200px] flex items-center justify-center bg-gray-100 rounded">
+                      <div className="w-[200px] h-[200px] flex items-center justify-center bg-gray-100 rounded dark:bg-gray-200">
                         <IconQrcode className="size-20 text-gray-400 animate-pulse" />
                       </div>
                     )}
@@ -258,22 +258,24 @@ export default function SetupTOTPModal({
               </div>
 
               {/* Recovery Codes */}
-              <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg space-y-2">
+              <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg space-y-2 dark:border-amber-400/25 dark:bg-amber-950/30">
                 <div className="flex items-start gap-2">
                   <IconKey className="size-5 text-amber-600 shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-amber-900">Save Your Recovery Codes</p>
-                    <p className="text-xs text-amber-700 mt-1">
+                    <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                      Save Your Recovery Codes
+                    </p>
+                    <p className="text-xs text-amber-700 mt-1 dark:text-amber-200">
                       Store these codes in a safe place. You can use them to access your account if
                       you lose your phone.
                     </p>
                   </div>
                 </div>
                 <div className="mt-2">
-                  <div className="bg-white p-3 rounded border border-amber-200 max-h-32 overflow-y-auto">
+                  <div className="bg-white p-3 rounded border border-amber-200 max-h-32 overflow-y-auto dark:border-amber-400/25 dark:bg-card">
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 font-mono text-xs text-center">
                       {totpData.recovery_codes.map((code, index) => (
-                        <div key={index} className="text-gray-700 break-all">
+                        <div key={index} className="text-gray-700 break-all dark:text-foreground">
                           {code}
                         </div>
                       ))}

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { LinkFlowHeader } from "@/components/links/link-flow-header";
 import { gsap } from "gsap";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import { ArrowRight, Home, Waves } from "lucide-react";
@@ -300,7 +301,7 @@ export function NotFoundExperience() {
 
   return (
     <main
-      className="relative isolate flex min-h-screen items-center overflow-hidden bg-background px-5 py-10 sm:px-8 lg:px-12"
+      className="relative isolate min-h-svh overflow-hidden bg-background px-4 py-5 text-foreground sm:px-6 sm:py-6 lg:px-8"
       aria-labelledby="error-title"
     >
       <div
@@ -312,56 +313,47 @@ export function NotFoundExperience() {
         className="absolute -bottom-52 right-0 -z-10 size-[38rem] rounded-full bg-third/15 blur-[140px]"
       />
 
-      <div className="mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-[0.82fr_1.18fr] lg:gap-16">
-        <section className="relative z-10 max-w-xl">
-          <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/80 px-3 py-1.5 shadow-sm backdrop-blur-xl">
-            <span className="relative flex size-2">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-third opacity-50 motion-reduce:animate-none" />
-              <span className="relative inline-flex size-2 rounded-full bg-third" />
-            </span>
-            <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              404 · Off the map
-            </span>
-          </div>
+      <LinkFlowHeader />
 
-          <p className="mb-3 font-mono text-sm font-semibold text-primary-ink">
-            Lost in the current
-          </p>
+      <div className="mx-auto grid min-h-[calc(100svh-6rem)] w-full max-w-6xl items-center gap-8 py-10 md:grid-cols-[0.9fr_1.1fr] md:gap-10 lg:gap-16">
+        <section className="relative z-10 max-w-xl">
           <h1
             id="error-title"
-            className="max-w-lg text-balance text-5xl font-semibold tracking-[-0.055em] text-foreground sm:text-6xl lg:text-7xl"
+            className="max-w-lg text-balance text-4xl font-semibold leading-tight tracking-tight text-foreground lg:text-5xl"
           >
             This link swam away.
           </h1>
-          <p className="mt-6 max-w-lg text-pretty text-base leading-7 text-muted-foreground sm:text-lg">
+          <p className="mt-4 max-w-lg text-pretty text-base leading-7 text-muted-foreground">
             The page you&apos;re looking for drifted beyond our waters. Head home, or sign in and
             we&apos;ll get you back on course.
           </p>
 
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <Button asChild size="lg" className="group rounded-full px-6">
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+            <Button asChild size="lg" className="group min-h-11 px-6">
               <Link href="/">
                 <Home className="size-4" />
                 Back to home
               </Link>
             </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="group rounded-full bg-card/55 px-6 backdrop-blur-sm"
-            >
+            <Button asChild size="lg" variant="outline" className="group min-h-11 px-6">
               <Link href="/auth/login">
                 Go to login
                 <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </Button>
           </div>
+          <p className="mt-6 inline-flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="relative flex size-1.5" aria-hidden="true">
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-40 motion-reduce:animate-none" />
+              <span className="relative inline-flex size-1.5 rounded-full bg-primary" />
+            </span>
+            Error 404 · Page not found
+          </p>
         </section>
 
         <div
           ref={sceneRef}
-          className="relative mx-auto w-full max-w-[760px]"
+          className="relative mx-auto w-full max-w-[600px]"
           onPointerLeave={handlePointerLeave}
           onPointerMove={handlePointerMove}
         >
@@ -371,7 +363,7 @@ export function NotFoundExperience() {
           />
           <div
             data-scene-card
-            className="relative overflow-hidden rounded-[2rem] border border-white/60 bg-card shadow-[0_35px_100px_-45px_color-mix(in_oklab,var(--primary)_55%,transparent)] dark:border-white/10"
+            className="relative overflow-hidden rounded-2xl border border-border bg-card"
             style={{ transformStyle: "preserve-3d" }}
           >
             <svg

@@ -1,12 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { LinkFlowHeader } from "@/components/links/link-flow-header";
+import { LinkErrorVisual } from "@/components/errors/link-error-visual";
 import { gsap } from "gsap";
 import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import {
   ArrowLeft,
-  ArrowRight,
   BatteryWarning,
   Clock3,
   House,
@@ -29,7 +30,6 @@ gsap.registerPlugin(MorphSVGPlugin, MotionPathPlugin);
 
 interface ErrorConfig {
   description: string;
-  eyebrow: string;
   icon: LucideIcon;
   signal: string;
   title: string;
@@ -39,14 +39,12 @@ const errorConfig: Record<string, ErrorConfig> = {
   not_found: {
     description:
       "The destination could not be resolved. It may have moved, been deleted, or never existed.",
-    eyebrow: "Route unavailable",
     icon: SearchX,
     signal: "No destination",
     title: "This link leads nowhere.",
   },
   expired: {
     description: "The owner placed a time limit on this link and its access window has now closed.",
-    eyebrow: "Access window closed",
     icon: Clock3,
     signal: "Link expired",
     title: "This link had its moment.",
@@ -54,14 +52,13 @@ const errorConfig: Record<string, ErrorConfig> = {
   forbidden: {
     description:
       "This destination is unavailable because it did not pass Lihat.in safety or access checks.",
-    eyebrow: "Route blocked",
     icon: ShieldX,
     signal: "Access denied",
     title: "We stopped this route.",
   },
   click_limit: {
-    description: "This link has reached the maximum number of visits allowed by its owner.",
-    eyebrow: "Capacity reached",
+    description:
+      "This link has used all the visits allowed by its owner. Ask the owner for a new link.",
     icon: BatteryWarning,
     signal: "Limit reached",
     title: "No clicks left to give.",
@@ -69,7 +66,6 @@ const errorConfig: Record<string, ErrorConfig> = {
   invalid_passcode: {
     description:
       "That passcode did not unlock the destination. Check the code and give it another try.",
-    eyebrow: "Verification failed",
     icon: KeyRound,
     signal: "Code rejected",
     title: "That code didn’t match.",
@@ -77,7 +73,6 @@ const errorConfig: Record<string, ErrorConfig> = {
   rate_limit: {
     description:
       "This link received too many requests in a short time. Let the signal settle, then retry.",
-    eyebrow: "Traffic protection",
     icon: RadioTower,
     signal: "Temporarily paused",
     title: "The route needs a breather.",
@@ -85,7 +80,6 @@ const errorConfig: Record<string, ErrorConfig> = {
   network: {
     description:
       "We could not reach the link service. Your connection may be interrupted, or our server may be unavailable.",
-    eyebrow: "Connection interrupted",
     icon: WifiOff,
     signal: "Signal lost",
     title: "We lost the connection.",
@@ -93,7 +87,6 @@ const errorConfig: Record<string, ErrorConfig> = {
   error: {
     description:
       "An unexpected problem interrupted this route before we could reach its destination.",
-    eyebrow: "Unexpected interruption",
     icon: TriangleAlert,
     signal: "Route interrupted",
     title: "The link broke mid-flight.",
@@ -109,15 +102,7 @@ const morphPaths = [
 const crashFlightPath =
   "M-80 156C35 132 164 141 287 170C308 175 323 179 334 182C346 186 349 195 341 204C332 214 335 226 350 236C401 270 455 314 491 364C518 401 540 423 556 428";
 
-function ErrorVisual({
-  code,
-  config,
-  status,
-}: {
-  code: string;
-  config: ErrorConfig;
-  status: string;
-}) {
+function ErrorVisual({ code, config }: { code: string; config: ErrorConfig }) {
   const visualRef = useRef<HTMLDivElement>(null);
   const Icon = config.icon;
 
@@ -601,7 +586,7 @@ function ErrorVisual({
   return (
     <div
       ref={visualRef}
-      className="relative mx-auto w-full max-w-[720px]"
+      className="relative mx-auto w-full max-w-[600px]"
       onPointerLeave={handlePointerLeave}
       onPointerMove={handlePointerMove}
     >
@@ -611,7 +596,7 @@ function ErrorVisual({
       />
       <div
         data-error-scene
-        className="relative min-h-[430px] overflow-hidden rounded-[2rem] border border-white/65 bg-card shadow-[0_40px_120px_-55px_color-mix(in_oklab,var(--primary)_65%,transparent)] dark:border-white/10 sm:min-h-[540px]"
+        className="relative aspect-[680/560] overflow-hidden rounded-2xl border border-border bg-card"
         style={{ transformStyle: "preserve-3d" }}
       >
         <svg
@@ -721,15 +706,6 @@ function ErrorVisual({
           </g>
         </svg>
 
-        <div className="absolute inset-x-5 top-5 z-30 flex items-center justify-between gap-3 sm:inset-x-7 sm:top-7">
-          <span className="rounded-full border border-white/50 bg-card/60 px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-foreground/60 backdrop-blur-md dark:border-white/10 sm:text-[10px]">
-            Route diagnostic
-          </span>
-          <span className="rounded-full border border-white/50 bg-card/60 px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-foreground/60 backdrop-blur-md dark:border-white/10 sm:text-[10px]">
-            {status ? `HTTP ${status}` : "Signal 00"}
-          </span>
-        </div>
-
         <div
           data-error-foreground
           className="absolute inset-0 z-10"
@@ -737,17 +713,18 @@ function ErrorVisual({
         >
           <div
             data-error-node="source"
-            className="absolute left-[4%] top-[24%] w-[47%] max-w-[260px] rounded-2xl border border-white/65 bg-card/75 p-3 shadow-xl shadow-foreground/5 backdrop-blur-xl dark:border-white/10 sm:left-[7%] sm:top-[27%] sm:p-4"
+            className="absolute left-[4%] top-[12%] w-[45%] max-w-[260px] rounded-xl border border-border bg-card/90 p-2 shadow-md shadow-foreground/5 sm:p-3"
           >
-            <div className="flex items-center gap-3">
-              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/20 text-primary-ink sm:size-11">
+            <div className="flex items-center gap-2">
+              <span className="grid size-7 shrink-0 place-items-center rounded-md bg-primary/20 text-primary-ink sm:size-9">
                 <Link2 className="size-4 sm:size-5" />
               </span>
               <span className="min-w-0">
-                <span className="block text-[9px] font-bold uppercase tracking-[0.17em] text-muted-foreground sm:text-[10px]">
-                  Short link
-                </span>
-                <span className="mt-0.5 block truncate font-mono text-xs font-semibold text-foreground sm:text-sm">
+                <span className="block text-xs text-muted-foreground">Short link</span>
+                <span
+                  className="mt-0.5 block truncate font-mono text-xs font-medium text-foreground"
+                  title={`lihat.in/${code || "unknown"}`}
+                >
                   lihat.in/{code || "unknown"}
                 </span>
               </span>
@@ -756,27 +733,28 @@ function ErrorVisual({
 
           <div
             data-error-mark
-            className="absolute left-1/2 top-1/2 grid size-[92px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-[1.7rem] border border-white/60 bg-card/80 text-foreground shadow-2xl shadow-foreground/10 backdrop-blur-xl dark:border-white/10 sm:size-[116px] sm:rounded-[2rem]"
+            className="absolute left-1/2 top-1/2 grid aspect-square w-[16%] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-xl border border-border bg-card/90 text-foreground shadow-lg shadow-foreground/10 sm:rounded-2xl"
           >
-            <Icon className="size-9 text-primary-ink sm:size-11" strokeWidth={1.75} />
-            <span className="absolute -right-1.5 -top-1.5 grid size-7 place-items-center rounded-full border-4 border-card bg-foreground font-mono text-[10px] font-bold text-background sm:size-8">
+            <Icon className="size-6 text-primary-ink sm:size-8" strokeWidth={1.75} />
+            <span className="absolute -right-1 -top-1 grid size-5 place-items-center rounded-full border-2 border-card bg-foreground text-xs font-bold text-background sm:size-6">
               !
             </span>
           </div>
 
           <div
             data-error-node="result"
-            className="absolute right-[4%] top-[19%] w-[43%] max-w-[240px] rounded-2xl border border-white/65 bg-card/75 p-3 shadow-xl shadow-foreground/5 backdrop-blur-xl dark:border-white/10 sm:right-[7%] sm:top-[20%] sm:p-4"
+            className="absolute right-[4%] top-[12%] w-[43%] max-w-[240px] rounded-xl border border-border bg-card/90 p-2 shadow-md shadow-foreground/5 sm:p-3"
           >
-            <div className="flex items-center gap-3">
-              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-third/55 sm:size-11">
+            <div className="flex items-center gap-2">
+              <span className="grid size-7 shrink-0 place-items-center rounded-md bg-third/55 sm:size-9">
                 <RadioTower className="size-4 sm:size-5" />
               </span>
               <span className="min-w-0">
-                <span className="block text-[9px] font-bold uppercase tracking-[0.17em] text-muted-foreground sm:text-[10px]">
-                  Result
-                </span>
-                <span className="mt-0.5 block truncate text-xs font-semibold text-foreground sm:text-sm">
+                <span className="block text-xs text-muted-foreground">Result</span>
+                <span
+                  className="mt-0.5 block truncate text-xs font-medium text-foreground"
+                  title={config.signal}
+                >
                   {config.signal}
                 </span>
               </span>
@@ -955,7 +933,7 @@ function ErrorVisual({
           </g>
         </svg>
 
-        <div className="absolute inset-x-5 bottom-5 z-30 flex items-center justify-between font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-foreground/45 sm:inset-x-7 sm:bottom-7 sm:text-[10px]">
+        <div className="absolute inset-x-4 bottom-4 z-30 flex items-center justify-between text-xs text-muted-foreground sm:inset-x-6 sm:bottom-6">
           <span>Lihat.in routing layer</span>
           <span className="inline-flex items-center gap-1.5">
             <span className="size-1.5 rounded-full bg-foreground/45" />
@@ -973,9 +951,10 @@ function LinkErrorContent() {
 
   const code = (searchParams.get("code") || "").trim().slice(0, 80);
   const type = (searchParams.get("type") || "error").trim();
-  const status = (searchParams.get("status") || "").trim().slice(0, 3);
+  const rawStatus = (searchParams.get("status") || "").trim();
+  const status = /^[1-5]\d{2}$/.test(rawStatus) ? rawStatus : "";
   const message = (searchParams.get("message") || "").trim().slice(0, 240);
-  const config = errorConfig[type] || errorConfig.error;
+  const config = Object.hasOwn(errorConfig, type) ? errorConfig[type] : errorConfig.error;
   const retryable = ["network", "rate_limit", "error"].includes(type);
   const passcodeRetry = type === "invalid_passcode" && Boolean(code);
 
@@ -994,15 +973,15 @@ function LinkErrorContent() {
           .timeline({ defaults: { ease: "power3.out" } })
           .from("[data-error-header]", {
             autoAlpha: 0,
-            duration: 0.5,
+            duration: 0.3,
             y: -12,
           })
           .from(
             "[data-error-reveal]",
             {
               autoAlpha: 0,
-              duration: 0.7,
-              stagger: 0.075,
+              duration: 0.4,
+              stagger: 0.04,
               y: 26,
             },
             "-=0.24",
@@ -1037,7 +1016,7 @@ function LinkErrorContent() {
   return (
     <main
       ref={pageRef}
-      className="relative isolate min-h-[100svh] overflow-hidden bg-background px-5 py-6 text-foreground sm:px-8 sm:py-8 lg:px-12"
+      className="relative isolate min-h-svh overflow-hidden bg-background px-4 py-5 text-foreground sm:px-6 sm:py-6 lg:px-8"
     >
       <div
         aria-hidden="true"
@@ -1048,84 +1027,39 @@ function LinkErrorContent() {
         className="absolute -bottom-56 right-0 -z-10 size-[40rem] rounded-full bg-third/15 blur-[150px]"
       />
 
-      <header
-        data-error-header
-        className="mx-auto flex w-full max-w-7xl items-center justify-between"
-      >
-        <Link
-          href="/"
-          className="group inline-flex items-center gap-2.5 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label="Lihat.in home"
-        >
-          <Image
-            src="/logo.svg"
-            alt=""
-            width={36}
-            height={36}
-            className="size-8 rounded-lg sm:size-9"
-            priority
-          />
-          <span className="text-sm font-bold tracking-tight sm:text-base">Lihat.in</span>
-        </Link>
-        <Link
-          href={supportHref}
-          className="group inline-flex items-center gap-2 rounded-full border border-border bg-card/65 px-3.5 py-2 text-xs font-semibold text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:text-foreground"
-        >
-          Get help
-          <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
-        </Link>
-      </header>
+      <div data-error-header>
+        <LinkFlowHeader helpHref={supportHref} />
+      </div>
 
-      <div className="mx-auto grid w-full max-w-7xl items-center gap-12 pb-8 pt-14 sm:pt-16 lg:min-h-[calc(100svh-5rem)] lg:grid-cols-[0.82fr_1.18fr] lg:gap-16 lg:py-12">
+      <div className="mx-auto grid min-h-[calc(100svh-6rem)] w-full max-w-6xl items-center gap-8 py-10 md:grid-cols-[0.9fr_1.1fr] md:gap-10 lg:gap-16">
         <section className="relative z-10 max-w-xl">
-          <div
-            data-error-reveal
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-3 py-1.5 shadow-sm backdrop-blur-sm"
-          >
-            <span className="relative flex size-2">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-50 motion-reduce:animate-none" />
-              <span className="relative inline-flex size-2 rounded-full bg-primary" />
-            </span>
-            <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground sm:text-[11px]">
-              {config.eyebrow}
-            </span>
-          </div>
-
           <h1
             data-error-reveal
-            className="mt-6 max-w-xl text-balance text-[2.9rem] font-semibold leading-[0.98] tracking-[-0.06em] sm:text-6xl lg:text-[4.5rem]"
+            className="max-w-xl text-balance text-4xl font-semibold leading-tight tracking-tight lg:text-5xl"
           >
             {config.title}
           </h1>
           <p
             data-error-reveal
-            className="mt-6 max-w-lg text-pretty text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8"
+            className="mt-4 max-w-lg text-pretty text-base leading-7 text-muted-foreground"
           >
             {config.description}
           </p>
 
           {message && (
-            <div
-              data-error-reveal
-              className="mt-6 max-w-lg rounded-2xl border border-border bg-card/65 p-4 backdrop-blur-sm"
-            >
-              <div className="flex gap-3">
-                <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground">
-                  <TriangleAlert className="size-3.5" />
-                </span>
-                <div className="min-w-0">
-                  <p className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                    Diagnostic detail
-                  </p>
-                  <p className="mt-1 break-words text-sm leading-6 text-foreground/75">{message}</p>
-                </div>
-              </div>
-            </div>
+            <details data-error-reveal className="mt-5 max-w-lg border-y py-3">
+              <summary className="w-fit cursor-pointer rounded-sm text-sm text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">
+                Error details
+              </summary>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground [overflow-wrap:anywhere]">
+                {message}
+              </p>
+            </details>
           )}
 
-          <div data-error-reveal className="mt-8 flex flex-col gap-3 min-[430px]:flex-row">
+          <div data-error-reveal className="mt-7 flex flex-col gap-3 sm:flex-row">
             {passcodeRetry && (
-              <Button asChild size="lg" className="group rounded-full px-6">
+              <Button asChild size="lg" className="group min-h-11 px-6">
                 <Link href={passcodeHref}>
                   <KeyRound className="size-4" />
                   Try another code
@@ -1133,7 +1067,7 @@ function LinkErrorContent() {
               </Button>
             )}
             {retryable && (
-              <Button asChild size="lg" className="group rounded-full px-6">
+              <Button asChild size="lg" className="group min-h-11 px-6">
                 <Link href={retryHref}>
                   <RefreshCw className="size-4 transition-transform duration-500 group-hover:rotate-180" />
                   Retry this link
@@ -1144,7 +1078,7 @@ function LinkErrorContent() {
               asChild
               size="lg"
               variant={passcodeRetry || retryable ? "outline" : "default"}
-              className="group rounded-full bg-card/60 px-6 backdrop-blur-sm"
+              className="group min-h-11 px-6"
             >
               <Link href="/">
                 {passcodeRetry || retryable ? (
@@ -1164,7 +1098,7 @@ function LinkErrorContent() {
 
           <p
             data-error-reveal
-            className="mt-6 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70"
+            className="mt-6 text-xs leading-5 text-muted-foreground [overflow-wrap:anywhere]"
           >
             Reference · {code ? `/${code}` : "unavailable route"}
             {status ? ` · HTTP ${status}` : ""}
@@ -1172,7 +1106,11 @@ function LinkErrorContent() {
         </section>
 
         <div data-error-visual>
-          <ErrorVisual code={code} config={config} status={status} />
+          {type === "not_found" ? (
+            <ErrorVisual code={code} config={config} />
+          ) : (
+            <LinkErrorVisual key={type} type={type} code={code} signal={config.signal} />
+          )}
         </div>
       </div>
     </main>
@@ -1194,9 +1132,7 @@ function LinkErrorFallback() {
           />
           <span className="absolute -inset-2 -z-10 animate-ping rounded-[1.4rem] border border-primary/40 motion-reduce:animate-none" />
         </span>
-        <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-          Inspecting route
-        </span>
+        <span className="text-sm font-medium text-muted-foreground">Inspecting route</span>
       </div>
     </main>
   );

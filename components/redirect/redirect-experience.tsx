@@ -1,10 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ArrowRight,
   CirclePause,
   CirclePlay,
   ExternalLink,
@@ -19,6 +17,7 @@ import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { LinkFlowHeader } from "@/components/links/link-flow-header";
 
 gsap.registerPlugin(MorphSVGPlugin);
 
@@ -37,30 +36,6 @@ interface RedirectExperienceProps {
   preview: ShortLinkPreview;
   redirectPath: string;
   protectedLink?: boolean;
-}
-
-function createDestinationCopy(preview: ShortLinkPreview) {
-  const providedTitle = preview.title?.trim();
-  const providedDescription = preview.description?.trim();
-  const friendlyHost = preview.destinationHost.replace(/^www\./i, "");
-  const siteName = friendlyHost
-    .split(".")[0]
-    ?.replace(/[-_]+/g, " ")
-    .replace(/\b\w/g, (character) => character.toUpperCase());
-
-  return {
-    title:
-      (providedTitle
-        ? providedTitle.charAt(0).toUpperCase() + providedTitle.slice(1)
-        : undefined) || (siteName ? `Open ${siteName}` : "External destination"),
-    description:
-      providedDescription ||
-      (preview.destinationHost
-        ? `This short link opens ${preview.destinationHost}. Review the domain and connection details before continuing.`
-        : "The destination could not be previewed. Continue only if you recognize and trust the person who shared this link."),
-    isGeneratedTitle: !providedTitle,
-    isGeneratedDescription: !providedDescription,
-  };
 }
 
 function PlaneScene({ compact = false }: { compact?: boolean }) {
@@ -164,9 +139,12 @@ function PlaneScene({ compact = false }: { compact?: boolean }) {
     >
       <defs>
         <linearGradient id="plane-sky-gradient" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#eefcff" />
-          <stop offset=".58" stopColor="#d9f3f9" />
-          <stop offset="1" stopColor="#c3e7f0" />
+          <stop offset="0" stopColor="color-mix(in oklab, var(--background) 94%, var(--primary))" />
+          <stop
+            offset=".58"
+            stopColor="color-mix(in oklab, var(--background) 84%, var(--primary))"
+          />
+          <stop offset="1" stopColor="color-mix(in oklab, var(--background) 70%, var(--primary))" />
         </linearGradient>
         <linearGradient id="plane-body-gradient" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#ffffff" />
@@ -351,14 +329,17 @@ function PlaneScene({ compact = false }: { compact?: boolean }) {
 
 export function RedirectCheckingScreen() {
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f4fafb] px-4 py-10 text-[#153b49]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(102,203,225,0.18),transparent_28%),radial-gradient(circle_at_85%_85%,rgba(21,59,73,0.08),transparent_30%)]" />
-      <section className="relative w-full max-w-xl rounded-[2rem] border border-[#cbe6ed] bg-white/90 p-5 shadow-[0_30px_80px_rgba(26,87,104,0.14)] backdrop-blur sm:p-8">
-        <PlaneScene compact />
-        <div className="mt-6 text-center" aria-live="polite">
-          <p className="text-lg font-semibold">Checking this short link</p>
-          <p className="mt-1 text-sm text-[#5d7780]">
-            Looking up the destination before you leave Lihatin.
+    <main className="min-h-svh bg-background px-4 py-5 text-foreground sm:px-6 sm:py-6 lg:px-8">
+      <LinkFlowHeader />
+      <section
+        className="mx-auto flex min-h-[calc(100svh-6rem)] w-full max-w-md flex-col justify-center py-10"
+        aria-busy="true"
+      >
+        <PlaneScene />
+        <div className="mt-6 text-center" role="status">
+          <h1 className="text-xl font-semibold tracking-tight">Checking this short link</h1>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Looking up the destination before you leave Lihat.in.
           </p>
         </div>
       </section>
@@ -373,21 +354,27 @@ export function RedirectExperience({
 }: RedirectExperienceProps) {
   const [countdown, setCountdown] = useState(REDIRECT_SECONDS);
   const [isPaused, setIsPaused] = useState(!preview.destinationHost);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const hasRedirected = useRef(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const isSecure = preview.destinationScheme === "https";
-  const destinationCopy = createDestinationCopy(preview);
+  const title = preview.title?.trim();
+  const description = preview.description?.trim();
   const connectionSummary = !preview.destinationHost
     ? "Preview unavailable"
     : isSecure
       ? "Encrypted with HTTPS"
-      : "Not encrypted";
-  const progress = ((REDIRECT_SECONDS - countdown) / REDIRECT_SECONDS) * 100;
+      : preview.destinationScheme === "http"
+        ? "Not encrypted"
+        : "Connection details unavailable";
+  const progress = REDIRECT_SECONDS - countdown;
+  const reportHref = `/support/new?reason=SUSPICIOUS_LINK&code=${encodeURIComponent(preview.shortCode)}`;
 
   const continueToDestination = useCallback(() => {
     if (hasRedirected.current) return;
     hasRedirected.current = true;
+    setIsRedirecting(true);
     window.location.assign(redirectPath);
   }, [redirectPath]);
 
@@ -402,15 +389,23 @@ export function RedirectExperience({
   }, [continueToDestination, countdown]);
 
   useEffect(() => {
+    const pauseWhenHidden = () => {
+      if (document.hidden) setIsPaused(true);
+    };
+    document.addEventListener("visibilitychange", pauseWhenHidden);
+    return () => document.removeEventListener("visibilitychange", pauseWhenHidden);
+  }, []);
+
+  useEffect(() => {
     if (!cardRef.current) return;
     const media = gsap.matchMedia();
     media.add("(prefers-reduced-motion: no-preference)", () => {
       const context = gsap.context(() => {
         gsap.from("[data-reveal]", {
-          y: 18,
+          y: 12,
           opacity: 0,
-          duration: 0.65,
-          stagger: 0.08,
+          duration: 0.4,
+          stagger: 0.04,
           ease: "power3.out",
         });
       }, cardRef);
@@ -420,262 +415,196 @@ export function RedirectExperience({
   }, []);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#f4fafb] px-4 py-5 text-[#153b49] sm:px-6 sm:py-10">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_12%,rgba(102,203,225,0.2),transparent_28%),radial-gradient(circle_at_88%_82%,rgba(21,59,73,0.09),transparent_28%)]" />
-      <div className="pointer-events-none absolute -left-20 top-1/3 size-52 rounded-full border border-[#b7dfe9]/60" />
-      <div className="pointer-events-none absolute -right-24 top-16 size-72 rounded-full border border-[#b7dfe9]/50" />
+    <main className="min-h-svh bg-background px-4 py-5 text-foreground sm:px-6 sm:py-6 lg:px-8">
+      <LinkFlowHeader helpHref={reportHref} />
 
-      <div className="relative mx-auto max-w-3xl">
-        <header className="mb-4 flex items-center justify-between px-1 sm:mb-6">
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2e93ad]"
+      <div className="mx-auto grid min-h-[calc(100svh-6rem)] w-full max-w-5xl items-center gap-7 py-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-12 lg:py-10">
+        <section aria-labelledby="redirect-title" className="mx-auto w-full max-w-lg lg:max-w-none">
+          <div className="mx-auto max-w-[240px] lg:max-w-none">
+            <PlaneScene />
+          </div>
+          <h1
+            id="redirect-title"
+            className="mt-5 text-balance text-2xl font-semibold tracking-tight lg:mt-7 lg:text-3xl"
           >
-            <Image
-              src="/logo.svg"
-              alt=""
-              width={34}
-              height={34}
-              className="size-8 rounded-md"
-              priority
-            />
-            <span className="text-sm font-bold tracking-tight">Lihatin</span>
-          </Link>
-          <Badge
-            className="border-[#b8dfe8] bg-white/70 px-3 py-1 text-[#315f6c]"
-            variant="outline"
-          >
-            <ShieldCheck className="size-3.5 text-[#2e93ad]" />
-            Destination preview
-          </Badge>
-        </header>
+            You&apos;re leaving Lihat.in
+          </h1>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground lg:text-base lg:leading-7">
+            Short links can hide where they lead. Take a second to review this destination.
+          </p>
+        </section>
 
         <div
           ref={cardRef}
-          className="overflow-hidden rounded-[1.75rem] border border-[#c9e2e8] bg-white shadow-[0_32px_90px_rgba(26,87,104,0.15)] sm:rounded-[2rem]"
+          className="mx-auto w-full max-w-lg rounded-2xl border bg-card p-5 sm:p-6"
         >
-          <div data-reveal className="border-b border-[#d8ebef] bg-[#ecf8fa] p-3 sm:p-5">
-            <PlaneScene />
-          </div>
-
-          <div className="p-5 sm:p-8">
-            <div
-              data-reveal
-              className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
-            >
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#408399]">
-                  Before you continue
-                </p>
-                <h1 className="mt-2 text-2xl font-bold tracking-[-0.025em] text-[#102f3b] sm:text-3xl">
-                  You&apos;re leaving Lihatin
-                </h1>
-                <p className="mt-2 max-w-xl text-sm leading-6 text-[#5d7780] sm:text-base">
-                  Short links can hide where they lead. Take a second to review this destination.
-                </p>
-              </div>
-              <Badge
-                className="shrink-0 border-[#b8dfe8] bg-[#edf9fb] px-3 py-1.5 text-[#286d80]"
-                variant="outline"
+          <section data-reveal aria-labelledby="destination-label">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2
+                id="destination-label"
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground"
               >
-                {protectedLink ? (
+                <Globe2 className="size-4" aria-hidden="true" /> Destination
+              </h2>
+              {protectedLink && (
+                <Badge variant="outline" className="gap-1.5 text-xs">
+                  <ShieldCheck className="size-3.5" />
+                  Passcode verified
+                </Badge>
+              )}
+            </div>
+            <p className="mt-3 text-xl font-semibold leading-snug tracking-tight [overflow-wrap:anywhere] sm:text-2xl">
+              {preview.destinationHost || "Destination preview unavailable"}
+            </p>
+            {preview.destinationHost && (
+              <p
+                className={`mt-2 inline-flex items-center gap-1.5 text-xs ${isSecure ? "text-muted-foreground" : "text-amber-700 dark:text-amber-300"}`}
+              >
+                {isSecure ? (
                   <LockKeyhole className="size-3.5" />
                 ) : (
-                  <ShieldCheck className="size-3.5" />
+                  <TriangleAlert className="size-3.5" />
                 )}
-                {protectedLink ? "Passcode verified" : "Link found"}
-              </Badge>
-            </div>
+                {connectionSummary}
+              </p>
+            )}
+          </section>
 
-            <section
-              data-reveal
-              className="mt-6 rounded-2xl border border-[#cfe4e9] bg-[#f8fcfd] p-4 sm:p-5"
-              aria-label="Destination details"
-            >
-              <div className="flex min-w-0 items-start gap-3.5">
-                <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[#dff3f7] text-[#247b92]">
-                  <Globe2 className="size-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#69858d]">
-                    Destination
-                  </p>
-                  {preview.destinationHost ? (
-                    <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-2">
-                      <p className="break-all text-lg font-bold text-[#102f3b]">
-                        {preview.destinationHost}
-                      </p>
-                      <Badge
-                        variant="outline"
-                        className={
-                          isSecure
-                            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                            : "border-amber-200 bg-amber-50 text-amber-800"
-                        }
-                      >
-                        {isSecure ? (
-                          <LockKeyhole className="size-3" />
-                        ) : (
-                          <TriangleAlert className="size-3" />
-                        )}
-                        {isSecure ? "HTTPS" : "Not HTTPS"}
-                      </Badge>
-                    </div>
+          <div data-reveal className="mt-5 flex gap-2.5 border-y py-4">
+            <TriangleAlert
+              className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400"
+              aria-hidden="true"
+            />
+            <p className="text-sm leading-6 text-muted-foreground">
+              <strong className="font-medium text-foreground">
+                {preview.destinationHost
+                  ? "Check the domain carefully."
+                  : "Continue only if you trust the sender."}
+              </strong>{" "}
+              Lihat.in does not endorse the destination. Never enter a password or payment details
+              on a site you do not recognize.
+            </p>
+          </div>
+
+          <div data-reveal className="mt-4">
+            <div className="flex min-h-10 items-center justify-between gap-3">
+              <p className="text-sm text-muted-foreground" aria-live="off">
+                {isPaused ? (
+                  "Automatic redirect paused"
+                ) : (
+                  <>
+                    Continuing in{" "}
+                    <span className="font-medium tabular-nums text-foreground">{countdown}s</span>
+                  </>
+                )}
+              </p>
+              {preview.destinationHost && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setIsPaused((value) => !value)}
+                  aria-label={isPaused ? "Resume automatic redirect" : "Pause automatic redirect"}
+                >
+                  {isPaused ? (
+                    <CirclePlay className="size-4" />
                   ) : (
-                    <p className="mt-1.5 font-semibold text-amber-800">
-                      Destination preview unavailable
-                    </p>
+                    <CirclePause className="size-4" />
                   )}
-                  <div className="mt-3 border-l-2 border-[#b8dfe8] pl-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#69858d]">
-                        Link title
-                      </p>
-                      <span className="text-[10px] font-medium text-[#7b939a]">
-                        {destinationCopy.isGeneratedTitle
-                          ? "Generated from domain"
-                          : "Provided by link creator"}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-base font-semibold text-[#294b55]">
-                      {destinationCopy.title}
-                    </p>
-                    <p className="mt-1 line-clamp-3 text-sm leading-5 text-[#668087]">
-                      {destinationCopy.description}
-                    </p>
-                    {destinationCopy.isGeneratedDescription && (
-                      <p className="mt-1.5 text-[11px] text-[#84999f]">
-                        No description was provided, so Lihatin generated this safety summary.
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <dl className="mt-4 grid gap-2 border-t border-[#dbecef] pt-4 min-[480px]:grid-cols-3">
-                <div className="rounded-xl bg-white px-3 py-2.5">
-                  <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#7a9299]">
-                    Connection
-                  </dt>
-                  <dd className="mt-1 text-xs font-semibold text-[#315f6c]">{connectionSummary}</dd>
-                </div>
-                <div className="rounded-xl bg-white px-3 py-2.5">
-                  <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#7a9299]">
-                    Opens
-                  </dt>
-                  <dd className="mt-1 text-xs font-semibold text-[#315f6c]">External website</dd>
-                </div>
-                <div className="rounded-xl bg-white px-3 py-2.5">
-                  <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#7a9299]">
-                    Access
-                  </dt>
-                  <dd className="mt-1 text-xs font-semibold text-[#315f6c]">
-                    {protectedLink ? "Passcode protected" : "Public short link"}
-                  </dd>
-                </div>
-              </dl>
-
-              <div className="mt-4 flex items-center justify-between gap-3 border-t border-[#dbecef] pt-3 text-xs text-[#69858d]">
-                <span>Short link</span>
-                <code className="max-w-[70%] truncate rounded-md bg-white px-2 py-1 font-semibold text-[#315f6c]">
-                  lihat.in/{preview.shortCode}
-                </code>
-              </div>
-            </section>
-
-            <div
-              data-reveal
-              className={
-                preview.destinationHost
-                  ? "mt-4 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-amber-950"
-                  : "mt-4 flex gap-3 rounded-2xl border border-orange-300 bg-orange-50 p-4 text-orange-950"
-              }
-            >
-              <TriangleAlert className="mt-0.5 size-5 shrink-0 text-amber-600" />
-              <div className="text-sm leading-5">
-                <p className="font-semibold">
-                  {preview.destinationHost
-                    ? "Check the domain carefully"
-                    : "Continue only if you trust the sender"}
-                </p>
-                <p className="mt-1 text-amber-900/75">
-                  Lihatin shortens this link but does not endorse the destination. Never enter a
-                  password or payment details on a site you do not recognize.
-                </p>
-              </div>
+                  {isPaused ? "Resume" : "Pause"}
+                </Button>
+              )}
             </div>
-
-            <div data-reveal className="mt-6">
+            <span role="status" className="sr-only">
+              {isPaused
+                ? "Automatic redirect paused."
+                : "Automatic redirect running. Use Pause to review the destination."}
+            </span>
+            <div
+              role="progressbar"
+              aria-label="Automatic redirect"
+              aria-valuemin={0}
+              aria-valuemax={REDIRECT_SECONDS}
+              aria-valuenow={progress}
+              aria-valuetext={isPaused ? "Paused" : `Continuing in ${countdown} seconds`}
+              className="mt-2 h-1 overflow-hidden rounded-full bg-muted"
+            >
               <div
-                className="mb-2 flex items-center justify-between gap-3 text-xs font-medium text-[#607c84]"
-                aria-live="polite"
-              >
-                <span>
-                  {isPaused
-                    ? preview.destinationHost
-                      ? "Redirect paused"
-                      : "Automatic redirect paused for your safety"
-                    : `Continuing in ${countdown} second${countdown === 1 ? "" : "s"}`}
-                </span>
-                <span>{Math.round(progress)}%</span>
-              </div>
-              <div className="h-2 overflow-hidden rounded-full bg-[#dfedf0]">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-[#63c1d8] to-[#277e98] transition-[width] duration-1000 ease-linear"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
-
-            <div data-reveal className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
-              <Button
-                size="lg"
-                onClick={continueToDestination}
-                className="h-12 rounded-xl text-black shadow-sm"
-                variant="secondary"
-              >
-                Continue to {preview.destinationHost || "destination"}
-                <ArrowRight className="size-4" />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => setIsPaused((value) => !value)}
-                className="h-12 rounded-xl border-[#bfdce3] bg-white px-5 text-[#315f6c] hover:bg-[#eff8fa]"
-              >
-                {isPaused ? <CirclePlay className="size-4" /> : <CirclePause className="size-4" />}
-                {isPaused ? "Resume" : "Pause"}
-              </Button>
-            </div>
-
-            <div
-              data-reveal
-              className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-[#69858d]"
-            >
-              <Link
-                href="/"
-                className="inline-flex items-center gap-1.5 hover:text-[#244f5c] hover:underline"
-              >
-                Stay on Lihatin
-              </Link>
-              <Link
-                href={`/support/new?reason=SUSPICIOUS_LINK&code=${encodeURIComponent(preview.shortCode)}`}
-                className="inline-flex items-center gap-1.5 hover:text-[#244f5c] hover:underline"
-              >
-                <Flag className="size-3.5" />
-                Report suspicious link
-              </Link>
-              <span className="inline-flex items-center gap-1.5">
-                <ExternalLink className="size-3.5" />
-                Opens an external website
-              </span>
+                className="h-full rounded-full bg-primary transition-[width] duration-500 motion-reduce:transition-none"
+                style={{ width: `${(progress / REDIRECT_SECONDS) * 100}%` }}
+              />
             </div>
           </div>
-        </div>
 
-        <p className="mt-5 text-center text-xs leading-5 text-[#789097]">
-          Lihatin never asks for your password on a redirect screen.
-        </p>
+          <div data-reveal className="mt-5 grid gap-3 sm:grid-cols-2">
+            <Button
+              size="lg"
+              className="min-h-11"
+              onClick={continueToDestination}
+              disabled={isRedirecting}
+            >
+              {isRedirecting
+                ? "Opening destination…"
+                : preview.destinationHost
+                  ? "Continue to website"
+                  : "Continue anyway"}
+              <ExternalLink className="size-4" />
+            </Button>
+            <Button asChild size="lg" variant="outline" className="min-h-11">
+              <Link href="/">Stay on Lihat.in</Link>
+            </Button>
+          </div>
+
+          <details
+            className="group mt-5 border-t pt-4"
+            onToggle={(event) => {
+              if (event.currentTarget.open) setIsPaused(true);
+            }}
+          >
+            <summary className="w-fit cursor-pointer rounded-sm text-sm text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">
+              Link details
+            </summary>
+            <dl className="mt-4 space-y-3 text-sm">
+              <div>
+                <dt className="text-muted-foreground">Short link</dt>
+                <dd className="mt-1 font-mono text-xs leading-5 [overflow-wrap:anywhere]">
+                  lihat.in/{preview.shortCode}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Access</dt>
+                <dd className="mt-1">
+                  {protectedLink ? "Passcode protected" : "Public short link"}
+                </dd>
+              </div>
+              {title && (
+                <div>
+                  <dt className="text-muted-foreground">Link title</dt>
+                  <dd className="mt-1 [overflow-wrap:anywhere]">{title}</dd>
+                </div>
+              )}
+              {description && (
+                <div>
+                  <dt className="text-muted-foreground">Description</dt>
+                  <dd className="mt-1 leading-6 [overflow-wrap:anywhere]">{description}</dd>
+                </div>
+              )}
+            </dl>
+            {(title || description) && (
+              <p className="mt-3 text-xs leading-5 text-muted-foreground">
+                Title and description are provided by the link creator.
+              </p>
+            )}
+          </details>
+
+          <Link
+            href={reportHref}
+            className="mt-5 inline-flex min-h-8 items-center gap-1.5 rounded-sm text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+          >
+            <Flag className="size-3.5" />
+            Report suspicious link
+          </Link>
+        </div>
       </div>
     </main>
   );
