@@ -43,7 +43,7 @@ import { InAppAnnouncementDialog } from "@/components/notifications/in-app-annou
 const LAYOUT = "OPTION_3" as "OPTION_2" | "OPTION_3";
 const TOTP_PROMPT_PENDING_KEY = "totp_migration_prompt_pending";
 const TOTP_PROMPT_DISMISS_KEY = "totp_migration_dismissed_until";
-const TOTP_PROMPT_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
+const TOTP_PROMPT_DISMISS_MS = 3 * 24 * 60 * 60 * 1000;
 
 export default function Page() {
   const router = useRouter();
@@ -205,19 +205,19 @@ export default function Page() {
                 {LAYOUT === "OPTION_3" && (
                   <div className="flex flex-col gap-5">
                     <div className="px-4 lg:px-6">
-                    {linksError ? (
-                      <QueryError
-                        message="Recent links could not be loaded."
-                        onRetry={() => {
-                          void retryLinks();
-                        }}
-                      />
-                    ) : (
-                      <RecentLinksTable
-                        links={linksData?.short_links ?? []}
-                        isLoading={linksLoading}
-                      />
-                    )}
+                      {linksError ? (
+                        <QueryError
+                          message="Recent links could not be loaded."
+                          onRetry={() => {
+                            void retryLinks();
+                          }}
+                        />
+                      ) : (
+                        <RecentLinksTable
+                          links={linksData?.short_links ?? []}
+                          isLoading={linksLoading}
+                        />
+                      )}
                     </div>
 
                     {/* Analytics Mini Cards */}

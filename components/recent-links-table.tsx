@@ -28,6 +28,13 @@ interface RecentLinksTableProps {
   isLoading?: boolean;
 }
 
+/** Longest text rendered inside a row before it is clipped with an ellipsis. */
+const MAX_DISPLAY_CHARS = 100;
+
+function truncateText(value: string, max = MAX_DISPLAY_CHARS) {
+  return value.length > max ? `${value.slice(0, max)}…` : value;
+}
+
 function formatCreatedAt(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "Recently";
@@ -93,7 +100,7 @@ export function RecentLinksTable({ links = [], isLoading = false }: RecentLinksT
                     className="truncate text-sm font-medium text-foreground"
                     title={link.title || "Untitled"}
                   >
-                    {link.title || "Untitled"}
+                    {truncateText(link.title || "Untitled")}
                   </p>
                   <a
                     href={link.original_url}
@@ -102,7 +109,7 @@ export function RecentLinksTable({ links = [], isLoading = false }: RecentLinksT
                     className="flex w-fit min-w-0 max-w-full items-center gap-1 text-xs text-muted-foreground hover:text-primary-ink"
                     title={link.original_url}
                   >
-                    <span className="truncate">{link.original_url}</span>
+                    <span className="truncate">{truncateText(link.original_url)}</span>
                     <IconExternalLink className="size-3 shrink-0" />
                   </a>
                 </div>
